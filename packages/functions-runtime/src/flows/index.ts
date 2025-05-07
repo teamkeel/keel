@@ -6,7 +6,7 @@ import { divider } from "./ui/elements/display/divider";
 import { booleanInput } from "./ui/elements/input/boolean";
 import { markdown } from "./ui/elements/display/markdown";
 import { table } from "./ui/elements/display/table";
-import { selectOne } from "./ui/elements/select/single";
+import { selectOne } from "./ui/elements/select/one";
 import { UiPage } from "./ui/page";
 import {
   StepCompletedDisrupt,
@@ -282,7 +282,7 @@ export function createFlowContext<C extends FlowConfig>(
         list: list as any,
       },
       select: {
-        single: selectOne as any,
+        one: selectOne as any,
       },
     },
   };
