@@ -172,20 +172,6 @@ export function createFlowContext<C extends FlowConfig>(
           .returningAll()
           .executeTakeFirst();
 
-        // if (past.length < (options.maxRetries ?? defaultOpts.maxRetries)) {
-        //   await db
-        //     .insertInto("keel_flow_step")
-        //     .values({
-        //       run_id: runId,
-        //       name: name,
-        //       stage: options.stage,
-        //       status: STEP_STATUS.NEW,
-        //       type: STEP_TYPE.FUNCTION,
-        //     })
-        //     .returningAll()
-        //     .executeTakeFirst();
-        // }
-
         throw new StepErrorDisrupt(
           e instanceof Error ? e.message : "An error occurred"
         );

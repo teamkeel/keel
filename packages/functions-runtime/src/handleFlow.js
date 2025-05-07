@@ -114,7 +114,7 @@ async function handleFlow(request, config) {
           message: e.message,
         });
 
-        // The flow is disrupted by a flow failure
+        // The flow has failed due to exhausted step retries
         if (e instanceof ExhuastedRetriesDisrupt) {
           return createJSONRPCErrorResponse(
             request.id,
