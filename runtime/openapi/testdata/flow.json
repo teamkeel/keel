@@ -5,7 +5,7 @@
     "version": "1"
   },
   "paths": {
-    "flows/json/AnotherWorkflow": {
+    "/flows/json/AnotherWorkflow": {
       "post": {
         "operationId": "AnotherWorkflow",
         "requestBody": {
@@ -136,12 +136,517 @@
             "format": "date-time"
           },
           "ui": {
-            "type": "object"
+            "$ref": "#/components/schemas/UiConfig"
           },
           "value": {
             "type": "object"
           }
         }
+      },
+      "UiConfig": {
+        "additionalProperties": false,
+        "definitions": {
+          "BannerMode": {
+            "enum": ["error", "info", "success", "warning"],
+            "type": "string"
+          },
+          "ElementDataType": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": ["string", "number", "boolean"]
+              }
+            ]
+          },
+          "PageActions": {
+            "anyOf": [
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  },
+                  "mode": {
+                    "enum": ["destructive", "primary", "secondary"],
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "string"
+                  }
+                },
+                "required": ["label", "value"],
+                "type": "object"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "UiElementBannerApiResponse": {
+            "additionalProperties": false,
+            "properties": {
+              "__type": {
+                "const": "ui.display.banner",
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "mode": {
+                "$ref": "#/components/schemas/UiConfig/definitions/BannerMode"
+              },
+              "title": {
+                "type": "string"
+              }
+            },
+            "required": ["__type", "description", "mode", "title"],
+            "type": "object"
+          },
+          "UiElementCodeApiResponse": {
+            "additionalProperties": false,
+            "properties": {
+              "__type": {
+                "const": "ui.display.code",
+                "type": "string"
+              },
+              "code": {
+                "type": "string"
+              },
+              "language": {
+                "type": "string"
+              }
+            },
+            "required": ["__type", "code"],
+            "type": "object"
+          },
+          "UiElementDividerApiResponse": {
+            "additionalProperties": false,
+            "properties": {
+              "__type": {
+                "const": "ui.display.divider",
+                "type": "string"
+              }
+            },
+            "required": ["__type"],
+            "type": "object"
+          },
+          "UiElementGridApiResponse": {
+            "additionalProperties": false,
+            "properties": {
+              "__type": {
+                "const": "ui.display.grid",
+                "type": "string"
+              },
+              "data": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "description": {
+                      "type": "string"
+                    },
+                    "image": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "alt": {
+                          "type": "string"
+                        },
+                        "aspectRatio": {
+                          "type": "number"
+                        },
+                        "fit": {
+                          "enum": ["contain", "cover"],
+                          "type": "string"
+                        },
+                        "url": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["url"],
+                      "type": "object"
+                    },
+                    "title": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              }
+            },
+            "required": ["__type", "data"],
+            "type": "object"
+          },
+          "UiElementHeaderApiResponse": {
+            "additionalProperties": false,
+            "properties": {
+              "__type": {
+                "const": "ui.display.header",
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "level": {
+                "type": "number"
+              },
+              "title": {
+                "type": "string"
+              }
+            },
+            "required": ["__type", "description", "level", "title"],
+            "type": "object"
+          },
+          "UiElementImageApiResponse": {
+            "additionalProperties": false,
+            "properties": {
+              "__type": {
+                "const": "ui.display.image",
+                "type": "string"
+              },
+              "alt": {
+                "type": "string"
+              },
+              "size": {
+                "enum": ["full", "large", "medium", "small", "thumbnail"],
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "url": {
+                "type": "string"
+              }
+            },
+            "required": ["__type", "url"],
+            "type": "object"
+          },
+          "UiElementInputBooleanApiResponse": {
+            "additionalProperties": false,
+            "properties": {
+              "__type": {
+                "const": "ui.input.boolean",
+                "type": "string"
+              },
+              "defaultValue": {
+                "type": "boolean"
+              },
+              "disabled": {
+                "type": "boolean"
+              },
+              "helpText": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "mode": {
+                "enum": ["checkbox", "switch"],
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "optional": {
+                "type": "boolean"
+              }
+            },
+            "required": ["__type", "label", "mode", "name"],
+            "type": "object"
+          },
+          "UiElementInputNumberApiResponse": {
+            "additionalProperties": false,
+            "properties": {
+              "__type": {
+                "const": "ui.input.number",
+                "type": "string"
+              },
+              "defaultValue": {
+                "type": "number"
+              },
+              "disabled": {
+                "type": "boolean"
+              },
+              "helpText": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "max": {
+                "type": "number"
+              },
+              "min": {
+                "type": "number"
+              },
+              "name": {
+                "type": "string"
+              },
+              "optional": {
+                "type": "boolean"
+              },
+              "placeholder": {
+                "type": "number"
+              }
+            },
+            "required": ["__type", "label", "name"],
+            "type": "object"
+          },
+          "UiElementInputTextApiResponse": {
+            "additionalProperties": false,
+            "properties": {
+              "__type": {
+                "const": "ui.input.text",
+                "type": "string"
+              },
+              "defaultValue": {
+                "type": "string"
+              },
+              "disabled": {
+                "type": "boolean"
+              },
+              "helpText": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "maxLength": {
+                "type": "number"
+              },
+              "minLength": {
+                "type": "number"
+              },
+              "multiline": {
+                "type": "boolean"
+              },
+              "name": {
+                "type": "string"
+              },
+              "optional": {
+                "type": "boolean"
+              },
+              "placeholder": {
+                "type": "string"
+              }
+            },
+            "required": ["__type", "label", "name"],
+            "type": "object"
+          },
+          "UiElementListApiResponse": {
+            "additionalProperties": false,
+            "properties": {
+              "__type": {
+                "const": "ui.display.list",
+                "type": "string"
+              },
+              "data": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "description": {
+                      "type": "string"
+                    },
+                    "image": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "alt": {
+                          "type": "string"
+                        },
+                        "fit": {
+                          "enum": ["contain", "cover"],
+                          "type": "string"
+                        },
+                        "url": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["url"],
+                      "type": "object"
+                    },
+                    "title": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              }
+            },
+            "required": ["__type", "data"],
+            "type": "object"
+          },
+          "UiElementMarkdownApiResponse": {
+            "additionalProperties": false,
+            "properties": {
+              "__type": {
+                "const": "ui.display.markdown",
+                "type": "string"
+              },
+              "content": {
+                "type": "string"
+              }
+            },
+            "required": ["__type", "content"],
+            "type": "object"
+          },
+          "UiElementSelectOneApiResponse": {
+            "additionalProperties": false,
+            "properties": {
+              "__type": {
+                "const": "ui.select.one",
+                "type": "string"
+              },
+              "defaultValue": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": ["string", "number", "boolean"]
+                  }
+                ]
+              },
+              "disabled": {
+                "type": "boolean"
+              },
+              "helpText": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "optional": {
+                "type": "boolean"
+              },
+              "options": {
+                "items": {
+                  "anyOf": [
+                    {
+                      "format": "date-time",
+                      "type": "string"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "label": {
+                          "type": "string"
+                        },
+                        "value": {
+                          "$ref": "#/components/schemas/UiConfig/definitions/ElementDataType"
+                        }
+                      },
+                      "required": ["label", "value"],
+                      "type": "object"
+                    },
+                    {
+                      "type": ["string", "number", "boolean"]
+                    }
+                  ]
+                },
+                "type": "array"
+              }
+            },
+            "required": ["__type", "label", "name", "options"],
+            "type": "object"
+          },
+          "UiElementTableApiResponse": {
+            "additionalProperties": false,
+            "properties": {
+              "__type": {
+                "const": "ui.display.table",
+                "type": "string"
+              },
+              "columns": {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "data": {
+                "items": {},
+                "type": "array"
+              }
+            },
+            "required": ["__type", "data"],
+            "type": "object"
+          }
+        },
+        "properties": {
+          "__type": {
+            "const": "ui.page",
+            "type": "string"
+          },
+          "actions": {
+            "items": {
+              "$ref": "#/components/schemas/UiConfig/definitions/PageActions"
+            },
+            "type": "array"
+          },
+          "content": {
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/UiConfig/definitions/UiElementInputTextApiResponse"
+                },
+                {
+                  "$ref": "#/components/schemas/UiConfig/definitions/UiElementInputNumberApiResponse"
+                },
+                {
+                  "$ref": "#/components/schemas/UiConfig/definitions/UiElementDividerApiResponse"
+                },
+                {
+                  "$ref": "#/components/schemas/UiConfig/definitions/UiElementInputBooleanApiResponse"
+                },
+                {
+                  "$ref": "#/components/schemas/UiConfig/definitions/UiElementMarkdownApiResponse"
+                },
+                {
+                  "$ref": "#/components/schemas/UiConfig/definitions/UiElementTableApiResponse"
+                },
+                {
+                  "$ref": "#/components/schemas/UiConfig/definitions/UiElementSelectOneApiResponse"
+                },
+                {
+                  "$ref": "#/components/schemas/UiConfig/definitions/UiElementBannerApiResponse"
+                },
+                {
+                  "$ref": "#/components/schemas/UiConfig/definitions/UiElementImageApiResponse"
+                },
+                {
+                  "$ref": "#/components/schemas/UiConfig/definitions/UiElementCodeApiResponse"
+                },
+                {
+                  "$ref": "#/components/schemas/UiConfig/definitions/UiElementGridApiResponse"
+                },
+                {
+                  "$ref": "#/components/schemas/UiConfig/definitions/UiElementListApiResponse"
+                },
+                {
+                  "$ref": "#/components/schemas/UiConfig/definitions/UiElementHeaderApiResponse"
+                }
+              ]
+            },
+            "type": "array"
+          },
+          "description": {
+            "type": "string"
+          },
+          "stage": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": ["__type", "content"],
+        "type": "object"
       }
     }
   }

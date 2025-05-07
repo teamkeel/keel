@@ -1,7 +1,10 @@
 package openapi
 
 import (
+	"bytes"
 	"context"
+	_ "embed"
+	"encoding/json"
 	"fmt"
 	"maps"
 	"strings"
@@ -9,6 +12,9 @@ import (
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/jsonschema"
 )
+
+//go:embed uiConfig.json
+var uiConfigRaw []byte
 
 const OpenApiSpecificationVersion = "3.1.0"
 
@@ -264,11 +270,17 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 			"createdAt":     {Type: "string", Format: "date-time"},
 			"updatedAt":     {Type: "string", Format: "date-time"},
 			"value":         {Type: "object"},
-			"ui":            {Type: "object"},
+			"ui":            {Ref: "#/components/schemas/UiConfig"},
 			"max_retries":   {Type: "number"},
 			"timeout_in_ms": {Type: "number"},
 		},
 	}
+
+	// Remap the $ref paths in the uiConfigRaw to point to the correct location in the components
+	uiConfigRaw = bytes.ReplaceAll(uiConfigRaw, []byte("#/definitions/"), []byte("#/components/schemas/UiConfig/definitions/"))
+	var uiConfigSchema jsonschema.JSONSchema
+	_ = json.Unmarshal(uiConfigRaw, &uiConfigSchema)
+
 	spec := OpenAPI{
 		OpenAPI: "3.1.0",
 		Info: InfoObject{
@@ -278,8 +290,9 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 		Paths: map[string]PathItemObject{},
 		Components: &ComponentsObject{
 			Schemas: map[string]jsonschema.JSONSchema{
-				"Run":  runResponseSchema,
-				"Step": stepResponseSchema,
+				"Run":      runResponseSchema,
+				"Step":     stepResponseSchema,
+				"UiConfig": uiConfigSchema,
 			},
 		},
 	}
@@ -290,7 +303,7 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 			continue
 		}
 		inputSchema := jsonschema.JSONSchemaForMessage(ctx, schema, nil, msg, true)
-		endpoint := "flows/json/" + flow.Name
+		endpoint := "/flows/json/" + flow.Name
 
 		// Merge components from this request schema into OpenAPI components
 		if inputSchema.Components != nil {

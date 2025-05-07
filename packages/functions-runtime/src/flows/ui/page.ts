@@ -1,19 +1,29 @@
 import { FlowConfig, ExtractStageKeys } from "..";
-import { InputElementResponse, UIElements } from ".";
+import {
+  BaseUiDisplayResponse,
+  InputElementResponse,
+  UiElementApiResponses,
+  UIElements,
+} from ".";
 
+type PageOptions<
+  C extends FlowConfig,
+  A extends PageActions[],
+  T extends UIElements,
+> = {
+  stage?: ExtractStageKeys<C>;
+  title?: string;
+  description?: string;
+  content: T;
+  validate?: (data: ExtractFormData<T>) => Promise<true | string>;
+  actions?: A;
+};
 export type UiPage<C extends FlowConfig> = <
   T extends UIElements,
   const A extends PageActions[] = [],
 >(
   name: string,
-  options: {
-    stage?: ExtractStageKeys<C>;
-    title?: string;
-    description?: string;
-    content: T;
-    validate?: (data: ExtractFormData<T>) => Promise<true | string>;
-    actions?: A;
-  }
+  options: PageOptions<C, A, T>
 ) => A["length"] extends 0
   ? ExtractFormData<T>
   : { data: ExtractFormData<T>; action: ActionValue<A[number]> };
@@ -25,6 +35,31 @@ type PageActions =
       value: string;
       mode?: "primary" | "secondary" | "destructive";
     };
+
+export interface UiPageApiResponse extends BaseUiDisplayResponse<"ui.page"> {
+  stage?: string;
+  title?: string;
+  description?: string;
+  actions?: PageActions[];
+  content: UiElementApiResponses;
+}
+
+export const page = <
+  C extends FlowConfig,
+  A extends PageActions[],
+  T extends UIElements,
+>(
+  options: PageOptions<C, A, T>
+): UiPageApiResponse => {
+  return {
+    __type: "ui.page",
+    stage: options.stage,
+    title: options.title,
+    description: options.description,
+    content: options.content as unknown as UiElementApiResponses,
+    actions: options.actions,
+  };
+};
 
 /* ********************
  * Helper functions

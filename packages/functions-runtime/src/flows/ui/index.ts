@@ -27,7 +27,7 @@ import {
   UiElementDivider,
   UiElementDividerApiResponse,
 } from "./elements/display/divider";
-import { UiPage } from "./page";
+import { UiPage, UiPageApiResponse } from "./page";
 import {
   UiElementImage,
   UiElementImageApiResponse,
@@ -167,6 +167,30 @@ export type UIApiResponses = {
     one: UiElementSelectOneApiResponse;
   };
 };
+
+export type UiElementApiResponses = // Display elements
+  (
+    | UiElementDividerApiResponse
+    | UiElementMarkdownApiResponse
+    | UiElementHeaderApiResponse
+    | UiElementBannerApiResponse
+    | UiElementImageApiResponse
+    | UiElementCodeApiResponse
+    | UiElementGridApiResponse
+    | UiElementListApiResponse
+    | UiElementTableApiResponse
+
+    // Input elements
+    | UiElementInputTextApiResponse
+    | UiElementInputNumberApiResponse
+    | UiElementInputBooleanApiResponse
+
+    // Select elements
+    | UiElementSelectOneApiResponse
+  )[];
+
+// The root API response. Used to generate the OpenAPI schema
+export type UiApiUiConfig = UiPageApiResponse;
 
 /* ********************
  * Implementations
