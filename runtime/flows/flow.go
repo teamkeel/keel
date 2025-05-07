@@ -22,11 +22,12 @@ var tracer = otel.Tracer("github.com/teamkeel/keel/runtime/flows")
 type Status string
 
 const (
-	StatusNew       Status = "NEW"
-	StatusRunning   Status = "RUNNING"
-	StatusFailed    Status = "FAILED"
-	StatusCompleted Status = "COMPLETED"
-	StatusCancelled Status = "CANCELLED"
+	StatusNew           Status = "NEW"
+	StatusRunning       Status = "RUNNING"
+	StatusAwaitingInput Status = "AWAITING_INPUT"
+	StatusFailed        Status = "FAILED"
+	StatusCompleted     Status = "COMPLETED"
+	StatusCancelled     Status = "CANCELLED"
 )
 
 type StepType string
@@ -50,8 +51,7 @@ type Run struct {
 	Steps     []Step    `json:"steps"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
-	Config    *JSONB    `json:"config" gorm:"-"`     // Stages config component, omitted from db operations
-	PendingUI bool      `json:"pendingUI" gorm:"->"` // Computed field based on steps, gorm read only
+	Config    *JSONB    `json:"config" gorm:"-"` // Stages config component, omitted from db operations
 }
 
 func (Run) TableName() string {
@@ -60,7 +60,7 @@ func (Run) TableName() string {
 
 // HasPendingUIStep tells us if the current run is waiting for UI input
 func (r *Run) HasPendingUIStep() bool {
-	if r == nil || r.Status != StatusRunning {
+	if r == nil || (r.Status != StatusAwaitingInput && r.Status != StatusRunning) {
 		return false
 	}
 
@@ -75,7 +75,7 @@ func (r *Run) HasPendingUIStep() bool {
 
 // SetUIComponent will set the given UI component on the first pending UI step of the flow
 func (r *Run) SetUIComponent(ui *JSONB) {
-	if r.Status != StatusRunning {
+	if !r.HasPendingUIStep() {
 		return
 	}
 
@@ -188,9 +188,6 @@ func getRun(ctx context.Context, runID string) (*Run, error) {
 		return nil, result.Error
 	}
 
-	// we have all step data at this point, we can compute the pending UI value
-	run.PendingUI = run.HasPendingUIStep()
-
 	return &run, nil
 }
 
@@ -250,33 +247,24 @@ func listRuns(ctx context.Context, flow *proto.Flow, page *paginationFields) ([]
 
 	var runs []*Run
 
-	q := database.GetDB().Table("keel_flow_run").Where("keel_flow_run.name = ?", flow.Name).Limit(page.GetLimit())
+	q := database.GetDB().Where("name = ?", flow.Name).Limit(page.GetLimit())
 
 	if page != nil {
 		if page.IsBackwards() {
-			q = q.Order("keel_flow_run.id ASC")
+			q = q.Order("id ASC")
 		} else {
-			q = q.Order("keel_flow_run.id DESC")
+			q = q.Order("id DESC")
 		}
 
 		if page.Before != nil {
-			q.Where("keel_flow_run.id > ?", *page.Before)
+			q.Where("id > ?", *page.Before)
 		}
 		if page.After != nil {
-			q.Where("keel_flow_run.id < ?", *page.After)
+			q.Where("id < ?", *page.After)
 		}
 	}
 
-	result := q.Select(`keel_flow_run.*, 
-			CASE 
-				WHEN COUNT(keel_flow_step.id) > 0 THEN TRUE 
-				ELSE FALSE 
-			END AS pending_ui`).
-		Joins(`LEFT JOIN keel_flow_step 
-			ON keel_flow_step.run_id = keel_flow_run.id 
-			AND keel_flow_step.type = 'UI' 
-			AND keel_flow_step.status = 'PENDING'`).
-		Group("keel_flow_run.id").Find(&runs)
+	result := q.Find(&runs)
 	if result.Error != nil {
 		return nil, result.Error
 	}

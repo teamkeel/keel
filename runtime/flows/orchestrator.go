@@ -85,9 +85,17 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, data ma
 	}
 
 	switch run.Status {
-	case StatusNew, StatusRunning:
+	case StatusNew, StatusRunning, StatusAwaitingInput:
 		if run.Status == StatusNew {
 			// this is a new run, set it to running and trigger the flows runtime
+			run, err = updateRun(ctx, run.ID, StatusRunning)
+			if err != nil {
+				return err
+			}
+		}
+
+		if run.Status == StatusAwaitingInput {
+			// we have been awaiting input, we're now going to continue running
 			run, err = updateRun(ctx, run.ID, StatusRunning)
 			if err != nil {
 				return err
@@ -115,7 +123,8 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, data ma
 
 		// Check to see if we're in a Pending UI step, break orchestration
 		if run.HasPendingUIStep() {
-			return nil
+			_, err = updateRun(ctx, run.ID, StatusAwaitingInput)
+			return err
 		}
 
 		// Continue running the flow
