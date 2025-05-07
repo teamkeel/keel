@@ -114,7 +114,7 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, data ma
 		}
 
 		// Check to see if we're in a Pending UI step, break orchestration
-		if run.PendingUI() {
+		if run.HasPendingUIStep() {
 			return nil
 		}
 

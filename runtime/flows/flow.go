@@ -50,15 +50,16 @@ type Run struct {
 	Steps     []Step    `json:"steps"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
-	Config    *JSONB    `json:"config" gorm:"-"` // Stages config component, omitted from db operations
+	Config    *JSONB    `json:"config" gorm:"-"`     // Stages config component, omitted from db operations
+	PendingUI bool      `json:"pendingUI" gorm:"->"` // Computed field based on steps, gorm read only
 }
 
 func (Run) TableName() string {
 	return "keel_flow_run"
 }
 
-// PendingUI tells us if the current run is waiting for UI input
-func (r *Run) PendingUI() bool {
+// HasPendingUIStep tells us if the current run is waiting for UI input
+func (r *Run) HasPendingUIStep() bool {
 	if r == nil || r.Status != StatusRunning {
 		return false
 	}
@@ -83,17 +84,6 @@ func (r *Run) SetUIComponent(ui *JSONB) {
 			r.Steps[i].UI = ui
 		}
 	}
-}
-
-// HasPendingUIStep checks that this run has a pending UI step with the given id
-func (r *Run) HasPendingUIStep(stepID string) bool {
-	for _, step := range r.Steps {
-		if step.ID == stepID {
-			return step.Type == StepTypeUI && step.Status == StepStatusPending
-		}
-	}
-
-	return false
 }
 
 type Step struct {
@@ -198,6 +188,9 @@ func getRun(ctx context.Context, runID string) (*Run, error) {
 		return nil, result.Error
 	}
 
+	// we have all step data at this point, we can compute the pending UI value
+	run.PendingUI = run.HasPendingUIStep()
+
 	return &run, nil
 }
 
@@ -257,24 +250,33 @@ func listRuns(ctx context.Context, flow *proto.Flow, page *paginationFields) ([]
 
 	var runs []*Run
 
-	q := database.GetDB().Where("name = ?", flow.Name).Limit(page.GetLimit())
+	q := database.GetDB().Table("keel_flow_run").Where("keel_flow_run.name = ?", flow.Name).Limit(page.GetLimit())
 
 	if page != nil {
 		if page.IsBackwards() {
-			q = q.Order("id ASC")
+			q = q.Order("keel_flow_run.id ASC")
 		} else {
-			q = q.Order("id DESC")
+			q = q.Order("keel_flow_run.id DESC")
 		}
 
 		if page.Before != nil {
-			q.Where("id > ?", *page.Before)
+			q.Where("keel_flow_run.id > ?", *page.Before)
 		}
 		if page.After != nil {
-			q.Where("id < ?", *page.After)
+			q.Where("keel_flow_run.id < ?", *page.After)
 		}
 	}
 
-	result := q.Find(&runs)
+	result := q.Select(`keel_flow_run.*, 
+			CASE 
+				WHEN COUNT(keel_flow_step.id) > 0 THEN TRUE 
+				ELSE FALSE 
+			END AS pending_ui`).
+		Joins(`LEFT JOIN keel_flow_step 
+			ON keel_flow_step.run_id = keel_flow_run.id 
+			AND keel_flow_step.type = 'UI' 
+			AND keel_flow_step.status = 'PENDING'`).
+		Group("keel_flow_run.id").Find(&runs)
 	if result.Error != nil {
 		return nil, result.Error
 	}
