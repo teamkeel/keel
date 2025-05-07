@@ -1,4 +1,4 @@
-import { resetDatabase, models, flows } from "@teamkeel/testing";
+import { resetDatabase, models } from "@teamkeel/testing";
 import { useDatabase } from "@teamkeel/sdk";
 import { beforeEach, expect, test } from "vitest";
 import { sql } from "kysely";
@@ -6,6 +6,69 @@ import { sql } from "kysely";
 beforeEach(resetDatabase);
 
 test("flows - basic execution", async () => {
+  const token = await getToken();
+
+  let { status, body } = await startFlow({
+    name: "myFlow",
+    token,
+    body: {
+      name: "Keelson",
+      age: 23,
+    },
+  });
+  expect(status).toEqual(200);
+  const runId = body.id;
+
+  const things = await models.thing.findMany();
+  expect(things.length).toBe(1);
+  expect(things[0].name).toBe("Keelson");
+
+  const dbFlows = await sql`SELECT * FROM keel_flow_run`.execute(useDatabase());
+  expect(dbFlows.rows.length).toBe(1);
+  const dbSteps = await sql`SELECT * FROM keel_flow_step`.execute(
+    useDatabase()
+  );
+  expect(dbSteps.rows.length).toBe(2);
+
+  ({ status, body } = await getFlowRun({
+    name: "myFlow",
+    id: runId,
+    token,
+  }));
+
+  expect(status).toEqual(200);
+  expect(body.status).toBe("AWAITING_INPUT");
+
+  const stepId = body.steps.find(
+    (step) => step.type === "UI" && step.status === "PENDING"
+  )?.id;
+
+  ({ status, body } = await putStepValues({
+    name: "myFlow",
+    runId,
+    stepId,
+    token,
+    values: {
+      name: "Keelson updated",
+      age: 32,
+    },
+  }));
+
+  expect(status).toEqual(200);
+  const newThings = await models.thing.findMany();
+  expect(newThings.length).toBe(1);
+  expect(newThings[0].name).toBe("Keelson updated");
+
+  ({ status, body } = await getFlowRun({
+    name: "myFlow",
+    id: runId,
+    token,
+  }));
+  expect(status).toEqual(200);
+  expect(body.status).toBe("COMPLETED");
+});
+
+async function getToken() {
   const response = await fetch(
     process.env.KEEL_TESTING_AUTH_API_URL + "/token",
     {
@@ -33,37 +96,31 @@ test("flows - basic execution", async () => {
     }
   );
 
-  const flowStartResponse = await fetch(
-    `${process.env.KEEL_TESTING_API_URL}/flows/json/myFlow`,
+  return token;
+}
+
+async function startFlow({ name, token, body }) {
+  const res = await fetch(
+    `${process.env.KEEL_TESTING_API_URL}/flows/json/${name}`,
     {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: "Bearer " + token,
       },
-      body: JSON.stringify({
-        name: "Keelson",
-        age: 23,
-      }),
+      body: JSON.stringify(body),
     }
   );
-  expect(flowStartResponse.status).toEqual(200);
-  const flowStartData = await flowStartResponse.json();
-  const runId = flowStartData.id;
 
-  const things = await models.thing.findMany();
-  expect(things.length).toBe(1);
-  expect(things[0].name).toBe("Keelson");
+  return {
+    status: res.status,
+    body: await res.json(),
+  };
+}
 
-  const dbFlows = await sql`SELECT * FROM keel_flow_run`.execute(useDatabase());
-  expect(dbFlows.rows.length).toBe(1);
-  const dbSteps = await sql`SELECT * FROM keel_flow_step`.execute(
-    useDatabase()
-  );
-  expect(dbSteps.rows.length).toBe(2);
-
-  const flowStateResponse = await fetch(
-    `${process.env.KEEL_TESTING_API_URL}/flows/json/myFlow/${runId}`,
+async function getFlowRun({ name, id, token }) {
+  const res = await fetch(
+    `${process.env.KEEL_TESTING_API_URL}/flows/json/${name}/${id}`,
     {
       method: "GET",
       headers: {
@@ -72,44 +129,28 @@ test("flows - basic execution", async () => {
       },
     }
   );
-  expect(flowStateResponse.status).toEqual(200);
-  const flowStateData = await flowStateResponse.json();
-  expect(flowStateData.status).toBe("AWAITING_INPUT");
 
-  const stepId = flowStateData.steps.find(
-    (step) => step.type === "UI" && step.status === "PENDING"
-  )?.id;
+  return {
+    status: res.status,
+    body: await res.json(),
+  };
+}
 
-  const flowStepPutResponse = await fetch(
-    `${process.env.KEEL_TESTING_API_URL}/flows/json/myFlow/${runId}/${stepId}`,
+async function putStepValues({ name, runId, stepId, values, token }) {
+  const res = await fetch(
+    `${process.env.KEEL_TESTING_API_URL}/flows/json/${name}/${runId}/${stepId}`,
     {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
         Authorization: "Bearer " + token,
       },
-      body: JSON.stringify({
-        name: "Keelson updated",
-        age: 32,
-      }),
+      body: JSON.stringify(values),
     }
   );
-  expect(flowStepPutResponse.status).toEqual(200);
-  const newThings = await models.thing.findMany();
-  expect(newThings.length).toBe(1);
-  expect(newThings[0].name).toBe("Keelson updated");
 
-  const finalFlowStateResponse = await fetch(
-    `${process.env.KEEL_TESTING_API_URL}/flows/json/myFlow/${runId}`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + token,
-      },
-    }
-  );
-  expect(finalFlowStateResponse.status).toEqual(200);
-  const finalFlowStateData = await finalFlowStateResponse.json();
-  expect(finalFlowStateData.status).toBe("COMPLETED");
-});
+  return {
+    status: res.status,
+    body: await res.json(),
+  };
+}
