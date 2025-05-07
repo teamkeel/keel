@@ -54,6 +54,14 @@ model ComputedDepends {
     }
 }
 
+model ComputedDuration {
+    fields {
+        orderDate Date 
+        deliveryDate Timestamp?
+        leadTime Duration? @computed(computedDuration.deliveryDate - computedDuration.orderDate)
+    }
+}
+
 model ComputedEnums {
     fields {
         orderStatus OrderStatus

@@ -349,6 +349,14 @@ func WithComparisonOperators() expressions.Option {
 			}
 		}
 
+		// Subtracting two date/time variants will produce a duration. We define these separately because the return type is different to the operand types which doesnt fit with the generic mapping.
+		options = append(options,
+			cel.Function(operators.Subtract, cel.Overload(overloadName(operators.Subtract, typing.Date, typing.Timestamp), argTypes(typing.Date, typing.Timestamp), typing.Duration)),
+			cel.Function(operators.Subtract, cel.Overload(overloadName(operators.Subtract, typing.Date, typing.Date), argTypes(typing.Date, typing.Date), typing.Duration)),
+			cel.Function(operators.Subtract, cel.Overload(overloadName(operators.Subtract, typing.Timestamp, typing.Timestamp), argTypes(typing.Timestamp, typing.Timestamp), typing.Duration)),
+			cel.Function(operators.Subtract, cel.Overload(overloadName(operators.Subtract, typing.Timestamp, typing.Date), argTypes(typing.Timestamp, typing.Date), typing.Duration)),
+		)
+
 		p.CelEnv, err = p.CelEnv.Extend(options...)
 		if err != nil {
 			return err
