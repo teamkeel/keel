@@ -159,7 +159,7 @@ export function createFlowContext<C extends FlowConfig>(
 
       let result = null;
       try {
-        result = await withTimeout(actualFn(), step.timeoutInMs);
+        result = await withTimeout(actualFn(), options.timeoutInMs ?? defaultOpts.timeoutInMs);
       } catch (e) {
         await db
           .updateTable("keel_flow_step")
