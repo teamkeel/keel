@@ -187,7 +187,9 @@ func getRun(ctx context.Context, runID string) (*Run, error) {
 	}
 
 	var run Run
-	result := database.GetDB().Preload("Steps").Where("id = ?", runID).First(&run)
+	result := database.GetDB().Preload("Steps", func(db *gorm.DB) *gorm.DB {
+		return db.Order("created_at ASC")
+	}).Where("id = ?", runID).First(&run)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, nil
