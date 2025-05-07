@@ -44,17 +44,33 @@ export interface FlowContext<C extends FlowConfig> {
   ui: UI<C>;
 }
 
-export type Step<C extends FlowConfig> = <R>(
-  name: string,
-  options: {
-    stage?: ExtractStageKeys<C>;
-    maxRetries?: number;
-    timeoutInMs?: number;
-  },
-  fn: () => Promise<R> & {
-    catch: (errorHandler: (err: Error) => Promise<void> | void) => Promise<any>;
-  }
-) => Promise<R>;
+export type Step<C extends FlowConfig> = {
+  <R>(
+    name: string,
+    options: {
+      stage?: ExtractStageKeys<C>;
+      maxRetries?: number;
+      timeoutInMs?: number;
+    },
+    fn: () => Promise<R> & {
+      catch: (
+        errorHandler: (err: Error) => Promise<void> | void
+      ) => Promise<any>;
+    }
+  ): Promise<R>;
+  <R>(
+    name: string,
+    fn: () => Promise<R> & {
+      catch: (
+        errorHandler: (err: Error) => Promise<void> | void
+      ) => Promise<any>;
+    }
+  ): Promise<R>;
+};
+
+type StepFunction<R> = () => Promise<R> & {
+  catch: (errorHandler: (err: Error) => Promise<void> | void) => Promise<any>;
+};
 
 export interface FlowConfig {
   stages?: StageConfig[];
@@ -95,7 +111,13 @@ export function createFlowContext<C extends FlowConfig>(
   spanId: string
 ): FlowContext<C> {
   return {
-    step: async (name, options, fn) => {
+    step: async (name, optionsOrFn, fn?) => {
+      // We need to check the type of the arguments due to the step function being overloaded
+      const options = typeof optionsOrFn === "function" ? {} : optionsOrFn;
+      const actualFn = (
+        typeof optionsOrFn === "function" ? optionsOrFn : fn!
+      ) as StepFunction<any>;
+
       const db = useDatabase();
 
       // First check if we already have a result for this step
@@ -132,7 +154,7 @@ export function createFlowContext<C extends FlowConfig>(
 
       let result = null;
       try {
-        result = await withTimeout(fn(), step.timeoutInMs);
+        result = await withTimeout(actualFn(), step.timeoutInMs);
       } catch (e) {
         await db
           .updateTable("keel_flow_step")

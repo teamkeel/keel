@@ -3,6 +3,7 @@ flow MyFlow {
         name Text
         age Number
     }
+    @permission(roles: [Admin])
 }
 
 model Thing {
@@ -10,4 +11,10 @@ model Thing {
         name Text?
         age Number?
     }
+}
+
+role Admin {
+    domains {
+        "keel.xyz"
+    }   
 }
