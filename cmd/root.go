@@ -29,6 +29,7 @@ var (
 	flagJsonOutput       bool
 	flagSchema           string
 	flagConfig           string
+	flagDebug            bool
 )
 
 var rootCmd = &cobra.Command{

@@ -29,6 +29,7 @@ var runCmd = &cobra.Command{
 			NodePackagesPath: flagNodePackagesPath,
 			PackageManager:   packageManager,
 			PrivateKeyPath:   flagPrivateKeyPath,
+			Debug:            flagDebug,
 		})
 	},
 }
@@ -40,7 +41,7 @@ func init() {
 	runCmd.Flags().StringVar(&flagHostname, "hostname", "", "custom hostname to handle HTTP requests")
 	runCmd.Flags().StringVar(&flagPort, "port", "8000", "the local port to handle Keel HTTP requests")
 	runCmd.Flags().StringVar(&flagPrivateKeyPath, "private-key-path", "", "path to the private key .pem file")
-
+	runCmd.Flags().BoolVar(&flagDebug, "debug", false, "enable debug mode")
 	if enabledDebugFlags == "true" {
 		runCmd.Flags().StringVar(&flagNodePackagesPath, "node-packages-path", "", "path to local @teamkeel npm packages")
 		runCmd.Flags().BoolVar(&flagTracing, "custom-tracing", false, "trace instead with an OTEL collector (e.g. jaeger) on localhost:4318")

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/charmbracelet/bubbles/table"
@@ -196,6 +197,59 @@ func renderRun(m *Model) string {
 		b.WriteString(colors.White("Press ").String())
 		b.WriteString("q")
 		b.WriteString(colors.White(" to quit").String())
+		b.WriteString("\n")
+	}
+
+	if m.Debug {
+		b.WriteString("\n")
+		b.WriteString(colors.White("Timings:").String())
+		b.WriteString("\n")
+
+		start := m.Timings["start"]
+		watcher := m.Timings["watcherEvent"]
+
+		type timingPair struct {
+			key         string
+			time        time.Time
+			startDiff   time.Duration
+			watcherDiff *time.Duration
+		}
+		var pairs []timingPair
+		for k, v := range m.Timings {
+
+			if k == "start" || k == "watcherEvent" {
+				continue
+			}
+
+			var watcherDiff *time.Duration
+
+			if !watcher.IsZero() {
+				diff := v.Sub(watcher)
+
+				if diff > 0 {
+					watcherDiff = &diff
+				}
+			}
+
+			pairs = append(pairs, timingPair{k, v, v.Sub(start), watcherDiff})
+		}
+
+		// Sort by time
+		sort.Slice(pairs, func(i, j int) bool {
+			return pairs[i].time.Before(pairs[j].time)
+		})
+
+		// Print sorted timings
+		for _, pair := range pairs {
+			b.WriteString(colors.White(fmt.Sprintf("%s: ", pair.key)).String())
+			if pair.watcherDiff != nil {
+				b.WriteString(fmt.Sprintf("%s", *pair.watcherDiff))
+				b.WriteString(colors.White(" (since reload)").String())
+			} else {
+				b.WriteString(fmt.Sprintf("%s", pair.startDiff))
+			}
+			b.WriteString("\n")
+		}
 		b.WriteString("\n")
 	}
 

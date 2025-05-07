@@ -210,6 +210,9 @@ type Model struct {
 	// Maintain the current dimensions of the user's terminal
 	width  int
 	height int
+
+	Debug   bool
+	Timings map[string]time.Time
 }
 
 type RuntimeRequest struct {
@@ -241,6 +244,9 @@ func (m *Model) Init() tea.Cmd {
 		FetchLatestVersion(),
 		CheckDependencies(),
 	}
+
+	m.Timings = make(map[string]time.Time)
+	m.Timings["start"] = time.Now()
 
 	return tea.Batch(cmds...)
 }
@@ -279,6 +285,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.DatabaseConnInfo = msg.ConnInfo
 		m.Err = msg.Err
 
+		m.Timings["startDatabase"] = time.Now()
+
 		// If the database can't be started we exit
 		if m.Err != nil {
 			return m, tea.Quit
@@ -300,6 +308,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case ParsePrivateKeyMsg:
 		m.Err = msg.Err
 
+		m.Timings["parsePrivateKey"] = time.Now()
+
 		// If the private key can't be parsed we exit
 		if m.Err != nil {
 			return m, tea.Quit
@@ -311,6 +321,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, SetupFunctions(m.ProjectDir, m.NodePackagesPath, m.PackageManager, m.Mode)
 	case SetupFunctionsMsg:
 		m.Err = msg.Err
+
+		m.Timings["setupFunctions"] = time.Now()
 
 		// If something failed here (most likely npm install) we exit
 		if m.Err != nil {
@@ -347,6 +359,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.Err = msg.Err
 		m.Secrets = msg.Secrets
 
+		m.Timings["loadSchema"] = time.Now()
+
 		if m.Err != nil {
 			return m, nil
 		}
@@ -374,6 +388,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case RunMigrationsMsg:
 		m.Err = msg.Err
 		m.MigrationChanges = msg.Changes
+
+		m.Timings["runMigrations"] = time.Now()
 
 		// we now set the file Storage using a dbstore
 		storer, err := storage.NewDbStore(context.Background(), m.Database)
@@ -420,6 +436,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 
+		m.Timings["seedData"] = time.Now()
+
 		// If seeding data, we quit after seeding
 		if m.Mode == ModeSeed {
 			m.Status = StatusSeedCompleted
@@ -440,6 +458,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 
+		m.Timings["snapshotDatabase"] = time.Now()
+
 		m.Status = StatusSnapshotCompleted
 		time.Sleep(1 * time.Second)
 		return m, tea.Quit
@@ -449,6 +469,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.Err != nil {
 			return m, nil
 		}
+
+		m.Timings["updateFunctions"] = time.Now()
 
 		// If functions already running nothing to do
 		if m.FunctionsServer != nil {
@@ -471,6 +493,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case StartFunctionsMsg:
 		m.Err = msg.Err
 		m.FunctionsServer = msg.Server
+
+		m.Timings["startFunctions"] = time.Now()
 
 		if msg.Err == nil {
 			m.Status = StatusRunning
@@ -638,6 +662,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.Err != nil {
 			return m, tea.Quit
 		}
+
+		m.Timings["watcherEvent"] = time.Now()
 
 		return m, tea.Batch(
 			NextMsgCommand(m.watcherCh),
