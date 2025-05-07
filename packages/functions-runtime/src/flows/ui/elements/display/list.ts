@@ -29,7 +29,7 @@ export type UiElementList = <T extends any>(
 // The shape of the response over the API
 export interface UiElementListApiResponse
   extends BaseUiDisplayResponse<"ui.display.list"> {
-  data: any[];
+  data: ListItem[];
 }
 
 // The implementation
@@ -40,7 +40,14 @@ export const list: DisplayElementImplementation<
   return {
     uiConfig: {
       __type: "ui.display.list",
-      data: options.data.map(options.render),
+      data: options.data.map((item: any) => {
+        const rendered = options.render(item);
+        return {
+          title: rendered.title,
+          description: rendered.description,
+          image: rendered.image,
+        } satisfies ListItem;
+      }),
     } satisfies UiElementListApiResponse,
   };
 };

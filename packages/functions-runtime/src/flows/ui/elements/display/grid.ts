@@ -17,7 +17,7 @@ type GridItem = {
   image?: ImageConfig;
 };
 
-type GridOptions<T> = {
+export type GridOptions<T> = {
   data: T[];
   render: (data: T) => GridItem;
 };
@@ -30,7 +30,7 @@ export type UiElementGrid = <T extends any>(
 // The shape of the response over the API
 export interface UiElementGridApiResponse
   extends BaseUiDisplayResponse<"ui.display.grid"> {
-  data: any[];
+  data: GridItem[];
 }
 
 // The implementation
@@ -41,7 +41,14 @@ export const grid: DisplayElementImplementation<
   return {
     uiConfig: {
       __type: "ui.display.grid",
-      data: options.data.map(options.render),
+      data: options.data.map((item: any) => {
+        const rendered = options.render(item);
+        return {
+          title: rendered.title,
+          description: rendered.description,
+          image: rendered.image,
+        } satisfies GridItem;
+      }),
     } satisfies UiElementGridApiResponse,
   };
 };

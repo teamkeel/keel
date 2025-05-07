@@ -11,7 +11,7 @@ type ElementDataType = string | number | boolean | Date;
 // bounded type parameter to infer the type of the value from the config options
 // So having to duplicate the types of the inputs
 export type UiElementSelectOne = <
-  TValue extends ElementDataType,
+  const TValue extends ElementDataType,
   N extends string,
 >(
   name: N,
@@ -28,7 +28,7 @@ export type UiElementSelectOne = <
 
 // The shape of the response over the API
 export interface UiElementSelectOneApiResponse
-  extends BaseUiInputResponse<"ui.select.single", ElementDataType> {
+  extends BaseUiInputResponse<"ui.select.one", ElementDataType> {
   options: (
     | {
         label: string;
@@ -45,7 +45,7 @@ export const selectOne: InputElementImplementation<
 > = (name, options) => {
   return {
     uiConfig: {
-      __type: "ui.select.single",
+      __type: "ui.select.one",
       name,
       label: options?.label || name,
       defaultValue: options?.defaultValue,
@@ -53,6 +53,6 @@ export const selectOne: InputElementImplementation<
       options: options?.options || [],
     } satisfies UiElementSelectOneApiResponse,
     validate: options?.validate,
-    getData: (x: any) => x,
+    getData: (x: ElementDataType) => x,
   };
 };
