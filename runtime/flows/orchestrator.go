@@ -113,11 +113,6 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, data ma
 			return err
 		}
 
-		stepsMap := map[string][]Step{}
-		for _, step := range run.Steps {
-			stepsMap[step.Name] = append(stepsMap[step.Name], step)
-		}
-
 		// Check to see if we're in a Pending UI step, break orchestration
 		if run.PendingUI() {
 			return nil
