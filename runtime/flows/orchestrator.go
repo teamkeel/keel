@@ -119,7 +119,7 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, data ma
 		}
 
 		// Continue running the flow
-		payload := FlowRunUpdated{RunID: resp.RunID, Data: data}
+		payload := FlowRunUpdated{RunID: resp.RunID}
 		wrap, err := payload.Wrap()
 		if err != nil {
 			return err
