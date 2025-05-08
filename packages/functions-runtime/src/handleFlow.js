@@ -11,7 +11,7 @@ import { tryExecuteFlow } from "./tryExecuteFlow";
 import { parseInputs } from "./parsing";
 import { createFlowContext } from "./flows";
 import {
-  StepCompletedDisrupt,
+  StepCreatedDisrupt,
   StepErrorDisrupt,
   UIRenderDisrupt,
   ExhuastedRetriesDisrupt,
@@ -89,8 +89,8 @@ async function handleFlow(request, config) {
           config: flowConfig,
         });
       } catch (e) {
-        // The flow is disrupted by a function step completion
-        if (e instanceof StepCompletedDisrupt) {
+        // The flow is disrupted as a new step has been created
+        if (e instanceof StepCreatedDisrupt) {
           return createJSONRPCSuccessResponse(request.id, {
             runId: runId,
             runCompleted: false,

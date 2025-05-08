@@ -1,8 +1,8 @@
-import { MyFlow, models } from "@teamkeel/sdk";
+import { MixedStepTypes, models } from "@teamkeel/sdk";
 
-export default MyFlow(
+export default MixedStepTypes(
   {
-    title: "My Flow",
+    title: "Mixed Step Types",
     description: "This is a description",
     stages: [
       {
@@ -31,10 +31,10 @@ export default MyFlow(
       }
     );
 
-    const values = await ctx.ui.page("page1", {
+    const values = await ctx.ui.page("confirm thing", {
       title: "Update thing",
-      stage: "stage2",
-      description: "Overwrite the existing data in thing",
+      stage: "stage1",
+      description: "Confirm the existing data in thing",
       content: [
         ctx.ui.inputs.text("name", {
           label: "Name",
@@ -48,14 +48,16 @@ export default MyFlow(
       ],
     });
 
-    await ctx.step("update thing", {}, async () => {
-      return await models.thing.update(
+    await ctx.step("update thing", { stage: "stage2" }, async () => {
+      const updated = await models.thing.update(
         { id: thing.id },
         {
           name: values.name,
           age: values.age,
         }
       );
+
+      return { name: updated.name, age: updated.age };
     });
   }
 );

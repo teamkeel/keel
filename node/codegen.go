@@ -1441,13 +1441,12 @@ func generateTestingPackage(schema *proto.Schema) codegen.GeneratedFiles {
 	// The testing package uses ES modules as it only used in the context of running tests
 	// with Vitest
 	js.Writeln(`import { useDatabase, models } from "@teamkeel/sdk"`)
-	js.Writeln(`import { ActionExecutor, JobExecutor, SubscriberExecutor, FlowExecutor, sql } from "@teamkeel/testing-runtime";`)
+	js.Writeln(`import { ActionExecutor, JobExecutor, SubscriberExecutor, sql } from "@teamkeel/testing-runtime";`)
 	js.Writeln("")
 	js.Writeln("export { models };")
 	js.Writeln("export const actions = new ActionExecutor({});")
 	js.Writeln("export const jobs = new JobExecutor({});")
 	js.Writeln("export const subscribers = new SubscriberExecutor({});")
-	js.Writeln("export const flows = new FlowExecutor({});")
 	js.Writeln("export async function resetDatabase() {")
 	js.Indent()
 	js.Writeln("const db = useDatabase();")
@@ -1629,34 +1628,6 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 		w.Dedent()
 		w.Writeln("}")
 		w.Writeln("export declare const subscribers: SubscriberExecutor;")
-	}
-
-	if len(schema.Flows) > 0 {
-		w.Writeln("declare class FlowExecutor {")
-		w.Indent()
-		for _, flow := range schema.Flows {
-			msg := schema.FindMessage(flow.InputMessageName)
-
-			// Jobs can be without inputs
-			if msg != nil {
-				w.Writef("%s(i", strcase.ToLowerCamel(flow.Name))
-
-				if lo.EveryBy(msg.Fields, func(f *proto.MessageField) bool {
-					return f.Optional
-				}) {
-					w.Write("?")
-				}
-
-				w.Writef(`: %s): %s`, flow.InputMessageName, "Promise<void>")
-				w.Writeln(";")
-			} else {
-				w.Writef("%s(): Promise<void>", strcase.ToLowerCamel(flow.Name))
-				w.Writeln(";")
-			}
-		}
-		w.Dedent()
-		w.Writeln("}")
-		w.Writeln("export declare const flows: FlowExecutor;")
 	}
 
 	for _, model := range schema.Models {

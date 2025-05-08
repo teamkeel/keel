@@ -188,7 +188,6 @@ func UpdateStep(ctx context.Context, runID string, stepID string, inputs map[str
 		}
 	}()
 
-	// trigger the orchestrator to continue running the flow
 	var o *Orchestrator
 	o, err = GetOrchestrator(ctx)
 	if err != nil {
@@ -196,16 +195,10 @@ func UpdateStep(ctx context.Context, runID string, stepID string, inputs map[str
 		return
 	}
 
-	payload := FlowRunUpdated{RunID: runID, Data: inputs}
-	wrap, err := payload.Wrap()
+	// Run the flow synchronously
+	err = o.orchestrateRun(ctx, runID, inputs)
 	if err != nil {
-		err = fmt.Errorf("creating FlowRunUpdated event: %w", err)
-		return
-	}
-
-	err = o.SendEvent(ctx, wrap)
-	if err != nil {
-		err = fmt.Errorf("sending FlowRunUpdated event: %w", err)
+		err = fmt.Errorf("orchestrating flow run: %w", err)
 		return
 	}
 

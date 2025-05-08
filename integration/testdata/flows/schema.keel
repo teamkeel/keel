@@ -1,8 +1,20 @@
-flow MyFlow {
+flow MixedStepTypes {
     inputs {
         name Text
         age Number
     }
+    @permission(roles: [Admin])
+}
+
+flow Stepless {
+    @permission(roles: [Admin])
+}
+
+flow UserFlow {
+    @permission(roles: [User])
+}
+
+flow SingleStep {
     @permission(roles: [Admin])
 }
 
@@ -16,5 +28,11 @@ model Thing {
 role Admin {
     domains {
         "keel.xyz"
+    }   
+}
+
+role User {
+    domains {
+        "gmail.com"
     }   
 }

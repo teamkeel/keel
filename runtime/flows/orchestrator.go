@@ -106,7 +106,6 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, data ma
 		resp, err := o.CallFlow(ctx, run, data)
 		if err != nil {
 			_, _ = updateRun(ctx, run.ID, StatusFailed)
-
 			return err
 		}
 
