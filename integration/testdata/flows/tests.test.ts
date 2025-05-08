@@ -9,7 +9,7 @@ TEST CASES
 [x] Stepless flow function
 [ ] Flow function with consecutive UI steps
 [ ] Flow function with consecutive function steps
-[ ] Flow function with alternating function and UI steps
+[x] Flow function with alternating function and UI steps
 [ ] Error thrown in flow function
 [ ] Error thrown in step function
 [ ] Step returning scalar value
@@ -19,12 +19,7 @@ TEST CASES
 [ ] Check full API responses
 [ ] All UI elements response
 [ ] Test all Keel types as inputs
-[ ] Permissions and identity tests
-
-
-Should we test the full response from the API calls? (probably, since we're not testing this elsewhere)
-Are we testing each UI element and all their properties?
-Do we need to inspect the database in these tests? (probably not, since the API responses is mapped directly from the tables)
+[x] Permissions and identity tests
 */
 
 test("flows - stepless flow", async () => {
@@ -223,20 +218,6 @@ test("flows - unauthenticated getting flow", async () => {
 });
 
 test("flows - unauthenticated listing flows", async () => {
-  const adminToken = await getToken({ email: "admin@keel.xyz" });
-  const res1 = await startFlow({
-    name: "stepless",
-    token: adminToken,
-    body: {},
-  });
-  const res2 = await startFlow({
-    name: "stepless",
-    token: adminToken,
-    body: {},
-  });
-  expect(res1.status).toBe(200);
-  expect(res2.status).toBe(200);
-
   const resGet = await listFlows({ token: null });
   expect(resGet.status).toBe(401);
 });
