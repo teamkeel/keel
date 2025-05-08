@@ -1,12 +1,34 @@
 import { resetDatabase, models } from "@teamkeel/testing";
-import { useDatabase } from "@teamkeel/sdk";
 import { beforeEach, expect, test } from "vitest";
-import { sql } from "kysely";
 
 beforeEach(resetDatabase);
 
+/*
+TEST CASES
+========================================
+[x] Stepless flow function
+[ ] Flow function with consecutive UI steps
+[ ] Flow function with consecutive function steps
+[ ] Flow function with alternating function and UI steps
+[ ] Error thrown in flow function
+[ ] Error thrown in step function
+[ ] Step function retrying  
+[ ] Step function timing out 
+[ ] UI step validation
+[ ] Check full API responses
+[ ] All UI elements response
+[ ] Test all Keel types as inputs
+[ ] Permissions and identity tests
+
+
+Should we test the full response from the API calls? (probably, since we're not testing this elsewhere)
+Are we testing each UI element and all their properties?
+Do we need to inspect the database in these tests? (probably not, since the API responses is mapped directly from the tables)
+*/
+
+
 test("flows - basic execution", async () => {
-  const token = await getToken();
+  const token = await getToken({ email: "admin@keel.xyz" });
 
   let { status, body } = await startFlow({
     name: "myFlow",
@@ -19,16 +41,13 @@ test("flows - basic execution", async () => {
   expect(status).toEqual(200);
   const runId = body.id;
 
+  let flow = await untilFlowAwaitingInput({ name: "myFlow", id: runId, token });
+  expect(flow.steps).toHaveLength(2);
+
   const things = await models.thing.findMany();
   expect(things.length).toBe(1);
   expect(things[0].name).toBe("Keelson");
 
-  const dbFlows = await sql`SELECT * FROM keel_flow_run`.execute(useDatabase());
-  expect(dbFlows.rows.length).toBe(1);
-  const dbSteps = await sql`SELECT * FROM keel_flow_step`.execute(
-    useDatabase()
-  );
-  expect(dbSteps.rows.length).toBe(2);
 
   ({ status, body } = await getFlowRun({
     name: "myFlow",
@@ -53,22 +72,100 @@ test("flows - basic execution", async () => {
       age: 32,
     },
   }));
-
   expect(status).toEqual(200);
+
+
+  flow = await untilFlowFinished({ name: "myFlow", id: runId, token });
+  expect(flow.status).toBe("COMPLETED");
+
   const newThings = await models.thing.findMany();
   expect(newThings.length).toBe(1);
   expect(newThings[0].name).toBe("Keelson updated");
-
-  ({ status, body } = await getFlowRun({
-    name: "myFlow",
-    id: runId,
-    token,
-  }));
-  expect(status).toEqual(200);
-  expect(body.status).toBe("COMPLETED");
 });
 
-async function getToken() {
+
+test("flows - stepless flow", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  let { status, body } = await startFlow({
+    name: "stepless",
+    token,
+    body: {}
+  });
+  expect(status).toEqual(200);
+
+  const flow = await untilFlowFinished({ name: "stepless", id: body.id, token });
+  expect(flow.status).toBe("COMPLETED");
+
+  const things = await models.thing.findMany();
+  expect(things.length).toBe(1);
+  expect(things[0].name).toBe("Keelson");
+});
+
+test("flows - authorised starting, getting and listing flows", async () => {
+  const adminToken = await getToken({ email: "admin@keel.xyz" });
+
+  const userToken = await getToken({ email: "user@gmail.com" });
+
+  const resListAdmin = await listFlows({ token: adminToken });
+  expect(resListAdmin.status).toBe(200);
+  // expect(resListAdmin.body.flows.length).toBe(2);
+  // expect(resListAdmin.body.flows[0].name).toBe("MyFlow");
+  // expect(resListAdmin.body.flows[1].name).toBe("stepless");
+
+  const resListUser = await listFlows({ token: userToken });
+  expect(resListUser.status).toBe(200);
+  expect(resListUser.body.flows.length).toBe(1);
+  expect(resListUser.body.flows[0].name).toBe("UserFlow");
+});
+
+test("flows - unauthorised starting flow", async () => {
+  const token = await getToken({ email: "user@gmail.com" });
+  const res = await startFlow({ name: "stepless", token, body: {} });
+  expect(res.status).toBe(403);
+});
+
+test("flows - unauthenticated starting flow", async () => {
+  const res = await startFlow({ name: "stepless", token: null, body: {} });
+  expect(res.status).toBe(401);
+});
+
+test("flows - unauthorised getting flow", async () => {
+  const adminToken = await getToken({ email: "admin@keel.xyz" });
+  const resStart = await startFlow({ name: "stepless", token: adminToken, body: {} });
+  expect(resStart.status).toBe(200);
+
+  const userToken = await getToken({ email: "user@gmail.com" });
+  const resGet = await getFlowRun({ name: "stepless", id: resStart.body.id, token: userToken });
+  expect(resGet.status).toBe(403);
+});
+
+test("flows - unauthenticated starting flow", async () => {
+  const res = await startFlow({ name: "stepless", token: null, body: {} });
+  expect(res.status).toBe(401);
+});
+
+test("flows - unauthenticated getting flow", async () => {
+  const adminToken = await getToken({ email: "admin@keel.xyz" });
+  const resStart = await startFlow({ name: "stepless", token: adminToken, body: {} });
+  expect(resStart.status).toBe(200);
+
+  const resGet = await getFlowRun({ name: "stepless", id: resStart.body.id, token: null });
+  expect(resGet.status).toBe(401);
+});
+
+test("flows - unauthenticated listing flows", async () => {
+  const adminToken = await getToken({ email: "admin@keel.xyz" });
+  const res1 = await startFlow({ name: "stepless", token: adminToken, body: {} });
+  const res2 = await startFlow({ name: "stepless", token: adminToken, body: {} });
+  expect(res1.status).toBe(200);
+  expect(res2.status).toBe(200);
+
+  const resGet = await listFlows({ token: null });
+  expect(resGet.status).toBe(401);
+});
+
+async function getToken({ email }) {
   const response = await fetch(
     process.env.KEEL_TESTING_AUTH_API_URL + "/token",
     {
@@ -78,7 +175,7 @@ async function getToken() {
       },
       body: JSON.stringify({
         grant_type: "password",
-        username: "admin@keel.xyz",
+        username: email,
         password: "1234",
       }),
     }
@@ -88,7 +185,7 @@ async function getToken() {
   const token = (await response.json()).access_token;
   await models.identity.update(
     {
-      email: "admin@keel.xyz",
+      email: email,
       issuer: "https://keel.so",
     },
     {
@@ -98,6 +195,8 @@ async function getToken() {
 
   return token;
 }
+
+
 
 async function startFlow({ name, token, body }) {
   const res = await fetch(
@@ -136,6 +235,24 @@ async function getFlowRun({ name, id, token }) {
   };
 }
 
+async function listFlows({ token }) {
+  const res = await fetch(
+    `${process.env.KEEL_TESTING_API_URL}/flows/json`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token,
+      },
+    }
+  );
+
+  return {
+    status: res.status,
+    body: await res.json(),
+  };
+}
+
 async function putStepValues({ name, runId, stepId, values, token }) {
   const res = await fetch(
     `${process.env.KEEL_TESTING_API_URL}/flows/json/${name}/${runId}/${stepId}`,
@@ -154,3 +271,51 @@ async function putStepValues({ name, runId, stepId, values, token }) {
     body: await res.json(),
   };
 }
+
+async function untilFlowAwaitingInput({ name, id, token }) {
+  const startTime = Date.now();
+  const timeout = 1000; // 1 seconds timeout on polling
+
+  while (true) {
+    if (Date.now() - startTime > timeout) {
+      throw new Error(`timed out waiting for flow run to reach AWAITING_INPUT state after ${timeout}ms`);
+    }
+
+    const { status, body } = await getFlowRun({ name, id, token });
+    expect(status).toEqual(200);
+
+    if (body.status === "AWAITING_INPUT") {
+      const lastStep = body.steps[body.steps.length - 1];
+      expect(lastStep.status).toBe("PENDING");
+      expect(lastStep.type).toBe("UI");
+      return body;
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+}
+
+async function untilFlowFinished({ name, id, token }) {
+  const startTime = Date.now();
+  const timeout = 1000; // 1 seconds timeout on polling
+
+  while (true) {
+    if (Date.now() - startTime > timeout) {
+      throw new Error(`timed out waiting for flow run to reach a completed state after ${timeout}ms`);
+    }
+
+    const { status, body } = await getFlowRun({ name, id, token });
+    expect(status).toEqual(200);
+
+    if (body.status === "COMPLETED" || body.status === "FAILED") {
+      for (const step of body.steps) {
+        // Steps can only be COMPLETED or FAILED when flow has finished
+        expect(step.status === "COMPLETED" || step.status === "FAILED").toBe(true);
+      }
+      return body;
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+}
+

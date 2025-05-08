@@ -225,10 +225,12 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 				}
 			},
 			"https://testing-sqs-queue.com/123456789/flows": func(event lambdaevents.SQSEvent) {
-				err := lambdaHandler.FlowHandler(ctx, event)
-				if err != nil {
-					fmt.Printf("error from flow orchestrator: %s\nevent:%s\n\n", err.Error(), event.Records[0].Body)
-				}
+				go func() {
+					err := lambdaHandler.FlowHandler(ctx, event)
+					if err != nil {
+						fmt.Printf("error from flow orchestrator: %s\nevent:%s\n\n", err.Error(), event.Records[0].Body)
+					}
+				}()
 			},
 		},
 	}

@@ -6,6 +6,14 @@ flow MyFlow {
     @permission(roles: [Admin])
 }
 
+flow Stepless {
+    @permission(roles: [Admin])
+}
+
+flow UserFlow {
+    @permission(roles: [User])
+}
+
 model Thing {
     fields {
         name Text?
@@ -16,5 +24,11 @@ model Thing {
 role Admin {
     domains {
         "keel.xyz"
+    }   
+}
+
+role User {
+    domains {
+        "gmail.com"
     }   
 }
