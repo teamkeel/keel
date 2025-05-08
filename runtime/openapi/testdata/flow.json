@@ -5,39 +5,34 @@
     "version": "1"
   },
   "paths": {
-    "/flows/json/AnotherWorkflow": {
-      "post": {
-        "operationId": "AnotherWorkflow",
-        "requestBody": {
-          "description": "AnotherWorkflow Request",
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "age": {
-                    "type": "number"
-                  }
-                },
-                "unevaluatedProperties": false,
-                "required": ["age"]
-              }
-            }
-          }
-        },
+    "/flows/json/": {
+      "get": {
+        "operationId": "listFlows",
         "responses": {
           "200": {
-            "description": "AnotherWorkflow Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Run"
+                  "properties": {
+                    "flows": {
+                      "items": {
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          }
+                        },
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "type": "object"
                 }
               }
-            }
+            },
+            "description": ""
           },
           "400": {
-            "description": "AnotherWorkflow Response Errors",
             "content": {
               "application/json": {
                 "schema": {
@@ -46,10 +41,8 @@
                       "type": "string"
                     },
                     "data": {
-                      "type": ["object", "null"],
                       "properties": {
                         "errors": {
-                          "type": "array",
                           "properties": {
                             "error": {
                               "type": "string"
@@ -57,9 +50,11 @@
                             "field": {
                               "type": "string"
                             }
-                          }
+                          },
+                          "type": "array"
                         }
-                      }
+                      },
+                      "type": ["object", "null"]
                     },
                     "message": {
                       "type": "string"
@@ -67,7 +62,426 @@
                   }
                 }
               }
+            },
+            "description": ""
+          }
+        }
+      }
+    },
+    "/flows/json/AnotherWorkflow": {
+      "post": {
+        "operationId": "AnotherWorkflow",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "age": {
+                    "type": "number"
+                  }
+                },
+                "required": ["age"],
+                "type": "object",
+                "unevaluatedProperties": false
+              }
             }
+          },
+          "description": "AnotherWorkflow Request"
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Run"
+                }
+              }
+            },
+            "description": "Flow Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "properties": {
+                        "errors": {
+                          "properties": {
+                            "error": {
+                              "type": "string"
+                            },
+                            "field": {
+                              "type": "string"
+                            }
+                          },
+                          "type": "array"
+                        }
+                      },
+                      "type": ["object", "null"]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Flow Response Errors"
+          }
+        }
+      }
+    },
+    "/flows/json/{name}": {
+      "get": {
+        "operationId": "getFlow",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Run"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "properties": {
+                        "errors": {
+                          "properties": {
+                            "error": {
+                              "type": "string"
+                            },
+                            "field": {
+                              "type": "string"
+                            }
+                          },
+                          "type": "array"
+                        }
+                      },
+                      "type": ["object", "null"]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "description": ""
+          }
+        }
+      },
+      "parameters": [
+        {
+          "description": "",
+          "in": "path",
+          "name": "name",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "post": {
+        "operationId": "startFlow",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          },
+          "description": ""
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Run"
+                }
+              }
+            },
+            "description": "Flow Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "properties": {
+                        "errors": {
+                          "properties": {
+                            "error": {
+                              "type": "string"
+                            },
+                            "field": {
+                              "type": "string"
+                            }
+                          },
+                          "type": "array"
+                        }
+                      },
+                      "type": ["object", "null"]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Flow Response Errors"
+          }
+        }
+      }
+    },
+    "/flows/json/{name}/{runId}": {
+      "get": {
+        "operationId": "getFlowRun",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Run"
+                }
+              }
+            },
+            "description": "Flow Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "properties": {
+                        "errors": {
+                          "properties": {
+                            "error": {
+                              "type": "string"
+                            },
+                            "field": {
+                              "type": "string"
+                            }
+                          },
+                          "type": "array"
+                        }
+                      },
+                      "type": ["object", "null"]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Flow Response Errors"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "description": "",
+          "in": "path",
+          "name": "name",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "description": "",
+          "in": "path",
+          "name": "runId",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "/flows/json/{name}/{runId}/cancel": {
+      "parameters": [
+        {
+          "description": "",
+          "in": "path",
+          "name": "name",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "description": "",
+          "in": "path",
+          "name": "runId",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "post": {
+        "operationId": "cancelFlowRun",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Run"
+                }
+              }
+            },
+            "description": "Flow Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "properties": {
+                        "errors": {
+                          "properties": {
+                            "error": {
+                              "type": "string"
+                            },
+                            "field": {
+                              "type": "string"
+                            }
+                          },
+                          "type": "array"
+                        }
+                      },
+                      "type": ["object", "null"]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Flow Response Errors"
+          }
+        }
+      }
+    },
+    "/flows/json/{name}/{runId}/{stepId}": {
+      "parameters": [
+        {
+          "description": "",
+          "in": "path",
+          "name": "name",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "description": "",
+          "in": "path",
+          "name": "runId",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "description": "",
+          "in": "path",
+          "name": "stepId",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "put": {
+        "operationId": "putFlowStep",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          },
+          "description": ""
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Run"
+                }
+              }
+            },
+            "description": "Flow Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "properties": {
+                        "errors": {
+                          "properties": {
+                            "error": {
+                              "type": "string"
+                            },
+                            "field": {
+                              "type": "string"
+                            }
+                          },
+                          "type": "array"
+                        }
+                      },
+                      "type": ["object", "null"]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Flow Response Errors"
           }
         }
       }
@@ -76,11 +490,10 @@
   "components": {
     "schemas": {
       "Run": {
-        "type": "object",
         "properties": {
           "createdAt": {
-            "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "type": "string"
           },
           "id": {
             "type": "string"
@@ -89,26 +502,34 @@
             "type": "string"
           },
           "status": {
+            "enum": [
+              "NEW",
+              "RUNNING",
+              "AWAITING_INPUT",
+              "FAILED",
+              "COMPLETED",
+              "CANCELLED"
+            ],
             "type": "string"
           },
           "steps": {
-            "type": "array",
             "items": {
               "$ref": "#/components/schemas/Step"
-            }
+            },
+            "type": "array"
           },
           "updatedAt": {
-            "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "type": "string"
           }
-        }
+        },
+        "type": "object"
       },
       "Step": {
-        "type": "object",
         "properties": {
           "createdAt": {
-            "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "type": "string"
           },
           "id": {
             "type": "string"
@@ -123,25 +544,28 @@
             "type": "string"
           },
           "status": {
+            "enum": ["PENDING", "FAILED", "COMPLETED"],
             "type": "string"
           },
           "timeout_in_ms": {
             "type": "number"
           },
           "type": {
+            "enum": ["FUNCTION", "UI"],
             "type": "string"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time"
           },
           "ui": {
             "$ref": "#/components/schemas/UiConfig"
           },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
           "value": {
             "type": "object"
           }
-        }
+        },
+        "type": "object"
       },
       "UiConfig": {
         "additionalProperties": false,

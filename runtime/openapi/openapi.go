@@ -36,8 +36,18 @@ type ComponentsObject struct {
 }
 
 type PathItemObject struct {
-	Post *OperationObject `json:"post,omitempty"`
-	Get  *OperationObject `json:"get,omitempty"`
+	Post       *OperationObject  `json:"post,omitempty"`
+	Get        *OperationObject  `json:"get,omitempty"`
+	Put        *OperationObject  `json:"put,omitempty"`
+	Parameters []ParameterObject `json:"parameters,omitempty"`
+}
+
+type ParameterObject struct {
+	Name        string                `json:"name"`
+	In          string                `json:"in"`
+	Required    bool                  `json:"required"`
+	Description string                `json:"description"`
+	Schema      jsonschema.JSONSchema `json:"schema"`
 }
 
 type OperationObject struct {
@@ -59,6 +69,10 @@ type ResponseObject struct {
 
 type MediaTypeObject struct {
 	Schema jsonschema.JSONSchema `json:"schema,omitempty"`
+}
+
+func StringPointer(v string) *string {
+	return &v
 }
 
 var (
@@ -250,8 +264,18 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 	runResponseSchema := jsonschema.JSONSchema{
 		Type: "object",
 		Properties: map[string]jsonschema.JSONSchema{
-			"id":        {Type: "string"},
-			"status":    {Type: "string"},
+			"id": {Type: "string"},
+			"status": {
+				Type: "string",
+				Enum: []*string{
+					StringPointer("NEW"),
+					StringPointer("RUNNING"),
+					StringPointer("AWAITING_INPUT"),
+					StringPointer("FAILED"),
+					StringPointer("COMPLETED"),
+					StringPointer("CANCELLED"),
+				},
+			},
 			"name":      {Type: "string"},
 			"createdAt": {Type: "string", Format: "date-time"},
 			"updatedAt": {Type: "string", Format: "date-time"},
@@ -262,17 +286,47 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 	stepResponseSchema := jsonschema.JSONSchema{
 		Type: "object",
 		Properties: map[string]jsonschema.JSONSchema{
-			"id":            {Type: "string"},
-			"runId":         {Type: "string"},
-			"status":        {Type: "string"},
-			"name":          {Type: "string"},
-			"type":          {Type: "string"},
+			"id":    {Type: "string"},
+			"runId": {Type: "string"},
+			"status": {
+				Type: "string",
+				Enum: []*string{
+					StringPointer("PENDING"),
+					StringPointer("FAILED"),
+					StringPointer("COMPLETED"),
+				},
+			},
+			"name": {Type: "string"},
+			"type": {
+				Type: "string",
+				Enum: []*string{
+					StringPointer("FUNCTION"),
+					StringPointer("UI"),
+				},
+			},
 			"createdAt":     {Type: "string", Format: "date-time"},
 			"updatedAt":     {Type: "string", Format: "date-time"},
 			"value":         {Type: "object"},
 			"ui":            {Ref: "#/components/schemas/UiConfig"},
 			"max_retries":   {Type: "number"},
 			"timeout_in_ms": {Type: "number"},
+		},
+	}
+
+	listFlowsResponseSchema := jsonschema.JSONSchema{
+		Type: "object",
+		Properties: map[string]jsonschema.JSONSchema{
+			"flows": {
+				Type: "array",
+				Items: &jsonschema.JSONSchema{
+					Type: "object",
+					Properties: map[string]jsonschema.JSONSchema{
+						"name": {
+							Type: "string",
+						},
+					},
+				},
+			},
 		},
 	}
 
@@ -297,6 +351,26 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 		},
 	}
 
+	flowRunResponse := map[string]ResponseObject{
+		"200": {
+			Description: "Flow Response",
+			Content: map[string]MediaTypeObject{
+				"application/json": {
+					Schema: jsonschema.JSONSchema{Ref: "#/components/schemas/Run"},
+				},
+			},
+		},
+		"400": {
+			Description: "Flow Response Errors",
+			Content: map[string]MediaTypeObject{
+				"application/json": {
+					Schema: responseErrorSchema,
+				},
+			},
+		},
+	}
+
+	// Add specific flows endpoints with defined inputs
 	for _, flow := range schema.Flows {
 		msg := schema.FindMessage(flow.InputMessageName)
 		if msg == nil {
@@ -324,26 +398,161 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 						},
 					},
 				},
-				Responses: map[string]ResponseObject{
-					"200": {
-						Description: flow.Name + " Response",
-						Content: map[string]MediaTypeObject{
-							"application/json": {
-								Schema: jsonschema.JSONSchema{Ref: "#/components/schemas/Run"},
-							},
+				Responses: flowRunResponse,
+			},
+		}
+	}
+
+	spec.Paths["/flows/json/"] = PathItemObject{
+		Get: &OperationObject{
+			OperationID: StringPointer("listFlows"),
+			Responses: map[string]ResponseObject{
+				"200": {
+					Content: map[string]MediaTypeObject{
+						"application/json": {
+							Schema: listFlowsResponseSchema,
 						},
 					},
-					"400": {
-						Description: flow.Name + " Response Errors",
-						Content: map[string]MediaTypeObject{
-							"application/json": {
-								Schema: responseErrorSchema,
-							},
+				},
+				"400": {
+					Content: map[string]MediaTypeObject{
+						"application/json": {
+							Schema: responseErrorSchema,
 						},
 					},
 				},
 			},
-		}
+		},
+	}
+
+	spec.Paths["/flows/json/{name}"] = PathItemObject{
+		Parameters: []ParameterObject{
+			{
+				Name:     "name",
+				In:       "path",
+				Required: true,
+				Schema: jsonschema.JSONSchema{
+					Type: "string",
+				},
+			},
+		},
+		Post: &OperationObject{
+			OperationID: StringPointer("startFlow"),
+			RequestBody: &RequestBodyObject{
+				Content: map[string]MediaTypeObject{
+					"application/json": {
+						Schema: jsonschema.JSONSchema{Type: "object"},
+					},
+				},
+			},
+			Responses: flowRunResponse,
+		},
+		Get: &OperationObject{
+			OperationID: StringPointer("getFlow"),
+			Responses: map[string]ResponseObject{
+				"200": {
+					Content: map[string]MediaTypeObject{
+						"application/json": {
+							Schema: jsonschema.JSONSchema{
+								Type:  "array",
+								Items: &jsonschema.JSONSchema{Ref: "#/components/schemas/Run"},
+							},
+						},
+					},
+				},
+				"400": {
+					Content: map[string]MediaTypeObject{
+						"application/json": {
+							Schema: responseErrorSchema,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	spec.Paths["/flows/json/{name}/{runId}"] = PathItemObject{
+		Parameters: []ParameterObject{
+			{
+				Name:     "name",
+				In:       "path",
+				Required: true,
+				Schema: jsonschema.JSONSchema{
+					Type: "string",
+				},
+			},
+			{
+				Name:     "runId",
+				In:       "path",
+				Required: true,
+				Schema: jsonschema.JSONSchema{
+					Type: "string",
+				},
+			},
+		},
+		Get: &OperationObject{
+			OperationID: StringPointer("getFlowRun"),
+			Responses:   flowRunResponse,
+		},
+	}
+
+	spec.Paths["/flows/json/{name}/{runId}/cancel"] = PathItemObject{
+		Parameters: []ParameterObject{
+			{
+				Name:     "name",
+				In:       "path",
+				Required: true,
+				Schema:   jsonschema.JSONSchema{Type: "string"},
+			},
+			{
+				Name:     "runId",
+				In:       "path",
+				Required: true,
+				Schema:   jsonschema.JSONSchema{Type: "string"},
+			},
+		},
+		Post: &OperationObject{
+			OperationID: StringPointer("cancelFlowRun"),
+			Responses:   flowRunResponse,
+		},
+	}
+
+	spec.Paths["/flows/json/{name}/{runId}/{stepId}"] = PathItemObject{
+		Parameters: []ParameterObject{
+			{
+				Name:     "name",
+				In:       "path",
+				Required: true,
+				Schema: jsonschema.JSONSchema{
+					Type: "string",
+				},
+			},
+			{
+				Name:     "runId",
+				In:       "path",
+				Required: true,
+				Schema: jsonschema.JSONSchema{
+					Type: "string",
+				},
+			},
+			{
+				Name:     "stepId",
+				In:       "path",
+				Required: true,
+				Schema:   jsonschema.JSONSchema{Type: "string"},
+			},
+		},
+		Put: &OperationObject{
+			OperationID: StringPointer("putFlowStep"),
+			RequestBody: &RequestBodyObject{
+				Content: map[string]MediaTypeObject{
+					"application/json": {
+						Schema: jsonschema.JSONSchema{Type: "object"},
+					},
+				},
+			},
+			Responses: flowRunResponse,
+		},
 	}
 
 	return spec

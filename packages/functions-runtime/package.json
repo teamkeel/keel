@@ -19,7 +19,8 @@
     "build": "tsup",
     "type-check": "tsc --noEmit",
     "dev": "tsup --watch",
-    "generate-openapi": "tsx scripts/oas.ts"
+    "generate-openapi": "tsx scripts/oas.ts",
+    "postinstall": "npm run generate-openapi"
   },
   "keywords": [],
   "author": "Keel (www.keel.so)",
