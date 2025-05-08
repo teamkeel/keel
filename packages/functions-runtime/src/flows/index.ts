@@ -9,7 +9,7 @@ import { table } from "./ui/elements/display/table";
 import { selectOne } from "./ui/elements/select/single";
 import { UiPage } from "./ui/page";
 import {
-  StepCompletedDisrupt,
+  StepCreatedDisrupt,
   StepErrorDisrupt,
   UIRenderDisrupt,
   ExhuastedRetriesDisrupt,
@@ -129,19 +129,75 @@ export function createFlowContext<C extends FlowConfig>(
         .selectAll()
         .execute();
 
-      // For the complete step, if it exists, just return the value
-      for (const step of past) {
-        if (step.status === STEP_STATUS.COMPLETED) {
-          return step.value;
-        }
+      const newSteps = past.filter((step) => step.status === STEP_STATUS.NEW);
+      const completedSteps = past.filter(
+        (step) => step.status === STEP_STATUS.COMPLETED
+      );
+      const failedSteps = past.filter(
+        (step) => step.status === STEP_STATUS.FAILED
+      );
+
+      if (newSteps.length > 1) {
+        throw new Error("Multiple NEW steps found for the same step");
       }
 
-      if (past.length >= (options.maxRetries ?? defaultOpts.maxRetries)) {
-        throw new ExhuastedRetriesDisrupt();
+      if (completedSteps.length > 1) {
+        throw new Error("Multiple completed steps found for the same step");
       }
+
+      if (completedSteps.length === 1) {
+        return completedSteps[0].value;
+      }
+
+      if (newSteps.length === 1) {
+        let result = null;
+        try {
+          result = await withTimeout(
+            actualFn(),
+            options.timeoutInMs ?? defaultOpts.timeoutInMs
+          );
+        } catch (e) {
+          await db
+            .updateTable("keel_flow_step")
+            .set({
+              status: STEP_STATUS.FAILED,
+              spanId: spanId,
+              error: e instanceof Error ? e.message : "An error occurred",
+            })
+            .where("id", "=", newSteps[0].id)
+            .returningAll()
+            .executeTakeFirst();
+
+          if (
+            failedSteps.length + 1 >
+            (options.maxRetries ?? defaultOpts.maxRetries)
+          ) {
+            throw new ExhuastedRetriesDisrupt();
+          }
+
+          throw new StepErrorDisrupt(
+            e instanceof Error ? e.message : "An error occurred"
+          );
+        }
+
+        // Very crudely store the result in the database
+        await db
+          .updateTable("keel_flow_step")
+          .set({
+            status: STEP_STATUS.COMPLETED,
+            value: JSON.stringify(result),
+            spanId: spanId,
+          })
+          .where("id", "=", newSteps[0].id)
+          .returningAll()
+          .executeTakeFirst();
+
+        return result;
+      }
+      // There is no NEW or COMPLETED steps at this point, so we need to check if the step has failed too many times
 
       // The step hasn't yet run successfully, so we need to create a NEW run
-      const step = await db
+      await db
         .insertInto("keel_flow_step")
         .values({
           run_id: runId,
@@ -153,47 +209,7 @@ export function createFlowContext<C extends FlowConfig>(
         .returningAll()
         .executeTakeFirst();
 
-      if (!step) {
-        throw new Error("Failed to create step");
-      }
-
-      let result = null;
-      try {
-        result = await withTimeout(
-          actualFn(),
-          options.timeoutInMs ?? defaultOpts.timeoutInMs
-        );
-      } catch (e) {
-        await db
-          .updateTable("keel_flow_step")
-          .set({
-            status: STEP_STATUS.FAILED,
-            spanId: spanId,
-            error: e instanceof Error ? e.message : "An error occurred",
-          })
-          .where("id", "=", step.id)
-          .returningAll()
-          .executeTakeFirst();
-
-        throw new StepErrorDisrupt(
-          e instanceof Error ? e.message : "An error occurred"
-        );
-      }
-
-      // Very crudely store the result in the database
-      await db
-        .updateTable("keel_flow_step")
-        .set({
-          status: STEP_STATUS.COMPLETED,
-          value: JSON.stringify(result),
-          spanId: spanId,
-        })
-        .where("id", "=", step.id)
-        .returningAll()
-        .executeTakeFirst();
-
-      throw new StepCompletedDisrupt();
-
+      throw new StepCreatedDisrupt();
       // TODO: Incorporate when we have support error handling
       // const stepPromise = fn({} as any);
       // const stepWithCatch = Object.assign(stepPromise, {
@@ -238,32 +254,31 @@ export function createFlowContext<C extends FlowConfig>(
             })
             .returningAll()
             .executeTakeFirst();
-        }
 
-        if (!step) {
-          throw new Error("Failed to create step");
-        }
-
-        if (data) {
-          // TODO: Validate the data! If not valid, throw a UIRenderDisrupt along with the validation errors.
-
-          // If the data has been passed in and is valid, persist the data and mark the step as COMPLETED, and then return the data.
-          await db
-            .updateTable("keel_flow_step")
-            .set({
-              status: STEP_STATUS.COMPLETED,
-              value: JSON.stringify(data),
-              spanId: spanId,
-            })
-            .where("id", "=", step.id)
-            .returningAll()
-            .executeTakeFirst();
-
-          return data;
-        } else {
           // If no data has been passed in, render the UI by disrupting the step with UIRenderDisrupt.
-          throw new UIRenderDisrupt(step.id, page);
+          throw new UIRenderDisrupt(step?.id, page);
         }
+
+        if (!data) {
+          // If no data has been passed in, render the UI by disrupting the step with UIRenderDisrupt.
+          throw new UIRenderDisrupt(step?.id, page);
+        }
+
+        // TODO: Validate the data! If not valid, throw a UIRenderDisrupt along with the validation errors.
+
+        // If the data has been passed in and is valid, persist the data and mark the step as COMPLETED, and then return the data.
+        await db
+          .updateTable("keel_flow_step")
+          .set({
+            status: STEP_STATUS.COMPLETED,
+            value: JSON.stringify(data),
+            spanId: spanId,
+          })
+          .where("id", "=", step.id)
+          .returningAll()
+          .executeTakeFirst();
+
+        return data;
       }) as UiPage<C>,
       inputs: {
         text: textInput as any,

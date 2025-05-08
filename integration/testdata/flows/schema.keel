@@ -1,4 +1,4 @@
-flow MyFlow {
+flow MixedStepTypes {
     inputs {
         name Text
         age Number
@@ -12,6 +12,10 @@ flow Stepless {
 
 flow UserFlow {
     @permission(roles: [User])
+}
+
+flow SingleStep {
+    @permission(roles: [Admin])
 }
 
 model Thing {
