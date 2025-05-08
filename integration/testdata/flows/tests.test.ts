@@ -37,7 +37,19 @@ test("flows - stepless flow", async () => {
     id: body.id,
     token,
   });
-  expect(flow.status).toBe("COMPLETED");
+
+  // Flow has no steps so should be synchronously completed
+  expect(flow).toEqual({
+    id: body.id,
+    input: {},
+    name: "Stepless",
+    status: "COMPLETED",
+    steps: [],
+    config: null,
+    traceId: expect.any(String),
+    createdAt: expect.any(String),
+    updatedAt: expect.any(String),
+  });
 
   const things = await models.thing.findMany();
   expect(things.length).toBe(1);
@@ -54,20 +66,68 @@ test("flows - first step is a function", async () => {
   });
   expect(status).toEqual(200);
 
-  expect(body.status).toBe("RUNNING");
-  expect(body.steps).toHaveLength(1);
-  expect(body.steps[0].status).toBe("NEW");
-  expect(body.steps[0].type).toBe("FUNCTION");
-  expect(body.steps[0].output).toBeUndefined();
+  // First step is a function so should be in status NEW - it will get run async via the queue
+  expect(body).toEqual({
+    id: expect.any(String),
+    input: {},
+    name: "SingleStep",
+    status: "RUNNING",
+    steps: [
+      {
+        id: expect.any(String),
+        runId: body.id,
+        name: "insert thing",
+        max_retries: 0,
+        timeout_in_ms: 0,
+        ui: null,
+        status: "NEW",
+        type: "FUNCTION",
+        value: null,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+      },
+    ],
+    config: null,
+    traceId: expect.any(String),
+    createdAt: expect.any(String),
+    updatedAt: expect.any(String),
+  });
 
   const flow = await untilFlowFinished({
     name: "singleStep",
     id: body.id,
     token,
   });
-  expect(flow.status).toBe("COMPLETED");
-  expect(flow.steps[0].status).toBe("COMPLETED");
-  expect(flow.steps).toHaveLength(1);
+
+  // Now the flow has finished the run and step statuses should have been
+  // updated and the returned value stored against the step
+  expect(flow).toEqual({
+    id: body.id,
+    input: {},
+    name: "SingleStep",
+    status: "COMPLETED",
+    steps: [
+      {
+        id: body.steps[0].id,
+        runId: body.id,
+        name: "insert thing",
+        max_retries: 0,
+        timeout_in_ms: 0,
+        ui: null,
+        status: "COMPLETED",
+        type: "FUNCTION",
+        value: {
+          number: 10,
+        },
+        createdAt: body.steps[0].createdAt,
+        updatedAt: expect.any(String),
+      },
+    ],
+    config: null,
+    traceId: body.traceId,
+    createdAt: body.createdAt,
+    updatedAt: expect.any(String),
+  });
 });
 
 test("flows - alternating step types", async () => {
@@ -82,36 +142,135 @@ test("flows - alternating step types", async () => {
     },
   });
   expect(status).toEqual(200);
-  const runId = body.id;
 
-  let flow = await untilFlowAwaitingInput({
+  // First step is a function so API response should show that as NEW
+  expect(body).toEqual({
+    id: expect.any(String),
+    input: {
+      name: "Keelson",
+      age: 23,
+    },
+    name: "MixedStepTypes",
+    status: "RUNNING",
+    steps: [
+      {
+        id: expect.any(String),
+        runId: body.id,
+        name: "insert thing",
+        max_retries: 0,
+        timeout_in_ms: 0,
+        ui: null,
+        status: "NEW",
+        type: "FUNCTION",
+        value: null,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+      },
+    ],
+    config: null,
+    traceId: expect.any(String),
+    createdAt: expect.any(String),
+    updatedAt: expect.any(String),
+  });
+
+  const runId = body.id;
+  const traceId = body.traceId;
+  let step1 = body.steps[0];
+
+  // The second step is a page with UI so we wait until the flow has reached that point
+  body = await untilFlowAwaitingInput({
     name: "MixedStepTypes",
     id: runId,
     token,
   });
-  expect(flow.steps).toHaveLength(2);
-
-  const things = await models.thing.findMany();
-  expect(things.length).toBe(1);
-  expect(things[0].name).toBe("Keelson");
-
-  ({ status, body } = await getFlowRun({
-    name: "MixedStepTypes",
+  expect(body).toEqual({
     id: runId,
-    token,
-  }));
+    name: "MixedStepTypes",
+    status: "AWAITING_INPUT", // Flow is now awaiting input
+    input: {
+      name: "Keelson",
+      age: 23,
+    },
+    config: {},
+    traceId,
+    createdAt: expect.any(String),
+    updatedAt: expect.any(String),
+    steps: [
+      {
+        id: step1.id,
+        runId: runId,
+        name: "insert thing",
+        max_retries: 0,
+        timeout_in_ms: 0,
+        ui: null,
+        status: "COMPLETED", // First step has been completed
+        type: "FUNCTION",
 
-  expect(status).toEqual(200);
-  expect(body.status).toBe("AWAITING_INPUT");
+        // We have the value stored from this step now
+        value: {
+          id: expect.any(String),
+        },
+        createdAt: step1.createdAt,
+        updatedAt: expect.any(String),
+      },
+      {
+        id: expect.any(String),
+        runId: runId,
+        name: "confirm thing",
+        max_retries: 0,
+        timeout_in_ms: 0,
+        // We have the full UI config because this step is awaiting user input
+        ui: {
+          title: "Update thing",
+          description: "Confirm the existing data in thing",
+          content: [
+            {
+              uiConfig: {
+                __type: "ui.input.text",
+                defaultValue: "Keelson",
+                label: "Name",
+                name: "name",
+              },
+            },
+            {
+              uiConfig: {
+                __type: "ui.display.divider",
+              },
+            },
+            {
+              uiConfig: {
+                __type: "ui.input.number",
+                defaultValue: 23,
+                label: "Age",
+                name: "age",
+              },
+            },
+          ],
+        },
+        status: "PENDING", // This step is now pending while it waits for user input
+        type: "UI",
+        value: null,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+      },
+    ],
+  });
 
-  const stepId = body.steps.find(
-    (step) => step.type === "UI" && step.status === "PENDING"
-  )?.id;
+  step1 = body.steps[0];
+  let step2 = body.steps[1];
 
+  // The first step created a db record so we check that exists
+  let thing = await models.thing.findOne({
+    id: step1.value.id,
+  });
+  expect(thing!.name).toBe("Keelson");
+  expect(thing!.age).toBe(23);
+
+  // Provide the values for the pending UI step
   ({ status, body } = await putStepValues({
     name: "MixedStepTypes",
     runId,
-    stepId,
+    stepId: step2.id,
     token,
     values: {
       name: "Keelson updated",
@@ -119,35 +278,78 @@ test("flows - alternating step types", async () => {
     },
   }));
   expect(status).toEqual(200);
+  expect(body).toEqual({
+    id: runId,
+    name: "MixedStepTypes",
+    status: "RUNNING",
+    input: {
+      name: "Keelson",
+      age: 23,
+    },
+    steps: [
+      step1, // Step 1 should not have changed
+      {
+        // Now this step has been completed because we provided the values, the ui
+        // config is no longer present, the status is COMPLETED and we have the stored values
+        ...step2,
+        ui: null,
+        status: "COMPLETED",
+        value: {
+          name: "Keelson updated",
+          age: 32,
+        },
+        updatedAt: expect.any(String),
+      },
+      {
+        // The final step is now pending and will be run via the queue
+        id: expect.any(String),
+        runId,
+        status: "NEW",
+        type: "FUNCTION",
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        name: "update thing",
+        max_retries: 0,
+        timeout_in_ms: 0,
+        ui: null,
+        value: null,
+      },
+    ],
+    config: null,
+    traceId,
+    createdAt: expect.any(String),
+    updatedAt: expect.any(String),
+  });
 
-  let stepData = body.steps.map((step) => ({
-    name: step.name,
-    status: step.status,
-    type: step.type,
-  }));
-  expect(stepData).toEqual([
-    { name: "insert thing", status: "COMPLETED", type: "FUNCTION" },
-    { name: "confirm thing", status: "COMPLETED", type: "UI" },
-    { name: "update thing", status: "NEW", type: "FUNCTION" },
-  ]);
+  step2 = body.steps[1];
+  let step3 = body.steps[2];
 
-  flow = await untilFlowFinished({ name: "mixedStepTypes", id: runId, token });
-  expect(flow.status).toBe("COMPLETED");
+  body = await untilFlowFinished({ name: "mixedStepTypes", id: runId, token });
+  expect(body.status).toBe("COMPLETED");
+  expect(body.steps[2]).toEqual({
+    // The final step is now complete and will contain the result
+    id: step3.id,
+    runId,
+    status: "COMPLETED",
+    type: "FUNCTION",
+    name: "update thing",
+    max_retries: 0,
+    timeout_in_ms: 0,
+    ui: null,
+    value: {
+      name: "Keelson updated",
+      age: 32,
+    },
+    createdAt: step3.createdAt,
+    updatedAt: expect.any(String),
+  });
 
-  stepData = flow.steps.map((step) => ({
-    name: step.name,
-    status: step.status,
-    type: step.type,
-  }));
-  expect(stepData).toEqual([
-    { name: "insert thing", status: "COMPLETED", type: "FUNCTION" },
-    { name: "confirm thing", status: "COMPLETED", type: "UI" },
-    { name: "update thing", status: "COMPLETED", type: "FUNCTION" },
-  ]);
-
-  const newThings = await models.thing.findMany();
-  expect(newThings.length).toBe(1);
-  expect(newThings[0].name).toBe("Keelson updated");
+  // Check the final step updated the db as expected
+  thing = await models.thing.findOne({
+    id: thing!.id,
+  });
+  expect(thing!.name).toBe("Keelson updated");
+  expect(thing!.age).toBe(32);
 });
 
 test("flows - authorised starting, getting and listing flows", async () => {
@@ -326,7 +528,7 @@ async function putStepValues({ name, runId, stepId, values, token }) {
 
 async function untilFlowAwaitingInput({ name, id, token }) {
   const startTime = Date.now();
-  const timeout = 1000; // 1 seconds timeout on polling
+  const timeout = 5000; // We'll wait up to 5 seconds
 
   while (true) {
     if (Date.now() - startTime > timeout) {
