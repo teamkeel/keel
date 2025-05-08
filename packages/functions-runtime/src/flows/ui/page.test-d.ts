@@ -1,9 +1,9 @@
 import { describe, expectTypeOf, test } from "vitest";
-import { _testFlow } from "../testingUtils";
+import { testFlow } from "../testingUtils";
 
 describe("page element", () => {
   test("return data is typed correctly", () => {
-    _testFlow({}, async (ctx) => {
+    testFlow({}, async (ctx) => {
       const res = await ctx.ui.page("page", {
         content: [
           ctx.ui.display.header(),
@@ -24,7 +24,7 @@ describe("page element", () => {
   });
 
   test("custom actions", () => {
-    _testFlow({}, async (ctx) => {
+    testFlow({}, async (ctx) => {
       const res = await ctx.ui.page("page", {
         actions: [
           "thing",

@@ -1,8 +1,8 @@
 import { test } from "vitest";
-import { _testFlow } from "./testingUtils";
+import { testFlow } from "./testingUtils";
 
 test("stages types work correctly", () => {
-  _testFlow(
+  testFlow(
     {
       title: "my flow",
       stages: [
