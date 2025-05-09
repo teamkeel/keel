@@ -88,8 +88,8 @@ func (r *FunctionsResponsePayload) GetUIComponents() *FlowUIComponents {
 
 // FlowUIComponents contains data returned from the functions runtime which is used for frontend rendering
 type FlowUIComponents struct {
-	Config *JSONB `json:"config"`
-	UI     *JSONB `json:"ui"`
+	Config JSON `json:"config"`
+	UI     JSON `json:"ui"`
 }
 
 // orchestrateRun will decide based on the db state if the flow should be ran or not

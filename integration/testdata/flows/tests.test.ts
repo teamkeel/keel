@@ -514,7 +514,7 @@ test("flows - alternating step types", async () => {
         endTime: null,
       },
     ],
-    config: null,
+    config: {},
     traceId,
     createdAt: expect.any(String),
     updatedAt: expect.any(String),
@@ -774,13 +774,14 @@ test("flows - authorised starting, getting and listing flows", async () => {
 
   const resListAdmin = await listFlows({ token: adminToken });
   expect(resListAdmin.status).toBe(200);
-  expect(resListAdmin.body.flows.length).toBe(6);
+  expect(resListAdmin.body.flows.length).toBe(7);
   expect(resListAdmin.body.flows[0].name).toBe("ScalarStep");
   expect(resListAdmin.body.flows[1].name).toBe("MixedStepTypes");
   expect(resListAdmin.body.flows[2].name).toBe("Stepless");
   expect(resListAdmin.body.flows[3].name).toBe("SingleStep");
   expect(resListAdmin.body.flows[4].name).toBe("ErrorInStep");
   expect(resListAdmin.body.flows[5].name).toBe("TimeoutStep");
+  expect(resListAdmin.body.flows[6].name).toBe("OnlyPages");
 
   const resListUser = await listFlows({ token: userToken });
   expect(resListUser.status).toBe(200);
