@@ -1,6 +1,7 @@
 import { FlowConfig, ExtractStageKeys } from "..";
 import {
   BaseUiDisplayResponse,
+  ImplementationResponse,
   InputElementResponse,
   UiElementApiResponses,
   UIElements,
@@ -51,12 +52,29 @@ export const page = <
 >(
   options: PageOptions<C, A, T>
 ): UiPageApiResponse => {
+  // Turn these back into the actual response types
+  const content = options.content as unknown as ImplementationResponse<
+    any,
+    any
+  >[];
+
+  // TODO Validation
+  // for (const c of content) {
+  //   if ('__type' in c && c.__type === "input") {
+  //     c.validate()
+  //   }
+  // }
+
+  const contentUiConfig = content
+    .map((c) => c.uiConfig)
+    .filter(Boolean) as UiElementApiResponses;
+
   return {
     __type: "ui.page",
     stage: options.stage,
     title: options.title,
     description: options.description,
-    content: options.content as unknown as UiElementApiResponses,
+    content: contentUiConfig,
     actions: options.actions,
   };
 };

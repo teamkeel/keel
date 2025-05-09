@@ -3,6 +3,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
+import alterschema from "alterschema";
 
 // ************************************************************
 // Generate the json schema from the UiApiUiConfig type
@@ -28,6 +29,7 @@ const program = TJS.getProgramFromFiles(
 const generator = TJS.buildGenerator(program, {
   required: true,
   noExtraProps: true,
+  ref: true,
 });
 
 if (!generator) {
@@ -38,6 +40,10 @@ try {
   // Generate the schema just for our entry type
   const schema = generator.getSchemaForSymbol("UiApiUiConfig");
 
+  // Convert to latest JSON schema spec
+  // @ts-ignore
+  const result = await alterschema(schema, "draft7", "2020-12");
+
   const outputDir = path.resolve(__dirname, "../../../runtime/openapi");
   if (!fs.existsSync(outputDir)) {
     console.error("Output directory does not exist");
@@ -47,7 +53,7 @@ try {
   // Write to file
   fs.writeFileSync(
     path.resolve(outputDir, "uiConfig.json"),
-    JSON.stringify(schema, null, 2)
+    JSON.stringify(result, null, 2)
   );
 
   console.log("Successfully generated OpenAPI schema");

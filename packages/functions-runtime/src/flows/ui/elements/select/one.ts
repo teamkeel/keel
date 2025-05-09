@@ -44,6 +44,7 @@ export const selectOne: InputElementImplementation<
   UiElementSelectOneApiResponse
 > = (name, options) => {
   return {
+    __type: "input",
     uiConfig: {
       __type: "ui.select.one",
       name,

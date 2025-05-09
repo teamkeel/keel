@@ -13,7 +13,7 @@
     "actions": {
       "type": "array",
       "items": {
-        "$ref": "#/definitions/PageActions"
+        "$ref": "#/$defs/PageActions"
       }
     },
     "content": {
@@ -21,43 +21,43 @@
       "items": {
         "anyOf": [
           {
-            "$ref": "#/definitions/UiElementInputTextApiResponse"
+            "$ref": "#/$defs/UiElementInputTextApiResponse"
           },
           {
-            "$ref": "#/definitions/UiElementInputNumberApiResponse"
+            "$ref": "#/$defs/UiElementInputNumberApiResponse"
           },
           {
-            "$ref": "#/definitions/UiElementDividerApiResponse"
+            "$ref": "#/$defs/UiElementDividerApiResponse"
           },
           {
-            "$ref": "#/definitions/UiElementInputBooleanApiResponse"
+            "$ref": "#/$defs/UiElementInputBooleanApiResponse"
           },
           {
-            "$ref": "#/definitions/UiElementMarkdownApiResponse"
+            "$ref": "#/$defs/UiElementMarkdownApiResponse"
           },
           {
-            "$ref": "#/definitions/UiElementTableApiResponse"
+            "$ref": "#/$defs/UiElementTableApiResponse"
           },
           {
-            "$ref": "#/definitions/UiElementSelectOneApiResponse"
+            "$ref": "#/$defs/UiElementSelectOneApiResponse"
           },
           {
-            "$ref": "#/definitions/UiElementBannerApiResponse"
+            "$ref": "#/$defs/UiElementBannerApiResponse"
           },
           {
-            "$ref": "#/definitions/UiElementImageApiResponse"
+            "$ref": "#/$defs/UiElementImageApiResponse"
           },
           {
-            "$ref": "#/definitions/UiElementCodeApiResponse"
+            "$ref": "#/$defs/UiElementCodeApiResponse"
           },
           {
-            "$ref": "#/definitions/UiElementGridApiResponse"
+            "$ref": "#/$defs/UiElementGridApiResponse"
           },
           {
-            "$ref": "#/definitions/UiElementListApiResponse"
+            "$ref": "#/$defs/UiElementListApiResponse"
           },
           {
-            "$ref": "#/definitions/UiElementHeaderApiResponse"
+            "$ref": "#/$defs/UiElementHeaderApiResponse"
           }
         ]
       }
@@ -72,7 +72,8 @@
     "__type",
     "content"
   ],
-  "definitions": {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
     "PageActions": {
       "anyOf": [
         {
@@ -267,7 +268,7 @@
       "properties": {
         "data": {
           "type": "array",
-          "items": {}
+          "items": true
         },
         "columns": {
           "type": "array",
@@ -304,7 +305,7 @@
                     "type": "string"
                   },
                   "value": {
-                    "$ref": "#/definitions/ElementDataType"
+                    "$ref": "#/$defs/ElementDataType"
                   }
                 },
                 "additionalProperties": false,
@@ -391,7 +392,7 @@
           "type": "string"
         },
         "mode": {
-          "$ref": "#/definitions/BannerMode"
+          "$ref": "#/$defs/BannerMode"
         },
         "__type": {
           "type": "string",
@@ -598,6 +599,5 @@
         "title"
       ]
     }
-  },
-  "$schema": "http://json-schema.org/draft-07/schema#"
+  }
 }

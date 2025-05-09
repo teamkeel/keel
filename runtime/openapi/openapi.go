@@ -334,7 +334,7 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 	}
 
 	// Remap the $ref paths in the uiConfigRaw to point to the correct location in the components
-	uiConfigRaw = bytes.ReplaceAll(uiConfigRaw, []byte("#/definitions/"), []byte("#/components/schemas/UiConfig/definitions/"))
+	uiConfigRaw = bytes.ReplaceAll(uiConfigRaw, []byte("#/$defs/"), []byte("#/components/schemas/UiConfig/$defs/"))
 	var uiConfigSchema jsonschema.JSONSchema
 	_ = json.Unmarshal(uiConfigRaw, &uiConfigSchema)
 

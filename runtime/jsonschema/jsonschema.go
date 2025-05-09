@@ -79,7 +79,7 @@ type JSONSchema struct {
 	// Only used in the root JSONSchema object to define types that
 	// can then be referenced using $ref
 	Components  *Components           `json:"components,omitempty"`
-	Definitions map[string]JSONSchema `json:"definitions,omitempty"`
+	Definitions map[string]JSONSchema `json:"$defs,omitempty"`
 }
 
 type Components struct {

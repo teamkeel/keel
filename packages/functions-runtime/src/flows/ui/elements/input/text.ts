@@ -31,6 +31,7 @@ export const textInput: InputElementImplementation<
   UiElementInputTextApiResponse
 > = (name, options) => {
   return {
+    __type: "input",
     uiConfig: {
       __type: "ui.input.text",
       name,

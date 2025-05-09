@@ -577,7 +577,7 @@
       },
       "UiConfig": {
         "additionalProperties": false,
-        "definitions": {
+        "$defs": {
           "BannerMode": {
             "enum": ["error", "info", "success", "warning"],
             "type": "string"
@@ -628,7 +628,7 @@
                 "type": "string"
               },
               "mode": {
-                "$ref": "#/components/schemas/UiConfig/definitions/BannerMode"
+                "$ref": "#/components/schemas/UiConfig/$defs/BannerMode"
               },
               "title": {
                 "type": "string"
@@ -971,7 +971,7 @@
                           "type": "string"
                         },
                         "value": {
-                          "$ref": "#/components/schemas/UiConfig/definitions/ElementDataType"
+                          "$ref": "#/components/schemas/UiConfig/$defs/ElementDataType"
                         }
                       },
                       "required": ["label", "value"],
@@ -1017,7 +1017,7 @@
           },
           "actions": {
             "items": {
-              "$ref": "#/components/schemas/UiConfig/definitions/PageActions"
+              "$ref": "#/components/schemas/UiConfig/$defs/PageActions"
             },
             "type": "array"
           },
@@ -1025,43 +1025,43 @@
             "items": {
               "anyOf": [
                 {
-                  "$ref": "#/components/schemas/UiConfig/definitions/UiElementInputTextApiResponse"
+                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementInputTextApiResponse"
                 },
                 {
-                  "$ref": "#/components/schemas/UiConfig/definitions/UiElementInputNumberApiResponse"
+                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementInputNumberApiResponse"
                 },
                 {
-                  "$ref": "#/components/schemas/UiConfig/definitions/UiElementDividerApiResponse"
+                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementDividerApiResponse"
                 },
                 {
-                  "$ref": "#/components/schemas/UiConfig/definitions/UiElementInputBooleanApiResponse"
+                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementInputBooleanApiResponse"
                 },
                 {
-                  "$ref": "#/components/schemas/UiConfig/definitions/UiElementMarkdownApiResponse"
+                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementMarkdownApiResponse"
                 },
                 {
-                  "$ref": "#/components/schemas/UiConfig/definitions/UiElementTableApiResponse"
+                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementTableApiResponse"
                 },
                 {
-                  "$ref": "#/components/schemas/UiConfig/definitions/UiElementSelectOneApiResponse"
+                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementSelectOneApiResponse"
                 },
                 {
-                  "$ref": "#/components/schemas/UiConfig/definitions/UiElementBannerApiResponse"
+                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementBannerApiResponse"
                 },
                 {
-                  "$ref": "#/components/schemas/UiConfig/definitions/UiElementImageApiResponse"
+                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementImageApiResponse"
                 },
                 {
-                  "$ref": "#/components/schemas/UiConfig/definitions/UiElementCodeApiResponse"
+                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementCodeApiResponse"
                 },
                 {
-                  "$ref": "#/components/schemas/UiConfig/definitions/UiElementGridApiResponse"
+                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementGridApiResponse"
                 },
                 {
-                  "$ref": "#/components/schemas/UiConfig/definitions/UiElementListApiResponse"
+                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementListApiResponse"
                 },
                 {
-                  "$ref": "#/components/schemas/UiConfig/definitions/UiElementHeaderApiResponse"
+                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementHeaderApiResponse"
                 }
               ]
             },
