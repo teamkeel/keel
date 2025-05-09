@@ -75,14 +75,31 @@ type FunctionsResponsePayload struct {
 	Error        string `json:"error"`
 }
 
+func (r *FunctionsResponsePayload) GetUIComponents() *FlowUIComponents {
+	if r.Config != nil || r.UI != nil {
+		return &FlowUIComponents{
+			Config: r.Config,
+			UI:     r.UI,
+		}
+	}
+
+	return nil
+}
+
+// FlowUIComponents contains data returned from the functions runtime which is used for frontend rendering
+type FlowUIComponents struct {
+	Config JSON `json:"config"`
+	UI     JSON `json:"ui"`
+}
+
 // orchestrateRun will decide based on the db state if the flow should be ran or not
-func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, data map[string]any) error {
+func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, data map[string]any) (error, *FlowUIComponents) {
 	run, err := getRun(ctx, runID)
 	if err != nil {
-		return err
+		return err, nil
 	}
 	if run == nil {
-		return fmt.Errorf("invalid run ID: %s", runID)
+		return fmt.Errorf("invalid run ID: %s", runID), nil
 	}
 
 	switch run.Status {
@@ -91,7 +108,7 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, data ma
 			// this is a new run, set it to running and trigger the flows runtime
 			run, err = updateRun(ctx, run.ID, StatusRunning)
 			if err != nil {
-				return err
+				return err, nil
 			}
 		}
 
@@ -99,7 +116,7 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, data ma
 			// we have been awaiting input, we're now going to continue running
 			run, err = updateRun(ctx, run.ID, StatusRunning)
 			if err != nil {
-				return err
+				return err, nil
 			}
 		}
 
@@ -108,7 +125,7 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, data ma
 		if err != nil {
 			// failed orchestrating, mark the run as failed and return the error
 			_, _ = updateRun(ctx, run.ID, StatusFailed)
-			return err
+			return err, nil
 		}
 
 		if resp.RunCompleted {
@@ -116,39 +133,39 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, data ma
 				// run was orchestrated and completed successfully, but with an error (e.g. exhaused retries)
 				// TODO: store error message against the flow run
 				_, err = updateRun(ctx, run.ID, StatusFailed)
-				return err
+				return err, resp.GetUIComponents()
 			}
 
 			_, err = updateRun(ctx, run.ID, StatusCompleted)
-			return err
+			return err, resp.GetUIComponents()
 		}
 
 		// reload state from db
 		run, err := getRun(ctx, run.ID)
 		if err != nil {
-			return err
+			return err, nil
 		}
 
 		// Check to see if we're in a Pending UI step, break orchestration
 		if run.HasPendingUIStep() {
 			_, err = updateRun(ctx, run.ID, StatusAwaitingInput)
-			return err
+			return err, resp.GetUIComponents()
 		}
 
 		// Continue running the flow
 		payload := FlowRunUpdated{RunID: resp.RunID}
 		wrap, err := payload.Wrap()
 		if err != nil {
-			return err
+			return err, nil
 		}
 
-		return o.SendEvent(ctx, wrap)
+		return o.SendEvent(ctx, wrap), resp.GetUIComponents()
 	case StatusFailed, StatusCompleted, StatusCancelled:
 		// Do nothing
-		return nil
+		return nil, nil
 	}
 
-	return nil
+	return nil, nil
 }
 
 // HandleEvent will handle an event received by the orchestrator from the flows runtime; The only events handled at the
@@ -161,7 +178,9 @@ func (o *Orchestrator) HandleEvent(ctx context.Context, event *EventWrapper) err
 			return err
 		}
 
-		return o.orchestrateRun(ctx, ev.RunID, ev.Data)
+		err, _ := o.orchestrateRun(ctx, ev.RunID, ev.Data)
+
+		return err
 	case EventNameFlowRunStarted:
 		// a new flow has started; create the run and start orchestrating it
 		var ev FlowRunStarted
@@ -179,7 +198,9 @@ func (o *Orchestrator) HandleEvent(ctx context.Context, event *EventWrapper) err
 		if err != nil {
 			return err
 		}
-		return o.orchestrateRun(ctx, run.ID, nil)
+		err, _ = o.orchestrateRun(ctx, run.ID, nil)
+
+		return err
 	}
 	return nil
 }
@@ -259,7 +280,6 @@ func (o *Orchestrator) CallFlow(ctx context.Context, run *Run, data map[string]a
 		err := fmt.Errorf("invalid response from flows runtime")
 		span.SetStatus(codes.Error, err.Error())
 		span.SetAttributes(attribute.String("response.body", string(b)))
-
 		return nil, err
 	}
 
