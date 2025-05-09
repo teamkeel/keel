@@ -3,7 +3,7 @@ import { InputElementResponse, UIElements } from ".";
 
 export type UiPage<C extends FlowConfig> = <
   T extends UIElements,
-  A extends PageActions[] = [],
+  const A extends PageActions[] = [],
 >(
   name: string,
   options: {

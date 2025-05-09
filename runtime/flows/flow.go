@@ -94,6 +94,8 @@ type Step struct {
 	Type      StepType   `json:"type"`
 	Value     *JSONB     `json:"value" gorm:"type:jsonb"`
 	Error     *string    `json:"error"`
+	StartTime *time.Time `json:"startTime"`
+	EndTime   *time.Time `json:"endTime"`
 	CreatedAt time.Time  `json:"createdAt"`
 	UpdatedAt time.Time  `json:"updatedAt"`
 	UI        *JSONB     `json:"ui" gorm:"-"` // UI component, omitted from db operations

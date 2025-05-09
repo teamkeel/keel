@@ -84,6 +84,8 @@ test("flows - first step is a function", async () => {
         value: null,
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
+        startTime: null,
+        endTime: null,
       },
     ],
     config: null,
@@ -119,6 +121,8 @@ test("flows - first step is a function", async () => {
         },
         createdAt: body.steps[0].createdAt,
         updatedAt: expect.any(String),
+        startTime: expect.any(String),
+        endTime: expect.any(String),
       },
     ],
     config: null,
@@ -162,6 +166,8 @@ test("flows - alternating step types", async () => {
         value: null,
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
+        startTime: null,
+        endTime: null,
       },
     ],
     config: null,
@@ -207,6 +213,8 @@ test("flows - alternating step types", async () => {
         },
         createdAt: step1.createdAt,
         updatedAt: expect.any(String),
+        startTime: expect.any(String),
+        endTime: expect.any(String),
       },
       {
         id: expect.any(String),
@@ -246,6 +254,8 @@ test("flows - alternating step types", async () => {
         value: null,
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
+        startTime: expect.any(String),
+        endTime: null,
       },
     ],
   });
@@ -293,6 +303,7 @@ test("flows - alternating step types", async () => {
           age: 32,
         },
         updatedAt: expect.any(String),
+        endTime: expect.any(String),
       },
       {
         // The final step is now pending and will be run via the queue
@@ -306,6 +317,8 @@ test("flows - alternating step types", async () => {
         error: null,
         ui: null,
         value: null,
+        startTime: null,
+        endTime: null,
       },
     ],
     config: null,
@@ -334,6 +347,8 @@ test("flows - alternating step types", async () => {
     },
     createdAt: step3.createdAt,
     updatedAt: expect.any(String),
+    startTime: expect.any(String),
+    endTime: expect.any(String),
   });
 
   // Check the final step updated the db as expected

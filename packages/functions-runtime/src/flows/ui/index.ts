@@ -1,8 +1,8 @@
-import { FlowConfig } from "..";
+import { createFlowContext, FlowConfig } from "..";
 import {
   UiElementSelectOne,
   UiElementSelectOneApiResponse,
-} from "./elements/select/single";
+} from "./elements/select/one";
 import {
   UiElementInputText,
   UiElementInputTextApiResponse,
@@ -69,7 +69,7 @@ type UiInputsElements = {
 
 // Select elements that are named and return values
 type UiSelectElements = {
-  single: UiElementSelectOne;
+  one: UiElementSelectOne;
 };
 
 // Display elements that do not return values
@@ -164,7 +164,7 @@ export type UIApiResponses = {
     boolean: UiElementInputBooleanApiResponse;
   };
   select: {
-    single: UiElementSelectOneApiResponse;
+    one: UiElementSelectOneApiResponse;
   };
 };
 
