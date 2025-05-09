@@ -151,6 +151,15 @@ export function createFlowContext<C extends FlowConfig>(
 
       if (newSteps.length === 1) {
         let result = null;
+        await db
+          .updateTable("keel_flow_step")
+          .set({
+            startTime: new Date(),
+          })
+          .where("id", "=", newSteps[0].id)
+          .returningAll()
+          .executeTakeFirst();
+
         try {
           result = await withTimeout(
             actualFn(),
@@ -162,6 +171,7 @@ export function createFlowContext<C extends FlowConfig>(
             .set({
               status: STEP_STATUS.FAILED,
               spanId: spanId,
+              endTime: new Date(),
               error: e instanceof Error ? e.message : "An error occurred",
             })
             .where("id", "=", newSteps[0].id)
@@ -187,6 +197,7 @@ export function createFlowContext<C extends FlowConfig>(
             status: STEP_STATUS.COMPLETED,
             value: JSON.stringify(result),
             spanId: spanId,
+            endTime: new Date(),
           })
           .where("id", "=", newSteps[0].id)
           .returningAll()
@@ -205,7 +216,6 @@ export function createFlowContext<C extends FlowConfig>(
           stage: options.stage,
           status: STEP_STATUS.NEW,
           type: STEP_TYPE.FUNCTION,
-          startTime: new Date(),
         })
         .returningAll()
         .executeTakeFirst();
@@ -275,6 +285,7 @@ export function createFlowContext<C extends FlowConfig>(
             status: STEP_STATUS.COMPLETED,
             value: JSON.stringify(data),
             spanId: spanId,
+            endTime: new Date(),
           })
           .where("id", "=", step.id)
           .returningAll()
