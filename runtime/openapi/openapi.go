@@ -313,6 +313,7 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 			"ui":        {Ref: "#/components/schemas/UiConfig"},
 			"startTime": {Type: []string{"string", "null"}, Format: "date-time"},
 			"endTime":   {Type: []string{"string", "null"}, Format: "date-time"},
+			"error":     {Type: []string{"string", "null"}},
 		},
 	}
 
