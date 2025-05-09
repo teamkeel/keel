@@ -212,8 +212,7 @@ test("flows - alternating step types", async () => {
         id: expect.any(String),
         runId: runId,
         name: "confirm thing",
-        max_retries: 0,
-        timeout_in_ms: 0,
+        error: null,
         // We have the full UI config because this step is awaiting user input
         ui: {
           title: "Update thing",
