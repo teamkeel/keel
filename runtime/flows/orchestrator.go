@@ -70,8 +70,8 @@ func NewOrchestrator(s *proto.Schema, opts ...OrchestratorOpt) *Orchestrator {
 type FunctionsResponsePayload struct {
 	RunID        string `json:"runId"`
 	RunCompleted bool   `json:"runCompleted"`
-	Config       any    `json:"config"`
-	UI           any    `json:"ui"` // UI component for the current step, if applicable
+	Config       JSON   `json:"config"`
+	UI           JSON   `json:"ui"` // UI component for the current step, if applicable
 }
 
 // orchestrateRun will decide based on the db state if the flow should be ran or not

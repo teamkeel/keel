@@ -72,7 +72,7 @@ func (r *Run) HasPendingUIStep() bool {
 }
 
 // SetUIComponent will set the given UI component on the first pending UI step of the flow
-func (r *Run) SetUIComponent(ui any) {
+func (r *Run) SetUIComponent(ui JSON) {
 	if !r.HasPendingUIStep() {
 		return
 	}
