@@ -1,11 +1,431 @@
-import { resetDatabase, models, flows } from "@teamkeel/testing";
-import { useDatabase } from "@teamkeel/sdk";
+import { resetDatabase, models } from "@teamkeel/testing";
 import { beforeEach, expect, test } from "vitest";
-import { sql } from "kysely";
 
 beforeEach(resetDatabase);
 
-test("flows - basic execution", async () => {
+/*
+TEST CASES
+========================================
+[x] Stepless flow function
+[ ] Flow function with consecutive UI steps
+[ ] Flow function with consecutive function steps
+[x] Flow function with alternating function and UI steps
+[ ] Error thrown in flow function
+[ ] Error thrown in step function
+[ ] Step returning scalar value
+[ ] Step function retrying  
+[ ] Step function timing out 
+[ ] UI step validation
+[ ] Check full API responses
+[ ] All UI elements response
+[ ] Test all Keel types as inputs
+[x] Permissions and identity tests
+*/
+
+test("flows - stepless flow", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  let { status, body } = await startFlow({
+    name: "stepless",
+    token,
+    body: {},
+  });
+  expect(status).toEqual(200);
+
+  const flow = await untilFlowFinished({
+    name: "stepless",
+    id: body.id,
+    token,
+  });
+
+  // Flow has no steps so should be synchronously completed
+  expect(flow).toEqual({
+    id: body.id,
+    input: {},
+    name: "Stepless",
+    status: "COMPLETED",
+    steps: [],
+    config: null,
+    traceId: expect.any(String),
+    createdAt: expect.any(String),
+    updatedAt: expect.any(String),
+  });
+
+  const things = await models.thing.findMany();
+  expect(things.length).toBe(1);
+  expect(things[0].name).toBe("Keelson");
+});
+
+test("flows - first step is a function", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  let { status, body } = await startFlow({
+    name: "singleStep",
+    token,
+    body: {},
+  });
+  expect(status).toEqual(200);
+
+  // First step is a function so should be in status NEW - it will get run async via the queue
+  expect(body).toEqual({
+    id: expect.any(String),
+    input: {},
+    name: "SingleStep",
+    status: "RUNNING",
+    steps: [
+      {
+        id: expect.any(String),
+        runId: body.id,
+        name: "insert thing",
+        ui: null,
+        status: "NEW",
+        type: "FUNCTION",
+        value: null,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        startTime: null,
+        endTime: null,
+      },
+    ],
+    config: null,
+    traceId: expect.any(String),
+    createdAt: expect.any(String),
+    updatedAt: expect.any(String),
+  });
+
+  const flow = await untilFlowFinished({
+    name: "singleStep",
+    id: body.id,
+    token,
+  });
+
+  // Now the flow has finished the run and step statuses should have been
+  // updated and the returned value stored against the step
+  expect(flow).toEqual({
+    id: body.id,
+    input: {},
+    name: "SingleStep",
+    status: "COMPLETED",
+    steps: [
+      {
+        id: body.steps[0].id,
+        runId: body.id,
+        name: "insert thing",
+        ui: null,
+        status: "COMPLETED",
+        type: "FUNCTION",
+        value: {
+          number: 10,
+        },
+        createdAt: body.steps[0].createdAt,
+        updatedAt: expect.any(String),
+        startTime: expect.any(String),
+        endTime: expect.any(String),
+      },
+    ],
+    config: null,
+    traceId: body.traceId,
+    createdAt: body.createdAt,
+    updatedAt: expect.any(String),
+  });
+});
+
+test("flows - alternating step types", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  let { status, body } = await startFlow({
+    name: "MixedStepTypes",
+    token,
+    body: {
+      name: "Keelson",
+      age: 23,
+    },
+  });
+  expect(status).toEqual(200);
+
+  // First step is a function so API response should show that as NEW
+  expect(body).toEqual({
+    id: expect.any(String),
+    input: {
+      name: "Keelson",
+      age: 23,
+    },
+    name: "MixedStepTypes",
+    status: "RUNNING",
+    steps: [
+      {
+        id: expect.any(String),
+        runId: body.id,
+        name: "insert thing",
+        ui: null,
+        status: "NEW",
+        type: "FUNCTION",
+        value: null,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        startTime: null,
+        endTime: null,
+      },
+    ],
+    config: null,
+    traceId: expect.any(String),
+    createdAt: expect.any(String),
+    updatedAt: expect.any(String),
+  });
+
+  const runId = body.id;
+  const traceId = body.traceId;
+  let step1 = body.steps[0];
+
+  // The second step is a page with UI so we wait until the flow has reached that point
+  body = await untilFlowAwaitingInput({
+    name: "MixedStepTypes",
+    id: runId,
+    token,
+  });
+  expect(body).toEqual({
+    id: runId,
+    name: "MixedStepTypes",
+    status: "AWAITING_INPUT", // Flow is now awaiting input
+    input: {
+      name: "Keelson",
+      age: 23,
+    },
+    config: {},
+    traceId,
+    createdAt: expect.any(String),
+    updatedAt: expect.any(String),
+    steps: [
+      {
+        id: step1.id,
+        runId: runId,
+        name: "insert thing",
+        ui: null,
+        status: "COMPLETED", // First step has been completed
+        type: "FUNCTION",
+
+        // We have the value stored from this step now
+        value: {
+          id: expect.any(String),
+        },
+        createdAt: step1.createdAt,
+        updatedAt: expect.any(String),
+        startTime: expect.any(String),
+        endTime: expect.any(String),
+      },
+      {
+        id: expect.any(String),
+        runId: runId,
+        name: "confirm thing",
+        // We have the full UI config because this step is awaiting user input
+        ui: {
+          title: "Update thing",
+          description: "Confirm the existing data in thing",
+          content: [
+            {
+              uiConfig: {
+                __type: "ui.input.text",
+                defaultValue: "Keelson",
+                label: "Name",
+                name: "name",
+              },
+            },
+            {
+              uiConfig: {
+                __type: "ui.display.divider",
+              },
+            },
+            {
+              uiConfig: {
+                __type: "ui.input.number",
+                defaultValue: 23,
+                label: "Age",
+                name: "age",
+              },
+            },
+          ],
+        },
+        status: "PENDING", // This step is now pending while it waits for user input
+        type: "UI",
+        value: null,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        startTime: expect.any(String),
+        endTime: null,
+      },
+    ],
+  });
+
+  step1 = body.steps[0];
+  let step2 = body.steps[1];
+
+  // The first step created a db record so we check that exists
+  let thing = await models.thing.findOne({
+    id: step1.value.id,
+  });
+  expect(thing!.name).toBe("Keelson");
+  expect(thing!.age).toBe(23);
+
+  // Provide the values for the pending UI step
+  ({ status, body } = await putStepValues({
+    name: "MixedStepTypes",
+    runId,
+    stepId: step2.id,
+    token,
+    values: {
+      name: "Keelson updated",
+      age: 32,
+    },
+  }));
+  expect(status).toEqual(200);
+  expect(body).toEqual({
+    id: runId,
+    name: "MixedStepTypes",
+    status: "RUNNING",
+    input: {
+      name: "Keelson",
+      age: 23,
+    },
+    steps: [
+      step1, // Step 1 should not have changed
+      {
+        // Now this step has been completed because we provided the values, the ui
+        // config is no longer present, the status is COMPLETED and we have the stored values
+        ...step2,
+        ui: null,
+        status: "COMPLETED",
+        value: {
+          name: "Keelson updated",
+          age: 32,
+        },
+        updatedAt: expect.any(String),
+        endTime: expect.any(String),
+      },
+      {
+        // The final step is now pending and will be run via the queue
+        id: expect.any(String),
+        runId,
+        status: "NEW",
+        type: "FUNCTION",
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        name: "update thing",
+        ui: null,
+        value: null,
+        startTime: null,
+        endTime: null,
+      },
+    ],
+    config: null,
+    traceId,
+    createdAt: expect.any(String),
+    updatedAt: expect.any(String),
+  });
+
+  step2 = body.steps[1];
+  let step3 = body.steps[2];
+
+  body = await untilFlowFinished({ name: "mixedStepTypes", id: runId, token });
+  expect(body.status).toBe("COMPLETED");
+  expect(body.steps[2]).toEqual({
+    // The final step is now complete and will contain the result
+    id: step3.id,
+    runId,
+    status: "COMPLETED",
+    type: "FUNCTION",
+    name: "update thing",
+    ui: null,
+    value: {
+      name: "Keelson updated",
+      age: 32,
+    },
+    createdAt: step3.createdAt,
+    updatedAt: expect.any(String),
+    startTime: expect.any(String),
+    endTime: expect.any(String),
+  });
+
+  // Check the final step updated the db as expected
+  thing = await models.thing.findOne({
+    id: thing!.id,
+  });
+  expect(thing!.name).toBe("Keelson updated");
+  expect(thing!.age).toBe(32);
+});
+
+test("flows - authorised starting, getting and listing flows", async () => {
+  const adminToken = await getToken({ email: "admin@keel.xyz" });
+  const userToken = await getToken({ email: "user@gmail.com" });
+
+  const resListAdmin = await listFlows({ token: adminToken });
+  expect(resListAdmin.status).toBe(200);
+  expect(resListAdmin.body.flows.length).toBe(3);
+  expect(resListAdmin.body.flows[0].name).toBe("MixedStepTypes");
+  expect(resListAdmin.body.flows[1].name).toBe("Stepless");
+
+  const resListUser = await listFlows({ token: userToken });
+  expect(resListUser.status).toBe(200);
+  expect(resListUser.body.flows.length).toBe(1);
+  expect(resListUser.body.flows[0].name).toBe("UserFlow");
+});
+
+test("flows - unauthorised starting flow", async () => {
+  const token = await getToken({ email: "user@gmail.com" });
+  const res = await startFlow({ name: "stepless", token, body: {} });
+  expect(res.status).toBe(403);
+});
+
+test("flows - unauthenticated starting flow", async () => {
+  const res = await startFlow({ name: "stepless", token: null, body: {} });
+  expect(res.status).toBe(401);
+});
+
+test("flows - unauthorised getting flow", async () => {
+  const adminToken = await getToken({ email: "admin@keel.xyz" });
+  const resStart = await startFlow({
+    name: "stepless",
+    token: adminToken,
+    body: {},
+  });
+  expect(resStart.status).toBe(200);
+
+  const userToken = await getToken({ email: "user@gmail.com" });
+  const resGet = await getFlowRun({
+    name: "stepless",
+    id: resStart.body.id,
+    token: userToken,
+  });
+  expect(resGet.status).toBe(403);
+});
+
+test("flows - unauthenticated starting flow", async () => {
+  const res = await startFlow({ name: "stepless", token: null, body: {} });
+  expect(res.status).toBe(401);
+});
+
+test("flows - unauthenticated getting flow", async () => {
+  const adminToken = await getToken({ email: "admin@keel.xyz" });
+  const resStart = await startFlow({
+    name: "stepless",
+    token: adminToken,
+    body: {},
+  });
+  expect(resStart.status).toBe(200);
+
+  const resGet = await getFlowRun({
+    name: "stepless",
+    id: resStart.body.id,
+    token: null,
+  });
+  expect(resGet.status).toBe(401);
+});
+
+test("flows - unauthenticated listing flows", async () => {
+  const resGet = await listFlows({ token: null });
+  expect(resGet.status).toBe(401);
+});
+
+async function getToken({ email }) {
   const response = await fetch(
     process.env.KEEL_TESTING_AUTH_API_URL + "/token",
     {
@@ -15,7 +435,7 @@ test("flows - basic execution", async () => {
       },
       body: JSON.stringify({
         grant_type: "password",
-        username: "admin@keel.xyz",
+        username: email,
         password: "1234",
       }),
     }
@@ -25,7 +445,7 @@ test("flows - basic execution", async () => {
   const token = (await response.json()).access_token;
   await models.identity.update(
     {
-      email: "admin@keel.xyz",
+      email: email,
       issuer: "https://keel.so",
     },
     {
@@ -33,37 +453,31 @@ test("flows - basic execution", async () => {
     }
   );
 
-  const flowStartResponse = await fetch(
-    `${process.env.KEEL_TESTING_API_URL}/flows/json/myFlow`,
+  return token;
+}
+
+async function startFlow({ name, token, body }) {
+  const res = await fetch(
+    `${process.env.KEEL_TESTING_API_URL}/flows/json/${name}`,
     {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: "Bearer " + token,
       },
-      body: JSON.stringify({
-        name: "Keelson",
-        age: 23,
-      }),
+      body: JSON.stringify(body),
     }
   );
-  expect(flowStartResponse.status).toEqual(200);
-  const flowStartData = await flowStartResponse.json();
-  const runId = flowStartData.id;
 
-  const things = await models.thing.findMany();
-  expect(things.length).toBe(1);
-  expect(things[0].name).toBe("Keelson");
+  return {
+    status: res.status,
+    body: await res.json(),
+  };
+}
 
-  const dbFlows = await sql`SELECT * FROM keel_flow_run`.execute(useDatabase());
-  expect(dbFlows.rows.length).toBe(1);
-  const dbSteps = await sql`SELECT * FROM keel_flow_step`.execute(
-    useDatabase()
-  );
-  expect(dbSteps.rows.length).toBe(2);
-
-  const flowStateResponse = await fetch(
-    `${process.env.KEEL_TESTING_API_URL}/flows/json/myFlow/${runId}`,
+async function getFlowRun({ name, id, token }) {
+  const res = await fetch(
+    `${process.env.KEEL_TESTING_API_URL}/flows/json/${name}/${id}`,
     {
       method: "GET",
       headers: {
@@ -72,44 +486,96 @@ test("flows - basic execution", async () => {
       },
     }
   );
-  expect(flowStateResponse.status).toEqual(200);
-  const flowStateData = await flowStateResponse.json();
-  expect(flowStateData.status).toBe("AWAITING_INPUT");
 
-  const stepId = flowStateData.steps.find(
-    (step) => step.type === "UI" && step.status === "PENDING"
-  )?.id;
+  return {
+    status: res.status,
+    body: await res.json(),
+  };
+}
 
-  const flowStepPutResponse = await fetch(
-    `${process.env.KEEL_TESTING_API_URL}/flows/json/myFlow/${runId}/${stepId}`,
+async function listFlows({ token }) {
+  const res = await fetch(`${process.env.KEEL_TESTING_API_URL}/flows/json`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+  });
+
+  return {
+    status: res.status,
+    body: await res.json(),
+  };
+}
+
+async function putStepValues({ name, runId, stepId, values, token }) {
+  const res = await fetch(
+    `${process.env.KEEL_TESTING_API_URL}/flows/json/${name}/${runId}/${stepId}`,
     {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
         Authorization: "Bearer " + token,
       },
-      body: JSON.stringify({
-        name: "Keelson updated",
-        age: 32,
-      }),
+      body: JSON.stringify(values),
     }
   );
-  expect(flowStepPutResponse.status).toEqual(200);
-  const newThings = await models.thing.findMany();
-  expect(newThings.length).toBe(1);
-  expect(newThings[0].name).toBe("Keelson updated");
 
-  const finalFlowStateResponse = await fetch(
-    `${process.env.KEEL_TESTING_API_URL}/flows/json/myFlow/${runId}`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + token,
-      },
+  return {
+    status: res.status,
+    body: await res.json(),
+  };
+}
+
+async function untilFlowAwaitingInput({ name, id, token }) {
+  const startTime = Date.now();
+  const timeout = 5000; // We'll wait up to 5 seconds
+
+  while (true) {
+    if (Date.now() - startTime > timeout) {
+      throw new Error(
+        `timed out waiting for flow run to reach AWAITING_INPUT state after ${timeout}ms`
+      );
     }
-  );
-  expect(finalFlowStateResponse.status).toEqual(200);
-  const finalFlowStateData = await finalFlowStateResponse.json();
-  expect(finalFlowStateData.status).toBe("COMPLETED");
-});
+
+    const { status, body } = await getFlowRun({ name, id, token });
+    expect(status).toEqual(200);
+
+    if (body.status === "AWAITING_INPUT") {
+      const lastStep = body.steps[body.steps.length - 1];
+      expect(lastStep.status).toBe("PENDING");
+      expect(lastStep.type).toBe("UI");
+      return body;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+}
+
+async function untilFlowFinished({ name, id, token }) {
+  const startTime = Date.now();
+  const timeout = 1000; // 1 seconds timeout on polling
+
+  while (true) {
+    if (Date.now() - startTime > timeout) {
+      throw new Error(
+        `timed out waiting for flow run to reach a completed state after ${timeout}ms`
+      );
+    }
+
+    const { status, body } = await getFlowRun({ name, id, token });
+    expect(status).toEqual(200);
+
+    if (body.status === "COMPLETED" || body.status === "FAILED") {
+      for (const step of body.steps) {
+        // Steps can only be COMPLETED or FAILED when flow has finished
+        expect(step.status === "COMPLETED" || step.status === "FAILED").toBe(
+          true
+        );
+      }
+      return body;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+}

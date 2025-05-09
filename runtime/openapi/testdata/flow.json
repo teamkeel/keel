@@ -491,6 +491,9 @@
     "schemas": {
       "Run": {
         "properties": {
+          "config": {
+            "type": "object"
+          },
           "createdAt": {
             "format": "date-time",
             "type": "string"
@@ -518,6 +521,9 @@
             },
             "type": "array"
           },
+          "traceId": {
+            "type": "string"
+          },
           "updatedAt": {
             "format": "date-time",
             "type": "string"
@@ -531,11 +537,12 @@
             "format": "date-time",
             "type": "string"
           },
+          "endTime": {
+            "format": "date-time",
+            "type": ["string", "null"]
+          },
           "id": {
             "type": "string"
-          },
-          "max_retries": {
-            "type": "number"
           },
           "name": {
             "type": "string"
@@ -543,12 +550,13 @@
           "runId": {
             "type": "string"
           },
+          "startTime": {
+            "format": "date-time",
+            "type": ["string", "null"]
+          },
           "status": {
             "enum": ["PENDING", "FAILED", "COMPLETED"],
             "type": "string"
-          },
-          "timeout_in_ms": {
-            "type": "number"
           },
           "type": {
             "enum": ["FUNCTION", "UI"],

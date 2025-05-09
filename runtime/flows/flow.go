@@ -87,17 +87,17 @@ func (r *Run) SetUIComponent(ui *JSONB) {
 }
 
 type Step struct {
-	ID          string     `json:"id" gorm:"primaryKey;not null;default:null"`
-	Name        string     `json:"name"`
-	RunID       string     `json:"runId"`
-	Status      StepStatus `json:"status"`
-	Type        StepType   `json:"type"`
-	Value       *JSONB     `json:"value" gorm:"type:jsonb"`
-	MaxRetries  int        `json:"max_retries"`
-	TimeoutInMs int        `json:"timeout_in_ms"`
-	CreatedAt   time.Time  `json:"createdAt"`
-	UpdatedAt   time.Time  `json:"updatedAt"`
-	UI          *JSONB     `json:"ui" gorm:"-"` // UI component, omitted from db operations
+	ID        string     `json:"id" gorm:"primaryKey;not null;default:null"`
+	Name      string     `json:"name"`
+	RunID     string     `json:"runId"`
+	Status    StepStatus `json:"status"`
+	Type      StepType   `json:"type"`
+	Value     *JSONB     `json:"value" gorm:"type:jsonb"`
+	StartTime *time.Time `json:"startTime"`
+	EndTime   *time.Time `json:"endTime"`
+	CreatedAt time.Time  `json:"createdAt"`
+	UpdatedAt time.Time  `json:"updatedAt"`
+	UI        *JSONB     `json:"ui" gorm:"-"` // UI component, omitted from db operations
 }
 
 func (Step) TableName() string {

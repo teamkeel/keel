@@ -31,7 +31,6 @@ import (
 	"github.com/teamkeel/keel/node"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/apis/httpjson"
-	"github.com/teamkeel/keel/runtime/flows"
 	"github.com/teamkeel/keel/testhelpers"
 	"github.com/teamkeel/keel/util"
 )
@@ -41,7 +40,6 @@ const (
 	ActionApiPath   = "testingactionsapi"
 	JobPath         = "testingjobs"
 	SubscriberPath  = "testingsubscribers"
-	FlowsPath       = "testingflows"
 	JobsWebhookPath = "/webhooks/jobs"
 )
 
@@ -227,10 +225,12 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 				}
 			},
 			"https://testing-sqs-queue.com/123456789/flows": func(event lambdaevents.SQSEvent) {
-				err := lambdaHandler.FlowHandler(ctx, event)
-				if err != nil {
-					fmt.Printf("error from flow orchestrator: %s\nevent:%s\n\n", err.Error(), event.Records[0].Body)
-				}
+				go func() {
+					err := lambdaHandler.FlowHandler(ctx, event)
+					if err != nil {
+						fmt.Printf("error from flow orchestrator: %s\nevent:%s\n\n", err.Error(), event.Records[0].Body)
+					}
+				}()
 			},
 		},
 	}
@@ -275,17 +275,6 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 				return
 			case SubscriberPath:
 				err = HandleSubscriberExecutorRequest(r.WithContext(ctx), lambdaHandler)
-				if err != nil {
-					response := httpjson.NewErrorResponse(ctx, err, nil)
-					w.WriteHeader(response.Status)
-					_, _ = w.Write(response.Body)
-					return
-				}
-
-				writeJSON(w, http.StatusOK, map[string]any{})
-				return
-			case FlowsPath:
-				err = HandleFlowExecutorRequest(r.WithContext(ctx), lambdaHandler)
 				if err != nil {
 					response := httpjson.NewErrorResponse(ctx, err, nil)
 					w.WriteHeader(response.Status)
@@ -381,7 +370,6 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 		fmt.Sprintf("KEEL_TESTING_ACTIONS_API_URL=%s/%s/json", serverURL, ActionApiPath),
 		fmt.Sprintf("KEEL_TESTING_JOBS_URL=%s/%s/json", serverURL, JobPath),
 		fmt.Sprintf("KEEL_TESTING_SUBSCRIBERS_URL=%s/%s/json", serverURL, SubscriberPath),
-		fmt.Sprintf("KEEL_TESTING_FLOWS_URL=%s/%s/json", serverURL, FlowsPath),
 		fmt.Sprintf("KEEL_TESTING_CLIENT_API_URL=%s/%s", serverURL, ActionApiPath),
 		fmt.Sprintf("KEEL_TESTING_AUTH_API_URL=%s/auth", serverURL),
 		"KEEL_DB_CONN_TYPE=pg",
@@ -464,44 +452,6 @@ func HandleSubscriberExecutorRequest(r *http.Request, h *runtime.Handler) error 
 	}
 
 	return h.EventHandler(r.Context(), lambdaevents.SQSEvent{
-		Records: []lambdaevents.SQSMessage{
-			{
-				MessageId: "",
-				Body:      string(b),
-			},
-		},
-	})
-}
-
-// HandleFlowExecutorRequest handles requests to the flow module in the testing package.
-func HandleFlowExecutorRequest(r *http.Request, h *runtime.Handler) error {
-	name := path.Base(r.URL.Path)
-
-	b, err := io.ReadAll(r.Body)
-	if err != nil {
-		return err
-	}
-
-	m := make(map[string]any)
-	err = json.Unmarshal(b, &m)
-	if err != nil {
-		return err
-	}
-
-	ev := flows.FlowRunStarted{
-		Name:   name,
-		Inputs: m,
-	}
-	wrap, err := ev.Wrap()
-	if err != nil {
-		return err
-	}
-	b, err = json.Marshal(wrap)
-	if err != nil {
-		return err
-	}
-
-	return h.FlowHandler(r.Context(), lambdaevents.SQSEvent{
 		Records: []lambdaevents.SQSMessage{
 			{
 				MessageId: "",

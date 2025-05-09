@@ -278,9 +278,11 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 				},
 			},
 			"name":      {Type: "string"},
+			"traceId":   {Type: "string"},
 			"createdAt": {Type: "string", Format: "date-time"},
 			"updatedAt": {Type: "string", Format: "date-time"},
 			"steps":     {Type: "array", Items: &jsonschema.JSONSchema{Ref: "#/components/schemas/Step"}},
+			"config":    {Type: "object"},
 		},
 	}
 
@@ -305,12 +307,12 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 					StringPointer(string(flows.StepTypeUI)),
 				},
 			},
-			"createdAt":     {Type: "string", Format: "date-time"},
-			"updatedAt":     {Type: "string", Format: "date-time"},
-			"value":         {Type: "object"},
-			"ui":            {Ref: "#/components/schemas/UiConfig"},
-			"max_retries":   {Type: "number"},
-			"timeout_in_ms": {Type: "number"},
+			"createdAt": {Type: "string", Format: "date-time"},
+			"updatedAt": {Type: "string", Format: "date-time"},
+			"value":     {Type: "object"},
+			"ui":        {Ref: "#/components/schemas/UiConfig"},
+			"startTime": {Type: []string{"string", "null"}, Format: "date-time"},
+			"endTime":   {Type: []string{"string", "null"}, Format: "date-time"},
 		},
 	}
 

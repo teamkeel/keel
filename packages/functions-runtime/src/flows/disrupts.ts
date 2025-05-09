@@ -18,7 +18,7 @@ export class StepErrorDisrupt extends FlowDisrupt {
   }
 }
 
-export class StepCompletedDisrupt extends FlowDisrupt {
+export class StepCreatedDisrupt extends FlowDisrupt {
   constructor() {
     super();
   }
