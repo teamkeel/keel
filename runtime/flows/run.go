@@ -11,7 +11,7 @@ import (
 )
 
 // StartFlow will start a new run for the given flow with the given input
-func StartFlow(ctx context.Context, flow *proto.Flow, inputs any) (run *Run, err error) {
+func StartFlow(ctx context.Context, flow *proto.Flow, inputs map[string]any) (run *Run, err error) {
 	ctx, span := tracer.Start(ctx, "StartFlow")
 	defer span.End()
 

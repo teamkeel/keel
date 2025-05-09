@@ -2,8 +2,6 @@ package flows
 
 import (
 	"context"
-	"database/sql/driver"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"slices"
@@ -47,11 +45,11 @@ type Run struct {
 	TraceID   string    `json:"traceId"`
 	Status    Status    `json:"status"`
 	Name      string    `json:"name"`
-	Input     *JSONB    `json:"input" gorm:"type:jsonb"`
+	Input     JSON      `json:"input" gorm:"type:jsonb;serializer:json"`
 	Steps     []Step    `json:"steps"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
-	Config    *JSONB    `json:"config" gorm:"-"` // Stages config component, omitted from db operations
+	Config    JSON      `json:"config" gorm:"-"` // Stages config component, omitted from db operations
 }
 
 func (Run) TableName() string {
@@ -74,7 +72,7 @@ func (r *Run) HasPendingUIStep() bool {
 }
 
 // SetUIComponent will set the given UI component on the first pending UI step of the flow
-func (r *Run) SetUIComponent(ui *JSONB) {
+func (r *Run) SetUIComponent(ui JSON) {
 	if !r.HasPendingUIStep() {
 		return
 	}
@@ -92,34 +90,20 @@ type Step struct {
 	RunID     string     `json:"runId"`
 	Status    StepStatus `json:"status"`
 	Type      StepType   `json:"type"`
-	Value     *JSONB     `json:"value" gorm:"type:jsonb"`
+	Value     JSON       `json:"value" gorm:"type:jsonb;serializer:json"`
 	Error     *string    `json:"error"`
 	StartTime *time.Time `json:"startTime"`
 	EndTime   *time.Time `json:"endTime"`
 	CreatedAt time.Time  `json:"createdAt"`
 	UpdatedAt time.Time  `json:"updatedAt"`
-	UI        *JSONB     `json:"ui" gorm:"-"` // UI component, omitted from db operations
+	UI        JSON       `json:"ui" gorm:"-"` // UI component, omitted from db operations
 }
 
 func (Step) TableName() string {
 	return "keel_flow_step"
 }
 
-// JSONB Interface for JSONB fields
-type JSONB map[string]any
-
-func (jsonField JSONB) Value() (driver.Value, error) {
-	b, err := json.Marshal(jsonField)
-	return string(b), err
-}
-
-func (jsonField *JSONB) Scan(value any) error {
-	data, ok := value.([]byte)
-	if !ok {
-		return errors.New("type assertion to []byte failed")
-	}
-	return json.Unmarshal(data, &jsonField)
-}
+type JSON interface{}
 
 type paginationFields struct {
 	Limit  int
@@ -211,14 +195,9 @@ func createRun(ctx context.Context, flow *proto.Flow, inputs any, traceID string
 		return nil, fmt.Errorf("invalid flow")
 	}
 
-	var jsonInputs JSONB
-	if inputsMap, ok := inputs.(map[string]any); ok {
-		jsonInputs = inputsMap
-	}
-
 	run := Run{
 		Status:  StatusNew,
-		Input:   &jsonInputs,
+		Input:   inputs,
 		Name:    flow.Name,
 		TraceID: traceID,
 	}
