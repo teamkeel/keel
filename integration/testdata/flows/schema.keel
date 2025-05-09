@@ -18,6 +18,14 @@ flow SingleStep {
     @permission(roles: [Admin])
 }
 
+flow ErrorInStep {
+    @permission(roles: [Admin])
+}
+
+flow TimeoutStep {
+    @permission(roles: [Admin])
+}
+
 model Thing {
     fields {
         name Text?

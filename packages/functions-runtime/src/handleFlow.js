@@ -12,7 +12,6 @@ import { parseInputs } from "./parsing";
 import { createFlowContext } from "./flows";
 import {
   StepCreatedDisrupt,
-  StepErrorDisrupt,
   UIRenderDisrupt,
   ExhuastedRetriesDisrupt,
 } from "./flows/disrupts";
@@ -123,11 +122,11 @@ async function handleFlow(request, config) {
           );
         }
 
-        return createJSONRPCSuccessResponse(request.id, {
-          runId: runId,
-          runCompleted: false,
-          config: flowConfig,
-        });
+        return createJSONRPCErrorResponse(
+          request.id,
+          JSONRPCErrorCode.InternalError,
+          e.message
+        );
       } finally {
         if (db) {
           await db.destroy();
