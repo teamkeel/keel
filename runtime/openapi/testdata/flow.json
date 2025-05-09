@@ -541,6 +541,9 @@
             "format": "date-time",
             "type": ["string", "null"]
           },
+          "error": {
+            "type": ["string", "null"]
+          },
           "id": {
             "type": "string"
           },
