@@ -93,6 +93,7 @@ type Step struct {
 	Status    StepStatus `json:"status"`
 	Type      StepType   `json:"type"`
 	Value     *JSONB     `json:"value" gorm:"type:jsonb"`
+	Error     *string    `json:"error"`
 	StartTime *time.Time `json:"startTime"`
 	EndTime   *time.Time `json:"endTime"`
 	CreatedAt time.Time  `json:"createdAt"`

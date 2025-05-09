@@ -12,7 +12,6 @@ import { parseInputs } from "./parsing";
 import { createFlowContext } from "./flows";
 import {
   StepCreatedDisrupt,
-  StepErrorDisrupt,
   UIRenderDisrupt,
   ExhuastedRetriesDisrupt,
 } from "./flows/disrupts";
@@ -116,18 +115,19 @@ async function handleFlow(request, config) {
 
         // The flow has failed due to exhausted step retries
         if (e instanceof ExhuastedRetriesDisrupt) {
-          return createJSONRPCErrorResponse(
-            request.id,
-            JSONRPCErrorCode.InternalError,
-            "flow failed due to exhausted step retries"
-          );
+          return createJSONRPCSuccessResponse(request.id, {
+            runId: runId,
+            runCompleted: true,
+            error: "flow failed due to exhausted step retries",
+            config: flowConfig,
+          });
         }
 
-        return createJSONRPCSuccessResponse(request.id, {
-          runId: runId,
-          runCompleted: false,
-          config: flowConfig,
-        });
+        return createJSONRPCErrorResponse(
+          request.id,
+          JSONRPCErrorCode.InternalError,
+          e.message
+        );
       } finally {
         if (db) {
           await db.destroy();
