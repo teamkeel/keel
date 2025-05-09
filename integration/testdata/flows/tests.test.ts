@@ -219,6 +219,7 @@ test("flows - alternating step types", async () => {
         name: "confirm thing",
         // We have the full UI config because this step is awaiting user input
         ui: {
+          __type: "ui.page",
           title: "Update thing",
           description: "Confirm the existing data in thing",
           content: [

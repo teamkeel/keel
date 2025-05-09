@@ -273,7 +273,7 @@ export function createFlowContext<C extends FlowConfig>(
 
         if (!data) {
           // If no data has been passed in, render the UI by disrupting the step with UIRenderDisrupt.
-          throw new UIRenderDisrupt(step?.id, page);
+          throw new UIRenderDisrupt(step?.id, page(options));
         }
 
         // TODO: Validate the data! If not valid, throw a UIRenderDisrupt along with the validation errors.
