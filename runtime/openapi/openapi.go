@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/flows"
 	"github.com/teamkeel/keel/runtime/jsonschema"
 )
 
@@ -268,12 +269,12 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 			"status": {
 				Type: "string",
 				Enum: []*string{
-					StringPointer("NEW"),
-					StringPointer("RUNNING"),
-					StringPointer("AWAITING_INPUT"),
-					StringPointer("FAILED"),
-					StringPointer("COMPLETED"),
-					StringPointer("CANCELLED"),
+					StringPointer(string(flows.StatusNew)),
+					StringPointer(string(flows.StatusRunning)),
+					StringPointer(string(flows.StatusAwaitingInput)),
+					StringPointer(string(flows.StatusFailed)),
+					StringPointer(string(flows.StatusCompleted)),
+					StringPointer(string(flows.StatusCancelled)),
 				},
 			},
 			"name":      {Type: "string"},
@@ -291,17 +292,17 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 			"status": {
 				Type: "string",
 				Enum: []*string{
-					StringPointer("PENDING"),
-					StringPointer("FAILED"),
-					StringPointer("COMPLETED"),
+					StringPointer(string(flows.StepStatusPending)),
+					StringPointer(string(flows.StepStatusFailed)),
+					StringPointer(string(flows.StepStatusCompleted)),
 				},
 			},
 			"name": {Type: "string"},
 			"type": {
 				Type: "string",
 				Enum: []*string{
-					StringPointer("FUNCTION"),
-					StringPointer("UI"),
+					StringPointer(string(flows.StepTypeFunction)),
+					StringPointer(string(flows.StepTypeUI)),
 				},
 			},
 			"createdAt":     {Type: "string", Format: "date-time"},
