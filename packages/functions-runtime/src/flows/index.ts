@@ -1,4 +1,4 @@
-import { UI } from "./ui";
+import { ImplementationResponse, UI } from "./ui";
 import { useDatabase } from "../database";
 import { textInput } from "./ui/elements/input/text";
 import { numberInput } from "./ui/elements/input/number";
@@ -285,15 +285,18 @@ export function createFlowContext<C extends FlowConfig>(
             .executeTakeFirst();
 
           // If no data has been passed in, render the UI by disrupting the step with UIRenderDisrupt.
-          throw new UIRenderDisrupt(step?.id, page(options));
+          throw new UIRenderDisrupt(step?.id, (await page(options, null)).page);
         }
 
         if (!data) {
           // If no data has been passed in, render the UI by disrupting the step with UIRenderDisrupt.
-          throw new UIRenderDisrupt(step?.id, page(options));
+          throw new UIRenderDisrupt(step?.id, (await page(options, null)).page);
         }
 
-        // TODO: Validate the data! If not valid, throw a UIRenderDisrupt along with the validation errors.
+        const p = await page(options, data);
+        if (p.hasValidationErrors) {
+          throw new UIRenderDisrupt(step?.id, p.page);
+        }
 
         // If the data has been passed in and is valid, persist the data and mark the step as COMPLETED, and then return the data.
         await db

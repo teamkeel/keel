@@ -45,39 +45,55 @@ export interface UiPageApiResponse extends BaseUiDisplayResponse<"ui.page"> {
   content: UiElementApiResponses;
 }
 
-export const page = <
+export async function page<
   C extends FlowConfig,
   A extends PageActions[],
   T extends UIElements,
 >(
-  options: PageOptions<C, A, T>
-): UiPageApiResponse => {
+  options: PageOptions<C, A, T>,
+  data: any
+): Promise<{ page: UiPageApiResponse; hasValidationErrors: boolean }> {
   // Turn these back into the actual response types
   const content = options.content as unknown as ImplementationResponse<
     any,
     any
   >[];
 
-  // TODO Validation
-  // for (const c of content) {
-  //   if ('__type' in c && c.__type === "input") {
-  //     c.validate()
-  //   }
-  // }
+  let hasValidationErrors = false;
 
-  const contentUiConfig = content
-    .map((c) => c.uiConfig)
-    .filter(Boolean) as UiElementApiResponses;
+  const contentUiConfig = (await Promise.all(
+    content
+      .map(async (c) => {
+        const isInput = "__type" in c && c.__type == "input";
+        const hasData = data && c.uiConfig.name in data;
+        if (isInput && hasData && c.validate) {
+          const validationError = await c.validate(data[c.uiConfig.name]);
+          if (typeof validationError === "string") {
+            hasValidationErrors = true;
+            return {
+              ...c.uiConfig,
+              validationError,
+            };
+          }
+        }
+
+        return c.uiConfig;
+      })
+      .filter(Boolean)
+  )) as UiElementApiResponses;
 
   return {
-    __type: "ui.page",
-    stage: options.stage,
-    title: options.title,
-    description: options.description,
-    content: contentUiConfig,
-    actions: options.actions,
+    page: {
+      __type: "ui.page",
+      stage: options.stage,
+      title: options.title,
+      description: options.description,
+      content: contentUiConfig,
+      actions: options.actions,
+    },
+    hasValidationErrors,
   };
-};
+}
 
 /* ********************
  * Helper functions

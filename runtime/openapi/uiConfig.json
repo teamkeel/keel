@@ -141,6 +141,9 @@
         },
         "disabled": {
           "type": "boolean"
+        },
+        "validationError": {
+          "type": "string"
         }
       },
       "additionalProperties": false,
@@ -183,6 +186,9 @@
         },
         "disabled": {
           "type": "boolean"
+        },
+        "validationError": {
+          "type": "string"
         }
       },
       "additionalProperties": false,
@@ -236,6 +242,9 @@
         },
         "disabled": {
           "type": "boolean"
+        },
+        "validationError": {
+          "type": "string"
         }
       },
       "additionalProperties": false,
@@ -357,6 +366,9 @@
         },
         "disabled": {
           "type": "boolean"
+        },
+        "validationError": {
+          "type": "string"
         }
       },
       "additionalProperties": false,

@@ -552,6 +552,118 @@ test("flows - alternating step types", async () => {
   expect(thing!.age).toBe(32);
 });
 
+test("flows - text input validation", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+  let { status, body } = await startFlow({
+    name: "ValidationText",
+    token,
+    body: {},
+  });
+
+  expect(status).toBe(200);
+  expect(body.steps[0].status).toBe("PENDING");
+
+  const runId = body.id;
+  let stepId = body.steps[0].id;
+
+  ({ status, body } = await putStepValues({
+    name: "ValidationText",
+    runId,
+    stepId,
+    token,
+    values: {
+      postcode: "blah blah blah",
+    },
+  }));
+
+  expect(status).toBe(200);
+  expect(body.steps[0].ui).toEqual({
+    __type: "ui.page",
+    content: [
+      {
+        __type: "ui.input.text",
+        label: "Postcode",
+        name: "postcode",
+        placeholder: "e.g. N1 ABC",
+        validationError: "not a valid postcode",
+      },
+    ],
+    title: "Your postcode",
+  });
+
+  ({ status, body } = await putStepValues({
+    name: "ValidationText",
+    runId,
+    stepId,
+    token,
+    values: {
+      postcode: "E4 6ED",
+    },
+  }));
+
+  expect(status).toBe(200);
+  expect(body.steps[0].status).toBe("COMPLETED");
+  expect(body.steps[0].value).toEqual({
+    postcode: "E4 6ED",
+  });
+});
+
+test("flows - boolean input validation", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+  let { status, body } = await startFlow({
+    name: "ValidationBoolean",
+    token,
+    body: {},
+  });
+
+  expect(status).toBe(200);
+  expect(body.steps[0].status).toBe("PENDING");
+
+  const runId = body.id;
+  let stepId = body.steps[0].id;
+
+  ({ status, body } = await putStepValues({
+    name: "ValidationBoolean",
+    runId,
+    stepId,
+    token,
+    values: {
+      good: false,
+    },
+  }));
+
+  expect(status).toBe(200);
+  expect(body.steps[0].ui).toEqual({
+    __type: "ui.page",
+    content: [
+      {
+        __type: "ui.input.boolean",
+        mode: "checkbox",
+        label: "Is it good?",
+        name: "good",
+        validationError: "it must be good",
+      },
+    ],
+    title: "Important question",
+  });
+
+  ({ status, body } = await putStepValues({
+    name: "ValidationBoolean",
+    runId,
+    stepId,
+    token,
+    values: {
+      good: true,
+    },
+  }));
+
+  expect(status).toBe(200);
+  expect(body.steps[0].status).toBe("COMPLETED");
+  expect(body.steps[0].value).toEqual({
+    good: true,
+  });
+});
+
 test("flows - error in with retries", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
   const res = await startFlow({ name: "ErrorInStep", token, body: {} });
@@ -774,7 +886,9 @@ test("flows - authorised starting, getting and listing flows", async () => {
 
   const resListAdmin = await listFlows({ token: adminToken });
   expect(resListAdmin.status).toBe(200);
-  expect(resListAdmin.body.flows.length).toBe(7);
+
+  expect(resListAdmin.body.flows.length).toBe(9);
+
   expect(resListAdmin.body.flows[0].name).toBe("ScalarStep");
   expect(resListAdmin.body.flows[1].name).toBe("MixedStepTypes");
   expect(resListAdmin.body.flows[2].name).toBe("Stepless");
@@ -782,6 +896,8 @@ test("flows - authorised starting, getting and listing flows", async () => {
   expect(resListAdmin.body.flows[4].name).toBe("ErrorInStep");
   expect(resListAdmin.body.flows[5].name).toBe("TimeoutStep");
   expect(resListAdmin.body.flows[6].name).toBe("OnlyPages");
+  expect(resListAdmin.body.flows[7].name).toBe("ValidationText");
+  expect(resListAdmin.body.flows[8].name).toBe("ValidationBoolean");
 
   const resListUser = await listFlows({ token: userToken });
   expect(resListUser.status).toBe(200);
