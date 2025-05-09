@@ -33,6 +33,13 @@ flow OnlyPages {
     @permission(roles: [Admin])
 }
 
+flow ValidationText {
+    @permission(roles: [Admin])
+}
+
+flow ValidationBoolean {
+    @permission(roles: [Admin])
+}
 
 model Thing {
     fields {
