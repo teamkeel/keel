@@ -40,7 +40,8 @@ func StartFlow(ctx context.Context, flow *proto.Flow, inputs map[string]any) (ru
 		attribute.String("flowRun.id", run.ID),
 	)
 
-	if err = o.orchestrateRun(ctx, run.ID, nil); err != nil {
+	err, uiComponents := o.orchestrateRun(ctx, run.ID, nil)
+	if err != nil {
 		err = fmt.Errorf("orchestrating flow run: %w", err)
 		return
 	}
@@ -51,6 +52,8 @@ func StartFlow(ctx context.Context, flow *proto.Flow, inputs map[string]any) (ru
 		err = fmt.Errorf("retrieving flow run: %w", err)
 		return
 	}
+
+	run.SetUIComponents(uiComponents)
 
 	return run, nil
 }
@@ -121,13 +124,8 @@ func GetFlowRunState(ctx context.Context, runID string) (run *Run, err error) {
 		return
 	}
 
-	// setting the ui component on the pending UI step
-	run.SetUIComponent(resp.UI)
-
-	// set stages config if any
-	if resp.Config != nil {
-		run.Config = resp.Config
-	}
+	// setting the flow config and ui component on the pending UI step
+	run.SetUIComponents(resp.GetUIComponents())
 
 	return
 }
@@ -196,12 +194,18 @@ func UpdateStep(ctx context.Context, runID string, stepID string, inputs map[str
 	}
 
 	// Run the flow synchronously
-	err = o.orchestrateRun(ctx, runID, inputs)
+	err, uiComponents := o.orchestrateRun(ctx, runID, inputs)
 	if err != nil {
 		err = fmt.Errorf("orchestrating flow run: %w", err)
 		return
 	}
 
-	// return the new run state
-	return GetFlowRunState(ctx, runID)
+	// return fresh state
+	run, err = getRun(ctx, runID)
+	if err == nil {
+		// set the config & any ui components
+		run.SetUIComponents(uiComponents)
+	}
+
+	return
 }

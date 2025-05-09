@@ -29,6 +29,10 @@ flow ErrorInStep {
 flow TimeoutStep {
     @permission(roles: [Admin])
 }
+flow OnlyPages {
+    @permission(roles: [Admin])
+}
+
 
 model Thing {
     fields {

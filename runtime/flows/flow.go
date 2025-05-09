@@ -71,15 +71,21 @@ func (r *Run) HasPendingUIStep() bool {
 	return false
 }
 
-// SetUIComponent will set the given UI component on the first pending UI step of the flow
-func (r *Run) SetUIComponent(ui JSON) {
-	if !r.HasPendingUIStep() {
+// SetUIComponents will set the given UI component on the first pending UI step of the flow
+func (r *Run) SetUIComponents(c *FlowUIComponents) {
+	if c == nil {
 		return
 	}
 
-	for i, step := range r.Steps {
-		if step.Type == StepTypeUI && step.Status == StepStatusPending {
-			r.Steps[i].UI = ui
+	if c.Config != nil {
+		r.Config = c.Config
+	}
+
+	if r.HasPendingUIStep() && c.UI != nil {
+		for i, step := range r.Steps {
+			if step.Type == StepTypeUI && step.Status == StepStatusPending {
+				r.Steps[i].UI = c.UI
+			}
 		}
 	}
 }

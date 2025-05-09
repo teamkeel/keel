@@ -7,7 +7,7 @@ beforeEach(resetDatabase);
 TEST CASES
 ========================================
 [x] Stepless flow function
-[ ] Flow function with consecutive UI steps
+[x] Flow function with consecutive UI steps
 [ ] Flow function with consecutive function steps
 [x] Flow function with alternating function and UI steps
 [ ] Error thrown in flow function
@@ -20,6 +20,7 @@ TEST CASES
 [ ] All UI elements response
 [ ] Test all Keel types as inputs
 [x] Permissions and identity tests
+[ ] Stages
 */
 
 test("flows - scalar step", async () => {
@@ -66,18 +67,171 @@ test("flows - scalar step", async () => {
   });
 });
 
+test("flows - only pages", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  let { status, body } = await startFlow({
+    name: "onlyPages",
+    token,
+    body: {},
+  });
+  expect(status).toEqual(200);
+  expect(body).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "AWAITING_INPUT",
+    name: "OnlyPages",
+    input: {},
+    steps: [
+      {
+        id: expect.any(String),
+        name: "first page",
+        runId: expect.any(String),
+        status: "PENDING",
+        type: "UI",
+        value: null,
+        error: null,
+        startTime: expect.any(String),
+        endTime: null,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        ui: {
+          __type: "ui.page",
+          content: [
+            { __type: "ui.display.grid", data: [{ title: "A thing" }] },
+          ],
+          title: "Grid of things",
+        },
+      },
+    ],
+    createdAt: expect.any(String),
+    updatedAt: expect.any(String),
+    config: {},
+  });
+
+  // Provide the values for the pending UI step
+  ({ status, body } = await putStepValues({
+    name: "MixedStepTypes",
+    runId: body.id,
+    stepId: body.steps[0].id,
+    token,
+    values: {},
+  }));
+  expect(status).toEqual(200);
+  expect(body).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "AWAITING_INPUT",
+    name: "OnlyPages",
+    input: {},
+    steps: [
+      {
+        id: expect.any(String),
+        name: "first page",
+        runId: expect.any(String),
+        status: "COMPLETED",
+        type: "UI",
+        value: {},
+        error: null,
+        startTime: expect.any(String),
+        endTime: expect.any(String),
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        ui: null,
+      },
+      {
+        id: expect.any(String),
+        name: "question",
+        runId: expect.any(String),
+        status: "PENDING",
+        type: "UI",
+        value: null,
+        error: null,
+        startTime: expect.any(String),
+        endTime: null,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        ui: {
+          __type: "ui.page",
+          content: [
+            {
+              __type: "ui.input.boolean",
+              label: "Did you like the things?",
+              mode: "checkbox",
+              name: "yesno",
+            },
+          ],
+          title: "My flow",
+        },
+      },
+    ],
+    createdAt: expect.any(String),
+    updatedAt: expect.any(String),
+    config: {},
+  });
+
+  ({ status, body } = await putStepValues({
+    name: "MixedStepTypes",
+    runId: body.id,
+    stepId: body.steps[1].id,
+    token,
+    values: { yesno: true },
+  }));
+  expect(status).toEqual(200);
+  expect(body).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "COMPLETED",
+    name: "OnlyPages",
+    input: {},
+    steps: [
+      {
+        id: expect.any(String),
+        name: "first page",
+        runId: expect.any(String),
+        status: "COMPLETED",
+        type: "UI",
+        value: {},
+        error: null,
+        startTime: expect.any(String),
+        endTime: expect.any(String),
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        ui: null,
+      },
+      {
+        id: expect.any(String),
+        name: "question",
+        runId: expect.any(String),
+        status: "COMPLETED",
+        type: "UI",
+        value: { yesno: true },
+        error: null,
+        startTime: expect.any(String),
+        endTime: expect.any(String),
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        ui: null,
+      },
+    ],
+    createdAt: expect.any(String),
+    updatedAt: expect.any(String),
+    config: {},
+  });
+});
+
 test("flows - stepless flow", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
   let { status, body } = await startFlow({
-    name: "stepless",
+    name: "Stepless",
     token,
     body: {},
   });
   expect(status).toEqual(200);
 
   const flow = await untilFlowFinished({
-    name: "stepless",
+    name: "Stepless",
     id: body.id,
     token,
   });
@@ -132,7 +286,7 @@ test("flows - first step is a function", async () => {
         endTime: null,
       },
     ],
-    config: null,
+    config: {},
     traceId: expect.any(String),
     createdAt: expect.any(String),
     updatedAt: expect.any(String),
@@ -214,7 +368,7 @@ test("flows - alternating step types", async () => {
         endTime: null,
       },
     ],
-    config: null,
+    config: {},
     traceId: expect.any(String),
     createdAt: expect.any(String),
     updatedAt: expect.any(String),
@@ -426,7 +580,7 @@ test("flows - error in with retries", async () => {
     ],
     createdAt: expect.any(String),
     updatedAt: expect.any(String),
-    config: null,
+    config: {},
   });
 
   const flow = await untilFlowFinished({
@@ -520,7 +674,7 @@ test("flows - timeout step", async () => {
     ],
     createdAt: expect.any(String),
     updatedAt: expect.any(String),
-    config: null,
+    config: {},
   });
 
   const flow = await untilFlowFinished({
