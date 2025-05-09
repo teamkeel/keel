@@ -12,7 +12,7 @@ TEST CASES
 [x] Flow function with alternating function and UI steps
 [ ] Error thrown in flow function
 [ ] Error thrown in step function
-[ ] Step returning scalar value
+[x] Step returning scalar value
 [ ] Step function retrying  
 [ ] Step function timing out 
 [ ] UI step validation
@@ -21,6 +21,49 @@ TEST CASES
 [ ] Test all Keel types as inputs
 [x] Permissions and identity tests
 */
+
+test("flows - scalar step", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  let { status, body } = await startFlow({
+    name: "scalarStep",
+    token,
+    body: {},
+  });
+  expect(status).toEqual(200);
+
+  const flow = await untilFlowFinished({
+    name: "scalarStep",
+    id: body.id,
+    token,
+  });
+
+  expect(flow).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "COMPLETED",
+    name: "ScalarStep",
+    input: {},
+    steps: [
+      {
+        id: expect.any(String),
+        name: "scalar step",
+        runId: expect.any(String),
+        status: "COMPLETED",
+        type: "FUNCTION",
+        value: 10,
+        startTime: expect.any(String),
+        endTime: expect.any(String),
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        ui: null,
+      },
+    ],
+    createdAt: expect.any(String),
+    updatedAt: expect.any(String),
+    config: null,
+  });
+});
 
 test("flows - stepless flow", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
@@ -359,7 +402,7 @@ test("flows - authorised starting, getting and listing flows", async () => {
 
   const resListAdmin = await listFlows({ token: adminToken });
   expect(resListAdmin.status).toBe(200);
-  expect(resListAdmin.body.flows.length).toBe(3);
+  expect(resListAdmin.body.flows.length).toBe(4);
   expect(resListAdmin.body.flows[0].name).toBe("MixedStepTypes");
   expect(resListAdmin.body.flows[1].name).toBe("Stepless");
 

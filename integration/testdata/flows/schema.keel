@@ -1,3 +1,7 @@
+flow ScalarStep {
+    @permission(roles: [Admin])
+}
+
 flow MixedStepTypes {
     inputs {
         name Text
