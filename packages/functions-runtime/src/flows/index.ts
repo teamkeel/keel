@@ -7,7 +7,7 @@ import { booleanInput } from "./ui/elements/input/boolean";
 import { markdown } from "./ui/elements/display/markdown";
 import { table } from "./ui/elements/display/table";
 import { selectOne } from "./ui/elements/select/one";
-import { UiPage } from "./ui/page";
+import { page, UiPage } from "./ui/page";
 import {
   StepCreatedDisrupt,
   UIRenderDisrupt,
@@ -253,7 +253,7 @@ export function createFlowContext<C extends FlowConfig>(
       // return stepWithCatch;
     },
     ui: {
-      page: (async (name, page) => {
+      page: (async (name, options) => {
         const db = useDatabase();
 
         // First check if this step exists
@@ -276,7 +276,7 @@ export function createFlowContext<C extends FlowConfig>(
             .values({
               run_id: runId,
               name: name,
-              stage: page.stage,
+              stage: options.stage,
               status: STEP_STATUS.PENDING,
               type: STEP_TYPE.UI,
               startTime: new Date(),
@@ -285,12 +285,12 @@ export function createFlowContext<C extends FlowConfig>(
             .executeTakeFirst();
 
           // If no data has been passed in, render the UI by disrupting the step with UIRenderDisrupt.
-          throw new UIRenderDisrupt(step?.id, page);
+          throw new UIRenderDisrupt(step?.id, page(options));
         }
 
         if (!data) {
           // If no data has been passed in, render the UI by disrupting the step with UIRenderDisrupt.
-          throw new UIRenderDisrupt(step?.id, page);
+          throw new UIRenderDisrupt(step?.id, page(options));
         }
 
         // TODO: Validate the data! If not valid, throw a UIRenderDisrupt along with the validation errors.

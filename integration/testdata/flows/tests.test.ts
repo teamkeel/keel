@@ -223,29 +223,24 @@ test("flows - alternating step types", async () => {
         error: null,
         // We have the full UI config because this step is awaiting user input
         ui: {
+          __type: "ui.page",
           title: "Update thing",
           description: "Confirm the existing data in thing",
           content: [
             {
-              uiConfig: {
-                __type: "ui.input.text",
-                defaultValue: "Keelson",
-                label: "Name",
-                name: "name",
-              },
+              __type: "ui.input.text",
+              defaultValue: "Keelson",
+              label: "Name",
+              name: "name",
             },
             {
-              uiConfig: {
-                __type: "ui.display.divider",
-              },
+              __type: "ui.display.divider",
             },
             {
-              uiConfig: {
-                __type: "ui.input.number",
-                defaultValue: 23,
-                label: "Age",
-                name: "age",
-              },
+              __type: "ui.input.number",
+              defaultValue: 23,
+              label: "Age",
+              name: "age",
             },
           ],
         },

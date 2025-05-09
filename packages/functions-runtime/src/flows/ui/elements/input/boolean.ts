@@ -25,6 +25,7 @@ export const booleanInput: InputElementImplementation<
   UiElementInputBooleanApiResponse
 > = (name, options) => {
   return {
+    __type: "input",
     uiConfig: {
       __type: "ui.input.boolean",
       name,
