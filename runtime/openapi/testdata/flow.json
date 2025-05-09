@@ -1046,6 +1046,9 @@
                   "$ref": "#/components/schemas/UiConfig/$defs/UiElementSelectOneApiResponse"
                 },
                 {
+                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementHeaderApiResponse"
+                },
+                {
                   "$ref": "#/components/schemas/UiConfig/$defs/UiElementBannerApiResponse"
                 },
                 {
@@ -1059,9 +1062,6 @@
                 },
                 {
                   "$ref": "#/components/schemas/UiConfig/$defs/UiElementListApiResponse"
-                },
-                {
-                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementHeaderApiResponse"
                 }
               ]
             },

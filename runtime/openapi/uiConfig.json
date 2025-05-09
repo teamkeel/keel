@@ -42,6 +42,9 @@
             "$ref": "#/$defs/UiElementSelectOneApiResponse"
           },
           {
+            "$ref": "#/$defs/UiElementHeaderApiResponse"
+          },
+          {
             "$ref": "#/$defs/UiElementBannerApiResponse"
           },
           {
@@ -55,9 +58,6 @@
           },
           {
             "$ref": "#/$defs/UiElementListApiResponse"
-          },
-          {
-            "$ref": "#/$defs/UiElementHeaderApiResponse"
           }
         ]
       }
@@ -382,6 +382,31 @@
         }
       ]
     },
+    "UiElementHeaderApiResponse": {
+      "type": "object",
+      "properties": {
+        "level": {
+          "type": "number"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "__type": {
+          "type": "string",
+          "const": "ui.display.header"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "__type",
+        "description",
+        "level",
+        "title"
+      ]
+    },
     "UiElementBannerApiResponse": {
       "type": "object",
       "properties": {
@@ -572,31 +597,6 @@
       "required": [
         "__type",
         "data"
-      ]
-    },
-    "UiElementHeaderApiResponse": {
-      "type": "object",
-      "properties": {
-        "level": {
-          "type": "number"
-        },
-        "title": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "__type": {
-          "type": "string",
-          "const": "ui.display.header"
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "__type",
-        "description",
-        "level",
-        "title"
       ]
     }
   }
