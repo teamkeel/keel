@@ -70,6 +70,7 @@ func NewOrchestrator(s *proto.Schema, opts ...OrchestratorOpt) *Orchestrator {
 type FunctionsResponsePayload struct {
 	RunID        string `json:"runId"`
 	RunCompleted bool   `json:"runCompleted"`
+	Error        string `json:"error"`
 	Config       *JSONB `json:"config"`
 	UI           *JSONB `json:"ui"` // UI component for the current step, if applicable
 }
@@ -105,11 +106,19 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, data ma
 		// call the flow runtime
 		resp, err := o.CallFlow(ctx, run, data)
 		if err != nil {
+			// failed orchestrating, mark the run as failed and return the error
 			_, _ = updateRun(ctx, run.ID, StatusFailed)
 			return err
 		}
 
 		if resp.RunCompleted {
+			if resp.Error != "" {
+				// run was orchestrated and completed successfully, but with an error (e.g. exhaused retries)
+				// TODO: store error message against the flow run
+				_, err = updateRun(ctx, run.ID, StatusFailed)
+				return err
+			}
+
 			_, err = updateRun(ctx, run.ID, StatusCompleted)
 			return err
 		}
