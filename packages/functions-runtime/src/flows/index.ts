@@ -7,10 +7,9 @@ import { booleanInput } from "./ui/elements/input/boolean";
 import { markdown } from "./ui/elements/display/markdown";
 import { table } from "./ui/elements/display/table";
 import { selectOne } from "./ui/elements/select/one";
-import { UiPage } from "./ui/page";
+import { page, UiPage } from "./ui/page";
 import {
   StepCreatedDisrupt,
-  StepErrorDisrupt,
   UIRenderDisrupt,
   ExhuastedRetriesDisrupt,
 } from "./disrupts";
@@ -145,10 +144,17 @@ export function createFlowContext<C extends FlowConfig>(
         throw new Error("Multiple completed steps found for the same step");
       }
 
+      if (completedSteps.length > 1 && newSteps.length > 1) {
+        throw new Error(
+          "Multiple completed and new steps found for the same step"
+        );
+      }
+
       if (completedSteps.length === 1) {
         return completedSteps[0].value;
       }
 
+      // Do we have a NEW step waiting to be run?
       if (newSteps.length === 1) {
         let result = null;
         await db
@@ -179,18 +185,29 @@ export function createFlowContext<C extends FlowConfig>(
             .executeTakeFirst();
 
           if (
-            failedSteps.length + 1 >
+            failedSteps.length + 1 >=
             (options.maxRetries ?? defaultOpts.maxRetries)
           ) {
             throw new ExhuastedRetriesDisrupt();
           }
 
-          throw new StepErrorDisrupt(
-            e instanceof Error ? e.message : "An error occurred"
-          );
+          // If we have retries left, create a new step
+          await db
+            .insertInto("keel_flow_step")
+            .values({
+              run_id: runId,
+              name: name,
+              stage: options.stage,
+              status: STEP_STATUS.NEW,
+              type: STEP_TYPE.FUNCTION,
+            })
+            .returningAll()
+            .executeTakeFirst();
+
+          throw new StepCreatedDisrupt();
         }
 
-        // Very crudely store the result in the database
+        // Store the result in the database
         await db
           .updateTable("keel_flow_step")
           .set({
@@ -205,7 +222,6 @@ export function createFlowContext<C extends FlowConfig>(
 
         return result;
       }
-      // There is no NEW or COMPLETED steps at this point, so we need to check if the step has failed too many times
 
       // The step hasn't yet run successfully, so we need to create a NEW run
       await db
@@ -221,6 +237,7 @@ export function createFlowContext<C extends FlowConfig>(
         .executeTakeFirst();
 
       throw new StepCreatedDisrupt();
+
       // TODO: Incorporate when we have support error handling
       // const stepPromise = fn({} as any);
       // const stepWithCatch = Object.assign(stepPromise, {
@@ -236,7 +253,7 @@ export function createFlowContext<C extends FlowConfig>(
       // return stepWithCatch;
     },
     ui: {
-      page: (async (name, page) => {
+      page: (async (name, options) => {
         const db = useDatabase();
 
         // First check if this step exists
@@ -259,7 +276,7 @@ export function createFlowContext<C extends FlowConfig>(
             .values({
               run_id: runId,
               name: name,
-              stage: page.stage,
+              stage: options.stage,
               status: STEP_STATUS.PENDING,
               type: STEP_TYPE.UI,
               startTime: new Date(),
@@ -268,12 +285,12 @@ export function createFlowContext<C extends FlowConfig>(
             .executeTakeFirst();
 
           // If no data has been passed in, render the UI by disrupting the step with UIRenderDisrupt.
-          throw new UIRenderDisrupt(step?.id, page);
+          throw new UIRenderDisrupt(step?.id, page(options));
         }
 
         if (!data) {
           // If no data has been passed in, render the UI by disrupting the step with UIRenderDisrupt.
-          throw new UIRenderDisrupt(step?.id, page);
+          throw new UIRenderDisrupt(step?.id, page(options));
         }
 
         // TODO: Validate the data! If not valid, throw a UIRenderDisrupt along with the validation errors.

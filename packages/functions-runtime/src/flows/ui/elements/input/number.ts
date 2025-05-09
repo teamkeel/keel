@@ -29,6 +29,7 @@ export const numberInput: InputElementImplementation<
   UiElementInputNumberApiResponse
 > = (name, options) => {
   return {
+    __type: "input",
     uiConfig: {
       __type: "ui.input.number",
       name,
