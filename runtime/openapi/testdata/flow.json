@@ -135,7 +135,7 @@
         }
       }
     },
-    "/flows/json/{name}": {
+    "/flows/json/{flow}": {
       "get": {
         "operationId": "getFlow",
         "responses": {
@@ -191,7 +191,7 @@
         {
           "description": "",
           "in": "path",
-          "name": "name",
+          "name": "flow",
           "required": true,
           "schema": {
             "type": "string"
@@ -204,6 +204,7 @@
           "content": {
             "application/json": {
               "schema": {
+                "additionalProperties": true,
                 "type": "object"
               }
             }
@@ -257,7 +258,7 @@
         }
       }
     },
-    "/flows/json/{name}/{runId}": {
+    "/flows/json/{flow}/{runId}": {
       "get": {
         "operationId": "getFlowRun",
         "responses": {
@@ -310,7 +311,7 @@
         {
           "description": "",
           "in": "path",
-          "name": "name",
+          "name": "flow",
           "required": true,
           "schema": {
             "type": "string"
@@ -327,12 +328,12 @@
         }
       ]
     },
-    "/flows/json/{name}/{runId}/cancel": {
+    "/flows/json/{flow}/{runId}/cancel": {
       "parameters": [
         {
           "description": "",
           "in": "path",
-          "name": "name",
+          "name": "flow",
           "required": true,
           "schema": {
             "type": "string"
@@ -397,12 +398,12 @@
         }
       }
     },
-    "/flows/json/{name}/{runId}/{stepId}": {
+    "/flows/json/{flow}/{runId}/{stepId}": {
       "parameters": [
         {
           "description": "",
           "in": "path",
-          "name": "name",
+          "name": "flow",
           "required": true,
           "schema": {
             "type": "string"
@@ -433,6 +434,7 @@
           "content": {
             "application/json": {
               "schema": {
+                "additionalProperties": true,
                 "type": "object"
               }
             }
@@ -492,6 +494,44 @@
       "Run": {
         "properties": {
           "config": {
+            "additionalProperties": false,
+            "properties": {
+              "description": {
+                "type": "string"
+              },
+              "stages": {
+                "items": {
+                  "anyOf": [
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "description": {
+                          "type": "string"
+                        },
+                        "initiallyHidden": {
+                          "type": "boolean"
+                        },
+                        "key": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["key", "name"],
+                      "type": "object"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                "type": "array"
+              },
+              "title": {
+                "type": "string"
+              }
+            },
             "type": "object"
           },
           "createdAt": {
@@ -529,6 +569,16 @@
             "type": "string"
           }
         },
+        "required": [
+          "id",
+          "status",
+          "name",
+          "traceId",
+          "createdAt",
+          "updatedAt",
+          "steps",
+          "config"
+        ],
         "type": "object"
       },
       "Step": {
@@ -573,9 +623,32 @@
             "type": "string"
           },
           "value": {
-            "type": "object"
+            "additionalProperties": true,
+            "type": [
+              "string",
+              "object",
+              "array",
+              "integer",
+              "number",
+              "boolean",
+              "null"
+            ]
           }
         },
+        "required": [
+          "id",
+          "runId",
+          "status",
+          "name",
+          "type",
+          "createdAt",
+          "updatedAt",
+          "value",
+          "ui",
+          "startTime",
+          "endTime",
+          "error"
+        ],
         "type": "object"
       },
       "UiConfig": {
