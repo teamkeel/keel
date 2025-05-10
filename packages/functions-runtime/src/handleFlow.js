@@ -74,12 +74,56 @@ async function handleFlow(request, config) {
         const flowFunction = flows[request.method].fn;
         flowConfig = flows[request.method].config;
 
-        await tryExecuteFlow(db, async () => {
-          // parse request params to convert objects into rich field types (e.g. InlineFile)
-          const inputs = parseInputs(flowRun.input);
+        // parse request params to convert objects into rich field types (e.g. InlineFile)
+        const inputs = parseInputs(flowRun.input);
 
-          return flowFunction(ctx, inputs);
-        });
+        try {
+          await tryExecuteFlow(db, async () => {
+            return flowFunction(ctx, inputs);
+          });
+        } catch (e) {
+          // The flow is disrupted as a new step has been created
+          if (e instanceof StepCreatedDisrupt) {
+            return createJSONRPCSuccessResponse(request.id, {
+              runId: runId,
+              runCompleted: false,
+              config: flowConfig,
+            });
+          }
+
+          // The flow is disrupted by a pending UI step
+          if (e instanceof UIRenderDisrupt) {
+            return createJSONRPCSuccessResponse(request.id, {
+              runId: runId,
+              stepId: e.stepId,
+              config: flowConfig,
+              ui: e.contents,
+            });
+          }
+
+          span.recordException(e);
+          span.setStatus({
+            code: opentelemetry.SpanStatusCode.ERROR,
+            message: e.message,
+          });
+
+          // The flow has failed due to exhausted step retries
+          if (e instanceof ExhuastedRetriesDisrupt) {
+            return createJSONRPCSuccessResponse(request.id, {
+              runId: runId,
+              runCompleted: true,
+              error: "flow failed due to exhausted step retries",
+              config: flowConfig,
+            });
+          }
+
+          return createJSONRPCSuccessResponse(request.id, {
+            runId: runId,
+            runCompleted: true,
+            error: e.message,
+            config: flowConfig,
+          });
+        }
 
         // If we reach this point, then we know the entire flow completed successfully
         return createJSONRPCSuccessResponse(request.id, {
@@ -88,45 +132,26 @@ async function handleFlow(request, config) {
           config: flowConfig,
         });
       } catch (e) {
-        // The flow is disrupted as a new step has been created
-        if (e instanceof StepCreatedDisrupt) {
-          return createJSONRPCSuccessResponse(request.id, {
-            runId: runId,
-            runCompleted: false,
-            config: flowConfig,
+        if (e instanceof Error) {
+          span.recordException(e);
+          span.setStatus({
+            code: opentelemetry.SpanStatusCode.ERROR,
+            message: e.message,
           });
+          return errorToJSONRPCResponse(request, e);
         }
 
-        // The flow is disrupted by a pending UI step
-        if (e instanceof UIRenderDisrupt) {
-          return createJSONRPCSuccessResponse(request.id, {
-            runId: runId,
-            stepId: e.stepId,
-            config: flowConfig,
-            ui: e.contents,
-          });
-        }
+        const message = JSON.stringify(e);
 
-        span.recordException(e);
         span.setStatus({
           code: opentelemetry.SpanStatusCode.ERROR,
-          message: e.message,
+          message: message,
         });
-
-        // The flow has failed due to exhausted step retries
-        if (e instanceof ExhuastedRetriesDisrupt) {
-          return createJSONRPCSuccessResponse(request.id, {
-            runId: runId,
-            runCompleted: true,
-            error: "flow failed due to exhausted step retries",
-            config: flowConfig,
-          });
-        }
 
         return createJSONRPCErrorResponse(
           request.id,
-          JSONRPCErrorCode.InternalError,
-          e.message
+          RuntimeErrors.UnknownError,
+          message
         );
       } finally {
         if (db) {
