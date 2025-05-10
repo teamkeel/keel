@@ -27,14 +27,14 @@ test("flows - scalar step", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
   let { status, body } = await startFlow({
-    name: "scalarStep",
+    name: "ScalarStep",
     token,
     body: {},
   });
   expect(status).toEqual(200);
 
   const flow = await untilFlowFinished({
-    name: "scalarStep",
+    name: "ScalarStep",
     id: body.id,
     token,
   });
@@ -71,7 +71,7 @@ test("flows - only pages", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
   let { status, body } = await startFlow({
-    name: "onlyPages",
+    name: "OnlyPages",
     token,
     body: {},
   });
@@ -111,7 +111,7 @@ test("flows - only pages", async () => {
 
   // Provide the values for the pending UI step
   ({ status, body } = await putStepValues({
-    name: "MixedStepTypes",
+    name: "OnlyPages",
     runId: body.id,
     stepId: body.steps[0].id,
     token,
@@ -171,7 +171,7 @@ test("flows - only pages", async () => {
   });
 
   ({ status, body } = await putStepValues({
-    name: "MixedStepTypes",
+    name: "OnlyPages",
     runId: body.id,
     stepId: body.steps[1].id,
     token,
@@ -258,7 +258,7 @@ test("flows - first step is a function", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
   let { status, body } = await startFlow({
-    name: "singleStep",
+    name: "SingleStep",
     token,
     body: {},
   });
@@ -293,7 +293,7 @@ test("flows - first step is a function", async () => {
   });
 
   const flow = await untilFlowFinished({
-    name: "singleStep",
+    name: "SingleStep",
     id: body.id,
     token,
   });
@@ -523,7 +523,7 @@ test("flows - alternating step types", async () => {
   step2 = body.steps[1];
   let step3 = body.steps[2];
 
-  body = await untilFlowFinished({ name: "mixedStepTypes", id: runId, token });
+  body = await untilFlowFinished({ name: "MixedStepTypes", id: runId, token });
   expect(body.status).toBe("COMPLETED");
   expect(body.steps[2]).toEqual({
     // The final step is now complete and will contain the result
@@ -791,19 +791,19 @@ test("flows - authorised starting, getting and listing flows", async () => {
 
 test("flows - unauthorised starting flow", async () => {
   const token = await getToken({ email: "user@gmail.com" });
-  const res = await startFlow({ name: "stepless", token, body: {} });
+  const res = await startFlow({ name: "Stepless", token, body: {} });
   expect(res.status).toBe(403);
 });
 
 test("flows - unauthenticated starting flow", async () => {
-  const res = await startFlow({ name: "stepless", token: null, body: {} });
+  const res = await startFlow({ name: "Stepless", token: null, body: {} });
   expect(res.status).toBe(401);
 });
 
 test("flows - unauthorised getting flow", async () => {
   const adminToken = await getToken({ email: "admin@keel.xyz" });
   const resStart = await startFlow({
-    name: "stepless",
+    name: "Stepless",
     token: adminToken,
     body: {},
   });
@@ -811,7 +811,7 @@ test("flows - unauthorised getting flow", async () => {
 
   const userToken = await getToken({ email: "user@gmail.com" });
   const resGet = await getFlowRun({
-    name: "stepless",
+    name: "Stepless",
     id: resStart.body.id,
     token: userToken,
   });
@@ -819,21 +819,21 @@ test("flows - unauthorised getting flow", async () => {
 });
 
 test("flows - unauthenticated starting flow", async () => {
-  const res = await startFlow({ name: "stepless", token: null, body: {} });
+  const res = await startFlow({ name: "Stepless", token: null, body: {} });
   expect(res.status).toBe(401);
 });
 
 test("flows - unauthenticated getting flow", async () => {
   const adminToken = await getToken({ email: "admin@keel.xyz" });
   const resStart = await startFlow({
-    name: "stepless",
+    name: "Stepless",
     token: adminToken,
     body: {},
   });
   expect(resStart.status).toBe(200);
 
   const resGet = await getFlowRun({
-    name: "stepless",
+    name: "Stepless",
     id: resStart.body.id,
     token: null,
   });
