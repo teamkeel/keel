@@ -552,7 +552,7 @@ test("flows - alternating step types", async () => {
   expect(thing!.age).toBe(32);
 });
 
-test("flows - error in with retries", async () => {
+test("flows - error in step with retries", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
   const res = await startFlow({ name: "ErrorInStep", token, body: {} });
   expect(res.status).toBe(200);
@@ -643,6 +643,23 @@ test("flows - error in with retries", async () => {
     createdAt: res.body.createdAt,
     updatedAt: expect.any(String),
     config: null,
+  });
+});
+
+test("flows - error in flow", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+  const res = await startFlow({ name: "ErrorInFlow", token, body: {} });
+  expect(res.status).toBe(200);
+  expect(res.body).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "FAILED",
+    name: "ErrorInFlow",
+    input: {},
+    steps: [],
+    createdAt: expect.any(String),
+    updatedAt: expect.any(String),
+    config: {},
   });
 });
 
@@ -774,14 +791,15 @@ test("flows - authorised starting, getting and listing flows", async () => {
 
   const resListAdmin = await listFlows({ token: adminToken });
   expect(resListAdmin.status).toBe(200);
-  expect(resListAdmin.body.flows.length).toBe(7);
+  expect(resListAdmin.body.flows.length).toBe(8);
   expect(resListAdmin.body.flows[0].name).toBe("ScalarStep");
   expect(resListAdmin.body.flows[1].name).toBe("MixedStepTypes");
   expect(resListAdmin.body.flows[2].name).toBe("Stepless");
   expect(resListAdmin.body.flows[3].name).toBe("SingleStep");
   expect(resListAdmin.body.flows[4].name).toBe("ErrorInStep");
-  expect(resListAdmin.body.flows[5].name).toBe("TimeoutStep");
-  expect(resListAdmin.body.flows[6].name).toBe("OnlyPages");
+  expect(resListAdmin.body.flows[5].name).toBe("ErrorInFlow");
+  expect(resListAdmin.body.flows[6].name).toBe("TimeoutStep");
+  expect(resListAdmin.body.flows[7].name).toBe("OnlyPages");
 
   const resListUser = await listFlows({ token: userToken });
   expect(resListUser.status).toBe(200);
