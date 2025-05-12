@@ -15,7 +15,6 @@ model Customer {
         picture File
         occupation Occupation
     }
-
     actions {
         get getCustomer(id)
         create createCustomer() with (
