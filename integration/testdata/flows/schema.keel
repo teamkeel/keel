@@ -33,10 +33,19 @@ flow ErrorInFlow {
 flow TimeoutStep {
     @permission(roles: [Admin])
 }
+
 flow OnlyPages {
     @permission(roles: [Admin])
 }
 
+flow OnlyFunctions {
+    inputs {
+        name Text
+        age Number
+    }
+    
+    @permission(roles: [Admin])
+}
 
 model Thing {
     fields {
