@@ -30,6 +30,7 @@
   },
   "files": [
     "dist",
+    "scripts",
     "README.md"
   ],
   "devDependencies": {
