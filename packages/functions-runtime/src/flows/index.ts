@@ -44,8 +44,19 @@ export interface FlowContext<C extends FlowConfig> {
   ui: UI<C>;
 }
 
+// Steps can only return values that can be serialized to JSON and then
+// deserialized back to the same object/value that represents the type.
+// i.e. the string, number and boolean primitives, and arrays of them and objects made up of them.
+type JsonSerializable =
+  | string
+  | number
+  | boolean
+  | null
+  | JsonSerializable[]
+  | { [key: string]: JsonSerializable };
+
 export type Step<C extends FlowConfig> = {
-  <R>(
+  <R extends JsonSerializable | void>(
     name: string,
     options: {
       stage?: ExtractStageKeys<C>;
@@ -58,7 +69,7 @@ export type Step<C extends FlowConfig> = {
       ) => Promise<any>;
     }
   ): Promise<R>;
-  <R>(
+  <R extends JsonSerializable | void>(
     name: string,
     fn: () => Promise<R> & {
       catch: (
