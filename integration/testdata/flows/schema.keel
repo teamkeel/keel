@@ -26,6 +26,10 @@ flow ErrorInStep {
     @permission(roles: [Admin])
 }
 
+flow ErrorInFlow {
+    @permission(roles: [Admin])
+}
+
 flow TimeoutStep {
     @permission(roles: [Admin])
 }
