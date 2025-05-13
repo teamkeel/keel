@@ -56,7 +56,7 @@ async function handleFlow(request, config) {
         });
 
         const flowRun = await db
-          .selectFrom("keel_flow_run")
+          .selectFrom("keel.flow_run")
           .where("id", "=", runId)
           .selectAll()
           .executeTakeFirst();
