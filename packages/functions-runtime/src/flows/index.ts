@@ -122,7 +122,7 @@ export function createFlowContext<C extends FlowConfig>(
 
       // First check if we already have a result for this step
       const past = await db
-        .selectFrom("keel_flow_step")
+        .selectFrom("keel.flow_step")
         .where("run_id", "=", runId)
         .where("name", "=", name)
         .selectAll()
@@ -158,7 +158,7 @@ export function createFlowContext<C extends FlowConfig>(
       if (newSteps.length === 1) {
         let result = null;
         await db
-          .updateTable("keel_flow_step")
+          .updateTable("keel.flow_step")
           .set({
             startTime: new Date(),
           })
@@ -173,7 +173,7 @@ export function createFlowContext<C extends FlowConfig>(
           );
         } catch (e) {
           await db
-            .updateTable("keel_flow_step")
+            .updateTable("keel.flow_step")
             .set({
               status: STEP_STATUS.FAILED,
               spanId: spanId,
@@ -193,7 +193,7 @@ export function createFlowContext<C extends FlowConfig>(
 
           // If we have retries left, create a new step
           await db
-            .insertInto("keel_flow_step")
+            .insertInto("keel.flow_step")
             .values({
               run_id: runId,
               name: name,
@@ -209,7 +209,7 @@ export function createFlowContext<C extends FlowConfig>(
 
         // Store the result in the database
         await db
-          .updateTable("keel_flow_step")
+          .updateTable("keel.flow_step")
           .set({
             status: STEP_STATUS.COMPLETED,
             value: JSON.stringify(result),
@@ -225,7 +225,7 @@ export function createFlowContext<C extends FlowConfig>(
 
       // The step hasn't yet run successfully, so we need to create a NEW run
       await db
-        .insertInto("keel_flow_step")
+        .insertInto("keel.flow_step")
         .values({
           run_id: runId,
           name: name,
@@ -258,7 +258,7 @@ export function createFlowContext<C extends FlowConfig>(
 
         // First check if this step exists
         let step = await db
-          .selectFrom("keel_flow_step")
+          .selectFrom("keel.flow_step")
           .where("run_id", "=", runId)
           .where("name", "=", name)
           .selectAll()
@@ -272,7 +272,7 @@ export function createFlowContext<C extends FlowConfig>(
         if (!step) {
           // The step hasn't yet run so we create a new the step with state PENDING.
           step = await db
-            .insertInto("keel_flow_step")
+            .insertInto("keel.flow_step")
             .values({
               run_id: runId,
               name: name,
@@ -297,7 +297,7 @@ export function createFlowContext<C extends FlowConfig>(
 
         // If the data has been passed in and is valid, persist the data and mark the step as COMPLETED, and then return the data.
         await db
-          .updateTable("keel_flow_step")
+          .updateTable("keel.flow_step")
           .set({
             status: STEP_STATUS.COMPLETED,
             value: JSON.stringify(data),
