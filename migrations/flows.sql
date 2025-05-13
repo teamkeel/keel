@@ -1,6 +1,5 @@
 CREATE SCHEMA IF NOT EXISTS "keel";
 
-
 CREATE TABLE IF NOT EXISTS "keel"."flow_run" (
 	"id" text NOT NULL DEFAULT ksuid() PRIMARY KEY,
 	"name" TEXT NOT NULL,
