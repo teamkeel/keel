@@ -603,6 +603,9 @@
           "runId": {
             "type": "string"
           },
+          "stage": {
+            "type": ["string", "null"]
+          },
           "startTime": {
             "format": "date-time",
             "type": ["string", "null"]
