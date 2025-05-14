@@ -99,6 +99,7 @@ func StartDevelopmentServer(ctx context.Context, dir string, options *ServerOpts
 		args = append([]string{"watch"}, args...)
 	}
 
+	fmt.Printf("[DEBUG] Starting tsx with args: %v\n", args)
 	cmd := exec.Command("./node_modules/.bin/tsx", args...)
 
 	// Use a pipe for stdin so we can send "Enter" key presses in watch mode
@@ -155,13 +156,22 @@ func StartDevelopmentServer(ctx context.Context, dir string, options *ServerOpts
 		}
 	}
 
+	fmt.Printf("[DEBUG] Starting process in directory: %s\n", cmd.Dir)
+	fmt.Printf("[DEBUG] Environment variables: %v\n", cmd.Env)
+
 	err := cmd.Start()
 	if err != nil {
+		fmt.Printf("[DEBUG] Failed to start process: %v\n", err)
 		return nil, err
 	}
 
+	fmt.Printf("[DEBUG] Process started with PID: %d\n", cmd.Process.Pid)
+
 	go func() {
 		d.exitError = cmd.Wait()
+		if d.exitError != nil {
+			fmt.Printf("[DEBUG] Process exited with error: %v\n", d.exitError)
+		}
 	}()
 
 	// Wait for process to have started successfully
@@ -169,13 +179,19 @@ func StartDevelopmentServer(ctx context.Context, dir string, options *ServerOpts
 	maxWait := time.Second * 10
 	for {
 		if cmd.ProcessState != nil {
+			fmt.Printf("[DEBUG] Process state is not nil, checking exit error\n")
 			return d, d.exitError
 		}
-		res, _ := http.Get(d.URL + "/_health")
+		res, err := http.Get(d.URL + "/_health")
+		if err != nil {
+			fmt.Printf("[DEBUG] Health check failed: %v\n", err)
+		}
 		if res != nil && res.StatusCode == http.StatusOK {
+			fmt.Printf("[DEBUG] Health check passed\n")
 			break
 		}
 		if time.Since(n) > maxWait {
+			fmt.Printf("[DEBUG] Process failed to start within timeout\n")
 			_ = d.Kill()
 			return d, fmt.Errorf("development server failed to start after %s", maxWait.String())
 		}
