@@ -13,13 +13,29 @@ message Capabilities {
 
 // Tools is a wrapper for a collection of action configs/tools
 message Tools {
-	repeated ActionConfig tools = 1;
+	repeated ActionConfig tools = 1 [deprecated = true];
+
+	repeated Tool tool_configs = 2;
+}
+
+message Tool {
+	enum ToolType {
+		ACTION = 0;
+		FLOW = 1;
+	}
+
+	// A slug identifier for this tool used to reference it regardless of the build/environment; 
+	// E.g. get-order, or get-order-2
+	string id = 1;
+	ToolType type = 2;
+	optional ActionConfig action_config = 3;
+	optional FlowConfig flow_config = 4;
 }
 
 message ActionConfig {
 	// A slug identifier for this tool used to reference it regardless of the build/environment; 
 	// E.g. get-order, or get-order-2
-	string id = 1; 
+	string id = 1 [deprecated = true]; 
 
 	// Sentence case the action name e.g "Get order"
 	string name = 2; 
@@ -537,6 +553,54 @@ message ProgressIndicatorConfig {
 	// If this progress indicator should be enabled or not
 	bool enabled = 3;
 }
+
+message FlowConfig {
+	// A slug identifier for this tool used to reference it regardless of the
+	// build/environment; 
+	// E.g. process-refund
+	string id = 1; 
+	
+	// Sentence case the flow name e.g "Process refund"
+	string name = 2; 
+
+	// Title of the tool.
+	// Default value: empty
+	optional StringTemplate title = 3; 
+
+	// Template language support: markdown
+	optional StringTemplate help_text = 4;
+	
+	// Flow inputs, generated from the schema 
+	repeated InputFieldConfig inputs = 5; 
+}
+
+message InputFieldConfig {
+	// common fields with request field configs (inputs for actions)
+	JsonPath field_location = 1;
+	proto.Type field_type = 2;
+	bool repeated = 3;
+	string display_name = 4;
+	int32 display_order = 5;
+
+	optional StringTemplate help_text = 6;
+	optional ScalarValue default_value = 7;
+	optional StringTemplate placeholder = 8;
+
+	// If `type` is set to TYPE_ENUM then this value is the name of the
+	// the enum that the type refers to.
+	optional string enum_name = 9;
+
+	// If this field is set then this type is referring to a model.
+	// In the case of TYPE_ID this type _is_ the model named here.
+	// In the case of other types e.g. TYPE_ID this type is referencing a field
+	// on the model named here, and the specific field being referenced is indicated
+	// by `field_name`.
+	optional string model_name = 10;
+	
+	// This field indicates which field on `model_name` this type is referencing.
+	// This field should only be set if `model_name` is set.
+	optional string field_name = 11;
+} 
 
 message ValidationError {
    // A human friendly error message; e.g.: `The target tool does not exist.`

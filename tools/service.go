@@ -321,7 +321,7 @@ func (s *Service) GetTools(ctx context.Context) (*toolsproto.Tools, error) {
 		return nil, fmt.Errorf("generating tools from schema: %w", err)
 	}
 	tools := &toolsproto.Tools{
-		Tools: genTools,
+		ToolConfigs: genTools,
 	}
 
 	// load existing configured tools
@@ -416,9 +416,9 @@ func (s *Service) getGeneratedTool(ctx context.Context, actionName string) (*too
 		return nil, fmt.Errorf("generating tools from schema: %w", err)
 	}
 
-	for _, c := range genTools {
-		if c.ActionName == actionName {
-			return c, nil
+	for _, t := range genTools {
+		if t.ActionConfig != nil && t.ActionConfig.ActionName == actionName {
+			return t.ActionConfig, nil
 		}
 	}
 	return nil, fmt.Errorf("tool not found")
