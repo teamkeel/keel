@@ -501,30 +501,23 @@
               },
               "stages": {
                 "items": {
-                  "anyOf": [
-                    {
-                      "additionalProperties": false,
-                      "properties": {
-                        "description": {
-                          "type": "string"
-                        },
-                        "initiallyHidden": {
-                          "type": "boolean"
-                        },
-                        "key": {
-                          "type": "string"
-                        },
-                        "name": {
-                          "type": "string"
-                        }
-                      },
-                      "required": ["key", "name"],
-                      "type": "object"
+                  "additionalProperties": false,
+                  "properties": {
+                    "description": {
+                      "type": "string"
                     },
-                    {
+                    "initiallyHidden": {
+                      "type": "boolean"
+                    },
+                    "key": {
+                      "type": "string"
+                    },
+                    "name": {
                       "type": "string"
                     }
-                  ]
+                  },
+                  "required": ["key", "name"],
+                  "type": "object"
                 },
                 "type": "array"
               },
@@ -532,6 +525,7 @@
                 "type": "string"
               }
             },
+            "required": ["title"],
             "type": "object"
           },
           "createdAt": {

@@ -63,7 +63,7 @@ try {
   );
 
   // Generate the schema for ui config
-  const flowSchema = generatorNoRef.getSchemaForSymbol("FlowConfig");
+  const flowSchema = generatorNoRef.getSchemaForSymbol("FlowConfigAPI");
 
   // Convert to latest JSON schema spec
   // @ts-ignore
