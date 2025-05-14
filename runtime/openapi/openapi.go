@@ -392,6 +392,8 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 		},
 	}
 
+	spec.Paths = map[string]PathItemObject{}
+
 	// Add specific flows endpoints with defined inputs
 	for _, flow := range schema.Flows {
 		msg := schema.FindMessage(flow.InputMessageName)
@@ -406,8 +408,6 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 			maps.Copy(spec.Components.Schemas, inputSchema.Components.Schemas)
 			inputSchema.Components = nil
 		}
-
-		spec.Paths = map[string]PathItemObject{}
 
 		spec.Paths[endpoint] = PathItemObject{
 			Post: &OperationObject{
