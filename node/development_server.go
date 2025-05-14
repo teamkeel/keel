@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"time"
 
 	"github.com/teamkeel/keel/util"
@@ -94,12 +95,12 @@ func StartDevelopmentServer(ctx context.Context, dir string, options *ServerOpts
 	_, span := tracer.Start(ctx, "Start Development Server")
 	defer span.End()
 
-	args := []string{".build/server.js"}
+	args := []string{filepath.Join(".build", "server.js")}
 	if options != nil && options.Watch {
 		args = append([]string{"watch"}, args...)
 	}
 
-	cmd := exec.Command("./node_modules/.bin/tsx", args...)
+	cmd := exec.Command(filepath.Join("node_modules", ".bin", "tsx"), args...)
 
 	// Use a pipe for stdin so we can send "Enter" key presses in watch mode
 	// See Rebuild func for more info
@@ -171,13 +172,13 @@ func StartDevelopmentServer(ctx context.Context, dir string, options *ServerOpts
 		if cmd.ProcessState != nil {
 			return d, d.exitError
 		}
-		res, _ := http.Get(d.URL + "/_health")
-		if res != nil && res.StatusCode == http.StatusOK {
+		res, err := http.Get(d.URL + "/_health")
+		if err == nil && res != nil && res.StatusCode == http.StatusOK {
 			break
 		}
 		if time.Since(n) > maxWait {
 			_ = d.Kill()
-			return d, fmt.Errorf("development server failed to start after %s", maxWait.String())
+			return d, fmt.Errorf("development server failed to start after %s\n%s ", maxWait.String(), d.Output())
 		}
 		time.Sleep(time.Millisecond * 100)
 	}
