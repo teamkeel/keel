@@ -306,6 +306,10 @@ func renderError(m *Model) string {
 			b.WriteString("\n\n")
 			b.WriteString(startFunctionsError.Output)
 		}
+	case StatusErrorStartingServers:
+		b.WriteString("❌ There was an error starting the local servers:\n\n")
+		b.WriteString(m.Err.Error())
+
 	default:
 		b.WriteString("❌ Oh no, looks like something went wrong:\n\n")
 		b.WriteString(m.Err.Error())
