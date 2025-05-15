@@ -6,13 +6,28 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
+// ActionConfigs will return all the actionConfigs in this selection of tools
+func (tools *Tools) ActionConfigs() []*ActionConfig {
+	if tools == nil {
+		return nil
+	}
+	cfgs := []*ActionConfig{}
+	for _, t := range tools.Configs {
+		if t.Type == Tool_ACTION {
+			cfgs = append(cfgs, t.ActionConfig)
+		}
+	}
+
+	return cfgs
+}
+
 // FindByID finds a tool in the given tools message by id
-func (tools *Tools) FindByID(id string) *ActionConfig {
+func (tools *Tools) FindByID(id string) *Tool {
 	if tools == nil {
 		return nil
 	}
 
-	for _, t := range tools.Tools {
+	for _, t := range tools.Configs {
 		if t.Id == id {
 			return t
 		}
@@ -31,6 +46,35 @@ func (tools *Tools) DiffIDs(ids []string) []string {
 	}
 
 	return diffs
+}
+
+// GetOperationName will return the name of the operation that drives this tool.
+//
+// For action based tools, this will be the actionName, for flow based tools, the flow name
+func (t *Tool) GetOperationName() string {
+	if t.IsActionBased() {
+		return t.GetActionConfig().ActionName
+	}
+
+	return t.GetFlowConfig().FlowName
+}
+
+// IsActionBased checks if the tool is driven by an API action
+func (t *Tool) IsActionBased() bool {
+	return t.Type == Tool_ACTION && t.ActionConfig != nil
+}
+
+// ToTool transforms this ActionConfig into an action based Tool wrapper message.
+func (t *ActionConfig) ToTool() *Tool {
+	if t == nil {
+		return nil
+	}
+
+	return &Tool{
+		Id:           t.Id,
+		Type:         Tool_ACTION,
+		ActionConfig: t,
+	}
 }
 
 func (t *ActionConfig) FindInput(location *JsonPath) *RequestFieldConfig {

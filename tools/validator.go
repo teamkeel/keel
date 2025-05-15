@@ -21,12 +21,14 @@ func NewValidator(schema *proto.Schema, tools *toolsproto.Tools) *Validator {
 }
 
 func (v *Validator) validate() {
-	for _, t := range v.Tools.Tools {
-		v.validateTool(t)
+	for _, t := range v.Tools.Configs {
+		if t.Type == toolsproto.Tool_ACTION {
+			v.validateActionConfig(t.ActionConfig)
+		}
 	}
 }
 
-func (v *Validator) validateTool(t *toolsproto.ActionConfig) bool {
+func (v *Validator) validateActionConfig(t *toolsproto.ActionConfig) bool {
 	hasError := false
 	// first let's validate all top level action links
 	toolLinks := []*toolsproto.ActionLink{}

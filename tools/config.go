@@ -2,6 +2,7 @@ package tools
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/teamkeel/keel/casing"
 	toolsproto "github.com/teamkeel/keel/tools/proto"
@@ -35,7 +36,141 @@ func (cfgs ToolConfigs) getIDs() []string {
 	return ids
 }
 
+type ToolType string
+
+const (
+	ToolTypeAction ToolType = "action"
+	ToolTypeFlow   ToolType = "flow"
+)
+
 type ToolConfig struct {
+	ID           string
+	Type         ToolType
+	ActionConfig *ActionToolConfig
+	FlowConfig   *FlowToolConfig
+}
+
+func (c ToolConfig) MarshalJSON() ([]byte, error) {
+	return json.Marshal(c.config())
+}
+
+// To maintain backwards compatibility with existing config files (before we added support for flows), the marshalling
+// and unmarshalling of tool configs is done by just marshalling the underlying configuration (i.e.flow config or action config)
+func (c *ToolConfig) UnmarshalJSON(data []byte) error {
+	// Unmarshal into a generic map to inspect its contents
+	var raw map[string]any
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return fmt.Errorf("invalid JSON: %w", err)
+	}
+
+	// Determine type by presence of unique fields
+	switch {
+	case raw["action_name"] != nil:
+		var cfg ActionToolConfig
+		if err := json.Unmarshal(data, &cfg); err != nil {
+			return fmt.Errorf("error parsing ActionToolConfig: %w", err)
+		}
+		c.ActionConfig = &cfg
+		c.Type = ToolTypeAction
+		c.ID = cfg.ID
+
+		return nil
+	case raw["flow_name"] != nil:
+		var cfg FlowToolConfig
+		if err := json.Unmarshal(data, &cfg); err != nil {
+			return fmt.Errorf("error parsing FlowToolConfig: %w", err)
+		}
+		c.FlowConfig = &cfg
+		c.Type = ToolTypeFlow
+		c.ID = cfg.ID
+
+		return nil
+	default:
+		return fmt.Errorf("unknown tool config type")
+	}
+}
+
+// config returns the underlying configuration struct:
+//   - in the case of action based tools, it will be a ActionToolConfig
+//   - for flow based tools, it will be a FlowToolConfig
+func (t *ToolConfig) config() configuration {
+	switch t.Type {
+	case ToolTypeAction:
+		return t.ActionConfig
+	case ToolTypeFlow:
+		return t.FlowConfig
+	default:
+		return nil
+	}
+}
+
+func (t *ToolConfig) hasChanges() bool {
+	return t.config().hasChanges()
+}
+
+// getOperationName returns the underlying action that powers this tool (either an action name or a flow name)
+func (t *ToolConfig) getOperationName() string {
+	switch t.Type {
+	case ToolTypeAction:
+		return t.ActionConfig.ActionName
+	case ToolTypeFlow:
+		return t.FlowConfig.FlowName
+	default:
+		return ""
+	}
+}
+
+func (t *ToolConfig) setID(id string) {
+	t.ID = id
+	if t.Type == ToolTypeAction {
+		t.ActionConfig.ID = id
+	} else {
+		t.FlowConfig.ID = id
+	}
+}
+
+func (t *ToolConfig) applyOn(tool *toolsproto.Tool) {
+	switch t.Type {
+	case ToolTypeAction:
+		t.ActionConfig.applyOn(tool.ActionConfig)
+	case ToolTypeFlow:
+		// TODO:
+		// t.FlowConfig.applyOn(tool.FlowConfig)
+	}
+}
+
+type configuration interface {
+	hasChanges() bool
+	isDuplicated() bool
+	toToolConfig() *ToolConfig
+}
+
+// compile time check that config types implement the required interface
+var _ configuration = &FlowToolConfig{}
+var _ configuration = &ActionToolConfig{}
+
+type FlowToolConfig struct {
+	ID       string `json:"id,omitempty"`
+	FlowName string `json:"flow_name,omitempty"`
+}
+
+func (cfg *FlowToolConfig) toToolConfig() *ToolConfig {
+	return &ToolConfig{
+		ID:         cfg.ID,
+		Type:       ToolTypeFlow,
+		FlowConfig: cfg,
+	}
+}
+
+func (cfg *FlowToolConfig) isDuplicated() bool {
+	return cfg.ID != casing.ToKebab(cfg.FlowName)
+}
+
+func (cfg *FlowToolConfig) hasChanges() bool {
+	return cfg.isDuplicated()
+}
+
+type ActionToolConfig struct {
 	ID                   string               `json:"id,omitempty"`
 	ActionName           string               `json:"action_name,omitempty"`
 	Name                 *string              `json:"name,omitempty"`
@@ -57,11 +192,19 @@ type ToolConfig struct {
 	EmbeddedTools        ToolGroupConfigs     `json:"embedded_tools,omitempty"`
 }
 
-func (cfg *ToolConfig) isDuplicated() bool {
+func (cfg *ActionToolConfig) toToolConfig() *ToolConfig {
+	return &ToolConfig{
+		ID:           cfg.ID,
+		Type:         ToolTypeAction,
+		ActionConfig: cfg,
+	}
+}
+
+func (cfg *ActionToolConfig) isDuplicated() bool {
 	return cfg.ID != casing.ToKebab(cfg.ActionName)
 }
 
-func (cfg *ToolConfig) hasChanges() bool {
+func (cfg *ActionToolConfig) hasChanges() bool {
 	return cfg.isDuplicated() ||
 		cfg.Name != nil ||
 		cfg.Icon != nil ||
@@ -82,7 +225,7 @@ func (cfg *ToolConfig) hasChanges() bool {
 		len(cfg.EmbeddedTools) > 0
 }
 
-func (cfg *ToolConfig) applyOn(tool *toolsproto.ActionConfig) {
+func (cfg *ActionToolConfig) applyOn(tool *toolsproto.ActionConfig) {
 	if cfg.Name != nil {
 		tool.Name = *cfg.Name
 	}

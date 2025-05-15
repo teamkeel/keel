@@ -203,8 +203,8 @@ func (g *Generator) scaffoldTools() {
 		t := Tool{
 			ID: casing.ToKebab(flow.GetName()),
 			FlowConfig: &toolsproto.FlowConfig{
-				Id:   casing.ToKebab(flow.GetName()),
-				Name: casing.ToSentenceCase(flow.Name),
+				Name:     casing.ToSentenceCase(flow.Name),
+				FlowName: flow.Name,
 			},
 			Flow: flow,
 		}

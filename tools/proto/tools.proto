@@ -13,9 +13,7 @@ message Capabilities {
 
 // Tools is a wrapper for a collection of action configs/tools
 message Tools {
-	repeated ActionConfig tools = 1 [deprecated = true];
-
-	repeated Tool tool_configs = 2;
+	repeated Tool configs = 2;
 }
 
 message Tool {
@@ -555,23 +553,20 @@ message ProgressIndicatorConfig {
 }
 
 message FlowConfig {
-	// A slug identifier for this tool used to reference it regardless of the
-	// build/environment; 
-	// E.g. process-refund
-	string id = 1; 
-	
 	// Sentence case the flow name e.g "Process refund"
-	string name = 2; 
+	string name = 1; 
 
-	// Title of the tool.
-	// Default value: empty
-	optional StringTemplate title = 3; 
+	// The flow in the schema e.g "refundOrder"
+	string flow_name = 2; 
 
 	// Template language support: markdown
-	optional StringTemplate help_text = 4;
+	optional StringTemplate help_text = 3;
 	
 	// Flow inputs, generated from the schema 
-	repeated InputFieldConfig inputs = 5; 
+	repeated InputFieldConfig inputs = 4; 
+
+	// A tool link to which the user will be redirected after completing the flow.
+	optional ActionLink completion_redirect = 5;
 }
 
 message InputFieldConfig {

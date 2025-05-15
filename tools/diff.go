@@ -2,8 +2,31 @@ package tools
 
 import toolsproto "github.com/teamkeel/keel/tools/proto"
 
-func extractConfig(generated, updated *toolsproto.ActionConfig) *ToolConfig {
-	cfg := &ToolConfig{
+func extractConfig(generated, updated *toolsproto.Tool) *ToolConfig {
+	if generated.Type != updated.Type {
+		return nil
+	}
+
+	var cfg *ToolConfig
+
+	if generated.IsActionBased() {
+		cfg = extractActionConfig(generated.ActionConfig, updated.ActionConfig).toToolConfig()
+	} else {
+		cfg = extractFlowConfig(generated.FlowConfig, updated.FlowConfig).toToolConfig()
+	}
+	cfg.setID(updated.GetId())
+	return cfg
+}
+
+func extractFlowConfig(generated, updated *toolsproto.FlowConfig) *FlowToolConfig {
+	return &FlowToolConfig{
+		FlowName: updated.FlowName,
+		//TODO: extract configurable options
+	}
+}
+
+func extractActionConfig(generated, updated *toolsproto.ActionConfig) *ActionToolConfig {
+	cfg := &ActionToolConfig{
 		ID:                   updated.Id,
 		ActionName:           updated.ActionName,
 		Name:                 diffString(generated.GetName(), updated.GetName()),
