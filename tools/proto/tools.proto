@@ -13,6 +13,7 @@ message Capabilities {
 
 // Tools is a wrapper for a collection of action configs/tools
 message Tools {
+	repeated ActionConfig tools = 1 [deprecated = true];
 	repeated Tool configs = 2;
 }
 
@@ -318,7 +319,6 @@ message ExternalLink {
 }
 
 message ToolLink {
-	string id = 1;
 	string tool_id = 2;
 	
 	// The shape of this data is the input for the target action (i.e. 'where' and not 'values') but
@@ -563,13 +563,13 @@ message FlowConfig {
 	optional StringTemplate help_text = 3;
 	
 	// Flow inputs, generated from the schema 
-	repeated InputFieldConfig inputs = 4; 
+	repeated FlowInputConfig inputs = 4; 
 
 	// A tool link to which the user will be redirected after completing the flow.
 	optional ToolLink completion_redirect = 5;
 }
 
-message InputFieldConfig {
+message FlowInputConfig {
 	// common fields with request field configs (inputs for actions)
 	JsonPath field_location = 1;
 	proto.Type field_type = 2;
