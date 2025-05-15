@@ -453,6 +453,10 @@ type RuntimeRequestMsg struct {
 	done chan bool
 }
 
+type StartServerError struct {
+	Err error
+}
+
 func StartRuntimeServer(port string, customHostname string, ch chan tea.Msg) tea.Cmd {
 	return func() tea.Msg {
 		if customHostname != "" {
@@ -477,7 +481,9 @@ func StartRuntimeServer(port string, customHostname string, ch chan tea.Msg) tea
 		err := runtimeServer.ListenAndServe()
 		if err != nil {
 			err = errors.Join(errors.New("could not start the http server"), err)
-			panic(err.Error())
+			return StartServerError{
+				Err: err,
+			}
 		}
 
 		return nil
@@ -508,7 +514,9 @@ func StartRpcServer(port string, ch chan tea.Msg) tea.Cmd {
 		err := rpcServer.ListenAndServe()
 		if err != nil {
 			err = errors.Join(errors.New("could not start the local rpc server"), err)
-			panic(err.Error())
+			return StartServerError{
+				Err: err,
+			}
 		}
 
 		return nil
@@ -538,7 +546,9 @@ func StartTraceServer(port string) tea.Cmd {
 		err := traceServer.ListenAndServe()
 		if err != nil {
 			err = errors.Join(errors.New("could not start the local tracing server"), err)
-			panic(err.Error())
+			return StartServerError{
+				Err: err,
+			}
 		}
 
 		return nil

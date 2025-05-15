@@ -66,6 +66,7 @@ const (
 	StatusSeedCompleted
 	StatusSnapshotDatabase
 	StatusSnapshotCompleted
+	StatusErrorStartingServers
 )
 
 const (
@@ -275,6 +276,13 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		m.Status = StatusSetupDatabase
 		return m, StartDatabase(m.ResetDatabase, m.Mode, m.ProjectDir)
+	case StartServerError:
+		m.Err = msg.Err
+		// If the servers can't be started we exit
+		if m.Err != nil {
+			m.Status = StatusErrorStartingServers
+			return m, tea.Quit
+		}
 	case StartDatabaseMsg:
 		m.DatabaseConnInfo = msg.ConnInfo
 		m.Err = msg.Err
