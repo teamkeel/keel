@@ -213,7 +213,7 @@ func (l *ToolGroup_GroupActionLink) GetResponseOverridesMap() map[string]bool {
 	return m
 }
 
-func (dl *DisplayLayoutConfig) AllActionLinks() []*ToolLink {
+func (dl *DisplayLayoutConfig) AllToolLinks() []*ToolLink {
 	links := []*ToolLink{}
 	if dl == nil {
 		return nil

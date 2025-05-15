@@ -352,7 +352,7 @@ message ToolLink {
 }
 
 message ToolGroup {
-	// When embedding ActionLinks, we need to provide extra-configuration that will override the 
+	// When embedding ToolLinks, we need to provide extra-configuration that will override the 
 	// link's target tool configuration
 	message GroupActionLink {
 		ToolLink action_link = 1;
