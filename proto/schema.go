@@ -2,7 +2,6 @@ package proto
 
 import (
 	"sort"
-	"strings"
 
 	"github.com/samber/lo"
 )
@@ -142,10 +141,10 @@ func (s *Schema) FindAction(actionName string) *Action {
 	return actions[0]
 }
 
-// FindFlow finds the flow with the given name. Returns nil if a flow is not found. The matching is case insensitive
+// FindFlow finds the flow with the given name. Returns nil if a flow is not found.
 func (s *Schema) FindFlow(flowName string) *Flow {
 	for _, f := range s.Flows {
-		if strings.EqualFold(f.Name, flowName) {
+		if f.Name == flowName {
 			return f
 		}
 	}
