@@ -134,8 +134,7 @@ func (t *ToolConfig) applyOn(tool *toolsproto.Tool) {
 	case ToolTypeAction:
 		t.ActionConfig.applyOn(tool.ActionConfig)
 	case ToolTypeFlow:
-		// TODO:
-		// t.FlowConfig.applyOn(tool.FlowConfig)
+		t.FlowConfig.applyOn(tool.FlowConfig)
 	}
 }
 
@@ -150,8 +149,11 @@ var _ configuration = &FlowToolConfig{}
 var _ configuration = &ActionToolConfig{}
 
 type FlowToolConfig struct {
-	ID       string `json:"id,omitempty"`
-	FlowName string `json:"flow_name,omitempty"`
+	ID                 string      `json:"id,omitempty"`
+	FlowName           string      `json:"flow_name,omitempty"`
+	Name               *string     `json:"name,omitempty"`
+	HelpText           *string     `json:"help_text,omitempty"`
+	CompletionRedirect *LinkConfig `json:"completion_redirect,omitempty"`
 }
 
 func (cfg *FlowToolConfig) toToolConfig() *ToolConfig {
@@ -167,7 +169,24 @@ func (cfg *FlowToolConfig) isDuplicated() bool {
 }
 
 func (cfg *FlowToolConfig) hasChanges() bool {
-	return cfg.isDuplicated()
+	return cfg.isDuplicated() ||
+		cfg.Name != nil ||
+		cfg.HelpText != nil ||
+		cfg.CompletionRedirect != nil
+}
+
+func (cfg *FlowToolConfig) applyOn(tool *toolsproto.FlowConfig) {
+	if cfg.Name != nil {
+		tool.Name = *cfg.Name
+	}
+	if cfg.HelpText != nil {
+		tool.HelpText = makeStringTemplate(cfg.HelpText)
+	}
+	if cfg.CompletionRedirect != nil {
+		tool.CompletionRedirect = cfg.CompletionRedirect.applyOn(tool.CompletionRedirect)
+	}
+
+	// TODO Inputs
 }
 
 type ActionToolConfig struct {
@@ -561,8 +580,8 @@ func (cfg *LinkConfig) isDeleted() bool {
 	return false
 }
 
-func (cfgs LinkConfigs) applyOn(links []*toolsproto.ActionLink) []*toolsproto.ActionLink {
-	newLinks := []*toolsproto.ActionLink{}
+func (cfgs LinkConfigs) applyOn(links []*toolsproto.ToolLink) []*toolsproto.ToolLink {
+	newLinks := []*toolsproto.ToolLink{}
 
 	// add all configured links and new links. If links are deleted, they are skipped
 	for _, cfg := range cfgs {
@@ -581,7 +600,7 @@ func (cfgs LinkConfigs) applyOn(links []*toolsproto.ActionLink) []*toolsproto.Ac
 	return newLinks
 }
 
-func (cfg *LinkConfig) applyOn(link *toolsproto.ActionLink) *toolsproto.ActionLink {
+func (cfg *LinkConfig) applyOn(link *toolsproto.ToolLink) *toolsproto.ToolLink {
 	if cfg == nil {
 		return nil
 	}
@@ -590,7 +609,7 @@ func (cfg *LinkConfig) applyOn(link *toolsproto.ActionLink) *toolsproto.ActionLi
 	}
 	// we've added a link
 	if link == nil {
-		return &toolsproto.ActionLink{
+		return &toolsproto.ToolLink{
 			ToolId:      cfg.ToolID,
 			Description: makeStringTemplate(cfg.Description),
 			Title:       makeStringTemplate(cfg.Title),

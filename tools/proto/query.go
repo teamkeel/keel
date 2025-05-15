@@ -128,7 +128,7 @@ func (c *Capabilities) Diff(other *Capabilities) map[string]bool {
 	return diffs
 }
 
-func FindLinkByToolID(links []*ActionLink, toolID string) *ActionLink {
+func FindLinkByToolID(links []*ToolLink, toolID string) *ToolLink {
 	for _, l := range links {
 		if l.ToolId == toolID {
 			return l
@@ -155,7 +155,7 @@ func FindToolGroupByID(groups []*ToolGroup, id string) *ToolGroup {
 	return nil
 }
 
-func (l *ActionLink) GetJSONDataMapping() string {
+func (l *ToolLink) GetJSONDataMapping() string {
 	dm := l.GetObjDataMapping()
 	str, err := json.Marshal(dm)
 	if err != nil {
@@ -164,7 +164,7 @@ func (l *ActionLink) GetJSONDataMapping() string {
 	return string(str)
 }
 
-func (l *ActionLink) GetObjDataMapping() []any {
+func (l *ToolLink) GetObjDataMapping() []any {
 	ret := []any{}
 	for _, d := range l.GetData() {
 		jsData, err := protojson.Marshal(d)
@@ -213,8 +213,8 @@ func (l *ToolGroup_GroupActionLink) GetResponseOverridesMap() map[string]bool {
 	return m
 }
 
-func (dl *DisplayLayoutConfig) AllActionLinks() []*ActionLink {
-	links := []*ActionLink{}
+func (dl *DisplayLayoutConfig) AllActionLinks() []*ToolLink {
+	links := []*ToolLink{}
 	if dl == nil {
 		return nil
 	}

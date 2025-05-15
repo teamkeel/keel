@@ -1,6 +1,8 @@
 package tools
 
-import toolsproto "github.com/teamkeel/keel/tools/proto"
+import (
+	toolsproto "github.com/teamkeel/keel/tools/proto"
+)
 
 func extractConfig(generated, updated *toolsproto.Tool) *ToolConfig {
 	if generated.Type != updated.Type {
@@ -20,8 +22,10 @@ func extractConfig(generated, updated *toolsproto.Tool) *ToolConfig {
 
 func extractFlowConfig(generated, updated *toolsproto.FlowConfig) *FlowToolConfig {
 	return &FlowToolConfig{
-		FlowName: updated.FlowName,
-		//TODO: extract configurable options
+		FlowName:           updated.FlowName,
+		Name:               diffString(generated.GetName(), updated.GetName()),
+		HelpText:           diffStringTemplate(generated.GetHelpText(), updated.GetHelpText()),
+		CompletionRedirect: extractLinkConfig(generated.CompletionRedirect, updated.CompletionRedirect),
 	}
 }
 
@@ -161,7 +165,7 @@ func extractResponseConfig(generated, updated *toolsproto.ResponseFieldConfig) *
 	return &cfg
 }
 
-func extractLinkConfigs(generated, updated []*toolsproto.ActionLink) LinkConfigs {
+func extractLinkConfigs(generated, updated []*toolsproto.ToolLink) LinkConfigs {
 	cfgs := LinkConfigs{}
 	// we will use a map to keep track of the generated links that have already been configured
 	availableLinks := map[string]bool{}
@@ -199,7 +203,7 @@ func extractLinkConfigs(generated, updated []*toolsproto.ActionLink) LinkConfigs
 	return nil
 }
 
-func extractLinkConfig(generated, updated *toolsproto.ActionLink) *LinkConfig {
+func extractLinkConfig(generated, updated *toolsproto.ToolLink) *LinkConfig {
 	// we don't have a link and we didn't add a link
 	if generated == nil && updated == nil {
 		return nil

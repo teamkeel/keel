@@ -31,7 +31,7 @@ func (v *Validator) validate() {
 func (v *Validator) validateActionConfig(t *toolsproto.ActionConfig) bool {
 	hasError := false
 	// first let's validate all top level action links
-	toolLinks := []*toolsproto.ActionLink{}
+	toolLinks := []*toolsproto.ToolLink{}
 	if t.CreateEntryAction != nil {
 		toolLinks = append(toolLinks, t.CreateEntryAction)
 	}
@@ -135,7 +135,7 @@ func (v *Validator) validateResponse(out *toolsproto.ResponseFieldConfig) bool {
 
 // validateActionLink will validate the given action link and if applicable, it will add a Validation error to it.
 // Returns true if an error has been detected.
-func (v *Validator) validateActionLink(link *toolsproto.ActionLink) bool {
+func (v *Validator) validateActionLink(link *toolsproto.ToolLink) bool {
 	hasError := false
 	if link == nil {
 		return false

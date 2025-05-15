@@ -277,7 +277,7 @@ func (g *Generator) generateRelatedActionsLinks() {
 			for _, relatedID := range relatedTools {
 				if id != relatedID {
 					displayOrder++
-					tool.ActionConfig.RelatedActions = append(tool.ActionConfig.RelatedActions, &toolsproto.ActionLink{
+					tool.ActionConfig.RelatedActions = append(tool.ActionConfig.RelatedActions, &toolsproto.ToolLink{
 						ToolId:       relatedID,
 						DisplayOrder: int32(displayOrder),
 					})
@@ -325,7 +325,7 @@ func (g *Generator) generateEntryActivityActionsLinks() {
 
 		for _, toolID := range ids {
 			displayOrder++
-			tool.ActionConfig.EntryActivityActions = append(tool.ActionConfig.EntryActivityActions, &toolsproto.ActionLink{
+			tool.ActionConfig.EntryActivityActions = append(tool.ActionConfig.EntryActivityActions, &toolsproto.ToolLink{
 				ToolId: toolID,
 				Data: []*toolsproto.DataMapping{
 					{
@@ -351,7 +351,7 @@ func (g *Generator) generateGetEntryActionLinks() {
 		// get entry action for tools that operate on a model instance/s (create/update/list).
 		if tool.Action.IsList() || tool.Action.IsUpdate() || tool.Action.Type == proto.ActionType_ACTION_TYPE_CREATE {
 			if getToolID := g.findGetByIDTool(tool.Model.Name); getToolID != "" {
-				tool.ActionConfig.GetEntryAction = &toolsproto.ActionLink{
+				tool.ActionConfig.GetEntryAction = &toolsproto.ToolLink{
 					ToolId: getToolID,
 					Data: []*toolsproto.DataMapping{
 						{
@@ -372,7 +372,7 @@ func (g *Generator) generateCreateEntryActionLinks() {
 		if tool.Action.IsList() || tool.Action.IsGet() {
 			if createToolId := g.findCreateTool(tool.Model.Name); createToolId != "" {
 				//TODO: improvement: add datamapping from list actions to the create action if there are any filtered fields
-				tool.ActionConfig.CreateEntryAction = &toolsproto.ActionLink{
+				tool.ActionConfig.CreateEntryAction = &toolsproto.ToolLink{
 					ToolId: createToolId,
 					Data:   []*toolsproto.DataMapping{},
 				}
@@ -410,7 +410,7 @@ func (g *Generator) generateEmbeddedTools() {
 						DisplayOrder: int32(displayOrder),
 						Tools: []*toolsproto.ToolGroup_GroupActionLink{
 							{
-								ActionLink: &toolsproto.ActionLink{
+								ActionLink: &toolsproto.ToolLink{
 									ToolId: toolId,
 									Title:  &toolsproto.StringTemplate{Template: f.Name}, // e.g. `orderItems` on a getOrder action
 									Data: []*toolsproto.DataMapping{
@@ -602,7 +602,7 @@ func (g *Generator) makeInputsForMessage(
 		if f.Type.ModelName != nil && f.Type.FieldName != nil && proto.FindField(g.Schema.Models, f.Type.ModelName.Value, f.Type.FieldName.Value).Unique {
 			// generate action link placeholders
 			if lookupToolsIDs := g.findListTools(f.Type.ModelName.Value); len(lookupToolsIDs) > 0 {
-				config.LookupAction = &toolsproto.ActionLink{
+				config.LookupAction = &toolsproto.ToolLink{
 					ToolId: lookupToolsIDs[0],
 				}
 			}
@@ -612,7 +612,7 @@ func (g *Generator) makeInputsForMessage(
 			// in the generation process
 			// We do not add a GetEntryAction for the 'id' (or any unique lookup) input on a 'get', 'create' or 'update' action of a model, however do we add it for related models
 			if !((actionType == proto.ActionType_ACTION_TYPE_GET || actionType == proto.ActionType_ACTION_TYPE_CREATE || actionType == proto.ActionType_ACTION_TYPE_UPDATE) && len(f.Target) == 1) {
-				config.GetEntryAction = &toolsproto.ActionLink{
+				config.GetEntryAction = &toolsproto.ToolLink{
 					ToolId: f.Type.ModelName.Value, // TODO: this is a bit of a hack placeholder because we do not know the underlying model which the field is pointing to during post-processing
 				}
 			}
@@ -793,7 +793,7 @@ func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string,
 		// generated first, so we're safe to create a tool/action link now
 		if f.IsForeignKey() && f.ForeignKeyInfo.RelatedModelField == fieldNameID {
 			if getToolID := g.findGetByIDTool(f.ForeignKeyInfo.RelatedModelName); getToolID != "" {
-				config.Link = &toolsproto.ActionLink{
+				config.Link = &toolsproto.ToolLink{
 					ToolId: getToolID,
 					Data: []*toolsproto.DataMapping{
 						{
@@ -807,7 +807,7 @@ func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string,
 
 		if f.IsHasMany() {
 			if getToolID, input := g.findListByForeignID(f.Type.ModelName.Value, f.InverseFieldName.Value); getToolID != "" {
-				config.Link = &toolsproto.ActionLink{
+				config.Link = &toolsproto.ToolLink{
 					ToolId: getToolID,
 					Data: []*toolsproto.DataMapping{
 						{
