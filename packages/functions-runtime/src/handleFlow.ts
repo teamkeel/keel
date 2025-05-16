@@ -9,14 +9,15 @@ import * as opentelemetry from "@opentelemetry/api";
 import { withSpan } from "./tracing";
 import { tryExecuteFlow } from "./tryExecuteFlow";
 import { parseInputs } from "./parsing";
-import { createFlowContext } from "./flows";
+import { createFlowContext, FlowConfig } from "./flows";
 import {
   StepCreatedDisrupt,
   UIRenderDisrupt,
   ExhuastedRetriesDisrupt,
 } from "./flows/disrupts";
+import { sentenceCase } from "change-case";
 
-async function handleFlow(request, config) {
+async function handleFlow(request: any, config: any) {
   // Try to extract trace context from caller
   const activeContext = opentelemetry.propagation.extract(
     opentelemetry.context.active(),
@@ -26,7 +27,7 @@ async function handleFlow(request, config) {
   // Run the whole request with the extracted context
   return opentelemetry.context.with(activeContext, () => {
     // Wrapping span for the whole request
-    return withSpan(request.method, async (span) => {
+    return withSpan(request.method, async (span: any) => {
       let db = null;
       let flowConfig = null;
       const runId = request.meta?.runId;
@@ -72,7 +73,22 @@ async function handleFlow(request, config) {
         );
 
         const flowFunction = flows[request.method].fn;
-        flowConfig = flows[request.method].config;
+
+        // Normalise the flow config
+        const rawFlowConfig: FlowConfig = flows[request.method].config;
+        flowConfig = {
+          ...rawFlowConfig,
+          title: rawFlowConfig.title || sentenceCase(request.method || "flow"),
+          stages: rawFlowConfig.stages?.map((stage) => {
+            if (typeof stage === "string") {
+              return {
+                key: stage,
+                name: stage,
+              };
+            }
+            return stage;
+          }),
+        };
 
         // parse request params to convert objects into rich field types (e.g. InlineFile)
         const inputs = parseInputs(flowRun.input);
@@ -104,7 +120,7 @@ async function handleFlow(request, config) {
           span.recordException(e);
           span.setStatus({
             code: opentelemetry.SpanStatusCode.ERROR,
-            message: e.message,
+            message: e instanceof Error ? e.message : "unknown error",
           });
 
           // The flow has failed due to exhausted step retries
@@ -120,7 +136,7 @@ async function handleFlow(request, config) {
           return createJSONRPCSuccessResponse(request.id, {
             runId: runId,
             runCompleted: true,
-            error: e.message,
+            error: e instanceof Error ? e.message : "unknown error",
             config: flowConfig,
           });
         }

@@ -89,6 +89,13 @@ export interface FlowConfig {
   description?: string;
 }
 
+// What is returned as the config to the API
+export interface FlowConfigAPI {
+  stages?: StageConfigObject[];
+  title: string;
+  description?: string;
+}
+
 export type FlowFunction<C extends FlowConfig, I extends any = {}> = (
   ctx: FlowContext<C>,
   inputs: I
@@ -107,14 +114,14 @@ export type ExtractStageKeys<T extends FlowConfig> = T extends {
     : never
   : never;
 
-type StageConfig =
-  | string
-  | {
-      key: string;
-      name: string;
-      description?: string;
-      initiallyHidden?: boolean;
-    };
+type StageConfigObject = {
+  key: string;
+  name: string;
+  description?: string;
+  initiallyHidden?: boolean;
+};
+
+type StageConfig = string | StageConfigObject;
 
 export function createFlowContext<C extends FlowConfig>(
   runId: string,
