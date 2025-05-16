@@ -73,6 +73,16 @@ func (g *Generator) actionTools() map[string]*Tool {
 	return actionTools
 }
 
+func (g *Generator) flowTools() map[string]*Tool {
+	flowTools := map[string]*Tool{}
+	for id, tool := range g.Tools {
+		if tool.IsFlowBased() {
+			flowTools[id] = tool
+		}
+	}
+	return flowTools
+}
+
 const fieldNameID = "id"
 
 var ErrInvalidSchema = errors.New("invalid schema")
@@ -214,7 +224,11 @@ func (g *Generator) scaffoldTools() {
 
 func (g *Generator) decorateTools() error {
 	if err := g.generateInputs(); err != nil {
-		return fmt.Errorf("generating inputs: %w", err)
+		return fmt.Errorf("generating inputs for action based tools: %w", err)
+	}
+
+	if err := g.generateFlowInputs(); err != nil {
+		return fmt.Errorf("generating inputs for flow based tools: %w", err)
 	}
 
 	if err := g.generateResponses(); err != nil {
@@ -474,6 +488,55 @@ func (g *Generator) generateInputs() error {
 
 			tool.SortableFields = sortableFields
 		}
+	}
+
+	return nil
+}
+
+// generateFlowInputs will make the inputs for all flow based tools
+func (g *Generator) generateFlowInputs() error {
+	for _, tool := range g.flowTools() {
+		// if the flow does not have a input message, it means we don't have any inputs for this tool
+		if tool.Flow.InputMessageName == "" {
+			continue
+		}
+
+		// get the input message
+		msg := g.Schema.FindMessage(tool.Flow.InputMessageName)
+		if msg == nil {
+			return ErrInvalidSchema
+		}
+
+		fields := []*toolsproto.FlowInputConfig{}
+
+		for i, f := range msg.GetFields() {
+			if f.IsMessage() {
+				// nested messages aren't supported for flows
+				continue
+			}
+
+			config := &toolsproto.FlowInputConfig{
+				FieldLocation: &toolsproto.JsonPath{Path: `$.` + f.Name},
+				FieldType:     f.Type.Type,
+				Repeated:      f.Type.Repeated,
+				DisplayName:   casing.ToSentenceCase(f.Name),
+				DisplayOrder:  int32(i),
+			}
+
+			if f.Type.ModelName != nil {
+				config.ModelName = &f.Type.ModelName.Value
+			}
+			if f.Type.FieldName != nil {
+				config.FieldName = &f.Type.FieldName.Value
+			}
+			if f.Type.EnumName != nil {
+				config.EnumName = &f.Type.EnumName.Value
+			}
+
+			fields = append(fields, config)
+		}
+
+		tool.FlowConfig.Inputs = fields
 	}
 
 	return nil

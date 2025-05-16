@@ -21,12 +21,27 @@ func extractConfig(generated, updated *toolsproto.Tool) *ToolConfig {
 }
 
 func extractFlowConfig(generated, updated *toolsproto.FlowConfig) *FlowToolConfig {
-	return &FlowToolConfig{
+	cfg := &FlowToolConfig{
 		FlowName:           updated.FlowName,
 		Name:               diffString(generated.GetName(), updated.GetName()),
 		HelpText:           diffStringTemplate(generated.GetHelpText(), updated.GetHelpText()),
 		CompletionRedirect: extractLinkConfig(generated.CompletionRedirect, updated.CompletionRedirect),
 	}
+
+	cfg.Inputs = FlowInputConfigs{}
+	for _, updatedInput := range updated.GetInputs() {
+		genInput := generated.FindInput(updatedInput.GetFieldLocation())
+		if genInput == nil {
+			continue
+		}
+
+		// if we have any input changes, set it on the map
+		if inputCfg := extractFlowInputConfig(genInput, updatedInput); inputCfg != nil {
+			cfg.Inputs[updatedInput.GetFieldLocation().GetPath()] = *inputCfg
+		}
+	}
+
+	return cfg
 }
 
 func extractActionConfig(generated, updated *toolsproto.ActionConfig) *ActionToolConfig {
@@ -120,6 +135,38 @@ func extractInputConfig(generated, updated *toolsproto.RequestFieldConfig) *Inpu
 		SectionName:      diffString(generated.GetSectionName(), updated.GetSectionName()),
 		LookupAction:     extractLinkConfig(generated.LookupAction, updated.LookupAction),
 		GetEntryAction:   extractLinkConfig(generated.GetEntryAction, updated.GetEntryAction),
+	}
+
+	if updated.DefaultValue != nil {
+		switch updated.DefaultValue.Value.(type) {
+		case *toolsproto.ScalarValue_Bool:
+			val := updated.DefaultValue.GetBool()
+			cfg.DefaultValue = &ScalarValue{BoolValue: &val}
+		case *toolsproto.ScalarValue_Float:
+			val := updated.DefaultValue.GetFloat()
+			cfg.DefaultValue = &ScalarValue{FloatValue: &val}
+		case *toolsproto.ScalarValue_String_:
+			val := updated.DefaultValue.GetString_()
+			cfg.DefaultValue = &ScalarValue{StringValue: &val}
+		case *toolsproto.ScalarValue_Integer:
+			val := updated.DefaultValue.GetInteger()
+			cfg.DefaultValue = &ScalarValue{IntValue: &val}
+		}
+	}
+
+	if !cfg.hasChanges() {
+		return nil
+	}
+
+	return &cfg
+}
+
+func extractFlowInputConfig(generated, updated *toolsproto.FlowInputConfig) *FlowInputConfig {
+	cfg := FlowInputConfig{
+		DisplayName:  diffString(generated.GetDisplayName(), updated.GetDisplayName()),
+		DisplayOrder: diffInt(generated.GetDisplayOrder(), updated.GetDisplayOrder()),
+		HelpText:     diffStringTemplate(generated.GetHelpText(), updated.GetHelpText()),
+		Placeholder:  diffStringTemplate(generated.GetPlaceholder(), updated.GetPlaceholder()),
 	}
 
 	if updated.DefaultValue != nil {

@@ -149,11 +149,12 @@ var _ configuration = &FlowToolConfig{}
 var _ configuration = &ActionToolConfig{}
 
 type FlowToolConfig struct {
-	ID                 string      `json:"id,omitempty"`
-	FlowName           string      `json:"flow_name,omitempty"`
-	Name               *string     `json:"name,omitempty"`
-	HelpText           *string     `json:"help_text,omitempty"`
-	CompletionRedirect *LinkConfig `json:"completion_redirect,omitempty"`
+	ID                 string           `json:"id,omitempty"`
+	FlowName           string           `json:"flow_name,omitempty"`
+	Name               *string          `json:"name,omitempty"`
+	HelpText           *string          `json:"help_text,omitempty"`
+	CompletionRedirect *LinkConfig      `json:"completion_redirect,omitempty"`
+	Inputs             FlowInputConfigs `json:"inputs,omitempty"`
 }
 
 func (cfg *FlowToolConfig) toToolConfig() *ToolConfig {
@@ -172,7 +173,8 @@ func (cfg *FlowToolConfig) hasChanges() bool {
 	return cfg.isDuplicated() ||
 		cfg.Name != nil ||
 		cfg.HelpText != nil ||
-		cfg.CompletionRedirect != nil
+		cfg.CompletionRedirect != nil ||
+		len(cfg.Inputs) > 0
 }
 
 func (cfg *FlowToolConfig) applyOn(tool *toolsproto.FlowConfig) {
@@ -186,7 +188,11 @@ func (cfg *FlowToolConfig) applyOn(tool *toolsproto.FlowConfig) {
 		tool.CompletionRedirect = cfg.CompletionRedirect.applyOn(tool.CompletionRedirect)
 	}
 
-	// TODO Inputs
+	for path, inputCfg := range cfg.Inputs {
+		if toolInput := tool.FindInputByPath(path); toolInput != nil {
+			inputCfg.applyOn(toolInput)
+		}
+	}
 }
 
 type ActionToolConfig struct {
@@ -398,6 +404,41 @@ func (cfg *InputConfig) hasChanges() bool {
 		cfg.DefaultValue != nil ||
 		cfg.LookupAction != nil ||
 		cfg.GetEntryAction != nil
+}
+
+type FlowInputConfigs map[string]FlowInputConfig
+type FlowInputConfig struct {
+	DisplayName  *string      `json:"display_name,omitempty"`
+	DisplayOrder *int32       `json:"display_order,omitempty"`
+	HelpText     *string      `json:"help_text,omitempty"`
+	Placeholder  *string      `json:"placeholder,omitempty"`
+	DefaultValue *ScalarValue `json:"default_value,omitempty"`
+}
+
+func (cfg *FlowInputConfig) applyOn(input *toolsproto.FlowInputConfig) {
+	if cfg.DisplayName != nil {
+		input.DisplayName = *cfg.DisplayName
+	}
+	if cfg.DisplayOrder != nil {
+		input.DisplayOrder = *cfg.DisplayOrder
+	}
+	if cfg.HelpText != nil {
+		input.HelpText = makeStringTemplate(cfg.HelpText)
+	}
+	if cfg.Placeholder != nil {
+		input.Placeholder = makeStringTemplate(cfg.Placeholder)
+	}
+	if cfg.DefaultValue != nil {
+		input.DefaultValue = cfg.DefaultValue.toProto()
+	}
+}
+
+func (cfg *FlowInputConfig) hasChanges() bool {
+	return cfg.DisplayName != nil ||
+		cfg.DisplayOrder != nil ||
+		cfg.HelpText != nil ||
+		cfg.Placeholder != nil ||
+		cfg.DefaultValue != nil
 }
 
 type ResponseConfigs map[string]ResponseConfig

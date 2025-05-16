@@ -241,3 +241,23 @@ func (dl *DisplayLayoutConfig) AllToolLinks() []*ToolLink {
 
 	return links
 }
+
+func (t *FlowConfig) FindInput(location *JsonPath) *FlowInputConfig {
+	for _, f := range t.GetInputs() {
+		if f.GetFieldLocation().GetPath() == location.GetPath() {
+			return f
+		}
+	}
+
+	return nil
+}
+
+func (t *FlowConfig) FindInputByPath(location string) *FlowInputConfig {
+	for _, f := range t.GetInputs() {
+		if f.GetFieldLocation().GetPath() == location {
+			return f
+		}
+	}
+
+	return nil
+}
