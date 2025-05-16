@@ -21,15 +21,37 @@ func NewValidator(schema *proto.Schema, tools *toolsproto.Tools) *Validator {
 }
 
 func (v *Validator) validate() {
-	for _, t := range v.Tools.Tools {
-		v.validateTool(t)
+	for _, t := range v.Tools.Configs {
+		if t.Type == toolsproto.Tool_ACTION {
+			v.validateActionConfig(t.ActionConfig)
+		} else {
+			v.validateFlowConfig(t.FlowConfig)
+		}
 	}
 }
 
-func (v *Validator) validateTool(t *toolsproto.ActionConfig) bool {
+func (v *Validator) validateFlowConfig(t *toolsproto.FlowConfig) bool {
 	hasError := false
 	// first let's validate all top level action links
-	toolLinks := []*toolsproto.ActionLink{}
+	toolLinks := []*toolsproto.ToolLink{}
+	if t.CompletionRedirect != nil {
+		toolLinks = append(toolLinks, t.CompletionRedirect)
+	}
+	for _, l := range toolLinks {
+		hasError = hasError || v.validateToolLink(l)
+	}
+
+	if hasError {
+		t.HasErrors = true
+	}
+
+	return hasError
+}
+
+func (v *Validator) validateActionConfig(t *toolsproto.ActionConfig) bool {
+	hasError := false
+	// first let's validate all top level action links
+	toolLinks := []*toolsproto.ToolLink{}
 	if t.CreateEntryAction != nil {
 		toolLinks = append(toolLinks, t.CreateEntryAction)
 	}
@@ -39,7 +61,7 @@ func (v *Validator) validateTool(t *toolsproto.ActionConfig) bool {
 	toolLinks = append(toolLinks, t.RelatedActions...)
 	toolLinks = append(toolLinks, t.EntryActivityActions...)
 	for _, l := range toolLinks {
-		hasError = hasError || v.validateActionLink(l)
+		hasError = hasError || v.validateToolLink(l)
 	}
 
 	// now we validate inputs & response fields
@@ -80,8 +102,8 @@ func (v *Validator) validateTool(t *toolsproto.ActionConfig) bool {
 // Returns true if an error has been detected.
 func (v *Validator) validateDisplayLayout(dl *toolsproto.DisplayLayoutConfig) bool {
 	hasError := false
-	for _, link := range dl.AllActionLinks() {
-		hasError = hasError || v.validateActionLink(link)
+	for _, link := range dl.AllToolLinks() {
+		hasError = hasError || v.validateToolLink(link)
 	}
 
 	dl.HasErrors = hasError
@@ -95,7 +117,7 @@ func (v *Validator) validateToolGroup(tg *toolsproto.ToolGroup) bool {
 	hasError := false
 	for _, tgl := range tg.GetTools() {
 		if tgl.GetActionLink() != nil {
-			hasError = hasError || v.validateActionLink(tgl.GetActionLink())
+			hasError = hasError || v.validateToolLink(tgl.GetActionLink())
 		}
 	}
 
@@ -109,10 +131,10 @@ func (v *Validator) validateToolGroup(tg *toolsproto.ToolGroup) bool {
 func (v *Validator) validateInput(input *toolsproto.RequestFieldConfig) bool {
 	hasError := false
 	if input.LookupAction != nil {
-		hasError = hasError || v.validateActionLink(input.LookupAction)
+		hasError = hasError || v.validateToolLink(input.LookupAction)
 	}
 	if input.GetEntryAction != nil {
-		hasError = hasError || v.validateActionLink(input.GetEntryAction)
+		hasError = hasError || v.validateToolLink(input.GetEntryAction)
 	}
 	input.HasErrors = hasError
 
@@ -124,16 +146,16 @@ func (v *Validator) validateInput(input *toolsproto.RequestFieldConfig) bool {
 func (v *Validator) validateResponse(out *toolsproto.ResponseFieldConfig) bool {
 	hasError := false
 	if out.Link != nil {
-		hasError = hasError || v.validateActionLink(out.Link)
+		hasError = hasError || v.validateToolLink(out.Link)
 	}
 	out.HasErrors = hasError
 
 	return hasError
 }
 
-// validateActionLink will validate the given action link and if applicable, it will add a Validation error to it.
+// validateToolLink will validate the given action link and if applicable, it will add a Validation error to it.
 // Returns true if an error has been detected.
-func (v *Validator) validateActionLink(link *toolsproto.ActionLink) bool {
+func (v *Validator) validateToolLink(link *toolsproto.ToolLink) bool {
 	hasError := false
 	if link == nil {
 		return false

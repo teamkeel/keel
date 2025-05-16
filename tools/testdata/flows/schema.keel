@@ -1,0 +1,9 @@
+flow MyFlow {
+    inputs {
+        decimal Decimal
+        number Number
+        text Text
+        boolean Boolean
+        duration Duration
+    }
+}

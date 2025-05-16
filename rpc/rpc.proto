@@ -86,28 +86,38 @@ service API {
 	// Delete all existing tools configuration (if any) and regenerate default tools.
 	rpc ResetTools(ResetToolsRequest) returns (ResetToolsResponse);
 	// Updates a tool by providing the complete action config
-	rpc ConfigureTool(ConfigureToolRequest) returns (tools.ActionConfig);
+	rpc ConfigureTool(ConfigureToolRequest) returns (ConfigureToolResponse);
 	// Duplicates the given tool (given by reference) and returns the new tool
-	rpc DuplicateTool(DuplicateToolRequest) returns (tools.ActionConfig);
+	rpc DuplicateTool(DuplicateToolRequest) returns (DuplicateToolResponse);
 }
 
 message ListToolsRequest {}
 
 message ListToolsResponse {
-	repeated tools.ActionConfig tools = 1;
+	repeated tools.ActionConfig tools = 1 [deprecated = true];
+	repeated tools.Tool tool_configs = 2;
 }
 
 message ResetToolsRequest {}
 
 message ResetToolsResponse {
-	repeated tools.ActionConfig tools = 1;
+	repeated tools.ActionConfig tools = 1 [deprecated = true];
+	repeated tools.Tool tool_configs = 2;
 }
 
 message ConfigureToolRequest {
-	tools.ActionConfig configured_tool = 2;	
+	tools.ActionConfig configured_tool = 2 [deprecated = true];	
+	tools.Tool tool_config = 3;
+}
+message ConfigureToolResponse {
+	tools.Tool tool_config = 1;
 }
 
 message DuplicateToolRequest {
 	// A tool reference, e.g. `list-categories-1`
 	string tool_id = 2;	
+}
+
+message DuplicateToolResponse {
+	tools.Tool tool_config = 1;
 }

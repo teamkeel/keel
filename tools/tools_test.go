@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/rpc/rpc"
 	"github.com/teamkeel/keel/schema"
+	toolsproto "github.com/teamkeel/keel/tools/proto"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
@@ -47,8 +48,14 @@ func TestGenerateTools(t *testing.T) {
 			tools, err := GenerateTools(context.Background(), schema, builder.Config)
 			require.NoError(t, err)
 
+			actionTools := []*toolsproto.ActionConfig{}
+			for _, tool := range tools {
+				if tool.GetType() == toolsproto.Tool_ACTION {
+					actionTools = append(actionTools, tool.ActionConfig)
+				}
+			}
 			response := &rpc.ListToolsResponse{
-				Tools: tools,
+				Tools: actionTools,
 			}
 
 			actual, err := protojson.Marshal(response)

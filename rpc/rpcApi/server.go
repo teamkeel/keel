@@ -11,7 +11,6 @@ import (
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/rpc/rpc"
 	"github.com/teamkeel/keel/tools"
-	toolsproto "github.com/teamkeel/keel/tools/proto"
 
 	"github.com/twitchtv/twirp"
 	v1 "go.opentelemetry.io/proto/otlp/trace/v1"
@@ -184,22 +183,37 @@ func (s *Server) ListTools(ctx context.Context, input *rpc.ListToolsRequest) (*r
 		return nil, nil
 	}
 	return &rpc.ListToolsResponse{
-		Tools: tools.Tools,
+		Tools:       tools.ActionConfigs(),
+		ToolConfigs: tools.Configs,
 	}, nil
 }
 
-func (s *Server) ConfigureTool(ctx context.Context, req *rpc.ConfigureToolRequest) (*toolsproto.ActionConfig, error) {
+func (s *Server) ConfigureTool(ctx context.Context, req *rpc.ConfigureToolRequest) (*rpc.ConfigureToolResponse, error) {
 	toolsSvc, err := s.makeToolsService(ctx)
 	if err != nil {
 		return nil, twirp.NewError(twirp.Internal, err.Error())
 	}
 
-	updated, err := toolsSvc.ConfigureTool(ctx, req.GetConfiguredTool())
+	// if we're using the new style of tool configs
+	if req.GetToolConfig() != nil {
+		updated, err := toolsSvc.ConfigureTool(ctx, req.GetToolConfig())
+		if err != nil {
+			return nil, twirp.NewError(twirp.Internal, err.Error())
+		}
+		return &rpc.ConfigureToolResponse{
+			ToolConfig: updated,
+		}, nil
+	}
+
+	// default to old way of configuring tools via ActionConfigs
+	updated, err := toolsSvc.ConfigureTool(ctx, req.GetConfiguredTool().ToTool())
 	if err != nil {
 		return nil, twirp.NewError(twirp.Internal, err.Error())
 	}
 
-	return updated, nil
+	return &rpc.ConfigureToolResponse{
+		ToolConfig: updated,
+	}, nil
 }
 
 func (s *Server) ResetTools(ctx context.Context, req *rpc.ResetToolsRequest) (*rpc.ResetToolsResponse, error) {
@@ -214,11 +228,12 @@ func (s *Server) ResetTools(ctx context.Context, req *rpc.ResetToolsRequest) (*r
 	}
 
 	return &rpc.ResetToolsResponse{
-		Tools: tools.Tools,
+		Tools:       tools.ActionConfigs(),
+		ToolConfigs: tools.Configs,
 	}, nil
 }
 
-func (s *Server) DuplicateTool(ctx context.Context, req *rpc.DuplicateToolRequest) (*toolsproto.ActionConfig, error) {
+func (s *Server) DuplicateTool(ctx context.Context, req *rpc.DuplicateToolRequest) (*rpc.DuplicateToolResponse, error) {
 	toolsSvc, err := s.makeToolsService(ctx)
 	if err != nil {
 		return nil, twirp.NewError(twirp.Internal, err.Error())
@@ -229,7 +244,9 @@ func (s *Server) DuplicateTool(ctx context.Context, req *rpc.DuplicateToolReques
 		return nil, twirp.NewError(twirp.Internal, err.Error())
 	}
 
-	return newTool, nil
+	return &rpc.DuplicateToolResponse{
+		ToolConfig: newTool,
+	}, nil
 }
 
 // makeToolsService will create a tools service for this server's request (taking in the schema and config from context)
