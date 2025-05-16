@@ -733,11 +733,11 @@ var testCases = []testCase{
 		expectedTemplate: `
 			SELECT
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
-				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."name" LIKE ?) AS totalCount
+				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."name" ILIKE ?) AS totalCount
 			FROM
 				"thing"
 			WHERE
-				"thing"."name" LIKE ?
+				"thing"."name" ILIKE ?
 			ORDER BY
 				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{"%%bob%%", "%%bob%%", 50},
@@ -762,11 +762,11 @@ var testCases = []testCase{
 		expectedTemplate: `
 			SELECT
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
-				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."name" LIKE ?) AS totalCount
+				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."name" ILIKE ?) AS totalCount
 			FROM
 				"thing"
 			WHERE
-				"thing"."name" LIKE ?
+				"thing"."name" ILIKE ?
 			ORDER BY
 				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{"bob%%", "bob%%", 50},
@@ -791,11 +791,11 @@ var testCases = []testCase{
 		expectedTemplate: `
 			SELECT
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
-				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."name" LIKE ?) AS totalCount
+				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."name" ILIKE ?) AS totalCount
 			FROM
 				"thing"
 			WHERE
-				"thing"."name" LIKE ?
+				"thing"."name" ILIKE ?
 			ORDER BY
 				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{"%%bob", "%%bob", 50},

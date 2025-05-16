@@ -201,6 +201,34 @@ test("list action - endsWith", async () => {
   expect(results.length).toEqual(2);
 });
 
+test("list action - case insensitive text filters", async () => {
+  await models.post.create({ title: "Star Wars", subTitle: "abc" });
+  await models.post.create({ title: "star wars", subTitle: "def" });
+  await models.post.create({ title: "STAR WARS", subTitle: "ghi" });
+  await models.post.create({ title: "not star wars", subTitle: "jkl" });
+
+  const startsWithResults = await actions.listPosts({
+    where: {
+      title: { startsWith: "star" },
+    },
+  });
+  expect(startsWithResults.results.length).toEqual(3);
+
+  const containsResults = await actions.listPosts({
+    where: {
+      title: { contains: "star" },
+    },
+  });
+  expect(containsResults.results.length).toEqual(4);
+
+  const endsWithResults = await actions.listPosts({
+    where: {
+      title: { endsWith: "wars" },
+    },
+  });
+  expect(endsWithResults.results.length).toEqual(4);
+});
+
 test("list action - oneOf text", async () => {
   await models.post.create({ title: "pear", subTitle: "lmn" });
   await models.post.create({ title: "mango", subTitle: "mno" });

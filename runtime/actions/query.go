@@ -1649,9 +1649,9 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 	case NotEquals:
 		template = fmt.Sprintf("%s IS DISTINCT FROM %s", lhsSqlOperand, rhsSqlOperand)
 	case StartsWith, EndsWith, Contains:
-		template = fmt.Sprintf("%s LIKE %s", lhsSqlOperand, rhsSqlOperand)
+		template = fmt.Sprintf("%s ILIKE %s", lhsSqlOperand, rhsSqlOperand)
 	case NotContains:
-		template = fmt.Sprintf("%s NOT LIKE %s", lhsSqlOperand, rhsSqlOperand)
+		template = fmt.Sprintf("%s NOT ILIKE %s", lhsSqlOperand, rhsSqlOperand)
 	case OneOf:
 		if rhs.IsInlineQuery() {
 			template = fmt.Sprintf("%s IN %s", lhsSqlOperand, rhsSqlOperand)
