@@ -24,8 +24,28 @@ func (v *Validator) validate() {
 	for _, t := range v.Tools.Configs {
 		if t.Type == toolsproto.Tool_ACTION {
 			v.validateActionConfig(t.ActionConfig)
+		} else {
+			v.validateFlowConfig(t.FlowConfig)
 		}
 	}
+}
+
+func (v *Validator) validateFlowConfig(t *toolsproto.FlowConfig) bool {
+	hasError := false
+	// first let's validate all top level action links
+	toolLinks := []*toolsproto.ToolLink{}
+	if t.CompletionRedirect != nil {
+		toolLinks = append(toolLinks, t.CompletionRedirect)
+	}
+	for _, l := range toolLinks {
+		hasError = hasError || v.validateToolLink(l)
+	}
+
+	if hasError {
+		t.HasErrors = true
+	}
+
+	return hasError
 }
 
 func (v *Validator) validateActionConfig(t *toolsproto.ActionConfig) bool {

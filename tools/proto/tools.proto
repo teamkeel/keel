@@ -23,6 +23,7 @@ message Tool {
 		FLOW = 1;
 	}
 
+
 	// A slug identifier for this tool used to reference it regardless of the build/environment; 
 	// E.g. get-order, or get-order-2
 	string id = 1;
@@ -567,6 +568,12 @@ message FlowConfig {
 
 	// A tool link to which the user will be redirected after completing the flow.
 	optional ToolLink completion_redirect = 5;
+
+	// Any validation errors for this tool
+	repeated ValidationError errors = 6;
+
+	// Any validation errors for this tool or any child elements of this tool (e.g. an action link that has an error)
+	bool has_errors = 7;
 }
 
 message FlowInputConfig {
