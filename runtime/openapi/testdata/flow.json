@@ -1,69 +1,54 @@
 {
   "openapi": "3.1.0",
-  "info": {
-    "title": "FlowsAPI",
-    "version": "1"
-  },
+  "info": { "title": "FlowsAPI", "version": "1" },
   "paths": {
-    "/flows/json/": {
+    "/flows/json": {
       "get": {
         "operationId": "listFlows",
         "responses": {
           "200": {
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
+                  "type": "object",
                   "properties": {
                     "flows": {
+                      "type": "array",
                       "items": {
-                        "properties": {
-                          "name": {
-                            "type": "string"
-                          }
-                        },
-                        "type": "object"
-                      },
-                      "type": "array"
-                    }
-                  },
-                  "type": "object"
-                }
-              }
-            },
-            "description": ""
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "code": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "properties": {
-                        "errors": {
-                          "properties": {
-                            "error": {
-                              "type": "string"
-                            },
-                            "field": {
-                              "type": "string"
-                            }
-                          },
-                          "type": "array"
-                        }
-                      },
-                      "type": ["object", "null"]
-                    },
-                    "message": {
-                      "type": "string"
+                        "type": "object",
+                        "properties": { "name": { "type": "string" } }
+                      }
                     }
                   }
                 }
               }
-            },
-            "description": ""
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": { "type": "string" },
+                    "data": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
+                          }
+                        }
+                      }
+                    },
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -72,473 +57,427 @@
       "post": {
         "operationId": "AnotherWorkflow",
         "requestBody": {
+          "description": "AnotherWorkflow Request",
           "content": {
             "application/json": {
               "schema": {
-                "properties": {
-                  "age": {
-                    "type": "number"
-                  }
-                },
-                "required": ["age"],
                 "type": "object",
-                "unevaluatedProperties": false
+                "properties": { "age": { "type": "number" } },
+                "unevaluatedProperties": false,
+                "required": ["age"]
               }
             }
-          },
-          "description": "AnotherWorkflow Request"
+          }
         },
         "responses": {
           "200": {
+            "description": "Flow Response",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Run"
-                }
+                "schema": { "$ref": "#/components/schemas/Run" }
               }
-            },
-            "description": "Flow Response"
+            }
           },
           "400": {
+            "description": "Flow Response Errors",
             "content": {
               "application/json": {
                 "schema": {
                   "properties": {
-                    "code": {
-                      "type": "string"
-                    },
+                    "code": { "type": "string" },
                     "data": {
+                      "type": ["object", "null"],
                       "properties": {
                         "errors": {
+                          "type": "array",
                           "properties": {
-                            "error": {
-                              "type": "string"
-                            },
-                            "field": {
-                              "type": "string"
-                            }
-                          },
-                          "type": "array"
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
+                          }
                         }
-                      },
-                      "type": ["object", "null"]
+                      }
                     },
-                    "message": {
-                      "type": "string"
-                    }
+                    "message": { "type": "string" }
                   }
                 }
               }
-            },
-            "description": "Flow Response Errors"
+            }
+          }
+        }
+      }
+    },
+    "/flows/json/MyWorkflow": {
+      "post": {
+        "operationId": "MyWorkflow",
+        "requestBody": {
+          "description": "MyWorkflow Request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "age": { "type": "number" },
+                  "name": { "type": "string" }
+                },
+                "unevaluatedProperties": false,
+                "required": ["name", "age"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Flow Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Run" }
+              }
+            }
+          },
+          "400": {
+            "description": "Flow Response Errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": { "type": "string" },
+                    "data": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
+                          }
+                        }
+                      }
+                    },
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
           }
         }
       }
     },
     "/flows/json/{flow}": {
-      "get": {
-        "operationId": "getFlow",
+      "post": {
+        "operationId": "startFlow",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": { "type": "object", "additionalProperties": true }
+            }
+          }
+        },
         "responses": {
           "200": {
+            "description": "Flow Response",
             "content": {
               "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/Run"
-                  },
-                  "type": "array"
-                }
+                "schema": { "$ref": "#/components/schemas/Run" }
               }
-            },
-            "description": ""
+            }
           },
           "400": {
+            "description": "Flow Response Errors",
             "content": {
               "application/json": {
                 "schema": {
                   "properties": {
-                    "code": {
-                      "type": "string"
-                    },
+                    "code": { "type": "string" },
                     "data": {
+                      "type": ["object", "null"],
                       "properties": {
                         "errors": {
+                          "type": "array",
                           "properties": {
-                            "error": {
-                              "type": "string"
-                            },
-                            "field": {
-                              "type": "string"
-                            }
-                          },
-                          "type": "array"
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
+                          }
                         }
-                      },
-                      "type": ["object", "null"]
+                      }
                     },
-                    "message": {
-                      "type": "string"
-                    }
+                    "message": { "type": "string" }
                   }
                 }
               }
-            },
-            "description": ""
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "getFlow",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Run" }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": { "type": "string" },
+                    "data": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
+                          }
+                        }
+                      }
+                    },
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
           }
         }
       },
       "parameters": [
         {
-          "description": "",
-          "in": "path",
           "name": "flow",
+          "in": "path",
           "required": true,
-          "schema": {
-            "type": "string"
-          }
+          "description": "",
+          "schema": { "type": "string" }
         }
-      ],
-      "post": {
-        "operationId": "startFlow",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "additionalProperties": true,
-                "type": "object"
-              }
-            }
-          },
-          "description": ""
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Run"
-                }
-              }
-            },
-            "description": "Flow Response"
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "code": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "properties": {
-                        "errors": {
-                          "properties": {
-                            "error": {
-                              "type": "string"
-                            },
-                            "field": {
-                              "type": "string"
-                            }
-                          },
-                          "type": "array"
-                        }
-                      },
-                      "type": ["object", "null"]
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            },
-            "description": "Flow Response Errors"
-          }
-        }
-      }
+      ]
     },
     "/flows/json/{flow}/{runId}": {
       "get": {
         "operationId": "getFlowRun",
         "responses": {
           "200": {
+            "description": "Flow Response",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Run"
-                }
+                "schema": { "$ref": "#/components/schemas/Run" }
               }
-            },
-            "description": "Flow Response"
+            }
           },
           "400": {
+            "description": "Flow Response Errors",
             "content": {
               "application/json": {
                 "schema": {
                   "properties": {
-                    "code": {
-                      "type": "string"
-                    },
+                    "code": { "type": "string" },
                     "data": {
+                      "type": ["object", "null"],
                       "properties": {
                         "errors": {
+                          "type": "array",
                           "properties": {
-                            "error": {
-                              "type": "string"
-                            },
-                            "field": {
-                              "type": "string"
-                            }
-                          },
-                          "type": "array"
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
+                          }
                         }
-                      },
-                      "type": ["object", "null"]
+                      }
                     },
-                    "message": {
-                      "type": "string"
-                    }
+                    "message": { "type": "string" }
                   }
                 }
               }
-            },
-            "description": "Flow Response Errors"
+            }
           }
         }
       },
       "parameters": [
         {
-          "description": "",
-          "in": "path",
           "name": "flow",
+          "in": "path",
           "required": true,
-          "schema": {
-            "type": "string"
-          }
+          "description": "",
+          "schema": { "type": "string" }
         },
         {
-          "description": "",
-          "in": "path",
           "name": "runId",
+          "in": "path",
           "required": true,
-          "schema": {
-            "type": "string"
-          }
+          "description": "",
+          "schema": { "type": "string" }
         }
       ]
     },
     "/flows/json/{flow}/{runId}/cancel": {
-      "parameters": [
-        {
-          "description": "",
-          "in": "path",
-          "name": "flow",
-          "required": true,
-          "schema": {
-            "type": "string"
-          }
-        },
-        {
-          "description": "",
-          "in": "path",
-          "name": "runId",
-          "required": true,
-          "schema": {
-            "type": "string"
-          }
-        }
-      ],
       "post": {
         "operationId": "cancelFlowRun",
         "responses": {
           "200": {
+            "description": "Flow Response",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Run"
-                }
-              }
-            },
-            "description": "Flow Response"
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "code": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "properties": {
-                        "errors": {
-                          "properties": {
-                            "error": {
-                              "type": "string"
-                            },
-                            "field": {
-                              "type": "string"
-                            }
-                          },
-                          "type": "array"
-                        }
-                      },
-                      "type": ["object", "null"]
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            },
-            "description": "Flow Response Errors"
-          }
-        }
-      }
-    },
-    "/flows/json/{flow}/{runId}/{stepId}": {
-      "parameters": [
-        {
-          "description": "",
-          "in": "path",
-          "name": "flow",
-          "required": true,
-          "schema": {
-            "type": "string"
-          }
-        },
-        {
-          "description": "",
-          "in": "path",
-          "name": "runId",
-          "required": true,
-          "schema": {
-            "type": "string"
-          }
-        },
-        {
-          "description": "",
-          "in": "path",
-          "name": "stepId",
-          "required": true,
-          "schema": {
-            "type": "string"
-          }
-        }
-      ],
-      "put": {
-        "operationId": "putFlowStep",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "additionalProperties": true,
-                "type": "object"
+                "schema": { "$ref": "#/components/schemas/Run" }
               }
             }
           },
-          "description": ""
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Run"
-                }
-              }
-            },
-            "description": "Flow Response"
-          },
           "400": {
+            "description": "Flow Response Errors",
             "content": {
               "application/json": {
                 "schema": {
                   "properties": {
-                    "code": {
-                      "type": "string"
-                    },
+                    "code": { "type": "string" },
                     "data": {
+                      "type": ["object", "null"],
                       "properties": {
                         "errors": {
+                          "type": "array",
                           "properties": {
-                            "error": {
-                              "type": "string"
-                            },
-                            "field": {
-                              "type": "string"
-                            }
-                          },
-                          "type": "array"
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
+                          }
                         }
-                      },
-                      "type": ["object", "null"]
+                      }
                     },
-                    "message": {
-                      "type": "string"
-                    }
+                    "message": { "type": "string" }
                   }
                 }
               }
-            },
-            "description": "Flow Response Errors"
+            }
           }
         }
-      }
+      },
+      "parameters": [
+        {
+          "name": "flow",
+          "in": "path",
+          "required": true,
+          "description": "",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "runId",
+          "in": "path",
+          "required": true,
+          "description": "",
+          "schema": { "type": "string" }
+        }
+      ]
+    },
+    "/flows/json/{flow}/{runId}/{stepId}": {
+      "put": {
+        "operationId": "putFlowStep",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": { "type": "object", "additionalProperties": true }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Flow Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Run" }
+              }
+            }
+          },
+          "400": {
+            "description": "Flow Response Errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": { "type": "string" },
+                    "data": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
+                          }
+                        }
+                      }
+                    },
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "flow",
+          "in": "path",
+          "required": true,
+          "description": "",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "runId",
+          "in": "path",
+          "required": true,
+          "description": "",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "stepId",
+          "in": "path",
+          "required": true,
+          "description": "",
+          "schema": { "type": "string" }
+        }
+      ]
     }
   },
   "components": {
     "schemas": {
       "Run": {
+        "type": "object",
         "properties": {
           "config": {
-            "additionalProperties": false,
+            "type": "object",
             "properties": {
-              "description": {
-                "type": "string"
-              },
+              "description": { "type": "string" },
               "stages": {
+                "type": "array",
                 "items": {
-                  "additionalProperties": false,
+                  "type": "object",
                   "properties": {
-                    "description": {
-                      "type": "string"
-                    },
-                    "initiallyHidden": {
-                      "type": "boolean"
-                    },
-                    "key": {
-                      "type": "string"
-                    },
-                    "name": {
-                      "type": "string"
-                    }
+                    "description": { "type": "string" },
+                    "initiallyHidden": { "type": "boolean" },
+                    "key": { "type": "string" },
+                    "name": { "type": "string" }
                   },
-                  "required": ["key", "name"],
-                  "type": "object"
-                },
-                "type": "array"
+                  "additionalProperties": false,
+                  "required": ["key", "name"]
+                }
               },
-              "title": {
-                "type": "string"
-              }
+              "title": { "type": "string" }
             },
-            "required": ["title"],
-            "type": "object"
+            "additionalProperties": false,
+            "required": ["title"]
           },
-          "createdAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "id": { "type": "string" },
+          "input": { "type": ["object", "null"], "additionalProperties": true },
+          "name": { "type": "string" },
           "status": {
+            "type": "string",
             "enum": [
               "NEW",
               "RUNNING",
@@ -546,22 +485,14 @@
               "FAILED",
               "COMPLETED",
               "CANCELLED"
-            ],
-            "type": "string"
+            ]
           },
           "steps": {
-            "items": {
-              "$ref": "#/components/schemas/Step"
-            },
-            "type": "array"
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Step" }
           },
-          "traceId": {
-            "type": "string"
-          },
-          "updatedAt": {
-            "format": "date-time",
-            "type": "string"
-          }
+          "traceId": { "type": "string" },
+          "updatedAt": { "type": "string", "format": "date-time" }
         },
         "required": [
           "id",
@@ -571,56 +502,29 @@
           "createdAt",
           "updatedAt",
           "steps",
-          "config"
-        ],
-        "type": "object"
+          "config",
+          "input"
+        ]
       },
       "Step": {
+        "type": "object",
         "properties": {
-          "createdAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "endTime": {
-            "format": "date-time",
-            "type": ["string", "null"]
-          },
-          "error": {
-            "type": ["string", "null"]
-          },
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "runId": {
-            "type": "string"
-          },
-          "stage": {
-            "type": ["string", "null"]
-          },
-          "startTime": {
-            "format": "date-time",
-            "type": ["string", "null"]
-          },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "endTime": { "type": ["string", "null"], "format": "date-time" },
+          "error": { "type": ["string", "null"] },
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "runId": { "type": "string" },
+          "stage": { "type": ["string", "null"] },
+          "startTime": { "type": ["string", "null"], "format": "date-time" },
           "status": {
-            "enum": ["PENDING", "FAILED", "COMPLETED"],
-            "type": "string"
+            "type": "string",
+            "enum": ["PENDING", "FAILED", "COMPLETED"]
           },
-          "type": {
-            "enum": ["FUNCTION", "UI"],
-            "type": "string"
-          },
-          "ui": {
-            "$ref": "#/components/schemas/UiConfig"
-          },
-          "updatedAt": {
-            "format": "date-time",
-            "type": "string"
-          },
+          "type": { "type": "string", "enum": ["FUNCTION", "UI"] },
+          "ui": { "$ref": "#/components/schemas/UiConfig" },
+          "updatedAt": { "type": "string", "format": "date-time" },
           "value": {
-            "additionalProperties": true,
             "type": [
               "string",
               "object",
@@ -629,7 +533,8 @@
               "number",
               "boolean",
               "null"
-            ]
+            ],
+            "additionalProperties": true
           }
         },
         "required": [
@@ -645,456 +550,20 @@
           "startTime",
           "endTime",
           "error"
-        ],
-        "type": "object"
+        ]
       },
       "UiConfig": {
-        "additionalProperties": false,
-        "$defs": {
-          "BannerMode": {
-            "enum": ["error", "info", "success", "warning"],
-            "type": "string"
-          },
-          "ElementDataType": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": ["string", "number", "boolean"]
-              }
-            ]
-          },
-          "PageActions": {
-            "anyOf": [
-              {
-                "additionalProperties": false,
-                "properties": {
-                  "label": {
-                    "type": "string"
-                  },
-                  "mode": {
-                    "enum": ["destructive", "primary", "secondary"],
-                    "type": "string"
-                  },
-                  "value": {
-                    "type": "string"
-                  }
-                },
-                "required": ["label", "value"],
-                "type": "object"
-              },
-              {
-                "type": "string"
-              }
-            ]
-          },
-          "UiElementBannerApiResponse": {
-            "additionalProperties": false,
-            "properties": {
-              "__type": {
-                "const": "ui.display.banner",
-                "type": "string"
-              },
-              "description": {
-                "type": "string"
-              },
-              "mode": {
-                "$ref": "#/components/schemas/UiConfig/$defs/BannerMode"
-              },
-              "title": {
-                "type": "string"
-              }
-            },
-            "required": ["__type", "description", "mode", "title"],
-            "type": "object"
-          },
-          "UiElementCodeApiResponse": {
-            "additionalProperties": false,
-            "properties": {
-              "__type": {
-                "const": "ui.display.code",
-                "type": "string"
-              },
-              "code": {
-                "type": "string"
-              },
-              "language": {
-                "type": "string"
-              }
-            },
-            "required": ["__type", "code"],
-            "type": "object"
-          },
-          "UiElementDividerApiResponse": {
-            "additionalProperties": false,
-            "properties": {
-              "__type": {
-                "const": "ui.display.divider",
-                "type": "string"
-              }
-            },
-            "required": ["__type"],
-            "type": "object"
-          },
-          "UiElementGridApiResponse": {
-            "additionalProperties": false,
-            "properties": {
-              "__type": {
-                "const": "ui.display.grid",
-                "type": "string"
-              },
-              "data": {
-                "items": {
-                  "additionalProperties": false,
-                  "properties": {
-                    "description": {
-                      "type": "string"
-                    },
-                    "image": {
-                      "additionalProperties": false,
-                      "properties": {
-                        "alt": {
-                          "type": "string"
-                        },
-                        "aspectRatio": {
-                          "type": "number"
-                        },
-                        "fit": {
-                          "enum": ["contain", "cover"],
-                          "type": "string"
-                        },
-                        "url": {
-                          "type": "string"
-                        }
-                      },
-                      "required": ["url"],
-                      "type": "object"
-                    },
-                    "title": {
-                      "type": "string"
-                    }
-                  },
-                  "type": "object"
-                },
-                "type": "array"
-              }
-            },
-            "required": ["__type", "data"],
-            "type": "object"
-          },
-          "UiElementHeaderApiResponse": {
-            "additionalProperties": false,
-            "properties": {
-              "__type": {
-                "const": "ui.display.header",
-                "type": "string"
-              },
-              "description": {
-                "type": "string"
-              },
-              "level": {
-                "type": "number"
-              },
-              "title": {
-                "type": "string"
-              }
-            },
-            "required": ["__type", "description", "level", "title"],
-            "type": "object"
-          },
-          "UiElementImageApiResponse": {
-            "additionalProperties": false,
-            "properties": {
-              "__type": {
-                "const": "ui.display.image",
-                "type": "string"
-              },
-              "alt": {
-                "type": "string"
-              },
-              "size": {
-                "enum": ["full", "large", "medium", "small", "thumbnail"],
-                "type": "string"
-              },
-              "title": {
-                "type": "string"
-              },
-              "url": {
-                "type": "string"
-              }
-            },
-            "required": ["__type", "url"],
-            "type": "object"
-          },
-          "UiElementInputBooleanApiResponse": {
-            "additionalProperties": false,
-            "properties": {
-              "__type": {
-                "const": "ui.input.boolean",
-                "type": "string"
-              },
-              "defaultValue": {
-                "type": "boolean"
-              },
-              "disabled": {
-                "type": "boolean"
-              },
-              "helpText": {
-                "type": "string"
-              },
-              "label": {
-                "type": "string"
-              },
-              "mode": {
-                "enum": ["checkbox", "switch"],
-                "type": "string"
-              },
-              "name": {
-                "type": "string"
-              },
-              "optional": {
-                "type": "boolean"
-              }
-            },
-            "required": ["__type", "label", "mode", "name"],
-            "type": "object"
-          },
-          "UiElementInputNumberApiResponse": {
-            "additionalProperties": false,
-            "properties": {
-              "__type": {
-                "const": "ui.input.number",
-                "type": "string"
-              },
-              "defaultValue": {
-                "type": "number"
-              },
-              "disabled": {
-                "type": "boolean"
-              },
-              "helpText": {
-                "type": "string"
-              },
-              "label": {
-                "type": "string"
-              },
-              "max": {
-                "type": "number"
-              },
-              "min": {
-                "type": "number"
-              },
-              "name": {
-                "type": "string"
-              },
-              "optional": {
-                "type": "boolean"
-              },
-              "placeholder": {
-                "type": "number"
-              }
-            },
-            "required": ["__type", "label", "name"],
-            "type": "object"
-          },
-          "UiElementInputTextApiResponse": {
-            "additionalProperties": false,
-            "properties": {
-              "__type": {
-                "const": "ui.input.text",
-                "type": "string"
-              },
-              "defaultValue": {
-                "type": "string"
-              },
-              "disabled": {
-                "type": "boolean"
-              },
-              "helpText": {
-                "type": "string"
-              },
-              "label": {
-                "type": "string"
-              },
-              "maxLength": {
-                "type": "number"
-              },
-              "minLength": {
-                "type": "number"
-              },
-              "multiline": {
-                "type": "boolean"
-              },
-              "name": {
-                "type": "string"
-              },
-              "optional": {
-                "type": "boolean"
-              },
-              "placeholder": {
-                "type": "string"
-              }
-            },
-            "required": ["__type", "label", "name"],
-            "type": "object"
-          },
-          "UiElementListApiResponse": {
-            "additionalProperties": false,
-            "properties": {
-              "__type": {
-                "const": "ui.display.list",
-                "type": "string"
-              },
-              "data": {
-                "items": {
-                  "additionalProperties": false,
-                  "properties": {
-                    "description": {
-                      "type": "string"
-                    },
-                    "image": {
-                      "additionalProperties": false,
-                      "properties": {
-                        "alt": {
-                          "type": "string"
-                        },
-                        "fit": {
-                          "enum": ["contain", "cover"],
-                          "type": "string"
-                        },
-                        "url": {
-                          "type": "string"
-                        }
-                      },
-                      "required": ["url"],
-                      "type": "object"
-                    },
-                    "title": {
-                      "type": "string"
-                    }
-                  },
-                  "type": "object"
-                },
-                "type": "array"
-              }
-            },
-            "required": ["__type", "data"],
-            "type": "object"
-          },
-          "UiElementMarkdownApiResponse": {
-            "additionalProperties": false,
-            "properties": {
-              "__type": {
-                "const": "ui.display.markdown",
-                "type": "string"
-              },
-              "content": {
-                "type": "string"
-              }
-            },
-            "required": ["__type", "content"],
-            "type": "object"
-          },
-          "UiElementSelectOneApiResponse": {
-            "additionalProperties": false,
-            "properties": {
-              "__type": {
-                "const": "ui.select.one",
-                "type": "string"
-              },
-              "defaultValue": {
-                "anyOf": [
-                  {
-                    "format": "date-time",
-                    "type": "string"
-                  },
-                  {
-                    "type": ["string", "number", "boolean"]
-                  }
-                ]
-              },
-              "disabled": {
-                "type": "boolean"
-              },
-              "helpText": {
-                "type": "string"
-              },
-              "label": {
-                "type": "string"
-              },
-              "name": {
-                "type": "string"
-              },
-              "optional": {
-                "type": "boolean"
-              },
-              "options": {
-                "items": {
-                  "anyOf": [
-                    {
-                      "format": "date-time",
-                      "type": "string"
-                    },
-                    {
-                      "additionalProperties": false,
-                      "properties": {
-                        "label": {
-                          "type": "string"
-                        },
-                        "value": {
-                          "$ref": "#/components/schemas/UiConfig/$defs/ElementDataType"
-                        }
-                      },
-                      "required": ["label", "value"],
-                      "type": "object"
-                    },
-                    {
-                      "type": ["string", "number", "boolean"]
-                    }
-                  ]
-                },
-                "type": "array"
-              }
-            },
-            "required": ["__type", "label", "name", "options"],
-            "type": "object"
-          },
-          "UiElementTableApiResponse": {
-            "additionalProperties": false,
-            "properties": {
-              "__type": {
-                "const": "ui.display.table",
-                "type": "string"
-              },
-              "columns": {
-                "items": {
-                  "type": "string"
-                },
-                "type": "array"
-              },
-              "data": {
-                "items": {},
-                "type": "array"
-              }
-            },
-            "required": ["__type", "data"],
-            "type": "object"
-          }
-        },
+        "type": "object",
         "properties": {
-          "__type": {
-            "const": "ui.page",
-            "type": "string"
-          },
+          "__type": { "type": "string", "const": "ui.page" },
           "actions": {
+            "type": "array",
             "items": {
               "$ref": "#/components/schemas/UiConfig/$defs/PageActions"
-            },
-            "type": "array"
+            }
           },
           "content": {
+            "type": "array",
             "items": {
               "anyOf": [
                 {
@@ -1137,21 +606,274 @@
                   "$ref": "#/components/schemas/UiConfig/$defs/UiElementListApiResponse"
                 }
               ]
-            },
-            "type": "array"
+            }
           },
-          "description": {
-            "type": "string"
-          },
-          "stage": {
-            "type": "string"
-          },
-          "title": {
-            "type": "string"
-          }
+          "description": { "type": "string" },
+          "stage": { "type": "string" },
+          "title": { "type": "string" }
         },
+        "additionalProperties": false,
         "required": ["__type", "content"],
-        "type": "object"
+        "$defs": {
+          "BannerMode": {
+            "type": "string",
+            "enum": ["error", "info", "success", "warning"]
+          },
+          "ElementDataType": {
+            "anyOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": ["string", "number", "boolean"] }
+            ]
+          },
+          "PageActions": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "label": { "type": "string" },
+                  "mode": {
+                    "type": "string",
+                    "enum": ["destructive", "primary", "secondary"]
+                  },
+                  "value": { "type": "string" }
+                },
+                "additionalProperties": false,
+                "required": ["label", "value"]
+              },
+              { "type": "string" }
+            ]
+          },
+          "UiElementBannerApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": { "type": "string", "const": "ui.display.banner" },
+              "description": { "type": "string" },
+              "mode": {
+                "$ref": "#/components/schemas/UiConfig/$defs/BannerMode"
+              },
+              "title": { "type": "string" }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "description", "mode", "title"]
+          },
+          "UiElementCodeApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": { "type": "string", "const": "ui.display.code" },
+              "code": { "type": "string" },
+              "language": { "type": "string" }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "code"]
+          },
+          "UiElementDividerApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": { "type": "string", "const": "ui.display.divider" }
+            },
+            "additionalProperties": false,
+            "required": ["__type"]
+          },
+          "UiElementGridApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": { "type": "string", "const": "ui.display.grid" },
+              "data": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "description": { "type": "string" },
+                    "image": {
+                      "type": "object",
+                      "properties": {
+                        "alt": { "type": "string" },
+                        "aspectRatio": { "type": "number" },
+                        "fit": {
+                          "type": "string",
+                          "enum": ["contain", "cover"]
+                        },
+                        "url": { "type": "string" }
+                      },
+                      "additionalProperties": false,
+                      "required": ["url"]
+                    },
+                    "title": { "type": "string" }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "data"]
+          },
+          "UiElementHeaderApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": { "type": "string", "const": "ui.display.header" },
+              "description": { "type": "string" },
+              "level": { "type": "number" },
+              "title": { "type": "string" }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "description", "level", "title"]
+          },
+          "UiElementImageApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": { "type": "string", "const": "ui.display.image" },
+              "alt": { "type": "string" },
+              "size": {
+                "type": "string",
+                "enum": ["full", "large", "medium", "small", "thumbnail"]
+              },
+              "title": { "type": "string" },
+              "url": { "type": "string" }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "url"]
+          },
+          "UiElementInputBooleanApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": { "type": "string", "const": "ui.input.boolean" },
+              "defaultValue": { "type": "boolean" },
+              "disabled": { "type": "boolean" },
+              "helpText": { "type": "string" },
+              "label": { "type": "string" },
+              "mode": { "type": "string", "enum": ["checkbox", "switch"] },
+              "name": { "type": "string" },
+              "optional": { "type": "boolean" }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "label", "mode", "name"]
+          },
+          "UiElementInputNumberApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": { "type": "string", "const": "ui.input.number" },
+              "defaultValue": { "type": "number" },
+              "disabled": { "type": "boolean" },
+              "helpText": { "type": "string" },
+              "label": { "type": "string" },
+              "max": { "type": "number" },
+              "min": { "type": "number" },
+              "name": { "type": "string" },
+              "optional": { "type": "boolean" },
+              "placeholder": { "type": "number" }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "label", "name"]
+          },
+          "UiElementInputTextApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": { "type": "string", "const": "ui.input.text" },
+              "defaultValue": { "type": "string" },
+              "disabled": { "type": "boolean" },
+              "helpText": { "type": "string" },
+              "label": { "type": "string" },
+              "maxLength": { "type": "number" },
+              "minLength": { "type": "number" },
+              "multiline": { "type": "boolean" },
+              "name": { "type": "string" },
+              "optional": { "type": "boolean" },
+              "placeholder": { "type": "string" }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "label", "name"]
+          },
+          "UiElementListApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": { "type": "string", "const": "ui.display.list" },
+              "data": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "description": { "type": "string" },
+                    "image": {
+                      "type": "object",
+                      "properties": {
+                        "alt": { "type": "string" },
+                        "fit": {
+                          "type": "string",
+                          "enum": ["contain", "cover"]
+                        },
+                        "url": { "type": "string" }
+                      },
+                      "additionalProperties": false,
+                      "required": ["url"]
+                    },
+                    "title": { "type": "string" }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "data"]
+          },
+          "UiElementMarkdownApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": { "type": "string", "const": "ui.display.markdown" },
+              "content": { "type": "string" }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "content"]
+          },
+          "UiElementSelectOneApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": { "type": "string", "const": "ui.select.one" },
+              "defaultValue": {
+                "anyOf": [
+                  { "type": "string", "format": "date-time" },
+                  { "type": ["string", "number", "boolean"] }
+                ]
+              },
+              "disabled": { "type": "boolean" },
+              "helpText": { "type": "string" },
+              "label": { "type": "string" },
+              "name": { "type": "string" },
+              "optional": { "type": "boolean" },
+              "options": {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    { "type": "string", "format": "date-time" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "label": { "type": "string" },
+                        "value": {
+                          "$ref": "#/components/schemas/UiConfig/$defs/ElementDataType"
+                        }
+                      },
+                      "additionalProperties": false,
+                      "required": ["label", "value"]
+                    },
+                    { "type": ["string", "number", "boolean"] }
+                  ]
+                }
+              }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "label", "name", "options"]
+          },
+          "UiElementTableApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": { "type": "string", "const": "ui.display.table" },
+              "columns": { "type": "array", "items": { "type": "string" } },
+              "data": { "type": "array", "items": {} }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "data"]
+          }
+        }
       }
     }
   }
