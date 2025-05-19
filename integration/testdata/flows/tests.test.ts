@@ -223,7 +223,9 @@ test("flows - only pages", async () => {
     ],
     createdAt: expect.any(String),
     updatedAt: expect.any(String),
-    config: {},
+    config: {
+      title: "Only pages"
+    },
   });
 
   // Provide the values for the pending UI step
@@ -286,7 +288,9 @@ test("flows - only pages", async () => {
     ],
     createdAt: expect.any(String),
     updatedAt: expect.any(String),
-    config: {},
+    config: {
+      title: "Only pages",
+    },
   });
 
   ({ status, body } = await putStepValues({
@@ -337,7 +341,9 @@ test("flows - only pages", async () => {
     ],
     createdAt: expect.any(String),
     updatedAt: expect.any(String),
-    config: {},
+    config: {
+      title: "Only pages",
+    },
   });
 });
 
@@ -408,7 +414,9 @@ test("flows - first step is a function", async () => {
         endTime: null,
       },
     ],
-    config: {},
+    config: {
+      title: "Single step",
+    },
     traceId: expect.any(String),
     createdAt: expect.any(String),
     updatedAt: expect.any(String),
@@ -492,7 +500,9 @@ test("flows - alternating step types", async () => {
         endTime: null,
       },
     ],
-    config: {},
+    config: {
+      title: "Mixed step types",
+    },
     traceId: expect.any(String),
     createdAt: expect.any(String),
     updatedAt: expect.any(String),
@@ -516,7 +526,9 @@ test("flows - alternating step types", async () => {
       name: "Keelson",
       age: 23,
     },
-    config: {},
+    config: {
+      title: "Mixed step types",
+    },
     traceId,
     createdAt: expect.any(String),
     updatedAt: expect.any(String),
@@ -641,7 +653,9 @@ test("flows - alternating step types", async () => {
         endTime: null,
       },
     ],
-    config: {},
+    config: {
+      title: "Mixed step types",
+    },
     traceId,
     createdAt: expect.any(String),
     updatedAt: expect.any(String),
@@ -709,7 +723,9 @@ test("flows - error in step with retries", async () => {
     ],
     createdAt: expect.any(String),
     updatedAt: expect.any(String),
-    config: {},
+    config: {
+      title: "Error in step",
+    },
   });
 
   const flow = await untilFlowFinished({
@@ -791,7 +807,9 @@ test("flows - error in flow", async () => {
     steps: [],
     createdAt: expect.any(String),
     updatedAt: expect.any(String),
-    config: {},
+    config: {
+      title: "Error in flow",
+    },
   });
 });
 
@@ -824,7 +842,9 @@ test("flows - timeout step", async () => {
     ],
     createdAt: expect.any(String),
     updatedAt: expect.any(String),
-    config: {},
+    config: {
+      title: "Timeout step",
+    },
   });
 
   const flow = await untilFlowFinished({
