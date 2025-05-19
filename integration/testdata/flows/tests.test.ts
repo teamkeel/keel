@@ -224,7 +224,7 @@ test("flows - only pages", async () => {
     createdAt: expect.any(String),
     updatedAt: expect.any(String),
     config: {
-      title: "Only pages"
+      title: "Only pages",
     },
   });
 
