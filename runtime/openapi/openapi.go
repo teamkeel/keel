@@ -293,8 +293,9 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 			"updatedAt": {Type: "string", Format: "date-time"},
 			"steps":     {Type: "array", Items: &jsonschema.JSONSchema{Ref: "#/components/schemas/Step"}},
 			"config":    flowConfigSchema,
+			"input":     {Type: []string{"object", "null"}, AdditionalProperties: BoolPointer(true)},
 		},
-		Required: []string{"id", "status", "name", "traceId", "createdAt", "updatedAt", "steps", "config"},
+		Required: []string{"id", "status", "name", "traceId", "createdAt", "updatedAt", "steps", "config", "input"},
 	}
 
 	anyTypeSchema := jsonschema.JSONSchema{
@@ -392,6 +393,8 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 		},
 	}
 
+	spec.Paths = map[string]PathItemObject{}
+
 	// Add specific flows endpoints with defined inputs
 	for _, flow := range schema.Flows {
 		msg := schema.FindMessage(flow.InputMessageName)
@@ -406,8 +409,6 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 			maps.Copy(spec.Components.Schemas, inputSchema.Components.Schemas)
 			inputSchema.Components = nil
 		}
-
-		spec.Paths = map[string]PathItemObject{}
 
 		spec.Paths[endpoint] = PathItemObject{
 			Post: &OperationObject{
@@ -425,7 +426,7 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 		}
 	}
 
-	spec.Paths["/flows/json/"] = PathItemObject{
+	spec.Paths["/flows/json"] = PathItemObject{
 		Get: &OperationObject{
 			OperationID: StringPointer("listFlows"),
 			Responses: map[string]ResponseObject{
