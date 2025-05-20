@@ -47,6 +47,7 @@ type ToolConfig struct {
 	EntityPlural         *string              `json:"entity_plural,omitempty"`
 	Inputs               InputConfigs         `json:"inputs,omitempty"`
 	Response             ResponseConfigs      `json:"response,omitempty"`
+	Pagination           *PaginationConfig    `json:"pagination,omitempty"`
 	ExternalLinks        ExternalLinks        `json:"external_links,omitempty"`
 	Sections             Sections             `json:"sections,omitempty"`
 	GetEntryAction       *LinkConfig          `json:"get_entry_action,omitempty"`
@@ -72,6 +73,7 @@ func (cfg *ToolConfig) hasChanges() bool {
 		cfg.EntityPlural != nil ||
 		len(cfg.Inputs) > 0 ||
 		len(cfg.Response) > 0 ||
+		cfg.Pagination != nil ||
 		len(cfg.ExternalLinks) > 0 ||
 		len(cfg.Sections) > 0 ||
 		cfg.GetEntryAction != nil ||
@@ -112,6 +114,9 @@ func (cfg *ToolConfig) applyOn(tool *toolsproto.ActionConfig) {
 		if toolResponse := tool.FindResponseByPath(path); toolResponse != nil {
 			responseCfg.applyOn(toolResponse)
 		}
+	}
+	if cfg.Pagination != nil && cfg.Pagination.PageSize != nil && cfg.Pagination.PageSize.DefaultValue != nil {
+		tool.Pagination = cfg.Pagination.applyOn(tool.Pagination)
 	}
 	for _, el := range cfg.ExternalLinks {
 		tool.ExternalLinks = append(tool.ExternalLinks, &toolsproto.ExternalLink{
@@ -171,6 +176,20 @@ func (dl *DisplayLayoutConfig) toProto() *toolsproto.DisplayLayoutConfig {
 	}
 
 	return &protoDL
+}
+
+func (cfg *PaginationConfig) applyOn(pagination *toolsproto.CursorPaginationConfig) *toolsproto.CursorPaginationConfig {
+	if cfg == nil {
+		return nil
+	}
+
+	if cfg.PageSize != nil && cfg.PageSize.DefaultValue != nil {
+		pagination.PageSize = &toolsproto.CursorPaginationConfig_PageSizeConfig{
+			DefaultValue: *cfg.PageSize.DefaultValue,
+		}
+	}
+
+	return pagination
 }
 
 type InputConfigs map[string]InputConfig
@@ -354,6 +373,14 @@ func (v *ScalarValue) toProto() *toolsproto.ScalarValue {
 	}
 
 	return nil
+}
+
+type PaginationConfig struct {
+	PageSize *PageSizeConfig `json:"page_size,omitempty"`
+}
+
+type PageSizeConfig struct {
+	DefaultValue *int32 `json:"default_value,omitempty"`
 }
 
 type LinkConfig struct {

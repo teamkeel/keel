@@ -12,6 +12,7 @@ func extractConfig(generated, updated *toolsproto.ActionConfig) *ToolConfig {
 		HelpText:             diffStringTemplate(generated.GetHelpText(), updated.GetHelpText()),
 		EntitySingle:         diffString(generated.GetEntitySingle(), updated.GetEntitySingle()),
 		EntityPlural:         diffString(generated.GetEntityPlural(), updated.GetEntityPlural()),
+		Pagination:           extractPaginationConfig(generated.Pagination, updated.Pagination),
 		CreateEntryAction:    extractLinkConfig(generated.CreateEntryAction, updated.CreateEntryAction),
 		GetEntryAction:       extractLinkConfig(generated.GetEntryAction, updated.GetEntryAction),
 		EntryActivityActions: extractLinkConfigs(generated.EntryActivityActions, updated.EntryActivityActions),
@@ -174,6 +175,21 @@ func extractLinkConfigs(generated, updated []*toolsproto.ActionLink) LinkConfigs
 	}
 
 	return nil
+}
+
+func extractPaginationConfig(generated, updated *toolsproto.CursorPaginationConfig) *PaginationConfig {
+	cfg := PaginationConfig{
+		PageSize: extractPageSizeConfig(generated.PageSize, updated.PageSize),
+	}
+
+	return &cfg
+}
+
+func extractPageSizeConfig(generated, updated *toolsproto.CursorPaginationConfig_PageSizeConfig) *PageSizeConfig {
+	cfg := PageSizeConfig{
+		DefaultValue: diffInt(generated.DefaultValue, updated.DefaultValue),
+	}
+	return &cfg
 }
 
 func extractLinkConfig(generated, updated *toolsproto.ActionLink) *LinkConfig {
