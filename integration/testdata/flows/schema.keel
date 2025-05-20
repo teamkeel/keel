@@ -26,10 +26,23 @@ flow ErrorInStep {
     @permission(roles: [Admin])
 }
 
+flow ErrorInFlow {
+    @permission(roles: [Admin])
+}
+
 flow TimeoutStep {
     @permission(roles: [Admin])
 }
+
 flow OnlyPages {
+    @permission(roles: [Admin])
+}
+
+flow OnlyFunctions {
+    inputs {
+        name Text
+        age Number
+    }
     @permission(roles: [Admin])
 }
 

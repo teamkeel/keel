@@ -53,7 +53,7 @@ type Run struct {
 }
 
 func (Run) TableName() string {
-	return "keel_flow_run"
+	return "keel.flow_run"
 }
 
 // HasPendingUIStep tells us if the current run is waiting for UI input
@@ -97,6 +97,7 @@ type Step struct {
 	Status    StepStatus `json:"status"`
 	Type      StepType   `json:"type"`
 	Value     JSON       `json:"value" gorm:"type:jsonb;serializer:json"`
+	Stage     *string    `json:"stage"`
 	Error     *string    `json:"error"`
 	StartTime *time.Time `json:"startTime"`
 	EndTime   *time.Time `json:"endTime"`
@@ -106,7 +107,7 @@ type Step struct {
 }
 
 func (Step) TableName() string {
-	return "keel_flow_step"
+	return "keel.flow_step"
 }
 
 type JSON interface{}

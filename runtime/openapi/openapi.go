@@ -17,6 +17,9 @@ import (
 //go:embed uiConfig.json
 var uiConfigRaw []byte
 
+//go:embed flowConfig.json
+var flowConfigRaw []byte
+
 const OpenApiSpecificationVersion = "3.1.0"
 
 // OpenAPI spec object - https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.1.0.md
@@ -73,6 +76,10 @@ type MediaTypeObject struct {
 }
 
 func StringPointer(v string) *string {
+	return &v
+}
+
+func BoolPointer(v bool) *bool {
 	return &v
 }
 
@@ -262,6 +269,9 @@ func GenerateJob(ctx context.Context, schema *proto.Schema, jobName string) Open
 
 // GenerateFlows generates an openAPI schema for the Flows API for the given schema
 func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
+	var flowConfigSchema jsonschema.JSONSchema
+	_ = json.Unmarshal(flowConfigRaw, &flowConfigSchema)
+
 	runResponseSchema := jsonschema.JSONSchema{
 		Type: "object",
 		Properties: map[string]jsonschema.JSONSchema{
@@ -282,14 +292,22 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 			"createdAt": {Type: "string", Format: "date-time"},
 			"updatedAt": {Type: "string", Format: "date-time"},
 			"steps":     {Type: "array", Items: &jsonschema.JSONSchema{Ref: "#/components/schemas/Step"}},
-			"config":    {Type: "object"},
+			"config":    flowConfigSchema,
+			"input":     {Type: []string{"object", "null"}, AdditionalProperties: BoolPointer(true)},
 		},
+		Required: []string{"id", "status", "name", "traceId", "createdAt", "updatedAt", "steps", "config", "input"},
+	}
+
+	anyTypeSchema := jsonschema.JSONSchema{
+		Type:                 []string{"string", "object", "array", "integer", "number", "boolean", "null"},
+		AdditionalProperties: BoolPointer(true),
 	}
 
 	stepResponseSchema := jsonschema.JSONSchema{
 		Type: "object",
 		Properties: map[string]jsonschema.JSONSchema{
 			"id":    {Type: "string"},
+			"name":  {Type: "string"},
 			"runId": {Type: "string"},
 			"status": {
 				Type: "string",
@@ -299,7 +317,6 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 					StringPointer(string(flows.StepStatusCompleted)),
 				},
 			},
-			"name": {Type: "string"},
 			"type": {
 				Type: "string",
 				Enum: []*string{
@@ -307,14 +324,16 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 					StringPointer(string(flows.StepTypeUI)),
 				},
 			},
-			"createdAt": {Type: "string", Format: "date-time"},
-			"updatedAt": {Type: "string", Format: "date-time"},
-			"value":     {Type: "object"},
-			"ui":        {Ref: "#/components/schemas/UiConfig"},
+			"value":     anyTypeSchema,
 			"startTime": {Type: []string{"string", "null"}, Format: "date-time"},
 			"endTime":   {Type: []string{"string", "null"}, Format: "date-time"},
+			"createdAt": {Type: "string", Format: "date-time"},
+			"updatedAt": {Type: "string", Format: "date-time"},
+			"ui":        {Ref: "#/components/schemas/UiConfig"},
 			"error":     {Type: []string{"string", "null"}},
+			"stage":     {Type: []string{"string", "null"}},
 		},
+		Required: []string{"id", "runId", "status", "name", "type", "createdAt", "updatedAt", "value", "ui", "startTime", "endTime", "error"},
 	}
 
 	listFlowsResponseSchema := jsonschema.JSONSchema{
@@ -374,6 +393,8 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 		},
 	}
 
+	spec.Paths = map[string]PathItemObject{}
+
 	// Add specific flows endpoints with defined inputs
 	for _, flow := range schema.Flows {
 		msg := schema.FindMessage(flow.InputMessageName)
@@ -388,8 +409,6 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 			maps.Copy(spec.Components.Schemas, inputSchema.Components.Schemas)
 			inputSchema.Components = nil
 		}
-
-		spec.Paths = map[string]PathItemObject{}
 
 		spec.Paths[endpoint] = PathItemObject{
 			Post: &OperationObject{
@@ -407,7 +426,7 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 		}
 	}
 
-	spec.Paths["/flows/json/"] = PathItemObject{
+	spec.Paths["/flows/json"] = PathItemObject{
 		Get: &OperationObject{
 			OperationID: StringPointer("listFlows"),
 			Responses: map[string]ResponseObject{
@@ -429,10 +448,10 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 		},
 	}
 
-	spec.Paths["/flows/json/{name}"] = PathItemObject{
+	spec.Paths["/flows/json/{flow}"] = PathItemObject{
 		Parameters: []ParameterObject{
 			{
-				Name:     "name",
+				Name:     "flow",
 				In:       "path",
 				Required: true,
 				Schema: jsonschema.JSONSchema{
@@ -445,7 +464,7 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 			RequestBody: &RequestBodyObject{
 				Content: map[string]MediaTypeObject{
 					"application/json": {
-						Schema: jsonschema.JSONSchema{Type: "object"},
+						Schema: jsonschema.JSONSchema{Type: "object", AdditionalProperties: BoolPointer(true)},
 					},
 				},
 			},
@@ -475,10 +494,10 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 		},
 	}
 
-	spec.Paths["/flows/json/{name}/{runId}"] = PathItemObject{
+	spec.Paths["/flows/json/{flow}/{runId}"] = PathItemObject{
 		Parameters: []ParameterObject{
 			{
-				Name:     "name",
+				Name:     "flow",
 				In:       "path",
 				Required: true,
 				Schema: jsonschema.JSONSchema{
@@ -500,10 +519,10 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 		},
 	}
 
-	spec.Paths["/flows/json/{name}/{runId}/cancel"] = PathItemObject{
+	spec.Paths["/flows/json/{flow}/{runId}/cancel"] = PathItemObject{
 		Parameters: []ParameterObject{
 			{
-				Name:     "name",
+				Name:     "flow",
 				In:       "path",
 				Required: true,
 				Schema:   jsonschema.JSONSchema{Type: "string"},
@@ -521,10 +540,10 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 		},
 	}
 
-	spec.Paths["/flows/json/{name}/{runId}/{stepId}"] = PathItemObject{
+	spec.Paths["/flows/json/{flow}/{runId}/{stepId}"] = PathItemObject{
 		Parameters: []ParameterObject{
 			{
-				Name:     "name",
+				Name:     "flow",
 				In:       "path",
 				Required: true,
 				Schema: jsonschema.JSONSchema{
@@ -551,7 +570,7 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 			RequestBody: &RequestBodyObject{
 				Content: map[string]MediaTypeObject{
 					"application/json": {
-						Schema: jsonschema.JSONSchema{Type: "object"},
+						Schema: jsonschema.JSONSchema{Type: "object", AdditionalProperties: BoolPointer(true)},
 					},
 				},
 			},

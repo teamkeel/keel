@@ -32,28 +32,51 @@ const generator = TJS.buildGenerator(program, {
   ref: true,
 });
 
-if (!generator) {
+const generatorNoRef = TJS.buildGenerator(program, {
+  required: true,
+  noExtraProps: true,
+  ref: false,
+});
+
+if (!generator || !generatorNoRef) {
   throw new Error("Failed to create generator");
 }
 
 try {
-  // Generate the schema just for our entry type
-  const schema = generator.getSchemaForSymbol("UiApiUiConfig");
-
-  // Convert to latest JSON schema spec
-  // @ts-ignore
-  const result = await alterschema(schema, "draft7", "2020-12");
-
   const outputDir = path.resolve(__dirname, "../../../runtime/openapi");
   if (!fs.existsSync(outputDir)) {
     console.error("Output directory does not exist");
     process.exit(1);
   }
 
+  // Generate the schema for ui config
+  const schema = generator.getSchemaForSymbol("UiApiUiConfig");
+
+  // Convert to latest JSON schema spec
+  // @ts-ignore
+  const schemaConverted = await alterschema(schema, "draft7", "2020-12");
+
   // Write to file
   fs.writeFileSync(
     path.resolve(outputDir, "uiConfig.json"),
-    JSON.stringify(result, null, 2)
+    JSON.stringify(schemaConverted, null, 2)
+  );
+
+  // Generate the schema for ui config
+  const flowSchema = generatorNoRef.getSchemaForSymbol("FlowConfigAPI");
+
+  // Convert to latest JSON schema spec
+  // @ts-ignore
+  const flowSchemaConverted = await alterschema(
+    flowSchema,
+    "draft7",
+    "2020-12"
+  );
+
+  // Write to file
+  fs.writeFileSync(
+    path.resolve(outputDir, "flowConfig.json"),
+    JSON.stringify(flowSchemaConverted, null, 2)
   );
 
   console.log("Successfully generated OpenAPI schema");
