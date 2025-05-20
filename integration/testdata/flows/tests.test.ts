@@ -10,12 +10,12 @@ TEST CASES
 [x] Flow function with consecutive UI steps
 [x] Flow function with consecutive function steps
 [x] Flow function with alternating function and UI steps
-[ ] Error thrown in flow function
+[x] Error thrown in flow function
 [x] Error thrown in step function
 [x] Step returning scalar value
 [x] Step function retrying  
 [x] Step function timing out 
-[ ] UI step validation
+[x] UI step validation
 [x] Check full API responses
 [ ] All UI elements response
 [ ] Test all Keel types as inputs
@@ -694,7 +694,6 @@ test("flows - alternating step types", async () => {
   expect(thing!.age).toBe(32);
 });
 
-
 test("flows - text input validation", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
   let { status, body } = await startFlow({
@@ -1062,20 +1061,18 @@ test("flows - authorised starting, getting and listing flows", async () => {
 
   const resListAdmin = await listFlows({ token: adminToken });
   expect(resListAdmin.status).toBe(200);
-  expect(resListAdmin.body.flows.length).toBe(9);
+  expect(resListAdmin.body.flows.length).toBe(11);
   expect(resListAdmin.body.flows[0].name).toBe("ScalarStep");
   expect(resListAdmin.body.flows[1].name).toBe("MixedStepTypes");
   expect(resListAdmin.body.flows[2].name).toBe("Stepless");
   expect(resListAdmin.body.flows[3].name).toBe("SingleStep");
   expect(resListAdmin.body.flows[4].name).toBe("ErrorInStep");
-  expect(resListAdmin.body.flows[5].name).toBe("TimeoutStep");
-  expect(resListAdmin.body.flows[6].name).toBe("OnlyPages");
-  expect(resListAdmin.body.flows[7].name).toBe("ValidationText");
-  expect(resListAdmin.body.flows[8].name).toBe("ValidationBoolean");
   expect(resListAdmin.body.flows[5].name).toBe("ErrorInFlow");
   expect(resListAdmin.body.flows[6].name).toBe("TimeoutStep");
   expect(resListAdmin.body.flows[7].name).toBe("OnlyPages");
   expect(resListAdmin.body.flows[8].name).toBe("OnlyFunctions");
+  expect(resListAdmin.body.flows[9].name).toBe("ValidationText");
+  expect(resListAdmin.body.flows[10].name).toBe("ValidationBoolean");
 
   const resListUser = await listFlows({ token: userToken });
   expect(resListUser.status).toBe(200);
