@@ -743,7 +743,8 @@
               "label": { "type": "string" },
               "mode": { "type": "string", "enum": ["checkbox", "switch"] },
               "name": { "type": "string" },
-              "optional": { "type": "boolean" }
+              "optional": { "type": "boolean" },
+              "validationError": { "type": "string" }
             },
             "additionalProperties": false,
             "required": ["__type", "label", "mode", "name"]
@@ -760,7 +761,8 @@
               "min": { "type": "number" },
               "name": { "type": "string" },
               "optional": { "type": "boolean" },
-              "placeholder": { "type": "number" }
+              "placeholder": { "type": "number" },
+              "validationError": { "type": "string" }
             },
             "additionalProperties": false,
             "required": ["__type", "label", "name"]
@@ -778,7 +780,8 @@
               "multiline": { "type": "boolean" },
               "name": { "type": "string" },
               "optional": { "type": "boolean" },
-              "placeholder": { "type": "string" }
+              "placeholder": { "type": "string" },
+              "validationError": { "type": "string" }
             },
             "additionalProperties": false,
             "required": ["__type", "label", "name"]
@@ -858,7 +861,8 @@
                     { "type": ["string", "number", "boolean"] }
                   ]
                 }
-              }
+              },
+              "validationError": { "type": "string" }
             },
             "additionalProperties": false,
             "required": ["__type", "label", "name", "options"]
