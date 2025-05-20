@@ -182,11 +182,19 @@ func extractPaginationConfig(generated, updated *toolsproto.CursorPaginationConf
 		return nil
 	}
 
-	cfg := PaginationConfig{
-		PageSize: extractPageSizeConfig(generated.PageSize, updated.PageSize),
+	if generated != nil && updated == nil {
+		return nil
 	}
 
-	return &cfg
+	if generated == nil && updated != nil {
+		return &PaginationConfig{
+			PageSize: extractPageSizeConfig(nil, updated.PageSize),
+		}
+	}
+
+	return &PaginationConfig{
+		PageSize: extractPageSizeConfig(generated.PageSize, updated.PageSize),
+	}
 }
 
 func extractPageSizeConfig(generated, updated *toolsproto.CursorPaginationConfig_PageSizeConfig) *PageSizeConfig {
@@ -194,10 +202,19 @@ func extractPageSizeConfig(generated, updated *toolsproto.CursorPaginationConfig
 		return nil
 	}
 
-	cfg := PageSizeConfig{
+	if generated != nil && updated == nil {
+		return nil
+	}
+
+	if generated == nil && updated != nil {
+		return &PageSizeConfig{
+			DefaultValue: &updated.DefaultValue,
+		}
+	}
+
+	return &PageSizeConfig{
 		DefaultValue: diffInt(generated.DefaultValue, updated.DefaultValue),
 	}
-	return &cfg
 }
 
 func extractLinkConfig(generated, updated *toolsproto.ActionLink) *LinkConfig {
