@@ -17,7 +17,7 @@ export type UiElementTable = <const T extends Record<string, any>>(
 export interface UiElementTableApiResponse
   extends BaseUiDisplayResponse<"ui.display.table"> {
   data: any[];
-  columns?: string[]; // Todo: support for an object form with extra context on the data type
+  columns?: string[]; // Todo: This isn't currently useful (or used), we should support an object form with extra context on the data type
 }
 
 export const table: DisplayElementImplementation<
@@ -39,7 +39,6 @@ export const table: DisplayElementImplementation<
     uiConfig: {
       __type: "ui.display.table",
       data: filteredData || [],
-      columns: options.columns,
     } satisfies UiElementTableApiResponse,
   };
 };

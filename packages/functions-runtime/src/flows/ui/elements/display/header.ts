@@ -5,8 +5,19 @@ import {
 } from "../..";
 
 export type UiElementHeader = DisplayElement<{
-  level: 1 | 2 | 3;
+  /**
+   * The visual level of the header.
+   *
+   * @default 2
+   */
+  level?: 1 | 2 | 3;
+  /**
+   * The title of the header.
+   */
   title?: string;
+  /**
+   * The description of the header.
+   */
   description?: string;
 }>;
 
@@ -25,7 +36,7 @@ export const header: DisplayElementImplementation<
   return {
     uiConfig: {
       __type: "ui.display.header",
-      level: options?.level || 1,
+      level: options?.level || 2,
       title: options?.title || "",
       description: options?.description || "",
     } satisfies UiElementHeaderApiResponse,

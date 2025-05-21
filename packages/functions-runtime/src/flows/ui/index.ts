@@ -136,9 +136,9 @@ export interface BaseUiInputResponse<K, TData> {
   name: string;
   label: string;
   defaultValue?: TData;
+  optional: boolean;
+  disabled: boolean;
   helpText?: string;
-  optional?: boolean;
-  disabled?: boolean;
   validationError?: string;
 }
 
