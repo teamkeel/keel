@@ -1,0 +1,10 @@
+{
+  "id": "list-things",
+  "action_name": "listThings",
+  "title": "OUr Things",
+  "pagination": {
+    "page_size": {
+      "default_value": 51
+    }
+  }
+}

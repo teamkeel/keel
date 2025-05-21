@@ -1,0 +1,50 @@
+model User {
+    fields {
+        identity Identity @unique
+        roles UserRole[]
+    }
+}
+
+model UserRole {
+    fields {
+        user User
+        role Role
+    }
+
+    @unique([user, role])
+}
+
+model Role {
+    fields {
+        name Text
+        permissions RolePermission[]
+    }
+}
+
+model RolePermission {
+    fields {
+        role Role
+        permission Permission
+    }
+}
+
+model Permission {
+    fields {
+        name Text
+    }
+}
+
+model Account {
+    fields {
+        name Text
+    }
+
+    actions {
+        create createAccount() with (name) {
+            @permission(expression: "account:create" in ctx.identity.user.roles.role.permissions.permission.name)
+        }
+        list listAccount() {
+            @permission(expression: "account:read" in ctx.identity.user.roles.role.permissions.permission.name)
+        }
+    }
+}
