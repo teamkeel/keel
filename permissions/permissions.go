@@ -246,6 +246,7 @@ func handleContext(s *proto.Schema, ident *parser.ExpressionIdent, stmt *stateme
 				return err
 			}
 
+			// The RHS is a subquery so we need to replace the IS NOT DISTINCT FROM operator with IN
 			if strings.HasSuffix(stmt.expression, " IS NOT DISTINCT FROM ") {
 				stmt.expression = strings.TrimSuffix(stmt.expression, " IS NOT DISTINCT FROM ") + " IN "
 			}
