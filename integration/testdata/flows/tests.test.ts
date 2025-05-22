@@ -278,8 +278,10 @@ test("flows - only pages", async () => {
             {
               __type: "ui.input.boolean",
               label: "Did you like the things?",
+              disabled: false,
               mode: "checkbox",
               name: "yesno",
+              optional: false,
             },
           ],
           title: "My flow",
@@ -566,8 +568,10 @@ test("flows - alternating step types", async () => {
             {
               __type: "ui.input.text",
               defaultValue: "Keelson",
+              disabled: false,
               label: "Name",
               name: "name",
+              optional: false,
             },
             {
               __type: "ui.display.divider",
@@ -575,8 +579,10 @@ test("flows - alternating step types", async () => {
             {
               __type: "ui.input.number",
               defaultValue: 23,
+              disabled: false,
               label: "Age",
               name: "age",
+              optional: false,
             },
           ],
         },
@@ -724,8 +730,10 @@ test("flows - text input validation", async () => {
     content: [
       {
         __type: "ui.input.text",
+        disabled: false,
         label: "Postcode",
         name: "postcode",
+        optional: false,
         placeholder: "e.g. N1 ABC",
         validationError: "not a valid postcode",
       },
@@ -780,10 +788,12 @@ test("flows - boolean input validation", async () => {
     content: [
       {
         __type: "ui.input.boolean",
+        disabled: false,
         mode: "checkbox",
         label: "Is it good?",
         name: "good",
         validationError: "it must be good",
+        optional: false,
       },
     ],
     title: "Important question",
