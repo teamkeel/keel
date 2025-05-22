@@ -335,6 +335,13 @@ message ActionLink {
 
 	// Any validation errors if 
 	repeated ValidationError errors = 9;
+
+	// If true, actions that have no inputs (or all inputs have values from the data mapping) 
+	// will trigger without confirmation. Only applicable to mutation actions
+	optional bool skip_confirmation = 10; 
+
+	// If true, the action link will be displayed with emphasis to make as a primary action
+	optional bool emphasize = 11;
 }
 
 message ToolGroup {
