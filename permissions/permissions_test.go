@@ -809,6 +809,151 @@ func TestToSQL(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "identity_backlink_literal_in_subquery",
+			schema: `
+				model User {
+					fields {
+						identity Identity @unique
+						roles UserRole[]
+					}
+				}
+				model UserRole {
+					fields {
+						user User
+						role Role
+					}
+					@unique([user, role])
+				}
+				model Role {
+					fields {
+						name Text
+						permissions RolePermission[]
+					}
+				}
+				model RolePermission {
+					fields {
+						role Role
+						permission Permission
+					}
+				}
+				model Permission {
+					fields {
+						name Text
+					}
+				}
+				model Account {
+					fields {
+						name Text
+					}
+					actions {
+						list listAccount() {
+							@function
+							@permission(expression: "account:list" in ctx.identity.user.roles.role.permissions.permission.name)
+						}
+					}
+				}
+
+			`,
+			action: "listAccount",
+			sql: `
+				SELECT DISTINCT "account"."id" 
+				FROM "account" 
+				WHERE ? IN 
+					(SELECT "identity$user$roles$role$permissions$permission"."name" 
+					FROM "identity" 
+					LEFT JOIN "user" AS "identity$user" ON "identity"."id" = "identity$user"."identity_id" 
+					LEFT JOIN "user_role" AS "identity$user$roles" ON "identity$user"."id" = "identity$user$roles"."user_id" 
+					LEFT JOIN "role" AS "identity$user$roles$role" ON "identity$user$roles"."role_id" = "identity$user$roles$role"."id" 
+					LEFT JOIN "role_permission" AS "identity$user$roles$role$permissions" ON "identity$user$roles$role"."id" = "identity$user$roles$role$permissions"."role_id" 
+					LEFT JOIN "permission" AS "identity$user$roles$role$permissions$permission" ON "identity$user$roles$role$permissions"."permission_id" = "identity$user$roles$role$permissions$permission"."id" 
+					WHERE "identity"."id" IS NOT DISTINCT FROM ?) 
+				AND "account"."id" IN (?)
+			`,
+			values: []permissions.Value{
+				{
+					Type:        permissions.ValueString,
+					StringValue: "\"account:list\"",
+				},
+				{
+					Type: permissions.ValueIdentityID,
+				},
+				{
+					Type: permissions.ValueRecordIDs,
+				},
+			},
+		},
+		{
+			name: "identity_backlink_field_in_subquery",
+			schema: `
+				model User {
+					fields {
+						identity Identity @unique
+						roles UserRole[]
+					}
+				}
+				model UserRole {
+					fields {
+						user User
+						role Role
+					}
+					@unique([user, role])
+				}
+				model Role {
+					fields {
+						name Text
+						permissions RolePermission[]
+					}
+				}
+				model RolePermission {
+					fields {
+						role Role
+						permission Permission
+					}
+				}
+				model Permission {
+					fields {
+						name Text
+					}
+				}
+				model Account {
+					fields {
+						name Text
+						permission Text
+					}
+					actions {
+						list listAccount() {
+							@function
+							@permission(expression: account.permission in ctx.identity.user.roles.role.permissions.permission.name)
+						}
+					}
+				}
+
+			`,
+			action: "listAccount",
+			sql: `
+				SELECT DISTINCT "account"."id" 
+				FROM "account" 
+				WHERE "account"."permission" IN 
+					(SELECT "identity$user$roles$role$permissions$permission"."name" 
+					FROM "identity" 
+					LEFT JOIN "user" AS "identity$user" ON "identity"."id" = "identity$user"."identity_id" 
+					LEFT JOIN "user_role" AS "identity$user$roles" ON "identity$user"."id" = "identity$user$roles"."user_id" 
+					LEFT JOIN "role" AS "identity$user$roles$role" ON "identity$user$roles"."role_id" = "identity$user$roles$role"."id" 
+					LEFT JOIN "role_permission" AS "identity$user$roles$role$permissions" ON "identity$user$roles$role"."id" = "identity$user$roles$role$permissions"."role_id" 
+					LEFT JOIN "permission" AS "identity$user$roles$role$permissions$permission" ON "identity$user$roles$role$permissions"."permission_id" = "identity$user$roles$role$permissions$permission"."id" 
+					WHERE "identity"."id" IS NOT DISTINCT FROM ?) 
+				AND "account"."id" IN (?)
+			`,
+			values: []permissions.Value{
+				{
+					Type: permissions.ValueIdentityID,
+				},
+				{
+					Type: permissions.ValueRecordIDs,
+				},
+			},
+		},
 	}
 
 	for _, fixture := range fixtures {
