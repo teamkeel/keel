@@ -723,11 +723,11 @@
             "properties": {
               "__type": { "type": "string", "const": "ui.display.image" },
               "alt": { "type": "string" },
+              "caption": { "type": "string" },
               "size": {
                 "type": "string",
                 "enum": ["full", "large", "medium", "small", "thumbnail"]
               },
-              "title": { "type": "string" },
               "url": { "type": "string" }
             },
             "additionalProperties": false,
@@ -747,7 +747,14 @@
               "validationError": { "type": "string" }
             },
             "additionalProperties": false,
-            "required": ["__type", "label", "mode", "name"]
+            "required": [
+              "__type",
+              "disabled",
+              "label",
+              "mode",
+              "name",
+              "optional"
+            ]
           },
           "UiElementInputNumberApiResponse": {
             "type": "object",
@@ -761,11 +768,11 @@
               "min": { "type": "number" },
               "name": { "type": "string" },
               "optional": { "type": "boolean" },
-              "placeholder": { "type": "number" },
+              "placeholder": { "type": "string" },
               "validationError": { "type": "string" }
             },
             "additionalProperties": false,
-            "required": ["__type", "label", "name"]
+            "required": ["__type", "disabled", "label", "name", "optional"]
           },
           "UiElementInputTextApiResponse": {
             "type": "object",
@@ -784,7 +791,7 @@
               "validationError": { "type": "string" }
             },
             "additionalProperties": false,
-            "required": ["__type", "label", "name"]
+            "required": ["__type", "disabled", "label", "name", "optional"]
           },
           "UiElementListApiResponse": {
             "type": "object",
@@ -865,7 +872,14 @@
               "validationError": { "type": "string" }
             },
             "additionalProperties": false,
-            "required": ["__type", "label", "name", "options"]
+            "required": [
+              "__type",
+              "disabled",
+              "label",
+              "name",
+              "optional",
+              "options"
+            ]
           },
           "UiElementTableApiResponse": {
             "type": "object",

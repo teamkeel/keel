@@ -8,7 +8,7 @@ export type UiElementImage = DisplayElement<{
   url: string;
   alt?: string;
   size?: "thumbnail" | "small" | "medium" | "large" | "full";
-  title?: string;
+  caption?: string;
 }>;
 
 // The shape of the response over the API
@@ -17,7 +17,7 @@ export interface UiElementImageApiResponse
   url: string;
   alt?: string;
   size?: "thumbnail" | "small" | "medium" | "large" | "full";
-  title?: string;
+  caption?: string;
 }
 
 export const image: DisplayElementImplementation<
@@ -30,7 +30,7 @@ export const image: DisplayElementImplementation<
       url: options?.url || "",
       alt: options?.alt,
       size: options?.size,
-      title: options?.title,
+      caption: options?.caption,
     } satisfies UiElementImageApiResponse,
   };
 };
