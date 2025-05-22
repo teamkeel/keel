@@ -44,7 +44,15 @@ model Account {
             @permission(expression: "account:create" in ctx.identity.user.roles.role.permissions.permission.name)
         }
         list listAccount() {
-            @permission(expression: "account:read" in ctx.identity.user.roles.role.permissions.permission.name)
+            @permission(expression: "account:list" in ctx.identity.user.roles.role.permissions.permission.name)
+        }
+        create createAccountFn() with (name) {
+            @function
+            @permission(expression: "account:create" in ctx.identity.user.roles.role.permissions.permission.name)
+        }
+        list listAccountFn() {
+            @function
+            @permission(expression: "account:list" in ctx.identity.user.roles.role.permissions.permission.name)
         }
     }
 }

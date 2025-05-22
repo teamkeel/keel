@@ -246,6 +246,10 @@ func handleContext(s *proto.Schema, ident *parser.ExpressionIdent, stmt *stateme
 				return err
 			}
 
+			if strings.HasSuffix(stmt.expression, " IS NOT DISTINCT FROM ") {
+				stmt.expression = strings.TrimSuffix(stmt.expression, " IS NOT DISTINCT FROM ") + " IN "
+			}
+
 			stmt.expression += fmt.Sprintf(
 				`(SELECT %s FROM "identity" %s WHERE "identity"."id" IS NOT DISTINCT FROM ?)`,
 				inner.expression, strings.Join(inner.joins, " "),
