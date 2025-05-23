@@ -17,16 +17,70 @@ import (
 )
 
 type Tool struct {
-	Config         *toolsproto.ActionConfig
+	ID string
+
+	// For tools powered by actions
+	ActionConfig   *toolsproto.ActionConfig
 	Model          *proto.Model
 	Action         *proto.Action
 	SortableFields []string
+
+	// For tools powered by flows
+	FlowConfig *toolsproto.FlowConfig
+	Flow       *proto.Flow
+}
+
+func (t *Tool) IsActionBased() bool {
+	return t.ActionConfig != nil && t.Action != nil
+}
+
+func (t *Tool) IsFlowBased() bool {
+	return t.FlowConfig != nil && t.Flow != nil
+}
+
+func (t *Tool) asPB() *toolsproto.Tool {
+	if t.IsActionBased() {
+		return &toolsproto.Tool{
+			Id:           t.ID,
+			Type:         toolsproto.Tool_ACTION,
+			ActionConfig: t.ActionConfig,
+		}
+	}
+	if t.IsFlowBased() {
+		return &toolsproto.Tool{
+			Id:         t.ID,
+			Type:       toolsproto.Tool_FLOW,
+			FlowConfig: t.FlowConfig,
+		}
+	}
+
+	return nil
 }
 
 type Generator struct {
 	Schema     *proto.Schema
 	KeelConfig *config.ProjectConfig
 	Tools      map[string]*Tool
+}
+
+func (g *Generator) actionTools() map[string]*Tool {
+	actionTools := map[string]*Tool{}
+	for id, tool := range g.Tools {
+		if tool.IsActionBased() {
+			actionTools[id] = tool
+		}
+	}
+	return actionTools
+}
+
+func (g *Generator) flowTools() map[string]*Tool {
+	flowTools := map[string]*Tool{}
+	for id, tool := range g.Tools {
+		if tool.IsFlowBased() {
+			flowTools[id] = tool
+		}
+	}
+	return flowTools
 }
 
 const fieldNameID = "id"
@@ -41,9 +95,9 @@ func NewGenerator(schema *proto.Schema, keelConfig *config.ProjectConfig) (*Gene
 	}, nil
 }
 
-// GetConfigs will return the action configs that have been generated, in alphabetical order
-func (g *Generator) GetConfigs() []*toolsproto.ActionConfig {
-	cfgs := []*toolsproto.ActionConfig{}
+// GetTools returns all the tools that have been generated in alphabetical order. These include both action and flow tools
+func (g *Generator) GetTools() []*toolsproto.Tool {
+	tools := []*toolsproto.Tool{}
 	ids := []string{}
 	for id := range g.Tools {
 		ids = append(ids, id)
@@ -51,10 +105,10 @@ func (g *Generator) GetConfigs() []*toolsproto.ActionConfig {
 	sort.Strings(ids)
 
 	for _, id := range ids {
-		cfgs = append(cfgs, g.Tools[id].Config)
+		tools = append(tools, g.Tools[id].asPB())
 	}
 
-	return cfgs
+	return tools
 }
 
 // Generate will generate all the tools for this generator's schema
@@ -83,6 +137,8 @@ func (g *Generator) Generate(ctx context.Context) error {
 // For each model's actions, we will scaffold the `ActionConfig`s. These will not yet contain all request fields,
 // response fields and any related/embedded tools, as these need to reference each other, so we first scaffold them and
 // the completed generation is done later on
+//
+// For each flow we will scaffold the `FlowConfig`s.
 func (g *Generator) scaffoldTools() {
 	var api *proto.Api
 	if g.KeelConfig != nil && g.KeelConfig.Console.Api != nil {
@@ -102,7 +158,8 @@ func (g *Generator) scaffoldTools() {
 			}
 
 			t := Tool{
-				Config: &toolsproto.ActionConfig{
+				ID: casing.ToKebab(action.GetName()),
+				ActionConfig: &toolsproto.ActionConfig{
 					Id:             casing.ToKebab(action.GetName()),
 					ApiNames:       g.Schema.FindApiNames(model.Name, action.Name),
 					Name:           casing.ToSentenceCase(action.Name),
@@ -114,6 +171,7 @@ func (g *Generator) scaffoldTools() {
 					EntityPlural:   casing.ToPlural(strings.ToLower(casing.ToSentenceCase(model.GetName()))),
 					Capabilities:   g.makeCapabilities(action),
 					Title:          g.makeTitle(action, model),
+					FilterConfig:   g.makeFilterConfig(),
 				},
 				Model:  model,
 				Action: action,
@@ -121,7 +179,7 @@ func (g *Generator) scaffoldTools() {
 
 			// List actions have pagination
 			if action.IsList() {
-				t.Config.Pagination = &toolsproto.CursorPaginationConfig{
+				t.ActionConfig.Pagination = &toolsproto.CursorPaginationConfig{
 					Start: &toolsproto.CursorPaginationConfig_FieldConfig{
 						RequestInput:  "after",
 						ResponseField: &toolsproto.JsonPath{Path: "$.pageInfo.startCursor"},
@@ -142,20 +200,36 @@ func (g *Generator) scaffoldTools() {
 
 			// get actions have a display layout of RecordView
 			if action.IsGet() {
-				t.Config.DisplayLayout = &toolsproto.DisplayLayoutConfig{
+				t.ActionConfig.DisplayLayout = &toolsproto.DisplayLayoutConfig{
 					Type:         toolsproto.DisplayLayoutConfig_RECORD,
 					RecordConfig: &toolsproto.RecordViewConfig{},
 				}
 			}
 
-			g.Tools[t.Config.Id] = &t
+			g.Tools[t.ID] = &t
 		}
+	}
+
+	for _, flow := range g.Schema.GetFlows() {
+		t := Tool{
+			ID: casing.ToKebab(flow.GetName()),
+			FlowConfig: &toolsproto.FlowConfig{
+				Name:     casing.ToSentenceCase(flow.Name),
+				FlowName: flow.Name,
+			},
+			Flow: flow,
+		}
+		g.Tools[t.ID] = &t
 	}
 }
 
 func (g *Generator) decorateTools() error {
 	if err := g.generateInputs(); err != nil {
-		return fmt.Errorf("generating inputs: %w", err)
+		return fmt.Errorf("generating inputs for action based tools: %w", err)
+	}
+
+	if err := g.generateFlowInputs(); err != nil {
+		return fmt.Errorf("generating inputs for flow based tools: %w", err)
 	}
 
 	if err := g.generateResponses(); err != nil {
@@ -169,10 +243,10 @@ func (g *Generator) decorateTools() error {
 	g.generateCreateEntryActionLinks()
 
 	// decorate further...
-	for _, tool := range g.Tools {
+	for _, tool := range g.actionTools() {
 		// for all inputs that are IDs that have a get_entry_action link (e.g. used to lookup a related model field),
 		// find the get(id) tool and decorate the data mapping now that we have all inputs and responses generated
-		for _, input := range tool.Config.Inputs {
+		for _, input := range tool.ActionConfig.Inputs {
 			if input.GetEntryAction != nil && input.GetEntryAction.ToolId != "" {
 				if entryToolID := g.findGetByIDTool(input.GetEntryAction.ToolId); entryToolID != "" {
 					input.GetEntryAction.ToolId = entryToolID
@@ -191,7 +265,7 @@ func (g *Generator) decorateTools() error {
 
 		// for all responses that have a link for to-many fields,
 		// decorate the data mapping now that we have all inputs and responses generated
-		for _, response := range tool.Config.Response {
+		for _, response := range tool.ActionConfig.Response {
 			if !tool.Action.IsArbitraryFunction() && response.Link != nil && response.Link.ToolId != "" && response.Link.Data[0].Path == nil {
 				response.Link.Data[0].Path = &toolsproto.JsonPath{
 					Path: tool.getIDResponseFieldPath(),
@@ -207,7 +281,7 @@ func (g *Generator) decorateTools() error {
 //   - For LIST actions = other list actions for the same model
 //   - For DELETE actions = all list actions for the same model
 func (g *Generator) generateRelatedActionsLinks() {
-	for id, tool := range g.Tools {
+	for id, tool := range g.actionTools() {
 		displayOrder := 0
 		if !(tool.Action.IsList() || tool.Action.IsDelete()) {
 			continue
@@ -218,7 +292,7 @@ func (g *Generator) generateRelatedActionsLinks() {
 			for _, relatedID := range relatedTools {
 				if id != relatedID {
 					displayOrder++
-					tool.Config.RelatedActions = append(tool.Config.RelatedActions, &toolsproto.ActionLink{
+					tool.ActionConfig.RelatedActions = append(tool.ActionConfig.RelatedActions, &toolsproto.ToolLink{
 						ToolId:       relatedID,
 						DisplayOrder: int32(displayOrder),
 					})
@@ -231,7 +305,7 @@ func (g *Generator) generateRelatedActionsLinks() {
 // generateEntryActivityActionsLinks will traverse the tools and generate the EntryActivityActions links:
 //   - For LIST/GET actions that have a model ID response = other actions on the same model that take an id as an input
 func (g *Generator) generateEntryActivityActionsLinks() {
-	for id, tool := range g.Tools {
+	for id, tool := range g.actionTools() {
 		displayOrder := 0
 		// get the path of the id response field for this tool
 		idResponseFieldPath := tool.getIDResponseFieldPath()
@@ -266,6 +340,7 @@ func (g *Generator) generateEntryActivityActionsLinks() {
 
 		for _, toolID := range ids {
 			displayOrder++
+
 			asDialog := false
 
 			targetTool := g.Tools[toolID]
@@ -273,7 +348,7 @@ func (g *Generator) generateEntryActivityActionsLinks() {
 				asDialog = true
 			}
 
-			tool.Config.EntryActivityActions = append(tool.Config.EntryActivityActions, &toolsproto.ActionLink{
+			tool.ActionConfig.EntryActivityActions = append(tool.ActionConfig.EntryActivityActions, &toolsproto.ToolLink{
 				ToolId: toolID,
 				Data: []*toolsproto.DataMapping{
 					{
@@ -291,7 +366,7 @@ func (g *Generator) generateEntryActivityActionsLinks() {
 // generateGetEntryActionLinks will traverse the tools and generate the GetEntryAction links:
 //   - For LIST/UPDATE/CREATE = a GET action used to retrieve the model by id
 func (g *Generator) generateGetEntryActionLinks() {
-	for _, tool := range g.Tools {
+	for _, tool := range g.actionTools() {
 		// get the path of the id response field for this tool
 		idResponseFieldPath := tool.getIDResponseFieldPath()
 		if idResponseFieldPath == "" {
@@ -300,7 +375,7 @@ func (g *Generator) generateGetEntryActionLinks() {
 		// get entry action for tools that operate on a model instance/s (create/update/list).
 		if tool.Action.IsList() || tool.Action.IsUpdate() || tool.Action.Type == proto.ActionType_ACTION_TYPE_CREATE {
 			if getToolID := g.findGetByIDTool(tool.Model.Name); getToolID != "" {
-				tool.Config.GetEntryAction = &toolsproto.ActionLink{
+				tool.ActionConfig.GetEntryAction = &toolsproto.ToolLink{
 					ToolId: getToolID,
 					Data: []*toolsproto.DataMapping{
 						{
@@ -317,11 +392,11 @@ func (g *Generator) generateGetEntryActionLinks() {
 // generateCreateEntryActionLinks will traverse the tools and generate the CreateEntryAction links:
 //   - Applicable to LIST/GET actions: a CREATE action used to make a model of the same type
 func (g *Generator) generateCreateEntryActionLinks() {
-	for _, tool := range g.Tools {
+	for _, tool := range g.actionTools() {
 		if tool.Action.IsList() || tool.Action.IsGet() {
 			if createToolId := g.findCreateTool(tool.Model.Name); createToolId != "" {
 				//TODO: improvement: add datamapping from list actions to the create action if there are any filtered fields
-				tool.Config.CreateEntryAction = &toolsproto.ActionLink{
+				tool.ActionConfig.CreateEntryAction = &toolsproto.ToolLink{
 					ToolId: createToolId,
 					Data:   []*toolsproto.DataMapping{},
 				}
@@ -334,7 +409,7 @@ func (g *Generator) generateCreateEntryActionLinks() {
 // have HasMany relationships provided that:
 // - the related model has a list action that has the parent field as a filter
 func (g *Generator) generateEmbeddedTools() {
-	for _, tool := range g.Tools {
+	for _, tool := range g.actionTools() {
 		if !tool.Action.IsGet() {
 			continue
 		}
@@ -353,13 +428,13 @@ func (g *Generator) generateEmbeddedTools() {
 				if input := g.Tools[toolId].getInput("$.where." + f.InverseFieldName.Value + ".id.equals"); input != nil {
 					displayOrder++
 					// embed the tool as a tool group
-					tool.Config.EmbeddedTools = append(tool.Config.EmbeddedTools, &toolsproto.ToolGroup{
+					tool.ActionConfig.EmbeddedTools = append(tool.ActionConfig.EmbeddedTools, &toolsproto.ToolGroup{
 						Id:           f.Name,
 						Title:        &toolsproto.StringTemplate{Template: casing.ToSentenceCase(f.Name)}, // e.g. `Order items` on a getOrder action
 						DisplayOrder: int32(displayOrder),
 						Tools: []*toolsproto.ToolGroup_GroupActionLink{
 							{
-								ActionLink: &toolsproto.ActionLink{
+								ActionLink: &toolsproto.ToolLink{
 									ToolId: toolId,
 									Title:  &toolsproto.StringTemplate{Template: f.Name}, // e.g. `orderItems` on a getOrder action
 									Data: []*toolsproto.DataMapping{
@@ -385,9 +460,9 @@ func (g *Generator) generateEmbeddedTools() {
 	}
 }
 
-// generateInputs will make the inputs for all tools
+// generateInputs will make the inputs for all action based tools
 func (g *Generator) generateInputs() error {
-	for _, tool := range g.Tools {
+	for _, tool := range g.actionTools() {
 		// if the action does not have a input message, it means we don't have any inputs for this tool
 		if tool.Action.InputMessageName == "" {
 			continue
@@ -403,7 +478,7 @@ func (g *Generator) generateInputs() error {
 		if err != nil {
 			return err
 		}
-		tool.Config.Inputs = fields
+		tool.ActionConfig.Inputs = fields
 
 		// If there are any OrderBy fields, then we find the sortable field names and store them against the tool, to be
 		// used later on when generating the response
@@ -428,9 +503,63 @@ func (g *Generator) generateInputs() error {
 	return nil
 }
 
-// generateResponses will make the responses for all tools
+// generateFlowInputs will make the inputs for all flow based tools
+func (g *Generator) generateFlowInputs() error {
+	for _, tool := range g.flowTools() {
+		// if the flow does not have a input message, it means we don't have any inputs for this tool
+		if tool.Flow.InputMessageName == "" {
+			continue
+		}
+
+		// get the input message
+		msg := g.Schema.FindMessage(tool.Flow.InputMessageName)
+		if msg == nil {
+			return ErrInvalidSchema
+		}
+
+		fields := []*toolsproto.FlowInputConfig{}
+
+		for i, f := range msg.GetFields() {
+			if f.IsMessage() {
+				// nested messages aren't supported for flows
+				continue
+			}
+
+			config := &toolsproto.FlowInputConfig{
+				FieldLocation: &toolsproto.JsonPath{Path: `$.` + f.Name},
+				FieldType:     f.Type.Type,
+				Repeated:      f.Type.Repeated,
+				DisplayName:   casing.ToSentenceCase(f.Name),
+				DisplayOrder:  int32(i),
+			}
+
+			if f.Type.ModelName != nil {
+				config.ModelName = &f.Type.ModelName.Value
+			}
+			if f.Type.FieldName != nil {
+				config.FieldName = &f.Type.FieldName.Value
+			}
+			if f.Type.EnumName != nil {
+				config.EnumName = &f.Type.EnumName.Value
+			}
+
+			fields = append(fields, config)
+		}
+
+		tool.FlowConfig.Inputs = fields
+	}
+
+	return nil
+}
+
+// generateResponses will make the responses for all action based tools
 func (g *Generator) generateResponses() error {
-	for _, tool := range g.Tools {
+	for _, tool := range g.actionTools() {
+		// skip tools that are flow based
+		if tool.IsFlowBased() {
+			continue
+		}
+
 		// if the action has a response message, let's generate it
 		if tool.Action.ResponseMessageName != "" {
 			// get the message message
@@ -443,7 +572,7 @@ func (g *Generator) generateResponses() error {
 			if err != nil {
 				return err
 			}
-			tool.Config.Response = fields
+			tool.ActionConfig.Response = fields
 
 			continue
 		}
@@ -458,21 +587,21 @@ func (g *Generator) generateResponses() error {
 		// if the action is a list action, we also need to include the pageInfo responses, resultInfo responses and prefix the results
 		if tool.Action.IsList() {
 			pathPrefix = ".results[*]"
-			tool.Config.Response = append(tool.Config.Response, getPageInfoResponses()...)
+			tool.ActionConfig.Response = append(tool.ActionConfig.Response, getPageInfoResponses()...)
 
 			if len(tool.Action.Facets) > 0 {
 				resultInfo, err := getResultInfoResponses(g.Schema, tool.Action)
 				if err != nil {
 					return err
 				}
-				tool.Config.Response = append(tool.Config.Response, resultInfo...)
+				tool.ActionConfig.Response = append(tool.ActionConfig.Response, resultInfo...)
 			}
 		}
 		fields, err := g.makeResponsesForModel(tool.Model, pathPrefix, tool.Action.GetResponseEmbeds(), tool.SortableFields)
 		if err != nil {
 			return err
 		}
-		tool.Config.Response = append(tool.Config.Response, fields...)
+		tool.ActionConfig.Response = append(tool.ActionConfig.Response, fields...)
 	}
 
 	return nil
@@ -546,7 +675,7 @@ func (g *Generator) makeInputsForMessage(
 		if f.Type.ModelName != nil && f.Type.FieldName != nil && proto.FindField(g.Schema.Models, f.Type.ModelName.Value, f.Type.FieldName.Value).Unique {
 			// generate action link placeholders
 			if lookupToolsIDs := g.findListTools(f.Type.ModelName.Value); len(lookupToolsIDs) > 0 {
-				config.LookupAction = &toolsproto.ActionLink{
+				config.LookupAction = &toolsproto.ToolLink{
 					ToolId: lookupToolsIDs[0],
 				}
 			}
@@ -556,7 +685,7 @@ func (g *Generator) makeInputsForMessage(
 			// in the generation process
 			// We do not add a GetEntryAction for the 'id' (or any unique lookup) input on a 'get', 'create' or 'update' action of a model, however do we add it for related models
 			if !((actionType == proto.ActionType_ACTION_TYPE_GET || actionType == proto.ActionType_ACTION_TYPE_CREATE || actionType == proto.ActionType_ACTION_TYPE_UPDATE) && len(f.Target) == 1) {
-				config.GetEntryAction = &toolsproto.ActionLink{
+				config.GetEntryAction = &toolsproto.ToolLink{
 					ToolId: f.Type.ModelName.Value, // TODO: this is a bit of a hack placeholder because we do not know the underlying model which the field is pointing to during post-processing
 				}
 			}
@@ -737,7 +866,7 @@ func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string,
 		// generated first, so we're safe to create a tool/action link now
 		if f.IsForeignKey() && f.ForeignKeyInfo.RelatedModelField == fieldNameID {
 			if getToolID := g.findGetByIDTool(f.ForeignKeyInfo.RelatedModelName); getToolID != "" {
-				config.Link = &toolsproto.ActionLink{
+				config.Link = &toolsproto.ToolLink{
 					ToolId: getToolID,
 					Data: []*toolsproto.DataMapping{
 						{
@@ -751,7 +880,7 @@ func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string,
 
 		if f.IsHasMany() {
 			if getToolID, input := g.findListByForeignID(f.Type.ModelName.Value, f.InverseFieldName.Value); getToolID != "" {
-				config.Link = &toolsproto.ActionLink{
+				config.Link = &toolsproto.ToolLink{
 					ToolId: getToolID,
 					Data: []*toolsproto.DataMapping{
 						{
@@ -785,8 +914,8 @@ func computeFieldOrder(currentOrder *int, fieldCount int, fieldName string) int3
 // findListTools will search for list tools for the given model
 func (g *Generator) findListTools(modelName string) []string {
 	ids := []string{}
-	for id, tool := range g.Tools {
-		if tool.Model.Name == modelName && tool.Action.IsList() {
+	for id, tool := range g.actionTools() {
+		if tool.IsActionBased() && tool.Model.Name == modelName && tool.Action.IsList() {
 			ids = append(ids, id)
 		}
 	}
@@ -798,7 +927,7 @@ func (g *Generator) findListTools(modelName string) []string {
 
 // findCreateTool will search for a get tool for the given model
 func (g *Generator) findCreateTool(modelName string) string {
-	for id, tool := range g.Tools {
+	for id, tool := range g.actionTools() {
 		if tool.Model.Name == modelName && tool.Action.IsCreate() {
 			return id
 		}
@@ -813,7 +942,7 @@ func (g *Generator) findGetByIDTool(modelName string) string {
 		return id
 	}
 
-	for id, tool := range g.Tools {
+	for id, tool := range g.actionTools() {
 		if tool.Model.Name == modelName && tool.Action.IsGet() && tool.hasOnlyIDInput() {
 			return id
 		}
@@ -824,7 +953,7 @@ func (g *Generator) findGetByIDTool(modelName string) string {
 
 // findGetByIDTool will search for a get tool for the given model that takes in an ID and has no @embeds defined
 func (g *Generator) findGetByIDWithoutEmbedsTool(modelName string) string {
-	for id, tool := range g.Tools {
+	for id, tool := range g.actionTools() {
 		if tool.Model.Name == modelName && tool.Action.IsGet() && tool.hasOnlyIDInput() && len(tool.Action.ResponseEmbeds) == 0 {
 			return id
 		}
@@ -836,7 +965,7 @@ func (g *Generator) findGetByIDWithoutEmbedsTool(modelName string) string {
 // findListByForeignID will search for a list tool for the given model which takes a specific foreign key as an input
 // It will also return the request input field for that tool
 func (g *Generator) findListByForeignID(modelName string, inverseFieldName string) (string, *toolsproto.RequestFieldConfig) {
-	for id, tool := range g.Tools {
+	for id, tool := range g.actionTools() {
 		if input := tool.getInput("$.where." + inverseFieldName + ".id.equals"); tool.Model.Name == modelName && tool.Action.Type == proto.ActionType_ACTION_TYPE_LIST && input != nil {
 			return id, input
 		}
@@ -853,7 +982,7 @@ func (g *Generator) findListByForeignID(modelName string, inverseFieldName strin
 func (g *Generator) findAllByIDTools(modelName string, ignoreID string) map[string]string {
 	inputPaths := map[string]string{}
 
-	for id, tool := range g.Tools {
+	for id, tool := range g.actionTools() {
 		if id == ignoreID {
 			continue
 		}
@@ -870,7 +999,7 @@ func (g *Generator) findAllByIDTools(modelName string, ignoreID string) map[stri
 		// if we have a UPDATE that includes a where.ID
 		if tool.Action.IsUpdate() {
 			idInputPath := ""
-			for _, input := range tool.Config.Inputs {
+			for _, input := range tool.ActionConfig.Inputs {
 				if input.FieldType == proto.Type_TYPE_ID && input.FieldLocation.Path == "$.where.id" {
 					idInputPath = input.FieldLocation.Path
 				}
@@ -934,6 +1063,10 @@ func (g *Generator) makeTitle(action *proto.Action, model *proto.Model) *toolspr
 	return &toolsproto.StringTemplate{
 		Template: casing.ToSentenceCase(actionName),
 	}
+}
+
+func (g *Generator) makeFilterConfig() *toolsproto.FilterConfig {
+	return &toolsproto.FilterConfig{}
 }
 
 // getPageInfoResponses will return the responses for pageInfo (by default available on all autogenerated LIST actions)
@@ -1116,10 +1249,10 @@ func inferInputType(actionType proto.ActionType, fieldName string) toolsproto.Re
 
 // hasOnlyIDInput checks if the tool takes only one input, an ID
 func (t *Tool) hasOnlyIDInput() bool {
-	if len(t.Config.Inputs) != 1 {
+	if len(t.ActionConfig.Inputs) != 1 {
 		return false
 	}
-	for _, input := range t.Config.Inputs {
+	for _, input := range t.ActionConfig.Inputs {
 		if input.FieldType != proto.Type_TYPE_ID {
 			return false
 		}
@@ -1130,7 +1263,7 @@ func (t *Tool) hasOnlyIDInput() bool {
 
 // getIDInputFieldPath returns the path of the first input field that's an ID
 func (t *Tool) getIDInputFieldPath() string {
-	for _, input := range t.Config.Inputs {
+	for _, input := range t.ActionConfig.Inputs {
 		if input.FieldType == proto.Type_TYPE_ID && input.DisplayName == casing.ToSentenceCase(fieldNameID) {
 			return input.FieldLocation.Path
 		}
@@ -1141,7 +1274,7 @@ func (t *Tool) getIDInputFieldPath() string {
 
 // getInput finds and returns an inpub by it's path; returns nil if not found
 func (t *Tool) getInput(path string) *toolsproto.RequestFieldConfig {
-	for _, input := range t.Config.Inputs {
+	for _, input := range t.ActionConfig.Inputs {
 		if input.FieldLocation.Path == path {
 			return input
 		}
@@ -1157,7 +1290,7 @@ func (t *Tool) getIDResponseFieldPath() string {
 	if t.Action.IsList() {
 		expectedPath = "$.results[*].id"
 	}
-	for _, response := range t.Config.Response {
+	for _, response := range t.ActionConfig.Response {
 		if response.FieldType == proto.Type_TYPE_ID && response.FieldLocation.Path == expectedPath {
 			return response.FieldLocation.Path
 		}

@@ -274,7 +274,7 @@ func (s *Service) updateToProject(cfgs ...*ToolConfig) error {
 }
 
 // DuplicateTool will take the given tool and duplicate it with a new ID, and then store the changes to files.
-func (s *Service) DuplicateTool(ctx context.Context, toolID string) (*toolsproto.ActionConfig, error) {
+func (s *Service) DuplicateTool(ctx context.Context, toolID string) (*toolsproto.Tool, error) {
 	tools, err := s.GetTools(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("retrieving tools: %w", err)
@@ -291,11 +291,18 @@ func (s *Service) DuplicateTool(ctx context.Context, toolID string) (*toolsproto
 		return nil, fmt.Errorf("generating unique id: %w", err)
 	}
 
-	duplicate.Id = casing.ToKebab(duplicate.ActionName) + "-" + uid
-	duplicate.Name += " (copy)"
-	generated, err := s.getGeneratedTool(ctx, duplicate.ActionName)
+	duplicate.Id = casing.ToKebab(duplicate.GetOperationName()) + "-" + uid
+
+	if duplicate.IsActionBased() {
+		duplicate.ActionConfig.Name += " (copy)"
+		duplicate.ActionConfig.Id = duplicate.Id
+	} else {
+		duplicate.FlowConfig.Name += " (copy)"
+	}
+
+	generated, err := s.getGeneratedTool(ctx, duplicate.GetOperationName())
 	if err != nil {
-		return nil, fmt.Errorf("generating tool %s: %w", duplicate.ActionName, err)
+		return nil, fmt.Errorf("generating tool %s: %w", duplicate.GetOperationName(), err)
 	}
 
 	cfg := extractConfig(generated, duplicate)
@@ -320,8 +327,9 @@ func (s *Service) GetTools(ctx context.Context) (*toolsproto.Tools, error) {
 	if err != nil {
 		return nil, fmt.Errorf("generating tools from schema: %w", err)
 	}
+
 	tools := &toolsproto.Tools{
-		Tools: genTools,
+		Configs: genTools, // all tools, action based and/or flow based
 	}
 
 	// load existing configured tools
@@ -341,15 +349,31 @@ func (s *Service) GetTools(ctx context.Context) (*toolsproto.Tools, error) {
 				continue
 			}
 
-			gen, err := s.getGeneratedTool(ctx, cfg.ActionName)
+			gen, err := s.getGeneratedTool(ctx, cfg.getOperationName())
 			if err != nil {
 				// cannot generate tool for config, add a blank tool
-				gen = &toolsproto.ActionConfig{
-					ActionName: cfg.ActionName,
+				if cfg.Type == ToolTypeAction {
+					gen = &toolsproto.Tool{
+						Type: toolsproto.Tool_ACTION,
+						ActionConfig: &toolsproto.ActionConfig{
+							ActionName: cfg.getOperationName(),
+						},
+					}
+				} else {
+					gen = &toolsproto.Tool{
+						Type: toolsproto.Tool_FLOW,
+						FlowConfig: &toolsproto.FlowConfig{
+							FlowName: cfg.getOperationName(),
+						},
+					}
 				}
 			}
 			gen.Id = cfg.ID
-			tools.Tools = append(tools.Tools, gen)
+			if gen.ActionConfig != nil {
+				gen.ActionConfig.Id = cfg.ID
+			}
+
+			tools.Configs = append(tools.Configs, gen)
 		}
 
 		// now we apply all the configs
@@ -379,11 +403,11 @@ func (s *Service) ResetTools(ctx context.Context) (*toolsproto.Tools, error) {
 }
 
 // ConfigureTool will take the given updated tool config and update the existing project config with it
-func (s *Service) ConfigureTool(ctx context.Context, updated *toolsproto.ActionConfig) (*toolsproto.ActionConfig, error) {
+func (s *Service) ConfigureTool(ctx context.Context, updated *toolsproto.Tool) (*toolsproto.Tool, error) {
 	// get the generated version for the given updated tool
-	gen, err := s.getGeneratedTool(ctx, updated.ActionName)
+	gen, err := s.getGeneratedTool(ctx, updated.GetOperationName())
 	if err != nil {
-		return nil, fmt.Errorf("retrievving generated tool: %w", err)
+		return nil, fmt.Errorf("retrieving generated tool: %w", err)
 	}
 
 	// we now extract the config from the given tool
@@ -404,7 +428,8 @@ func (s *Service) ConfigureTool(ctx context.Context, updated *toolsproto.ActionC
 	return tools.FindByID(updated.Id), nil
 }
 
-func (s *Service) getGeneratedTool(ctx context.Context, actionName string) (*toolsproto.ActionConfig, error) {
+// getGeneratedTool will return the generated tool for the given action/flow name.
+func (s *Service) getGeneratedTool(ctx context.Context, name string) (*toolsproto.Tool, error) {
 	// if we don't have a schema, return nil
 	if s.Schema == nil {
 		return nil, nil
@@ -416,9 +441,9 @@ func (s *Service) getGeneratedTool(ctx context.Context, actionName string) (*too
 		return nil, fmt.Errorf("generating tools from schema: %w", err)
 	}
 
-	for _, c := range genTools {
-		if c.ActionName == actionName {
-			return c, nil
+	for _, t := range genTools {
+		if t.GetOperationName() == name {
+			return t, nil
 		}
 	}
 	return nil, fmt.Errorf("tool not found")

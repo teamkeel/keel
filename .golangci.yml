@@ -11,3 +11,14 @@ linters:
     - whitespace
   disable:
     - govet
+
+issues:
+  exclude-rules:
+    - path: tools/
+      linters:
+        - staticcheck
+      text: "SA1019: .* is deprecated"
+    - path: rpc/rpcApi/
+      linters:
+        - staticcheck
+      text: "SA1019: .* is deprecated"
