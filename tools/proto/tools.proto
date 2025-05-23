@@ -133,6 +133,8 @@ message ActionConfig {
 
 	// Any validation errors for this tool or any child elements of this tool (e.g. an action link that has an error)
 	bool has_errors = 27;
+
+	optional FilterConfig filter_config = 28;
 }
 
 message RequestFieldConfig {
@@ -609,4 +611,9 @@ message ValidationError {
    string error = 1;
    // The field that is invalid: e.g. `tool_id` for a missing link's target tool.
    string field = 2;
+}
+
+message FilterConfig {
+	// The field to be used a quick search. e.g. $.name.contains
+	optional JsonPath quick_search_field = 1;
 }
