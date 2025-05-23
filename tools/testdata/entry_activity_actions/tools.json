@@ -4,26 +4,41 @@
       "id": "clean-comments",
       "name": "Clean comments",
       "actionName": "cleanComments",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "BlogPost",
       "actionType": "ACTION_TYPE_WRITE",
       "implementation": "ACTION_IMPLEMENTATION_CUSTOM",
       "inputs": [
         {
-          "fieldLocation": { "path": "$.id" },
+          "fieldLocation": {
+            "path": "$.id"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "visible": true,
-          "lookupAction": { "toolId": "list-blog-posts" },
+          "lookupAction": {
+            "toolId": "list-blog-posts"
+          },
           "getEntryAction": {
             "toolId": "get-blog-post",
-            "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
+            "data": [
+              {
+                "key": "$.id",
+                "path": {
+                  "path": "$.id"
+                }
+              }
+            ]
           },
           "modelName": "BlogPost",
           "fieldName": "id"
         }
       ],
-      "title": { "template": "Clean comments" },
+      "title": {
+        "template": "Clean comments"
+      },
       "entitySingle": "blog post",
       "entityPlural": "blog posts",
       "capabilities": {},
@@ -33,13 +48,17 @@
       "id": "create-blog-post",
       "name": "Create blog post",
       "actionName": "createBlogPost",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "BlogPost",
       "actionType": "ACTION_TYPE_CREATE",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
       "response": [
         {
-          "fieldLocation": { "path": "$.id" },
+          "fieldLocation": {
+            "path": "$.id"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 1,
@@ -48,7 +67,9 @@
           "fieldName": "id"
         },
         {
-          "fieldLocation": { "path": "$.createdAt" },
+          "fieldLocation": {
+            "path": "$.createdAt"
+          },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 2,
@@ -57,7 +78,9 @@
           "fieldName": "createdAt"
         },
         {
-          "fieldLocation": { "path": "$.updatedAt" },
+          "fieldLocation": {
+            "path": "$.updatedAt"
+          },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 3,
@@ -66,13 +89,22 @@
           "fieldName": "updatedAt"
         }
       ],
-      "title": { "template": "Create blog post" },
+      "title": {
+        "template": "Create blog post"
+      },
       "entitySingle": "blog post",
       "entityPlural": "blog posts",
       "capabilities": {},
       "getEntryAction": {
         "toolId": "get-blog-post",
-        "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
+        "data": [
+          {
+            "key": "$.id",
+            "path": {
+              "path": "$.id"
+            }
+          }
+        ]
       },
       "filterConfig": {}
     },
@@ -80,30 +112,40 @@
       "id": "deactivate-blog-post",
       "name": "Deactivate blog post",
       "actionName": "deactivateBlogPost",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "BlogPost",
       "actionType": "ACTION_TYPE_UPDATE",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
       "inputs": [
         {
-          "fieldLocation": { "path": "$.where" },
+          "fieldLocation": {
+            "path": "$.where"
+          },
           "fieldType": "TYPE_MESSAGE",
           "displayName": "Where",
           "visible": true,
           "scope": "FILTERS"
         },
         {
-          "fieldLocation": { "path": "$.where.id" },
+          "fieldLocation": {
+            "path": "$.where.id"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "visible": true,
-          "lookupAction": { "toolId": "list-blog-posts" },
+          "lookupAction": {
+            "toolId": "list-blog-posts"
+          },
           "modelName": "BlogPost",
           "fieldName": "id",
           "scope": "FILTERS"
         },
         {
-          "fieldLocation": { "path": "$.values" },
+          "fieldLocation": {
+            "path": "$.values"
+          },
           "fieldType": "TYPE_MESSAGE",
           "displayName": "Values",
           "displayOrder": 1,
@@ -112,7 +154,9 @@
       ],
       "response": [
         {
-          "fieldLocation": { "path": "$.id" },
+          "fieldLocation": {
+            "path": "$.id"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 1,
@@ -121,7 +165,9 @@
           "fieldName": "id"
         },
         {
-          "fieldLocation": { "path": "$.createdAt" },
+          "fieldLocation": {
+            "path": "$.createdAt"
+          },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 2,
@@ -130,7 +176,9 @@
           "fieldName": "createdAt"
         },
         {
-          "fieldLocation": { "path": "$.updatedAt" },
+          "fieldLocation": {
+            "path": "$.updatedAt"
+          },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 3,
@@ -139,13 +187,22 @@
           "fieldName": "updatedAt"
         }
       ],
-      "title": { "template": "Deactivate blog post" },
+      "title": {
+        "template": "Deactivate blog post"
+      },
       "entitySingle": "blog post",
       "entityPlural": "blog posts",
       "capabilities": {},
       "getEntryAction": {
         "toolId": "get-blog-post",
-        "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
+        "data": [
+          {
+            "key": "$.id",
+            "path": {
+              "path": "$.id"
+            }
+          }
+        ]
       },
       "filterConfig": {}
     },
@@ -153,26 +210,41 @@
       "id": "delete-blog-post",
       "name": "Delete blog post",
       "actionName": "deleteBlogPost",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "BlogPost",
       "actionType": "ACTION_TYPE_DELETE",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
       "inputs": [
         {
-          "fieldLocation": { "path": "$.id" },
+          "fieldLocation": {
+            "path": "$.id"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "visible": true,
-          "lookupAction": { "toolId": "list-blog-posts" },
+          "lookupAction": {
+            "toolId": "list-blog-posts"
+          },
           "getEntryAction": {
             "toolId": "get-blog-post",
-            "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
+            "data": [
+              {
+                "key": "$.id",
+                "path": {
+                  "path": "$.id"
+                }
+              }
+            ]
           },
           "modelName": "BlogPost",
           "fieldName": "id"
         }
       ],
-      "title": { "template": "Delete blog post" },
+      "title": {
+        "template": "Delete blog post"
+      },
       "entitySingle": "blog post",
       "entityPlural": "blog posts",
       "capabilities": {},
@@ -182,24 +254,32 @@
       "id": "get-blog-post",
       "name": "Get blog post",
       "actionName": "getBlogPost",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "BlogPost",
       "actionType": "ACTION_TYPE_GET",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
       "inputs": [
         {
-          "fieldLocation": { "path": "$.id" },
+          "fieldLocation": {
+            "path": "$.id"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "visible": true,
-          "lookupAction": { "toolId": "list-blog-posts" },
+          "lookupAction": {
+            "toolId": "list-blog-posts"
+          },
           "modelName": "BlogPost",
           "fieldName": "id"
         }
       ],
       "response": [
         {
-          "fieldLocation": { "path": "$.id" },
+          "fieldLocation": {
+            "path": "$.id"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 1,
@@ -208,7 +288,9 @@
           "fieldName": "id"
         },
         {
-          "fieldLocation": { "path": "$.createdAt" },
+          "fieldLocation": {
+            "path": "$.createdAt"
+          },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 2,
@@ -217,7 +299,9 @@
           "fieldName": "createdAt"
         },
         {
-          "fieldLocation": { "path": "$.updatedAt" },
+          "fieldLocation": {
+            "path": "$.updatedAt"
+          },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 3,
@@ -226,59 +310,115 @@
           "fieldName": "updatedAt"
         }
       ],
-      "title": { "template": "Blog post" },
+      "title": {
+        "template": "Blog post"
+      },
       "entitySingle": "blog post",
       "entityPlural": "blog posts",
-      "capabilities": { "comments": true, "audit": true },
+      "capabilities": {
+        "comments": true,
+        "audit": true
+      },
       "entryActivityActions": [
         {
           "toolId": "clean-comments",
-          "data": [{ "key": "$.id", "path": { "path": "$.id" } }],
-          "displayOrder": 1
+          "data": [
+            {
+              "key": "$.id",
+              "path": {
+                "path": "$.id"
+              }
+            }
+          ],
+          "displayOrder": 1,
+          "asDialog": true
         },
         {
           "toolId": "deactivate-blog-post",
-          "data": [{ "key": "$.where.id", "path": { "path": "$.id" } }],
-          "displayOrder": 2
+          "data": [
+            {
+              "key": "$.where.id",
+              "path": {
+                "path": "$.id"
+              }
+            }
+          ],
+          "displayOrder": 2,
+          "asDialog": true
         },
         {
           "toolId": "read-comments",
-          "data": [{ "key": "$.id", "path": { "path": "$.id" } }],
-          "displayOrder": 3
+          "data": [
+            {
+              "key": "$.id",
+              "path": {
+                "path": "$.id"
+              }
+            }
+          ],
+          "displayOrder": 3,
+          "asDialog": false
         },
         {
           "toolId": "update-blog-post",
-          "data": [{ "key": "$.where.id", "path": { "path": "$.id" } }],
-          "displayOrder": 4
+          "data": [
+            {
+              "key": "$.where.id",
+              "path": {
+                "path": "$.id"
+              }
+            }
+          ],
+          "displayOrder": 4,
+          "asDialog": true
         },
         {
           "toolId": "delete-blog-post",
-          "data": [{ "key": "$.id", "path": { "path": "$.id" } }],
-          "displayOrder": 5
+          "data": [
+            {
+              "key": "$.id",
+              "path": {
+                "path": "$.id"
+              }
+            }
+          ],
+          "displayOrder": 5,
+          "asDialog": true
         }
       ],
-      "createEntryAction": { "toolId": "create-blog-post" },
-      "displayLayout": { "type": "RECORD", "recordConfig": {} },
+      "createEntryAction": {
+        "toolId": "create-blog-post"
+      },
+      "displayLayout": {
+        "type": "RECORD",
+        "recordConfig": {}
+      },
       "filterConfig": {}
     },
     {
       "id": "list-blog-posts",
       "name": "List blog posts",
       "actionName": "listBlogPosts",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "BlogPost",
       "actionType": "ACTION_TYPE_LIST",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
       "inputs": [
         {
-          "fieldLocation": { "path": "$.where" },
+          "fieldLocation": {
+            "path": "$.where"
+          },
           "fieldType": "TYPE_MESSAGE",
           "displayName": "Where",
           "visible": true,
           "scope": "FILTERS"
         },
         {
-          "fieldLocation": { "path": "$.first" },
+          "fieldLocation": {
+            "path": "$.first"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "First",
           "displayOrder": 1,
@@ -286,7 +426,9 @@
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.after" },
+          "fieldLocation": {
+            "path": "$.after"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "After",
           "displayOrder": 2,
@@ -294,7 +436,9 @@
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.last" },
+          "fieldLocation": {
+            "path": "$.last"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "Last",
           "displayOrder": 3,
@@ -302,7 +446,9 @@
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.before" },
+          "fieldLocation": {
+            "path": "$.before"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Before",
           "displayOrder": 4,
@@ -310,7 +456,9 @@
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.limit" },
+          "fieldLocation": {
+            "path": "$.limit"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "Limit",
           "displayOrder": 5,
@@ -318,7 +466,9 @@
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.offset" },
+          "fieldLocation": {
+            "path": "$.offset"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "Offset",
           "displayOrder": 6,
@@ -328,49 +478,65 @@
       ],
       "response": [
         {
-          "fieldLocation": { "path": "$.pageInfo" },
+          "fieldLocation": {
+            "path": "$.pageInfo"
+          },
           "fieldType": "TYPE_OBJECT",
           "displayName": "PageInfo",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.pageInfo.count" },
+          "fieldLocation": {
+            "path": "$.pageInfo.count"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "Count",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.pageInfo.totalCount" },
+          "fieldLocation": {
+            "path": "$.pageInfo.totalCount"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "Total count",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.pageInfo.hasNextPage" },
+          "fieldLocation": {
+            "path": "$.pageInfo.hasNextPage"
+          },
           "fieldType": "TYPE_BOOL",
           "displayName": "Has next page",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.pageInfo.startCursor" },
+          "fieldLocation": {
+            "path": "$.pageInfo.startCursor"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Start cursor",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.pageInfo.endCursor" },
+          "fieldLocation": {
+            "path": "$.pageInfo.endCursor"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "End cursor",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.pageInfo.pageNumber" },
+          "fieldLocation": {
+            "path": "$.pageInfo.pageNumber"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "Page Number",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.results[*].id" },
+          "fieldLocation": {
+            "path": "$.results[*].id"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 1,
@@ -379,7 +545,9 @@
           "fieldName": "id"
         },
         {
-          "fieldLocation": { "path": "$.results[*].createdAt" },
+          "fieldLocation": {
+            "path": "$.results[*].createdAt"
+          },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 2,
@@ -388,7 +556,9 @@
           "fieldName": "createdAt"
         },
         {
-          "fieldLocation": { "path": "$.results[*].updatedAt" },
+          "fieldLocation": {
+            "path": "$.results[*].updatedAt"
+          },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 3,
@@ -397,94 +567,174 @@
           "fieldName": "updatedAt"
         }
       ],
-      "title": { "template": "Blog posts" },
+      "title": {
+        "template": "Blog posts"
+      },
       "entitySingle": "blog post",
       "entityPlural": "blog posts",
       "capabilities": {},
       "pagination": {
         "start": {
           "requestInput": "after",
-          "responseField": { "path": "$.pageInfo.startCursor" }
+          "responseField": {
+            "path": "$.pageInfo.startCursor"
+          }
         },
         "end": {
           "requestInput": "before",
-          "responseField": { "path": "$.pageInfo.endCursor" }
+          "responseField": {
+            "path": "$.pageInfo.endCursor"
+          }
         },
         "pageSize": {
           "requestInput": "first",
-          "responseField": { "path": "$.pageInfo.count" },
+          "responseField": {
+            "path": "$.pageInfo.count"
+          },
           "defaultValue": 50
         },
-        "nextPage": { "path": "$.pageInfo.hasNextPage" },
-        "totalCount": { "path": "$.pageInfo.totalCount" }
+        "nextPage": {
+          "path": "$.pageInfo.hasNextPage"
+        },
+        "totalCount": {
+          "path": "$.pageInfo.totalCount"
+        }
       },
       "entryActivityActions": [
         {
           "toolId": "clean-comments",
-          "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }],
-          "displayOrder": 1
+          "data": [
+            {
+              "key": "$.id",
+              "path": {
+                "path": "$.results[*].id"
+              }
+            }
+          ],
+          "displayOrder": 1,
+          "asDialog": true
         },
         {
           "toolId": "deactivate-blog-post",
           "data": [
-            { "key": "$.where.id", "path": { "path": "$.results[*].id" } }
+            {
+              "key": "$.where.id",
+              "path": {
+                "path": "$.results[*].id"
+              }
+            }
           ],
-          "displayOrder": 2
+          "displayOrder": 2,
+          "asDialog": true
         },
         {
           "toolId": "get-blog-post",
-          "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }],
-          "displayOrder": 3
+          "data": [
+            {
+              "key": "$.id",
+              "path": {
+                "path": "$.results[*].id"
+              }
+            }
+          ],
+          "displayOrder": 3,
+          "asDialog": false
         },
         {
           "toolId": "read-comments",
-          "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }],
-          "displayOrder": 4
+          "data": [
+            {
+              "key": "$.id",
+              "path": {
+                "path": "$.results[*].id"
+              }
+            }
+          ],
+          "displayOrder": 4,
+          "asDialog": false
         },
         {
           "toolId": "update-blog-post",
           "data": [
-            { "key": "$.where.id", "path": { "path": "$.results[*].id" } }
+            {
+              "key": "$.where.id",
+              "path": {
+                "path": "$.results[*].id"
+              }
+            }
           ],
-          "displayOrder": 5
+          "displayOrder": 5,
+          "asDialog": true
         },
         {
           "toolId": "delete-blog-post",
-          "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }],
-          "displayOrder": 6
+          "data": [
+            {
+              "key": "$.id",
+              "path": {
+                "path": "$.results[*].id"
+              }
+            }
+          ],
+          "displayOrder": 6,
+          "asDialog": true
         }
       ],
       "getEntryAction": {
         "toolId": "get-blog-post",
-        "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
+        "data": [
+          {
+            "key": "$.id",
+            "path": {
+              "path": "$.results[*].id"
+            }
+          }
+        ]
       },
-      "createEntryAction": { "toolId": "create-blog-post" },
+      "createEntryAction": {
+        "toolId": "create-blog-post"
+      },
       "filterConfig": {}
     },
     {
       "id": "read-comments",
       "name": "Read comments",
       "actionName": "readComments",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "BlogPost",
       "actionType": "ACTION_TYPE_READ",
       "implementation": "ACTION_IMPLEMENTATION_CUSTOM",
       "inputs": [
         {
-          "fieldLocation": { "path": "$.id" },
+          "fieldLocation": {
+            "path": "$.id"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "visible": true,
-          "lookupAction": { "toolId": "list-blog-posts" },
+          "lookupAction": {
+            "toolId": "list-blog-posts"
+          },
           "getEntryAction": {
             "toolId": "get-blog-post",
-            "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
+            "data": [
+              {
+                "key": "$.id",
+                "path": {
+                  "path": "$.id"
+                }
+              }
+            ]
           },
           "modelName": "BlogPost",
           "fieldName": "id"
         }
       ],
-      "title": { "template": "Comments" },
+      "title": {
+        "template": "Comments"
+      },
       "entitySingle": "blog post",
       "entityPlural": "blog posts",
       "capabilities": {},
@@ -494,26 +744,34 @@
       "id": "request-password-reset",
       "name": "Request password reset",
       "actionName": "requestPasswordReset",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "Identity",
       "actionType": "ACTION_TYPE_WRITE",
       "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
       "inputs": [
         {
-          "fieldLocation": { "path": "$.email" },
+          "fieldLocation": {
+            "path": "$.email"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Email",
           "visible": true
         },
         {
-          "fieldLocation": { "path": "$.redirectUrl" },
+          "fieldLocation": {
+            "path": "$.redirectUrl"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Redirect url",
           "displayOrder": 1,
           "visible": true
         }
       ],
-      "title": { "template": "Request password reset" },
+      "title": {
+        "template": "Request password reset"
+      },
       "entitySingle": "identity",
       "entityPlural": "identities",
       "capabilities": {},
@@ -523,26 +781,34 @@
       "id": "reset-password",
       "name": "Reset password",
       "actionName": "resetPassword",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "Identity",
       "actionType": "ACTION_TYPE_WRITE",
       "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
       "inputs": [
         {
-          "fieldLocation": { "path": "$.token" },
+          "fieldLocation": {
+            "path": "$.token"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Token",
           "visible": true
         },
         {
-          "fieldLocation": { "path": "$.password" },
+          "fieldLocation": {
+            "path": "$.password"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Password",
           "displayOrder": 1,
           "visible": true
         }
       ],
-      "title": { "template": "Reset password" },
+      "title": {
+        "template": "Reset password"
+      },
       "entitySingle": "identity",
       "entityPlural": "identities",
       "capabilities": {},
@@ -552,30 +818,40 @@
       "id": "update-blog-post",
       "name": "Update blog post",
       "actionName": "updateBlogPost",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "BlogPost",
       "actionType": "ACTION_TYPE_UPDATE",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
       "inputs": [
         {
-          "fieldLocation": { "path": "$.where" },
+          "fieldLocation": {
+            "path": "$.where"
+          },
           "fieldType": "TYPE_MESSAGE",
           "displayName": "Where",
           "visible": true,
           "scope": "FILTERS"
         },
         {
-          "fieldLocation": { "path": "$.where.id" },
+          "fieldLocation": {
+            "path": "$.where.id"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "visible": true,
-          "lookupAction": { "toolId": "list-blog-posts" },
+          "lookupAction": {
+            "toolId": "list-blog-posts"
+          },
           "modelName": "BlogPost",
           "fieldName": "id",
           "scope": "FILTERS"
         },
         {
-          "fieldLocation": { "path": "$.values" },
+          "fieldLocation": {
+            "path": "$.values"
+          },
           "fieldType": "TYPE_MESSAGE",
           "displayName": "Values",
           "displayOrder": 1,
@@ -584,7 +860,9 @@
       ],
       "response": [
         {
-          "fieldLocation": { "path": "$.id" },
+          "fieldLocation": {
+            "path": "$.id"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 1,
@@ -593,7 +871,9 @@
           "fieldName": "id"
         },
         {
-          "fieldLocation": { "path": "$.createdAt" },
+          "fieldLocation": {
+            "path": "$.createdAt"
+          },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 2,
@@ -602,7 +882,9 @@
           "fieldName": "createdAt"
         },
         {
-          "fieldLocation": { "path": "$.updatedAt" },
+          "fieldLocation": {
+            "path": "$.updatedAt"
+          },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 3,
@@ -611,13 +893,22 @@
           "fieldName": "updatedAt"
         }
       ],
-      "title": { "template": "Update blog post" },
+      "title": {
+        "template": "Update blog post"
+      },
       "entitySingle": "blog post",
       "entityPlural": "blog posts",
       "capabilities": {},
       "getEntryAction": {
         "toolId": "get-blog-post",
-        "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
+        "data": [
+          {
+            "key": "$.id",
+            "path": {
+              "path": "$.id"
+            }
+          }
+        ]
       },
       "filterConfig": {}
     }
