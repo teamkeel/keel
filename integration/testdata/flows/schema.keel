@@ -43,7 +43,14 @@ flow OnlyFunctions {
         name Text
         age Number
     }
-    
+    @permission(roles: [Admin])
+}
+
+flow ValidationText {
+    @permission(roles: [Admin])
+}
+
+flow ValidationBoolean {
     @permission(roles: [Admin])
 }
 

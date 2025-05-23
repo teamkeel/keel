@@ -10,12 +10,12 @@ TEST CASES
 [x] Flow function with consecutive UI steps
 [x] Flow function with consecutive function steps
 [x] Flow function with alternating function and UI steps
-[ ] Error thrown in flow function
+[x] Error thrown in flow function
 [x] Error thrown in step function
 [x] Step returning scalar value
 [x] Step function retrying  
 [x] Step function timing out 
-[ ] UI step validation
+[x] UI step validation
 [x] Check full API responses
 [ ] All UI elements response
 [ ] Test all Keel types as inputs
@@ -223,7 +223,9 @@ test("flows - only pages", async () => {
     ],
     createdAt: expect.any(String),
     updatedAt: expect.any(String),
-    config: {},
+    config: {
+      title: "Only pages",
+    },
   });
 
   // Provide the values for the pending UI step
@@ -276,8 +278,10 @@ test("flows - only pages", async () => {
             {
               __type: "ui.input.boolean",
               label: "Did you like the things?",
+              disabled: false,
               mode: "checkbox",
               name: "yesno",
+              optional: false,
             },
           ],
           title: "My flow",
@@ -286,7 +290,9 @@ test("flows - only pages", async () => {
     ],
     createdAt: expect.any(String),
     updatedAt: expect.any(String),
-    config: {},
+    config: {
+      title: "Only pages",
+    },
   });
 
   ({ status, body } = await putStepValues({
@@ -337,7 +343,9 @@ test("flows - only pages", async () => {
     ],
     createdAt: expect.any(String),
     updatedAt: expect.any(String),
-    config: {},
+    config: {
+      title: "Only pages",
+    },
   });
 });
 
@@ -408,7 +416,9 @@ test("flows - first step is a function", async () => {
         endTime: null,
       },
     ],
-    config: {},
+    config: {
+      title: "Single step",
+    },
     traceId: expect.any(String),
     createdAt: expect.any(String),
     updatedAt: expect.any(String),
@@ -492,7 +502,9 @@ test("flows - alternating step types", async () => {
         endTime: null,
       },
     ],
-    config: {},
+    config: {
+      title: "Mixed step types",
+    },
     traceId: expect.any(String),
     createdAt: expect.any(String),
     updatedAt: expect.any(String),
@@ -516,7 +528,9 @@ test("flows - alternating step types", async () => {
       name: "Keelson",
       age: 23,
     },
-    config: {},
+    config: {
+      title: "Mixed step types",
+    },
     traceId,
     createdAt: expect.any(String),
     updatedAt: expect.any(String),
@@ -554,8 +568,10 @@ test("flows - alternating step types", async () => {
             {
               __type: "ui.input.text",
               defaultValue: "Keelson",
+              disabled: false,
               label: "Name",
               name: "name",
+              optional: false,
             },
             {
               __type: "ui.display.divider",
@@ -563,8 +579,10 @@ test("flows - alternating step types", async () => {
             {
               __type: "ui.input.number",
               defaultValue: 23,
+              disabled: false,
               label: "Age",
               name: "age",
+              optional: false,
             },
           ],
         },
@@ -641,7 +659,9 @@ test("flows - alternating step types", async () => {
         endTime: null,
       },
     ],
-    config: {},
+    config: {
+      title: "Mixed step types",
+    },
     traceId,
     createdAt: expect.any(String),
     updatedAt: expect.any(String),
@@ -680,6 +700,122 @@ test("flows - alternating step types", async () => {
   expect(thing!.age).toBe(32);
 });
 
+test("flows - text input validation", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+  let { status, body } = await startFlow({
+    name: "ValidationText",
+    token,
+    body: {},
+  });
+
+  expect(status).toBe(200);
+  expect(body.steps[0].status).toBe("PENDING");
+
+  const runId = body.id;
+  let stepId = body.steps[0].id;
+
+  ({ status, body } = await putStepValues({
+    name: "ValidationText",
+    runId,
+    stepId,
+    token,
+    values: {
+      postcode: "blah blah blah",
+    },
+  }));
+
+  expect(status).toBe(200);
+  expect(body.steps[0].ui).toEqual({
+    __type: "ui.page",
+    content: [
+      {
+        __type: "ui.input.text",
+        disabled: false,
+        label: "Postcode",
+        name: "postcode",
+        optional: false,
+        placeholder: "e.g. N1 ABC",
+        validationError: "not a valid postcode",
+      },
+    ],
+    title: "Your postcode",
+  });
+
+  ({ status, body } = await putStepValues({
+    name: "ValidationText",
+    runId,
+    stepId,
+    token,
+    values: {
+      postcode: "E4 6ED",
+    },
+  }));
+
+  expect(status).toBe(200);
+  expect(body.steps[0].status).toBe("COMPLETED");
+  expect(body.steps[0].value).toEqual({
+    postcode: "E4 6ED",
+  });
+});
+
+test("flows - boolean input validation", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+  let { status, body } = await startFlow({
+    name: "ValidationBoolean",
+    token,
+    body: {},
+  });
+
+  expect(status).toBe(200);
+  expect(body.steps[0].status).toBe("PENDING");
+
+  const runId = body.id;
+  let stepId = body.steps[0].id;
+
+  ({ status, body } = await putStepValues({
+    name: "ValidationBoolean",
+    runId,
+    stepId,
+    token,
+    values: {
+      good: false,
+    },
+  }));
+
+  expect(status).toBe(200);
+  expect(body.steps[0].ui).toEqual({
+    __type: "ui.page",
+    content: [
+      {
+        __type: "ui.input.boolean",
+        disabled: false,
+        mode: "checkbox",
+        label: "Is it good?",
+        name: "good",
+        validationError: "it must be good",
+        optional: false,
+      },
+    ],
+    title: "Important question",
+  });
+
+  ({ status, body } = await putStepValues({
+    name: "ValidationBoolean",
+    runId,
+    stepId,
+    token,
+    values: {
+      good: true,
+    },
+  }));
+
+  expect(status).toBe(200);
+  expect(body.steps[0].status).toBe("COMPLETED");
+  expect(body.steps[0].value).toEqual({
+    good: true,
+  });
+});
+
 test("flows - error in step with retries", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
   const res = await startFlow({ name: "ErrorInStep", token, body: {} });
@@ -709,7 +845,9 @@ test("flows - error in step with retries", async () => {
     ],
     createdAt: expect.any(String),
     updatedAt: expect.any(String),
-    config: {},
+    config: {
+      title: "Error in step",
+    },
   });
 
   const flow = await untilFlowFinished({
@@ -791,7 +929,9 @@ test("flows - error in flow", async () => {
     steps: [],
     createdAt: expect.any(String),
     updatedAt: expect.any(String),
-    config: {},
+    config: {
+      title: "Error in flow",
+    },
   });
 });
 
@@ -824,7 +964,9 @@ test("flows - timeout step", async () => {
     ],
     createdAt: expect.any(String),
     updatedAt: expect.any(String),
-    config: {},
+    config: {
+      title: "Timeout step",
+    },
   });
 
   const flow = await untilFlowFinished({
@@ -929,7 +1071,7 @@ test("flows - authorised starting, getting and listing flows", async () => {
 
   const resListAdmin = await listFlows({ token: adminToken });
   expect(resListAdmin.status).toBe(200);
-  expect(resListAdmin.body.flows.length).toBe(9);
+  expect(resListAdmin.body.flows.length).toBe(11);
   expect(resListAdmin.body.flows[0].name).toBe("ScalarStep");
   expect(resListAdmin.body.flows[1].name).toBe("MixedStepTypes");
   expect(resListAdmin.body.flows[2].name).toBe("Stepless");
@@ -939,6 +1081,8 @@ test("flows - authorised starting, getting and listing flows", async () => {
   expect(resListAdmin.body.flows[6].name).toBe("TimeoutStep");
   expect(resListAdmin.body.flows[7].name).toBe("OnlyPages");
   expect(resListAdmin.body.flows[8].name).toBe("OnlyFunctions");
+  expect(resListAdmin.body.flows[9].name).toBe("ValidationText");
+  expect(resListAdmin.body.flows[10].name).toBe("ValidationBoolean");
 
   const resListUser = await listFlows({ token: userToken });
   expect(resListUser.status).toBe(200);

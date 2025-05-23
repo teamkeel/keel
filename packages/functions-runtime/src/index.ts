@@ -24,7 +24,6 @@ export {
   handleJob,
   handleSubscriber,
   handleRoute,
-  handleFlow,
   KSUID,
   Permissions,
   PERMISSION_STATE,
@@ -38,7 +37,7 @@ export function ksuid() {
 
 // Export TS files
 
-export { RequestHeaders, Duration, useDatabase, File, InlineFile };
+export { RequestHeaders, Duration, useDatabase, File, InlineFile, handleFlow };
 export * from "./flows";
 export { type UIApiResponses } from "./flows/ui/index";
 

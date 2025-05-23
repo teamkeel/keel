@@ -54,6 +54,7 @@ func extractActionConfig(generated, updated *toolsproto.ActionConfig) *ActionToo
 		HelpText:             diffStringTemplate(generated.GetHelpText(), updated.GetHelpText()),
 		EntitySingle:         diffString(generated.GetEntitySingle(), updated.GetEntitySingle()),
 		EntityPlural:         diffString(generated.GetEntityPlural(), updated.GetEntityPlural()),
+		Pagination:           extractPaginationConfig(generated.Pagination, updated.Pagination),
 		CreateEntryAction:    extractLinkConfig(generated.CreateEntryAction, updated.CreateEntryAction),
 		GetEntryAction:       extractLinkConfig(generated.GetEntryAction, updated.GetEntryAction),
 		EntryActivityActions: extractLinkConfigs(generated.EntryActivityActions, updated.EntryActivityActions),
@@ -249,6 +250,47 @@ func extractLinkConfigs(generated, updated []*toolsproto.ToolLink) LinkConfigs {
 	}
 
 	return nil
+}
+
+
+func extractPaginationConfig(generated, updated *toolsproto.CursorPaginationConfig) *PaginationConfig {
+	if generated == nil && updated == nil {
+		return nil
+	}
+
+	if generated != nil && updated == nil {
+		return nil
+	}
+
+	if generated == nil && updated != nil {
+		return &PaginationConfig{
+			PageSize: extractPageSizeConfig(nil, updated.PageSize),
+		}
+	}
+
+	return &PaginationConfig{
+		PageSize: extractPageSizeConfig(generated.PageSize, updated.PageSize),
+	}
+}
+
+func extractPageSizeConfig(generated, updated *toolsproto.CursorPaginationConfig_PageSizeConfig) *PageSizeConfig {
+	if generated == nil && updated == nil {
+		return nil
+	}
+
+	if generated != nil && updated == nil {
+		return nil
+	}
+
+	if generated == nil && updated != nil {
+		return &PageSizeConfig{
+			DefaultValue: &updated.DefaultValue,
+		}
+	}
+
+	return &PageSizeConfig{
+		DefaultValue: diffInt(generated.DefaultValue, updated.DefaultValue),
+	}
 }
 
 func extractLinkConfig(generated, updated *toolsproto.ToolLink) *LinkConfig {

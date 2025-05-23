@@ -1,4 +1,4 @@
-import { UI } from "./ui";
+import { ImplementationResponse, UI } from "./ui";
 import { useDatabase } from "../database";
 import { textInput } from "./ui/elements/input/text";
 import { numberInput } from "./ui/elements/input/number";
@@ -89,6 +89,13 @@ export interface FlowConfig {
   description?: string;
 }
 
+// What is returned as the config to the API
+export interface FlowConfigAPI {
+  stages?: StageConfigObject[];
+  title: string;
+  description?: string;
+}
+
 export type FlowFunction<C extends FlowConfig, I extends any = {}> = (
   ctx: FlowContext<C>,
   inputs: I
@@ -107,14 +114,14 @@ export type ExtractStageKeys<T extends FlowConfig> = T extends {
     : never
   : never;
 
-type StageConfig =
-  | string
-  | {
-      key: string;
-      name: string;
-      description?: string;
-      initiallyHidden?: boolean;
-    };
+type StageConfigObject = {
+  key: string;
+  name: string;
+  description?: string;
+  initiallyHidden?: boolean;
+};
+
+type StageConfig = string | StageConfigObject;
 
 export function createFlowContext<C extends FlowConfig>(
   runId: string,
@@ -296,15 +303,18 @@ export function createFlowContext<C extends FlowConfig>(
             .executeTakeFirst();
 
           // If no data has been passed in, render the UI by disrupting the step with UIRenderDisrupt.
-          throw new UIRenderDisrupt(step?.id, page(options));
+          throw new UIRenderDisrupt(step?.id, (await page(options, null)).page);
         }
 
         if (!data) {
           // If no data has been passed in, render the UI by disrupting the step with UIRenderDisrupt.
-          throw new UIRenderDisrupt(step?.id, page(options));
+          throw new UIRenderDisrupt(step?.id, (await page(options, null)).page);
         }
 
-        // TODO: Validate the data! If not valid, throw a UIRenderDisrupt along with the validation errors.
+        const p = await page(options, data);
+        if (p.hasValidationErrors) {
+          throw new UIRenderDisrupt(step?.id, p.page);
+        }
 
         // If the data has been passed in and is valid, persist the data and mark the step as COMPLETED, and then return the data.
         await db

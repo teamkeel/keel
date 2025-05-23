@@ -22,7 +22,10 @@ export class Permissions {
    * Explicitly permit access to an action
    */
   allow(): void {
-    permissionsApiInstance.getStore()!.permitted = true;
+    const store = permissionsApiInstance.getStore();
+    if (store) {
+      store.permitted = true;
+    }
   }
 
   /**
@@ -31,12 +34,15 @@ export class Permissions {
   deny(): never {
     // if a user is explicitly calling deny() then we want to throw an error
     // so that any further execution of the custom function stops abruptly
-    permissionsApiInstance.getStore()!.permitted = false;
+    const store = permissionsApiInstance.getStore();
+    if (store) {
+      store.permitted = false;
+    }
     throw new PermissionError();
   }
 
   getState(): PermissionState {
-    const permitted = permissionsApiInstance.getStore()!.permitted;
+    const permitted = permissionsApiInstance.getStore()?.permitted;
 
     switch (true) {
       case permitted === false:
