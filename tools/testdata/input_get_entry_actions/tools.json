@@ -1,0 +1,1142 @@
+{
+  "tools": [
+    {
+      "id": "get-product",
+      "name": "Get product",
+      "actionName": "getProduct",
+      "apiNames": [
+        "Api"
+      ],
+      "modelName": "Product",
+      "actionType": "ACTION_TYPE_GET",
+      "implementation": "ACTION_IMPLEMENTATION_AUTO",
+      "inputs": [
+        {
+          "fieldLocation": {
+            "path": "$.id"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Id",
+          "visible": true,
+          "lookupAction": {
+            "toolId": "list-products"
+          },
+          "modelName": "Product",
+          "fieldName": "id"
+        }
+      ],
+      "response": [
+        {
+          "fieldLocation": {
+            "path": "$.name"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Name",
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "name"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.sku"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Sku",
+          "displayOrder": 1,
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "sku"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.supplierId"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Supplier",
+          "displayOrder": 2,
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "supplierId"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.id"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Id",
+          "displayOrder": 5,
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "id"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.createdAt"
+          },
+          "fieldType": "TYPE_DATETIME",
+          "displayName": "Created at",
+          "displayOrder": 6,
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "createdAt"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.updatedAt"
+          },
+          "fieldType": "TYPE_DATETIME",
+          "displayName": "Updated at",
+          "displayOrder": 7,
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "updatedAt"
+        }
+      ],
+      "title": {
+        "template": "{{$.name}}"
+      },
+      "entitySingle": "product",
+      "entityPlural": "products",
+      "capabilities": {
+        "comments": true,
+        "audit": true
+      },
+      "entryActivityActions": [
+        {
+          "toolId": "get-product-with-supplier",
+          "data": [
+            {
+              "key": "$.id",
+              "path": {
+                "path": "$.id"
+              }
+            }
+          ],
+          "displayOrder": 1,
+          "asDialog": false
+        },
+        {
+          "toolId": "read-product-func",
+          "data": [
+            {
+              "key": "$.id",
+              "path": {
+                "path": "$.id"
+              }
+            }
+          ],
+          "displayOrder": 2,
+          "asDialog": false
+        },
+        {
+          "toolId": "update-product",
+          "data": [
+            {
+              "key": "$.where.id",
+              "path": {
+                "path": "$.id"
+              }
+            }
+          ],
+          "displayOrder": 3,
+          "asDialog": true
+        },
+        {
+          "toolId": "write-product-func",
+          "data": [
+            {
+              "key": "$.id",
+              "path": {
+                "path": "$.id"
+              }
+            }
+          ],
+          "displayOrder": 4,
+          "asDialog": true
+        }
+      ],
+      "displayLayout": {
+        "type": "RECORD",
+        "recordConfig": {}
+      },
+      "filterConfig": {}
+    },
+    {
+      "id": "get-product-by-sku",
+      "name": "Get product by sku",
+      "actionName": "getProductBySku",
+      "apiNames": [
+        "Api"
+      ],
+      "modelName": "Product",
+      "actionType": "ACTION_TYPE_GET",
+      "implementation": "ACTION_IMPLEMENTATION_AUTO",
+      "inputs": [
+        {
+          "fieldLocation": {
+            "path": "$.sku"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Sku",
+          "visible": true,
+          "lookupAction": {
+            "toolId": "list-products"
+          },
+          "modelName": "Product",
+          "fieldName": "sku"
+        }
+      ],
+      "response": [
+        {
+          "fieldLocation": {
+            "path": "$.name"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Name",
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "name"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.sku"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Sku",
+          "displayOrder": 1,
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "sku"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.supplierId"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Supplier",
+          "displayOrder": 2,
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "supplierId"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.id"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Id",
+          "displayOrder": 5,
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "id"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.createdAt"
+          },
+          "fieldType": "TYPE_DATETIME",
+          "displayName": "Created at",
+          "displayOrder": 6,
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "createdAt"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.updatedAt"
+          },
+          "fieldType": "TYPE_DATETIME",
+          "displayName": "Updated at",
+          "displayOrder": 7,
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "updatedAt"
+        }
+      ],
+      "title": {
+        "template": "{{$.name}}"
+      },
+      "entitySingle": "product",
+      "entityPlural": "products",
+      "capabilities": {
+        "comments": true,
+        "audit": true
+      },
+      "entryActivityActions": [
+        {
+          "toolId": "get-product",
+          "data": [
+            {
+              "key": "$.id",
+              "path": {
+                "path": "$.id"
+              }
+            }
+          ],
+          "displayOrder": 1,
+          "asDialog": false
+        },
+        {
+          "toolId": "get-product-with-supplier",
+          "data": [
+            {
+              "key": "$.id",
+              "path": {
+                "path": "$.id"
+              }
+            }
+          ],
+          "displayOrder": 2,
+          "asDialog": false
+        },
+        {
+          "toolId": "read-product-func",
+          "data": [
+            {
+              "key": "$.id",
+              "path": {
+                "path": "$.id"
+              }
+            }
+          ],
+          "displayOrder": 3,
+          "asDialog": false
+        },
+        {
+          "toolId": "update-product",
+          "data": [
+            {
+              "key": "$.where.id",
+              "path": {
+                "path": "$.id"
+              }
+            }
+          ],
+          "displayOrder": 4,
+          "asDialog": true
+        },
+        {
+          "toolId": "write-product-func",
+          "data": [
+            {
+              "key": "$.id",
+              "path": {
+                "path": "$.id"
+              }
+            }
+          ],
+          "displayOrder": 5,
+          "asDialog": true
+        }
+      ],
+      "displayLayout": {
+        "type": "RECORD",
+        "recordConfig": {}
+      },
+      "filterConfig": {}
+    },
+    {
+      "id": "get-product-with-supplier",
+      "name": "Get product with supplier",
+      "actionName": "getProductWithSupplier",
+      "apiNames": [
+        "Api"
+      ],
+      "modelName": "Product",
+      "actionType": "ACTION_TYPE_GET",
+      "implementation": "ACTION_IMPLEMENTATION_AUTO",
+      "inputs": [
+        {
+          "fieldLocation": {
+            "path": "$.id"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Id",
+          "visible": true,
+          "lookupAction": {
+            "toolId": "list-products"
+          },
+          "modelName": "Product",
+          "fieldName": "id"
+        }
+      ],
+      "response": [
+        {
+          "fieldLocation": {
+            "path": "$.name"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Name",
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "name"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.sku"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Sku",
+          "displayOrder": 1,
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "sku"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.supplier.id"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Id",
+          "displayOrder": 1,
+          "visible": true,
+          "modelName": "Supplier",
+          "fieldName": "id"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.supplier.createdAt"
+          },
+          "fieldType": "TYPE_DATETIME",
+          "displayName": "Created at",
+          "displayOrder": 2,
+          "visible": true,
+          "modelName": "Supplier",
+          "fieldName": "createdAt"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.supplier.updatedAt"
+          },
+          "fieldType": "TYPE_DATETIME",
+          "displayName": "Updated at",
+          "displayOrder": 3,
+          "visible": true,
+          "modelName": "Supplier",
+          "fieldName": "updatedAt"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.supplierId"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Supplier",
+          "displayOrder": 2,
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "supplierId"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.id"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Id",
+          "displayOrder": 5,
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "id"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.createdAt"
+          },
+          "fieldType": "TYPE_DATETIME",
+          "displayName": "Created at",
+          "displayOrder": 6,
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "createdAt"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.updatedAt"
+          },
+          "fieldType": "TYPE_DATETIME",
+          "displayName": "Updated at",
+          "displayOrder": 7,
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "updatedAt"
+        }
+      ],
+      "title": {
+        "template": "{{$.name}}"
+      },
+      "entitySingle": "product",
+      "entityPlural": "products",
+      "capabilities": {
+        "comments": true,
+        "audit": true
+      },
+      "entryActivityActions": [
+        {
+          "toolId": "get-product",
+          "data": [
+            {
+              "key": "$.id",
+              "path": {
+                "path": "$.id"
+              }
+            }
+          ],
+          "displayOrder": 1,
+          "asDialog": false
+        },
+        {
+          "toolId": "read-product-func",
+          "data": [
+            {
+              "key": "$.id",
+              "path": {
+                "path": "$.id"
+              }
+            }
+          ],
+          "displayOrder": 2,
+          "asDialog": false
+        },
+        {
+          "toolId": "update-product",
+          "data": [
+            {
+              "key": "$.where.id",
+              "path": {
+                "path": "$.id"
+              }
+            }
+          ],
+          "displayOrder": 3,
+          "asDialog": true
+        },
+        {
+          "toolId": "write-product-func",
+          "data": [
+            {
+              "key": "$.id",
+              "path": {
+                "path": "$.id"
+              }
+            }
+          ],
+          "displayOrder": 4,
+          "asDialog": true
+        }
+      ],
+      "displayLayout": {
+        "type": "RECORD",
+        "recordConfig": {}
+      },
+      "filterConfig": {}
+    },
+    {
+      "id": "list-products",
+      "name": "List products",
+      "actionName": "listProducts",
+      "apiNames": [
+        "Api"
+      ],
+      "modelName": "Product",
+      "actionType": "ACTION_TYPE_LIST",
+      "implementation": "ACTION_IMPLEMENTATION_AUTO",
+      "inputs": [
+        {
+          "fieldLocation": {
+            "path": "$.where"
+          },
+          "fieldType": "TYPE_MESSAGE",
+          "displayName": "Where",
+          "visible": true,
+          "scope": "FILTERS"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.first"
+          },
+          "fieldType": "TYPE_INT",
+          "displayName": "First",
+          "displayOrder": 1,
+          "visible": true,
+          "scope": "PAGINATION"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.after"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "After",
+          "displayOrder": 2,
+          "visible": true,
+          "scope": "PAGINATION"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.last"
+          },
+          "fieldType": "TYPE_INT",
+          "displayName": "Last",
+          "displayOrder": 3,
+          "visible": true,
+          "scope": "PAGINATION"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.before"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Before",
+          "displayOrder": 4,
+          "visible": true,
+          "scope": "PAGINATION"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.limit"
+          },
+          "fieldType": "TYPE_INT",
+          "displayName": "Limit",
+          "displayOrder": 5,
+          "visible": true,
+          "scope": "PAGINATION"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.offset"
+          },
+          "fieldType": "TYPE_INT",
+          "displayName": "Offset",
+          "displayOrder": 6,
+          "visible": true,
+          "scope": "PAGINATION"
+        }
+      ],
+      "response": [
+        {
+          "fieldLocation": {
+            "path": "$.pageInfo"
+          },
+          "fieldType": "TYPE_OBJECT",
+          "displayName": "PageInfo",
+          "scope": "PAGINATION"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.pageInfo.count"
+          },
+          "fieldType": "TYPE_INT",
+          "displayName": "Count",
+          "scope": "PAGINATION"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.pageInfo.totalCount"
+          },
+          "fieldType": "TYPE_INT",
+          "displayName": "Total count",
+          "scope": "PAGINATION"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.pageInfo.hasNextPage"
+          },
+          "fieldType": "TYPE_BOOL",
+          "displayName": "Has next page",
+          "scope": "PAGINATION"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.pageInfo.startCursor"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Start cursor",
+          "scope": "PAGINATION"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.pageInfo.endCursor"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "End cursor",
+          "scope": "PAGINATION"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.pageInfo.pageNumber"
+          },
+          "fieldType": "TYPE_INT",
+          "displayName": "Page Number",
+          "scope": "PAGINATION"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.results[*].name"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Name",
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "name"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.results[*].sku"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Sku",
+          "displayOrder": 1,
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "sku"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.results[*].supplierId"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Supplier",
+          "displayOrder": 2,
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "supplierId"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.results[*].id"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Id",
+          "displayOrder": 5,
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "id"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.results[*].createdAt"
+          },
+          "fieldType": "TYPE_DATETIME",
+          "displayName": "Created at",
+          "displayOrder": 6,
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "createdAt"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.results[*].updatedAt"
+          },
+          "fieldType": "TYPE_DATETIME",
+          "displayName": "Updated at",
+          "displayOrder": 7,
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "updatedAt"
+        }
+      ],
+      "title": {
+        "template": "Products"
+      },
+      "entitySingle": "product",
+      "entityPlural": "products",
+      "capabilities": {},
+      "pagination": {
+        "start": {
+          "requestInput": "after",
+          "responseField": {
+            "path": "$.pageInfo.startCursor"
+          }
+        },
+        "end": {
+          "requestInput": "before",
+          "responseField": {
+            "path": "$.pageInfo.endCursor"
+          }
+        },
+        "pageSize": {
+          "requestInput": "first",
+          "responseField": {
+            "path": "$.pageInfo.count"
+          },
+          "defaultValue": 50
+        },
+        "nextPage": {
+          "path": "$.pageInfo.hasNextPage"
+        },
+        "totalCount": {
+          "path": "$.pageInfo.totalCount"
+        }
+      },
+      "entryActivityActions": [
+        {
+          "toolId": "get-product",
+          "data": [
+            {
+              "key": "$.id",
+              "path": {
+                "path": "$.results[*].id"
+              }
+            }
+          ],
+          "displayOrder": 1,
+          "asDialog": false
+        },
+        {
+          "toolId": "get-product-with-supplier",
+          "data": [
+            {
+              "key": "$.id",
+              "path": {
+                "path": "$.results[*].id"
+              }
+            }
+          ],
+          "displayOrder": 2,
+          "asDialog": false
+        },
+        {
+          "toolId": "read-product-func",
+          "data": [
+            {
+              "key": "$.id",
+              "path": {
+                "path": "$.results[*].id"
+              }
+            }
+          ],
+          "displayOrder": 3,
+          "asDialog": false
+        },
+        {
+          "toolId": "update-product",
+          "data": [
+            {
+              "key": "$.where.id",
+              "path": {
+                "path": "$.results[*].id"
+              }
+            }
+          ],
+          "displayOrder": 4,
+          "asDialog": true
+        },
+        {
+          "toolId": "write-product-func",
+          "data": [
+            {
+              "key": "$.id",
+              "path": {
+                "path": "$.results[*].id"
+              }
+            }
+          ],
+          "displayOrder": 5,
+          "asDialog": true
+        }
+      ],
+      "getEntryAction": {
+        "toolId": "get-product",
+        "data": [
+          {
+            "key": "$.id",
+            "path": {
+              "path": "$.results[*].id"
+            }
+          }
+        ]
+      },
+      "filterConfig": {}
+    },
+    {
+      "id": "read-product-func",
+      "name": "Read product func",
+      "actionName": "readProductFunc",
+      "apiNames": [
+        "Api"
+      ],
+      "modelName": "Product",
+      "actionType": "ACTION_TYPE_READ",
+      "implementation": "ACTION_IMPLEMENTATION_CUSTOM",
+      "inputs": [
+        {
+          "fieldLocation": {
+            "path": "$.id"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Id",
+          "visible": true,
+          "lookupAction": {
+            "toolId": "list-products"
+          },
+          "getEntryAction": {
+            "toolId": "get-product",
+            "data": [
+              {
+                "key": "$.id",
+                "path": {
+                  "path": "$.id"
+                }
+              }
+            ]
+          },
+          "modelName": "Product",
+          "fieldName": "id"
+        }
+      ],
+      "title": {
+        "template": "{{$.name}}"
+      },
+      "entitySingle": "product",
+      "entityPlural": "products",
+      "capabilities": {},
+      "filterConfig": {}
+    },
+    {
+      "id": "request-password-reset",
+      "name": "Request password reset",
+      "actionName": "requestPasswordReset",
+      "apiNames": [
+        "Api"
+      ],
+      "modelName": "Identity",
+      "actionType": "ACTION_TYPE_WRITE",
+      "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+      "inputs": [
+        {
+          "fieldLocation": {
+            "path": "$.email"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Email",
+          "visible": true
+        },
+        {
+          "fieldLocation": {
+            "path": "$.redirectUrl"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Redirect url",
+          "displayOrder": 1,
+          "visible": true
+        }
+      ],
+      "title": {
+        "template": "Request password reset"
+      },
+      "entitySingle": "identity",
+      "entityPlural": "identities",
+      "capabilities": {},
+      "filterConfig": {}
+    },
+    {
+      "id": "reset-password",
+      "name": "Reset password",
+      "actionName": "resetPassword",
+      "apiNames": [
+        "Api"
+      ],
+      "modelName": "Identity",
+      "actionType": "ACTION_TYPE_WRITE",
+      "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+      "inputs": [
+        {
+          "fieldLocation": {
+            "path": "$.token"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Token",
+          "visible": true
+        },
+        {
+          "fieldLocation": {
+            "path": "$.password"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Password",
+          "displayOrder": 1,
+          "visible": true
+        }
+      ],
+      "title": {
+        "template": "Reset password"
+      },
+      "entitySingle": "identity",
+      "entityPlural": "identities",
+      "capabilities": {},
+      "filterConfig": {}
+    },
+    {
+      "id": "update-product",
+      "name": "Update product",
+      "actionName": "updateProduct",
+      "apiNames": [
+        "Api"
+      ],
+      "modelName": "Product",
+      "actionType": "ACTION_TYPE_UPDATE",
+      "implementation": "ACTION_IMPLEMENTATION_AUTO",
+      "inputs": [
+        {
+          "fieldLocation": {
+            "path": "$.where"
+          },
+          "fieldType": "TYPE_MESSAGE",
+          "displayName": "Where",
+          "visible": true,
+          "scope": "FILTERS"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.where.id"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Id",
+          "visible": true,
+          "lookupAction": {
+            "toolId": "list-products"
+          },
+          "modelName": "Product",
+          "fieldName": "id",
+          "scope": "FILTERS"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.values"
+          },
+          "fieldType": "TYPE_MESSAGE",
+          "displayName": "Values",
+          "displayOrder": 1,
+          "visible": true
+        }
+      ],
+      "response": [
+        {
+          "fieldLocation": {
+            "path": "$.name"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Name",
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "name"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.sku"
+          },
+          "fieldType": "TYPE_STRING",
+          "displayName": "Sku",
+          "displayOrder": 1,
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "sku"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.supplierId"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Supplier",
+          "displayOrder": 2,
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "supplierId"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.id"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Id",
+          "displayOrder": 5,
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "id"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.createdAt"
+          },
+          "fieldType": "TYPE_DATETIME",
+          "displayName": "Created at",
+          "displayOrder": 6,
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "createdAt"
+        },
+        {
+          "fieldLocation": {
+            "path": "$.updatedAt"
+          },
+          "fieldType": "TYPE_DATETIME",
+          "displayName": "Updated at",
+          "displayOrder": 7,
+          "visible": true,
+          "modelName": "Product",
+          "fieldName": "updatedAt"
+        }
+      ],
+      "title": {
+        "template": "Update product"
+      },
+      "entitySingle": "product",
+      "entityPlural": "products",
+      "capabilities": {},
+      "getEntryAction": {
+        "toolId": "get-product",
+        "data": [
+          {
+            "key": "$.id",
+            "path": {
+              "path": "$.id"
+            }
+          }
+        ]
+      },
+      "filterConfig": {}
+    },
+    {
+      "id": "write-product-func",
+      "name": "Write product func",
+      "actionName": "writeProductFunc",
+      "apiNames": [
+        "Api"
+      ],
+      "modelName": "Product",
+      "actionType": "ACTION_TYPE_WRITE",
+      "implementation": "ACTION_IMPLEMENTATION_CUSTOM",
+      "inputs": [
+        {
+          "fieldLocation": {
+            "path": "$.id"
+          },
+          "fieldType": "TYPE_ID",
+          "displayName": "Id",
+          "visible": true,
+          "lookupAction": {
+            "toolId": "list-products"
+          },
+          "getEntryAction": {
+            "toolId": "get-product",
+            "data": [
+              {
+                "key": "$.id",
+                "path": {
+                  "path": "$.id"
+                }
+              }
+            ]
+          },
+          "modelName": "Product",
+          "fieldName": "id"
+        }
+      ],
+      "title": {
+        "template": "Write product func"
+      },
+      "entitySingle": "product",
+      "entityPlural": "products",
+      "capabilities": {},
+      "filterConfig": {}
+    }
+  ]
+}
