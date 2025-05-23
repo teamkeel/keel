@@ -4,73 +4,59 @@
       "id": "request-password-reset",
       "name": "Request password reset",
       "actionName": "requestPasswordReset",
-      "apiNames": [
-        "Api"
-      ],
+      "apiNames": ["Api"],
       "modelName": "Identity",
       "actionType": "ACTION_TYPE_WRITE",
       "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
       "inputs": [
         {
-          "fieldLocation": {
-            "path": "$.email"
-          },
+          "fieldLocation": { "path": "$.email" },
           "fieldType": "TYPE_STRING",
           "displayName": "Email",
           "visible": true
         },
         {
-          "fieldLocation": {
-            "path": "$.redirectUrl"
-          },
+          "fieldLocation": { "path": "$.redirectUrl" },
           "fieldType": "TYPE_STRING",
           "displayName": "Redirect url",
           "displayOrder": 1,
           "visible": true
         }
       ],
-      "title": {
-        "template": "Request password reset"
-      },
+      "title": { "template": "Request password reset" },
       "entitySingle": "identity",
       "entityPlural": "identities",
-      "capabilities": {}
+      "capabilities": {},
+      "filterConfig": {}
     },
     {
       "id": "reset-password",
       "name": "Reset password",
       "actionName": "resetPassword",
-      "apiNames": [
-        "Api"
-      ],
+      "apiNames": ["Api"],
       "modelName": "Identity",
       "actionType": "ACTION_TYPE_WRITE",
       "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
       "inputs": [
         {
-          "fieldLocation": {
-            "path": "$.token"
-          },
+          "fieldLocation": { "path": "$.token" },
           "fieldType": "TYPE_STRING",
           "displayName": "Token",
           "visible": true
         },
         {
-          "fieldLocation": {
-            "path": "$.password"
-          },
+          "fieldLocation": { "path": "$.password" },
           "fieldType": "TYPE_STRING",
           "displayName": "Password",
           "displayOrder": 1,
           "visible": true
         }
       ],
-      "title": {
-        "template": "Reset password"
-      },
+      "title": { "template": "Reset password" },
       "entitySingle": "identity",
       "entityPlural": "identities",
-      "capabilities": {}
+      "capabilities": {},
+      "filterConfig": {}
     }
   ]
 }

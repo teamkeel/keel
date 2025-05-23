@@ -59,6 +59,7 @@ func extractActionConfig(generated, updated *toolsproto.ActionConfig) *ActionToo
 		EntryActivityActions: extractLinkConfigs(generated.EntryActivityActions, updated.EntryActivityActions),
 		RelatedActions:       extractLinkConfigs(generated.RelatedActions, updated.RelatedActions),
 		EmbeddedTools:        extractToolGroupConfigs(generated.EmbeddedTools, updated.EmbeddedTools),
+		FilterConfig:         extractFilterConfig(generated.FilterConfig, updated.FilterConfig),
 	}
 
 	if caps := generated.GetCapabilities().Diff(updated.GetCapabilities()); len(caps) > 0 {
@@ -330,6 +331,20 @@ func extractToolGroupConfigs(generated, updated []*toolsproto.ToolGroup) ToolGro
 
 	if len(cfgs) > 0 {
 		return cfgs
+	}
+
+	return nil
+}
+
+func extractFilterConfig(generated, updated *toolsproto.FilterConfig) *FilterConfig {
+	if generated == nil || updated == nil {
+		return nil
+	}
+
+	if updated.GetQuickSearchField() != nil {
+		return &FilterConfig{
+			QuickSearchField: &updated.GetQuickSearchField().Path,
+		}
 	}
 
 	return nil

@@ -215,6 +215,7 @@ type ActionToolConfig struct {
 	EntryActivityActions LinkConfigs          `json:"entry_activity_actions,omitempty"`
 	DisplayLayout        *DisplayLayoutConfig `json:"display_layout,omitempty"`
 	EmbeddedTools        ToolGroupConfigs     `json:"embedded_tools,omitempty"`
+	FilterConfig         *FilterConfig        `json:"filter_config,omitempty"`
 }
 
 func (cfg *ActionToolConfig) toToolConfig() *ToolConfig {
@@ -247,7 +248,8 @@ func (cfg *ActionToolConfig) hasChanges() bool {
 		len(cfg.RelatedActions) > 0 ||
 		len(cfg.EntryActivityActions) > 0 ||
 		cfg.DisplayLayout != nil ||
-		len(cfg.EmbeddedTools) > 0
+		len(cfg.EmbeddedTools) > 0 ||
+		cfg.FilterConfig != nil
 }
 
 func (cfg *ActionToolConfig) applyOn(tool *toolsproto.ActionConfig) {
@@ -317,6 +319,11 @@ func (cfg *ActionToolConfig) applyOn(tool *toolsproto.ActionConfig) {
 	}
 	if len(cfg.EmbeddedTools) > 0 {
 		tool.EmbeddedTools = cfg.EmbeddedTools.applyOn(tool.EmbeddedTools)
+	}
+	if cfg.FilterConfig != nil {
+		tool.FilterConfig = &toolsproto.FilterConfig{
+			QuickSearchField: &toolsproto.JsonPath{Path: *cfg.FilterConfig.QuickSearchField},
+		}
 	}
 }
 
@@ -889,6 +896,10 @@ func (cfg *ToolGroupLinkConfig) applyOn(link *toolsproto.ToolGroup_GroupActionLi
 	link.ResponseOverrides = cfg.getResponseOverrides()
 
 	return link
+}
+
+type FilterConfig struct {
+	QuickSearchField *string `json:"quick_search_field,omitempty"`
 }
 
 func makeStringTemplate(tmpl *string) *toolsproto.StringTemplate {
