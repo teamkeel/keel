@@ -2,6 +2,7 @@ package tools
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/teamkeel/keel/casing"
 	toolsproto "github.com/teamkeel/keel/tools/proto"
@@ -35,7 +36,166 @@ func (cfgs ToolConfigs) getIDs() []string {
 	return ids
 }
 
+type ToolType string
+
+const (
+	ToolTypeAction ToolType = "action"
+	ToolTypeFlow   ToolType = "flow"
+)
+
 type ToolConfig struct {
+	ID           string
+	Type         ToolType
+	ActionConfig *ActionToolConfig
+	FlowConfig   *FlowToolConfig
+}
+
+func (c ToolConfig) MarshalJSON() ([]byte, error) {
+	return json.Marshal(c.config())
+}
+
+// To maintain backwards compatibility with existing config files (before we added support for flows), the marshalling
+// and unmarshalling of tool configs is done by just marshalling the underlying configuration (i.e.flow config or action config)
+func (c *ToolConfig) UnmarshalJSON(data []byte) error {
+	// Unmarshal into a generic map to inspect its contents
+	var raw map[string]any
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return fmt.Errorf("invalid JSON: %w", err)
+	}
+
+	// Determine type by presence of unique fields
+	switch {
+	case raw["action_name"] != nil:
+		var cfg ActionToolConfig
+		if err := json.Unmarshal(data, &cfg); err != nil {
+			return fmt.Errorf("error parsing ActionToolConfig: %w", err)
+		}
+		c.ActionConfig = &cfg
+		c.Type = ToolTypeAction
+		c.ID = cfg.ID
+
+		return nil
+	case raw["flow_name"] != nil:
+		var cfg FlowToolConfig
+		if err := json.Unmarshal(data, &cfg); err != nil {
+			return fmt.Errorf("error parsing FlowToolConfig: %w", err)
+		}
+		c.FlowConfig = &cfg
+		c.Type = ToolTypeFlow
+		c.ID = cfg.ID
+
+		return nil
+	default:
+		return fmt.Errorf("unknown tool config type")
+	}
+}
+
+// config returns the underlying configuration struct:
+//   - in the case of action based tools, it will be a ActionToolConfig
+//   - for flow based tools, it will be a FlowToolConfig
+func (t *ToolConfig) config() configuration {
+	switch t.Type {
+	case ToolTypeAction:
+		return t.ActionConfig
+	case ToolTypeFlow:
+		return t.FlowConfig
+	default:
+		return nil
+	}
+}
+
+func (t *ToolConfig) hasChanges() bool {
+	return t.config().hasChanges()
+}
+
+// getOperationName returns the underlying action that powers this tool (either an action name or a flow name)
+func (t *ToolConfig) getOperationName() string {
+	switch t.Type {
+	case ToolTypeAction:
+		return t.ActionConfig.ActionName
+	case ToolTypeFlow:
+		return t.FlowConfig.FlowName
+	default:
+		return ""
+	}
+}
+
+func (t *ToolConfig) setID(id string) {
+	t.ID = id
+	if t.Type == ToolTypeAction {
+		t.ActionConfig.ID = id
+	} else {
+		t.FlowConfig.ID = id
+	}
+}
+
+func (t *ToolConfig) applyOn(tool *toolsproto.Tool) {
+	switch t.Type {
+	case ToolTypeAction:
+		t.ActionConfig.applyOn(tool.ActionConfig)
+	case ToolTypeFlow:
+		t.FlowConfig.applyOn(tool.FlowConfig)
+	}
+}
+
+type configuration interface {
+	hasChanges() bool
+	isDuplicated() bool
+	toToolConfig() *ToolConfig
+}
+
+// compile time check that config types implement the required interface
+var _ configuration = &FlowToolConfig{}
+var _ configuration = &ActionToolConfig{}
+
+type FlowToolConfig struct {
+	ID                 string           `json:"id,omitempty"`
+	FlowName           string           `json:"flow_name,omitempty"`
+	Name               *string          `json:"name,omitempty"`
+	HelpText           *string          `json:"help_text,omitempty"`
+	CompletionRedirect *LinkConfig      `json:"completion_redirect,omitempty"`
+	Inputs             FlowInputConfigs `json:"inputs,omitempty"`
+}
+
+func (cfg *FlowToolConfig) toToolConfig() *ToolConfig {
+	return &ToolConfig{
+		ID:         cfg.ID,
+		Type:       ToolTypeFlow,
+		FlowConfig: cfg,
+	}
+}
+
+func (cfg *FlowToolConfig) isDuplicated() bool {
+	return cfg.ID != casing.ToKebab(cfg.FlowName)
+}
+
+func (cfg *FlowToolConfig) hasChanges() bool {
+	return cfg.isDuplicated() ||
+		cfg.Name != nil ||
+		cfg.HelpText != nil ||
+		cfg.CompletionRedirect != nil ||
+		len(cfg.Inputs) > 0
+}
+
+func (cfg *FlowToolConfig) applyOn(tool *toolsproto.FlowConfig) {
+	if cfg.Name != nil {
+		tool.Name = *cfg.Name
+	}
+	if cfg.HelpText != nil {
+		tool.HelpText = makeStringTemplate(cfg.HelpText)
+	}
+	if cfg.CompletionRedirect != nil {
+		tool.CompletionRedirect = cfg.CompletionRedirect.applyOn(tool.CompletionRedirect)
+	}
+
+	for path, inputCfg := range cfg.Inputs {
+		if toolInput := tool.FindInputByPath(path); toolInput != nil {
+			inputCfg.applyOn(toolInput)
+		}
+	}
+}
+
+type ActionToolConfig struct {
 	ID                   string               `json:"id,omitempty"`
 	ActionName           string               `json:"action_name,omitempty"`
 	Name                 *string              `json:"name,omitempty"`
@@ -56,13 +216,22 @@ type ToolConfig struct {
 	EntryActivityActions LinkConfigs          `json:"entry_activity_actions,omitempty"`
 	DisplayLayout        *DisplayLayoutConfig `json:"display_layout,omitempty"`
 	EmbeddedTools        ToolGroupConfigs     `json:"embedded_tools,omitempty"`
+	FilterConfig         *FilterConfig        `json:"filter_config,omitempty"`
 }
 
-func (cfg *ToolConfig) isDuplicated() bool {
+func (cfg *ActionToolConfig) toToolConfig() *ToolConfig {
+	return &ToolConfig{
+		ID:           cfg.ID,
+		Type:         ToolTypeAction,
+		ActionConfig: cfg,
+	}
+}
+
+func (cfg *ActionToolConfig) isDuplicated() bool {
 	return cfg.ID != casing.ToKebab(cfg.ActionName)
 }
 
-func (cfg *ToolConfig) hasChanges() bool {
+func (cfg *ActionToolConfig) hasChanges() bool {
 	return cfg.isDuplicated() ||
 		cfg.Name != nil ||
 		cfg.Icon != nil ||
@@ -81,10 +250,11 @@ func (cfg *ToolConfig) hasChanges() bool {
 		len(cfg.RelatedActions) > 0 ||
 		len(cfg.EntryActivityActions) > 0 ||
 		cfg.DisplayLayout != nil ||
-		len(cfg.EmbeddedTools) > 0
+		len(cfg.EmbeddedTools) > 0 ||
+		cfg.FilterConfig != nil
 }
 
-func (cfg *ToolConfig) applyOn(tool *toolsproto.ActionConfig) {
+func (cfg *ActionToolConfig) applyOn(tool *toolsproto.ActionConfig) {
 	if cfg.Name != nil {
 		tool.Name = *cfg.Name
 	}
@@ -154,6 +324,11 @@ func (cfg *ToolConfig) applyOn(tool *toolsproto.ActionConfig) {
 	}
 	if len(cfg.EmbeddedTools) > 0 {
 		tool.EmbeddedTools = cfg.EmbeddedTools.applyOn(tool.EmbeddedTools)
+	}
+	if cfg.FilterConfig != nil {
+		tool.FilterConfig = &toolsproto.FilterConfig{
+			QuickSearchField: &toolsproto.JsonPath{Path: *cfg.FilterConfig.QuickSearchField},
+		}
 	}
 }
 
@@ -255,6 +430,41 @@ func (cfg *InputConfig) hasChanges() bool {
 		cfg.DefaultValue != nil ||
 		cfg.LookupAction != nil ||
 		cfg.GetEntryAction != nil
+}
+
+type FlowInputConfigs map[string]FlowInputConfig
+type FlowInputConfig struct {
+	DisplayName  *string      `json:"display_name,omitempty"`
+	DisplayOrder *int32       `json:"display_order,omitempty"`
+	HelpText     *string      `json:"help_text,omitempty"`
+	Placeholder  *string      `json:"placeholder,omitempty"`
+	DefaultValue *ScalarValue `json:"default_value,omitempty"`
+}
+
+func (cfg *FlowInputConfig) applyOn(input *toolsproto.FlowInputConfig) {
+	if cfg.DisplayName != nil {
+		input.DisplayName = *cfg.DisplayName
+	}
+	if cfg.DisplayOrder != nil {
+		input.DisplayOrder = *cfg.DisplayOrder
+	}
+	if cfg.HelpText != nil {
+		input.HelpText = makeStringTemplate(cfg.HelpText)
+	}
+	if cfg.Placeholder != nil {
+		input.Placeholder = makeStringTemplate(cfg.Placeholder)
+	}
+	if cfg.DefaultValue != nil {
+		input.DefaultValue = cfg.DefaultValue.toProto()
+	}
+}
+
+func (cfg *FlowInputConfig) hasChanges() bool {
+	return cfg.DisplayName != nil ||
+		cfg.DisplayOrder != nil ||
+		cfg.HelpText != nil ||
+		cfg.Placeholder != nil ||
+		cfg.DefaultValue != nil
 }
 
 type ResponseConfigs map[string]ResponseConfig
@@ -445,8 +655,8 @@ func (cfg *LinkConfig) isDeleted() bool {
 	return false
 }
 
-func (cfgs LinkConfigs) applyOn(links []*toolsproto.ActionLink) []*toolsproto.ActionLink {
-	newLinks := []*toolsproto.ActionLink{}
+func (cfgs LinkConfigs) applyOn(links []*toolsproto.ToolLink) []*toolsproto.ToolLink {
+	newLinks := []*toolsproto.ToolLink{}
 
 	// add all configured links and new links. If links are deleted, they are skipped
 	for _, cfg := range cfgs {
@@ -465,7 +675,7 @@ func (cfgs LinkConfigs) applyOn(links []*toolsproto.ActionLink) []*toolsproto.Ac
 	return newLinks
 }
 
-func (cfg *LinkConfig) applyOn(link *toolsproto.ActionLink) *toolsproto.ActionLink {
+func (cfg *LinkConfig) applyOn(link *toolsproto.ToolLink) *toolsproto.ToolLink {
 	if cfg == nil {
 		return nil
 	}
@@ -474,7 +684,7 @@ func (cfg *LinkConfig) applyOn(link *toolsproto.ActionLink) *toolsproto.ActionLi
 	}
 	// we've added a link
 	if link == nil {
-		return &toolsproto.ActionLink{
+		return &toolsproto.ToolLink{
 			ToolId:      cfg.ToolID,
 			Description: makeStringTemplate(cfg.Description),
 			Title:       makeStringTemplate(cfg.Title),
@@ -713,6 +923,10 @@ func (cfg *ToolGroupLinkConfig) applyOn(link *toolsproto.ToolGroup_GroupActionLi
 	link.ResponseOverrides = cfg.getResponseOverrides()
 
 	return link
+}
+
+type FilterConfig struct {
+	QuickSearchField *string `json:"quick_search_field,omitempty"`
 }
 
 func makeStringTemplate(tmpl *string) *toolsproto.StringTemplate {

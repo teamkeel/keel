@@ -10,17 +10,13 @@
       "implementation": "ACTION_IMPLEMENTATION_CUSTOM",
       "inputs": [
         {
-          "fieldLocation": {
-            "path": "$.from"
-          },
+          "fieldLocation": { "path": "$.from" },
           "fieldType": "TYPE_DATE",
           "displayName": "From",
           "visible": true
         },
         {
-          "fieldLocation": {
-            "path": "$.to"
-          },
+          "fieldLocation": { "path": "$.to" },
           "fieldType": "TYPE_DATE",
           "displayName": "To",
           "displayOrder": 1,
@@ -29,44 +25,34 @@
       ],
       "response": [
         {
-          "fieldLocation": {
-            "path": "$.invoices"
-          },
+          "fieldLocation": { "path": "$.invoices" },
           "fieldType": "TYPE_MESSAGE",
           "repeated": true,
           "displayName": "Invoices",
           "visible": true
         },
         {
-          "fieldLocation": {
-            "path": "$.invoices[*].date"
-          },
+          "fieldLocation": { "path": "$.invoices[*].date" },
           "fieldType": "TYPE_DATE",
           "displayName": "Date",
           "visible": true
         },
         {
-          "fieldLocation": {
-            "path": "$.invoices[*].amount"
-          },
+          "fieldLocation": { "path": "$.invoices[*].amount" },
           "fieldType": "TYPE_INT",
           "displayName": "Amount",
           "displayOrder": 1,
           "visible": true
         },
         {
-          "fieldLocation": {
-            "path": "$.invoices[*].customerId"
-          },
+          "fieldLocation": { "path": "$.invoices[*].customerId" },
           "fieldType": "TYPE_ID",
           "displayName": "Customer id",
           "displayOrder": 2,
           "visible": true
         },
         {
-          "fieldLocation": {
-            "path": "$.customers"
-          },
+          "fieldLocation": { "path": "$.customers" },
           "fieldType": "TYPE_MODEL",
           "repeated": true,
           "displayName": "Customers",
@@ -74,9 +60,7 @@
           "visible": true
         },
         {
-          "fieldLocation": {
-            "path": "$.customers[*].name"
-          },
+          "fieldLocation": { "path": "$.customers[*].name" },
           "fieldType": "TYPE_STRING",
           "displayName": "Name",
           "visible": true,
@@ -84,9 +68,7 @@
           "fieldName": "name"
         },
         {
-          "fieldLocation": {
-            "path": "$.customers[*].id"
-          },
+          "fieldLocation": { "path": "$.customers[*].id" },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 2,
@@ -95,9 +77,7 @@
           "fieldName": "id"
         },
         {
-          "fieldLocation": {
-            "path": "$.customers[*].createdAt"
-          },
+          "fieldLocation": { "path": "$.customers[*].createdAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 3,
@@ -106,9 +86,7 @@
           "fieldName": "createdAt"
         },
         {
-          "fieldLocation": {
-            "path": "$.customers[*].updatedAt"
-          },
+          "fieldLocation": { "path": "$.customers[*].updatedAt" },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 4,
@@ -117,12 +95,11 @@
           "fieldName": "updatedAt"
         }
       ],
-      "title": {
-        "template": "Invoices"
-      },
+      "title": { "template": "Invoices" },
       "entitySingle": "invoice",
       "entityPlural": "invoices",
-      "capabilities": {}
+      "capabilities": {},
+      "filterConfig": {}
     },
     {
       "id": "request-password-reset",
@@ -134,29 +111,24 @@
       "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
       "inputs": [
         {
-          "fieldLocation": {
-            "path": "$.email"
-          },
+          "fieldLocation": { "path": "$.email" },
           "fieldType": "TYPE_STRING",
           "displayName": "Email",
           "visible": true
         },
         {
-          "fieldLocation": {
-            "path": "$.redirectUrl"
-          },
+          "fieldLocation": { "path": "$.redirectUrl" },
           "fieldType": "TYPE_STRING",
           "displayName": "Redirect url",
           "displayOrder": 1,
           "visible": true
         }
       ],
-      "title": {
-        "template": "Request password reset"
-      },
+      "title": { "template": "Request password reset" },
       "entitySingle": "identity",
       "entityPlural": "identities",
-      "capabilities": {}
+      "capabilities": {},
+      "filterConfig": {}
     },
     {
       "id": "reset-password",
@@ -168,29 +140,24 @@
       "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
       "inputs": [
         {
-          "fieldLocation": {
-            "path": "$.token"
-          },
+          "fieldLocation": { "path": "$.token" },
           "fieldType": "TYPE_STRING",
           "displayName": "Token",
           "visible": true
         },
         {
-          "fieldLocation": {
-            "path": "$.password"
-          },
+          "fieldLocation": { "path": "$.password" },
           "fieldType": "TYPE_STRING",
           "displayName": "Password",
           "displayOrder": 1,
           "visible": true
         }
       ],
-      "title": {
-        "template": "Reset password"
-      },
+      "title": { "template": "Reset password" },
       "entitySingle": "identity",
       "entityPlural": "identities",
-      "capabilities": {}
+      "capabilities": {},
+      "filterConfig": {}
     }
   ]
 }
