@@ -4,7 +4,10 @@
       "id": "create-comment",
       "name": "Create comment",
       "actionName": "createComment",
-      "apiNames": ["Console", "Api"],
+      "apiNames": [
+        "Console",
+        "Api"
+      ],
       "modelName": "Comment",
       "actionType": "ACTION_TYPE_CREATE",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -169,7 +172,10 @@
       "id": "get-comment",
       "name": "Get comment",
       "actionName": "getComment",
-      "apiNames": ["Console", "Api"],
+      "apiNames": [
+        "Console",
+        "Api"
+      ],
       "modelName": "Comment",
       "actionType": "ACTION_TYPE_GET",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -287,7 +293,10 @@
       "id": "get-post",
       "name": "Get post",
       "actionName": "getPost",
-      "apiNames": ["Console", "Api"],
+      "apiNames": [
+        "Console",
+        "Api"
+      ],
       "modelName": "BlogPost",
       "actionType": "ACTION_TYPE_GET",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -515,7 +524,10 @@
       "id": "list-categories",
       "name": "List categories",
       "actionName": "listCategories",
-      "apiNames": ["Console", "Api"],
+      "apiNames": [
+        "Console",
+        "Api"
+      ],
       "modelName": "Category",
       "actionType": "ACTION_TYPE_LIST",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -729,7 +741,10 @@
       "id": "list-comments",
       "name": "List comments",
       "actionName": "listComments",
-      "apiNames": ["Console", "Api"],
+      "apiNames": [
+        "Console",
+        "Api"
+      ],
       "modelName": "Comment",
       "actionType": "ACTION_TYPE_LIST",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -1033,7 +1048,8 @@
               }
             }
           ],
-          "displayOrder": 1
+          "displayOrder": 1,
+          "asDialog": false
         }
       ],
       "getEntryAction": {

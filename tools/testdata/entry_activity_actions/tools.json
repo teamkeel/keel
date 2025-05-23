@@ -4,7 +4,9 @@
       "id": "clean-comments",
       "name": "Clean comments",
       "actionName": "cleanComments",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "BlogPost",
       "actionType": "ACTION_TYPE_WRITE",
       "implementation": "ACTION_IMPLEMENTATION_CUSTOM",
@@ -45,7 +47,9 @@
       "id": "create-blog-post",
       "name": "Create blog post",
       "actionName": "createBlogPost",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "BlogPost",
       "actionType": "ACTION_TYPE_CREATE",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -106,7 +110,9 @@
       "id": "deactivate-blog-post",
       "name": "Deactivate blog post",
       "actionName": "deactivateBlogPost",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "BlogPost",
       "actionType": "ACTION_TYPE_UPDATE",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -201,7 +207,9 @@
       "id": "delete-blog-post",
       "name": "Delete blog post",
       "actionName": "deleteBlogPost",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "BlogPost",
       "actionType": "ACTION_TYPE_DELETE",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -242,7 +250,9 @@
       "id": "get-blog-post",
       "name": "Get blog post",
       "actionName": "getBlogPost",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "BlogPost",
       "actionType": "ACTION_TYPE_GET",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -316,7 +326,8 @@
               }
             }
           ],
-          "displayOrder": 1
+          "displayOrder": 1,
+          "asDialog": true
         },
         {
           "toolId": "deactivate-blog-post",
@@ -328,7 +339,8 @@
               }
             }
           ],
-          "displayOrder": 2
+          "displayOrder": 2,
+          "asDialog": true
         },
         {
           "toolId": "read-comments",
@@ -340,7 +352,8 @@
               }
             }
           ],
-          "displayOrder": 3
+          "displayOrder": 3,
+          "asDialog": false
         },
         {
           "toolId": "update-blog-post",
@@ -352,7 +365,8 @@
               }
             }
           ],
-          "displayOrder": 4
+          "displayOrder": 4,
+          "asDialog": true
         },
         {
           "toolId": "delete-blog-post",
@@ -364,7 +378,8 @@
               }
             }
           ],
-          "displayOrder": 5
+          "displayOrder": 5,
+          "asDialog": true
         }
       ],
       "createEntryAction": {
@@ -379,7 +394,9 @@
       "id": "list-blog-posts",
       "name": "List blog posts",
       "actionName": "listBlogPosts",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "BlogPost",
       "actionType": "ACTION_TYPE_LIST",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -589,7 +606,8 @@
               }
             }
           ],
-          "displayOrder": 1
+          "displayOrder": 1,
+          "asDialog": true
         },
         {
           "toolId": "deactivate-blog-post",
@@ -601,7 +619,8 @@
               }
             }
           ],
-          "displayOrder": 2
+          "displayOrder": 2,
+          "asDialog": true
         },
         {
           "toolId": "get-blog-post",
@@ -613,7 +632,8 @@
               }
             }
           ],
-          "displayOrder": 3
+          "displayOrder": 3,
+          "asDialog": false
         },
         {
           "toolId": "read-comments",
@@ -625,7 +645,8 @@
               }
             }
           ],
-          "displayOrder": 4
+          "displayOrder": 4,
+          "asDialog": false
         },
         {
           "toolId": "update-blog-post",
@@ -637,7 +658,8 @@
               }
             }
           ],
-          "displayOrder": 5
+          "displayOrder": 5,
+          "asDialog": true
         },
         {
           "toolId": "delete-blog-post",
@@ -649,7 +671,8 @@
               }
             }
           ],
-          "displayOrder": 6
+          "displayOrder": 6,
+          "asDialog": true
         }
       ],
       "getEntryAction": {
@@ -671,7 +694,9 @@
       "id": "read-comments",
       "name": "Read comments",
       "actionName": "readComments",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "BlogPost",
       "actionType": "ACTION_TYPE_READ",
       "implementation": "ACTION_IMPLEMENTATION_CUSTOM",
@@ -712,7 +737,9 @@
       "id": "request-password-reset",
       "name": "Request password reset",
       "actionName": "requestPasswordReset",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "Identity",
       "actionType": "ACTION_TYPE_WRITE",
       "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
@@ -746,7 +773,9 @@
       "id": "reset-password",
       "name": "Reset password",
       "actionName": "resetPassword",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "Identity",
       "actionType": "ACTION_TYPE_WRITE",
       "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
@@ -780,7 +809,9 @@
       "id": "update-blog-post",
       "name": "Update blog post",
       "actionName": "updateBlogPost",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "BlogPost",
       "actionType": "ACTION_TYPE_UPDATE",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",

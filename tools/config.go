@@ -392,6 +392,8 @@ type LinkConfig struct {
 	DisplayOrder     *int32  `json:"display_order,omitempty"`
 	VisibleCondition *string `json:"visible_condition,omitempty"`
 	DataMapping      []any   `json:"data_mapping,omitempty"`
+	SkipConfirmation *bool   `json:"skip_confirmation"`
+	Emphasize        *bool   `json:"emphasize"`
 }
 
 type LinkConfigs []*LinkConfig
@@ -413,7 +415,9 @@ func (cfg LinkConfig) hasChanges() bool {
 		cfg.AsDialog != nil ||
 		cfg.DisplayOrder != nil ||
 		cfg.VisibleCondition != nil ||
-		cfg.DataMapping != nil
+		cfg.DataMapping != nil ||
+		cfg.SkipConfirmation != nil ||
+		cfg.Emphasize != nil
 }
 
 func (cfg *LinkConfig) getDataMapping() []*toolsproto.DataMapping {
@@ -487,6 +491,8 @@ func (cfg *LinkConfig) applyOn(link *toolsproto.ActionLink) *toolsproto.ActionLi
 			AsDialog:         cfg.AsDialog,
 			VisibleCondition: cfg.VisibleCondition,
 			Data:             cfg.getDataMapping(),
+			SkipConfirmation: cfg.SkipConfirmation,
+			Emphasize:        cfg.Emphasize,
 		}
 	}
 
@@ -507,6 +513,12 @@ func (cfg *LinkConfig) applyOn(link *toolsproto.ActionLink) *toolsproto.ActionLi
 	}
 	if dm := cfg.getDataMapping(); dm != nil {
 		link.Data = dm
+	}
+	if cfg.SkipConfirmation != nil {
+		link.SkipConfirmation = cfg.SkipConfirmation
+	}
+	if cfg.Emphasize != nil {
+		link.Emphasize = cfg.Emphasize
 	}
 
 	return link

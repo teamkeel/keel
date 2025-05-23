@@ -4,7 +4,9 @@
       "id": "list-products",
       "name": "List products",
       "actionName": "listProducts",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "Product",
       "actionType": "ACTION_TYPE_LIST",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -235,7 +237,8 @@
               }
             }
           ],
-          "displayOrder": 1
+          "displayOrder": 1,
+          "asDialog": false
         },
         {
           "toolId": "update-product",
@@ -247,7 +250,8 @@
               }
             }
           ],
-          "displayOrder": 2
+          "displayOrder": 2,
+          "asDialog": true
         },
         {
           "toolId": "write-product-func",
@@ -259,7 +263,8 @@
               }
             }
           ],
-          "displayOrder": 3
+          "displayOrder": 3,
+          "asDialog": true
         }
       ]
     },
@@ -267,7 +272,9 @@
       "id": "read-product-func",
       "name": "Read product func",
       "actionName": "readProductFunc",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "Product",
       "actionType": "ACTION_TYPE_READ",
       "implementation": "ACTION_IMPLEMENTATION_CUSTOM",
@@ -297,7 +304,9 @@
       "id": "request-password-reset",
       "name": "Request password reset",
       "actionName": "requestPasswordReset",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "Identity",
       "actionType": "ACTION_TYPE_WRITE",
       "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
@@ -331,7 +340,9 @@
       "id": "reset-password",
       "name": "Reset password",
       "actionName": "resetPassword",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "Identity",
       "actionType": "ACTION_TYPE_WRITE",
       "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
@@ -365,7 +376,9 @@
       "id": "update-product",
       "name": "Update product",
       "actionName": "updateProduct",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "Product",
       "actionType": "ACTION_TYPE_UPDATE",
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -470,7 +483,9 @@
       "id": "write-product-func",
       "name": "Write product func",
       "actionName": "writeProductFunc",
-      "apiNames": ["Api"],
+      "apiNames": [
+        "Api"
+      ],
       "modelName": "Product",
       "actionType": "ACTION_TYPE_WRITE",
       "implementation": "ACTION_IMPLEMENTATION_CUSTOM",
