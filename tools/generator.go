@@ -266,6 +266,13 @@ func (g *Generator) generateEntryActivityActionsLinks() {
 
 		for _, toolID := range ids {
 			displayOrder++
+			asDialog := false
+
+			targetTool := g.Tools[toolID]
+			if targetTool.Action.IsWriteAction() {
+				asDialog = true
+			}
+
 			tool.Config.EntryActivityActions = append(tool.Config.EntryActivityActions, &toolsproto.ActionLink{
 				ToolId: toolID,
 				Data: []*toolsproto.DataMapping{
@@ -275,6 +282,7 @@ func (g *Generator) generateEntryActivityActionsLinks() {
 					},
 				},
 				DisplayOrder: int32(displayOrder),
+				AsDialog:     &asDialog,
 			})
 		}
 	}
