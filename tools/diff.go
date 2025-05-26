@@ -252,7 +252,6 @@ func extractLinkConfigs(generated, updated []*toolsproto.ToolLink) LinkConfigs {
 	return nil
 }
 
-
 func extractPaginationConfig(generated, updated *toolsproto.CursorPaginationConfig) *PaginationConfig {
 	if generated == nil && updated == nil {
 		return nil
@@ -262,7 +261,15 @@ func extractPaginationConfig(generated, updated *toolsproto.CursorPaginationConf
 		return nil
 	}
 
+	if generated != nil && updated != nil {
+		return nil
+	}
+
 	if generated == nil && updated != nil {
+		if updated.PageSize == nil {
+			return nil
+		}
+
 		return &PaginationConfig{
 			PageSize: extractPageSizeConfig(nil, updated.PageSize),
 		}

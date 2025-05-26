@@ -602,8 +602,8 @@ type LinkConfig struct {
 	DisplayOrder     *int32  `json:"display_order,omitempty"`
 	VisibleCondition *string `json:"visible_condition,omitempty"`
 	DataMapping      []any   `json:"data_mapping,omitempty"`
-	SkipConfirmation *bool   `json:"skip_confirmation"`
-	Emphasize        *bool   `json:"emphasize"`
+	SkipConfirmation *bool   `json:"skip_confirmation,omitempty"`
+	Emphasize        *bool   `json:"emphasize,omitempty"`
 }
 
 type LinkConfigs []*LinkConfig
