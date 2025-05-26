@@ -10,7 +10,9 @@
       "implementation": "ACTION_IMPLEMENTATION_CUSTOM",
       "inputs": [
         {
-          "fieldLocation": { "path": "$.image" },
+          "fieldLocation": {
+            "path": "$.image"
+          },
           "fieldType": "TYPE_FILE",
           "displayName": "Image",
           "visible": true,
@@ -18,7 +20,9 @@
           "fieldName": "image"
         }
       ],
-      "title": { "template": "Create from image" },
+      "title": {
+        "template": "Create from image"
+      },
       "entitySingle": "blog post",
       "entityPlural": "blog posts",
       "capabilities": {},
@@ -34,7 +38,9 @@
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
       "inputs": [
         {
-          "fieldLocation": { "path": "$.title" },
+          "fieldLocation": {
+            "path": "$.title"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Title",
           "visible": true,
@@ -42,7 +48,9 @@
           "fieldName": "title"
         },
         {
-          "fieldLocation": { "path": "$.description" },
+          "fieldLocation": {
+            "path": "$.description"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Description",
           "displayOrder": 1,
@@ -51,7 +59,9 @@
           "fieldName": "description"
         },
         {
-          "fieldLocation": { "path": "$.content" },
+          "fieldLocation": {
+            "path": "$.content"
+          },
           "fieldType": "TYPE_MARKDOWN",
           "displayName": "Content",
           "displayOrder": 2,
@@ -60,7 +70,9 @@
           "fieldName": "content"
         },
         {
-          "fieldLocation": { "path": "$.tags" },
+          "fieldLocation": {
+            "path": "$.tags"
+          },
           "fieldType": "TYPE_STRING",
           "repeated": true,
           "displayName": "Tags",
@@ -70,7 +82,9 @@
           "fieldName": "tags"
         },
         {
-          "fieldLocation": { "path": "$.image" },
+          "fieldLocation": {
+            "path": "$.image"
+          },
           "fieldType": "TYPE_FILE",
           "displayName": "Image",
           "displayOrder": 4,
@@ -79,21 +93,34 @@
           "fieldName": "image"
         },
         {
-          "fieldLocation": { "path": "$.category" },
+          "fieldLocation": {
+            "path": "$.category"
+          },
           "fieldType": "TYPE_MESSAGE",
           "displayName": "Category",
           "displayOrder": 5,
           "visible": true
         },
         {
-          "fieldLocation": { "path": "$.category.id" },
+          "fieldLocation": {
+            "path": "$.category.id"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "visible": true,
-          "lookupAction": { "toolId": "list-categories" },
+          "lookupAction": {
+            "toolId": "list-categories"
+          },
           "getEntryAction": {
             "toolId": "get-category",
-            "data": [{ "key": "$.id", "path": { "path": "$.category.id" } }]
+            "data": [
+              {
+                "key": "$.id",
+                "path": {
+                  "path": "$.category.id"
+                }
+              }
+            ]
           },
           "modelName": "Category",
           "fieldName": "id"
@@ -101,7 +128,9 @@
       ],
       "response": [
         {
-          "fieldLocation": { "path": "$.title" },
+          "fieldLocation": {
+            "path": "$.title"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Title",
           "visible": true,
@@ -109,7 +138,9 @@
           "fieldName": "title"
         },
         {
-          "fieldLocation": { "path": "$.description" },
+          "fieldLocation": {
+            "path": "$.description"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Description",
           "displayOrder": 1,
@@ -118,7 +149,9 @@
           "fieldName": "description"
         },
         {
-          "fieldLocation": { "path": "$.content" },
+          "fieldLocation": {
+            "path": "$.content"
+          },
           "fieldType": "TYPE_MARKDOWN",
           "displayName": "Content",
           "displayOrder": 2,
@@ -127,7 +160,9 @@
           "fieldName": "content"
         },
         {
-          "fieldLocation": { "path": "$.published" },
+          "fieldLocation": {
+            "path": "$.published"
+          },
           "fieldType": "TYPE_BOOL",
           "displayName": "Published",
           "displayOrder": 3,
@@ -136,7 +171,9 @@
           "fieldName": "published"
         },
         {
-          "fieldLocation": { "path": "$.authorId" },
+          "fieldLocation": {
+            "path": "$.authorId"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Author",
           "displayOrder": 4,
@@ -145,7 +182,9 @@
           "fieldName": "authorId"
         },
         {
-          "fieldLocation": { "path": "$.image" },
+          "fieldLocation": {
+            "path": "$.image"
+          },
           "fieldType": "TYPE_FILE",
           "displayName": "Image",
           "displayOrder": 5,
@@ -155,7 +194,9 @@
           "fieldName": "image"
         },
         {
-          "fieldLocation": { "path": "$.tags" },
+          "fieldLocation": {
+            "path": "$.tags"
+          },
           "fieldType": "TYPE_STRING",
           "repeated": true,
           "displayName": "Tags",
@@ -165,20 +206,31 @@
           "fieldName": "tags"
         },
         {
-          "fieldLocation": { "path": "$.categoryId" },
+          "fieldLocation": {
+            "path": "$.categoryId"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Category",
           "displayOrder": 7,
           "visible": true,
           "link": {
             "toolId": "get-category",
-            "data": [{ "key": "$.id", "path": { "path": "$.categoryId" } }]
+            "data": [
+              {
+                "key": "$.id",
+                "path": {
+                  "path": "$.categoryId"
+                }
+              }
+            ]
           },
           "modelName": "BlogPost",
           "fieldName": "categoryId"
         },
         {
-          "fieldLocation": { "path": "$.comments" },
+          "fieldLocation": {
+            "path": "$.comments"
+          },
           "fieldType": "TYPE_MODEL",
           "repeated": true,
           "displayName": "Comments",
@@ -187,14 +239,21 @@
           "link": {
             "toolId": "list-comments",
             "data": [
-              { "key": "$.where.parent.id.equals", "path": { "path": "$.id" } }
+              {
+                "key": "$.where.parent.id.equals",
+                "path": {
+                  "path": "$.id"
+                }
+              }
             ]
           },
           "modelName": "BlogPost",
           "fieldName": "comments"
         },
         {
-          "fieldLocation": { "path": "$.status" },
+          "fieldLocation": {
+            "path": "$.status"
+          },
           "fieldType": "TYPE_ENUM",
           "displayName": "Status",
           "displayOrder": 9,
@@ -204,7 +263,9 @@
           "fieldName": "status"
         },
         {
-          "fieldLocation": { "path": "$.id" },
+          "fieldLocation": {
+            "path": "$.id"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 13,
@@ -213,7 +274,9 @@
           "fieldName": "id"
         },
         {
-          "fieldLocation": { "path": "$.createdAt" },
+          "fieldLocation": {
+            "path": "$.createdAt"
+          },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 14,
@@ -222,7 +285,9 @@
           "fieldName": "createdAt"
         },
         {
-          "fieldLocation": { "path": "$.updatedAt" },
+          "fieldLocation": {
+            "path": "$.updatedAt"
+          },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 15,
@@ -231,13 +296,22 @@
           "fieldName": "updatedAt"
         }
       ],
-      "title": { "template": "Create post" },
+      "title": {
+        "template": "Create post"
+      },
       "entitySingle": "blog post",
       "entityPlural": "blog posts",
       "capabilities": {},
       "getEntryAction": {
         "toolId": "get-post",
-        "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
+        "data": [
+          {
+            "key": "$.id",
+            "path": {
+              "path": "$.id"
+            }
+          }
+        ]
       },
       "filterConfig": {}
     },
@@ -251,20 +325,33 @@
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
       "inputs": [
         {
-          "fieldLocation": { "path": "$.id" },
+          "fieldLocation": {
+            "path": "$.id"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "visible": true,
-          "lookupAction": { "toolId": "list-categories" },
+          "lookupAction": {
+            "toolId": "list-categories"
+          },
           "getEntryAction": {
             "toolId": "get-category",
-            "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
+            "data": [
+              {
+                "key": "$.id",
+                "path": {
+                  "path": "$.id"
+                }
+              }
+            ]
           },
           "modelName": "Category",
           "fieldName": "id"
         }
       ],
-      "title": { "template": "Delete category" },
+      "title": {
+        "template": "Delete category"
+      },
       "entitySingle": "category",
       "entityPlural": "categories",
       "capabilities": {},
@@ -280,26 +367,45 @@
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
       "inputs": [
         {
-          "fieldLocation": { "path": "$.id" },
+          "fieldLocation": {
+            "path": "$.id"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "visible": true,
-          "lookupAction": { "toolId": "list-posts" },
+          "lookupAction": {
+            "toolId": "list-posts"
+          },
           "getEntryAction": {
             "toolId": "get-post",
-            "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
+            "data": [
+              {
+                "key": "$.id",
+                "path": {
+                  "path": "$.id"
+                }
+              }
+            ]
           },
           "modelName": "BlogPost",
           "fieldName": "id"
         }
       ],
-      "title": { "template": "Delete post" },
+      "title": {
+        "template": "Delete post"
+      },
       "entitySingle": "blog post",
       "entityPlural": "blog posts",
       "capabilities": {},
       "relatedActions": [
-        { "toolId": "list-posts", "displayOrder": 1 },
-        { "toolId": "list-posts-embeds", "displayOrder": 2 }
+        {
+          "toolId": "list-posts",
+          "displayOrder": 1
+        },
+        {
+          "toolId": "list-posts-embeds",
+          "displayOrder": 2
+        }
       ],
       "filterConfig": {}
     },
@@ -313,18 +419,24 @@
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
       "inputs": [
         {
-          "fieldLocation": { "path": "$.id" },
+          "fieldLocation": {
+            "path": "$.id"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "visible": true,
-          "lookupAction": { "toolId": "list-categories" },
+          "lookupAction": {
+            "toolId": "list-categories"
+          },
           "modelName": "Category",
           "fieldName": "id"
         }
       ],
       "response": [
         {
-          "fieldLocation": { "path": "$.name" },
+          "fieldLocation": {
+            "path": "$.name"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Name",
           "visible": true,
@@ -332,7 +444,9 @@
           "fieldName": "name"
         },
         {
-          "fieldLocation": { "path": "$.id" },
+          "fieldLocation": {
+            "path": "$.id"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 2,
@@ -341,7 +455,9 @@
           "fieldName": "id"
         },
         {
-          "fieldLocation": { "path": "$.createdAt" },
+          "fieldLocation": {
+            "path": "$.createdAt"
+          },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 3,
@@ -350,7 +466,9 @@
           "fieldName": "createdAt"
         },
         {
-          "fieldLocation": { "path": "$.updatedAt" },
+          "fieldLocation": {
+            "path": "$.updatedAt"
+          },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 4,
@@ -359,18 +477,34 @@
           "fieldName": "updatedAt"
         }
       ],
-      "title": { "template": "{{$.name}}" },
+      "title": {
+        "template": "{{$.name}}"
+      },
       "entitySingle": "category",
       "entityPlural": "categories",
-      "capabilities": { "comments": true, "audit": true },
+      "capabilities": {
+        "comments": true,
+        "audit": true
+      },
       "entryActivityActions": [
         {
           "toolId": "delete-category",
-          "data": [{ "key": "$.id", "path": { "path": "$.id" } }],
-          "displayOrder": 1
+          "data": [
+            {
+              "key": "$.id",
+              "path": {
+                "path": "$.id"
+              }
+            }
+          ],
+          "displayOrder": 1,
+          "asDialog": true
         }
       ],
-      "displayLayout": { "type": "RECORD", "recordConfig": {} },
+      "displayLayout": {
+        "type": "RECORD",
+        "recordConfig": {}
+      },
       "filterConfig": {}
     },
     {
@@ -383,18 +517,24 @@
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
       "inputs": [
         {
-          "fieldLocation": { "path": "$.id" },
+          "fieldLocation": {
+            "path": "$.id"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "visible": true,
-          "lookupAction": { "toolId": "list-posts" },
+          "lookupAction": {
+            "toolId": "list-posts"
+          },
           "modelName": "BlogPost",
           "fieldName": "id"
         }
       ],
       "response": [
         {
-          "fieldLocation": { "path": "$.title" },
+          "fieldLocation": {
+            "path": "$.title"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Title",
           "visible": true,
@@ -402,7 +542,9 @@
           "fieldName": "title"
         },
         {
-          "fieldLocation": { "path": "$.description" },
+          "fieldLocation": {
+            "path": "$.description"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Description",
           "displayOrder": 1,
@@ -411,7 +553,9 @@
           "fieldName": "description"
         },
         {
-          "fieldLocation": { "path": "$.content" },
+          "fieldLocation": {
+            "path": "$.content"
+          },
           "fieldType": "TYPE_MARKDOWN",
           "displayName": "Content",
           "displayOrder": 2,
@@ -420,7 +564,9 @@
           "fieldName": "content"
         },
         {
-          "fieldLocation": { "path": "$.published" },
+          "fieldLocation": {
+            "path": "$.published"
+          },
           "fieldType": "TYPE_BOOL",
           "displayName": "Published",
           "displayOrder": 3,
@@ -429,7 +575,9 @@
           "fieldName": "published"
         },
         {
-          "fieldLocation": { "path": "$.authorId" },
+          "fieldLocation": {
+            "path": "$.authorId"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Author",
           "displayOrder": 4,
@@ -438,7 +586,9 @@
           "fieldName": "authorId"
         },
         {
-          "fieldLocation": { "path": "$.image" },
+          "fieldLocation": {
+            "path": "$.image"
+          },
           "fieldType": "TYPE_FILE",
           "displayName": "Image",
           "displayOrder": 5,
@@ -448,7 +598,9 @@
           "fieldName": "image"
         },
         {
-          "fieldLocation": { "path": "$.tags" },
+          "fieldLocation": {
+            "path": "$.tags"
+          },
           "fieldType": "TYPE_STRING",
           "repeated": true,
           "displayName": "Tags",
@@ -458,20 +610,31 @@
           "fieldName": "tags"
         },
         {
-          "fieldLocation": { "path": "$.categoryId" },
+          "fieldLocation": {
+            "path": "$.categoryId"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Category",
           "displayOrder": 7,
           "visible": true,
           "link": {
             "toolId": "get-category",
-            "data": [{ "key": "$.id", "path": { "path": "$.categoryId" } }]
+            "data": [
+              {
+                "key": "$.id",
+                "path": {
+                  "path": "$.categoryId"
+                }
+              }
+            ]
           },
           "modelName": "BlogPost",
           "fieldName": "categoryId"
         },
         {
-          "fieldLocation": { "path": "$.comments" },
+          "fieldLocation": {
+            "path": "$.comments"
+          },
           "fieldType": "TYPE_MODEL",
           "repeated": true,
           "displayName": "Comments",
@@ -480,14 +643,21 @@
           "link": {
             "toolId": "list-comments",
             "data": [
-              { "key": "$.where.parent.id.equals", "path": { "path": "$.id" } }
+              {
+                "key": "$.where.parent.id.equals",
+                "path": {
+                  "path": "$.id"
+                }
+              }
             ]
           },
           "modelName": "BlogPost",
           "fieldName": "comments"
         },
         {
-          "fieldLocation": { "path": "$.status" },
+          "fieldLocation": {
+            "path": "$.status"
+          },
           "fieldType": "TYPE_ENUM",
           "displayName": "Status",
           "displayOrder": 9,
@@ -497,7 +667,9 @@
           "fieldName": "status"
         },
         {
-          "fieldLocation": { "path": "$.id" },
+          "fieldLocation": {
+            "path": "$.id"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 13,
@@ -506,7 +678,9 @@
           "fieldName": "id"
         },
         {
-          "fieldLocation": { "path": "$.createdAt" },
+          "fieldLocation": {
+            "path": "$.createdAt"
+          },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 14,
@@ -515,7 +689,9 @@
           "fieldName": "createdAt"
         },
         {
-          "fieldLocation": { "path": "$.updatedAt" },
+          "fieldLocation": {
+            "path": "$.updatedAt"
+          },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 15,
@@ -524,27 +700,52 @@
           "fieldName": "updatedAt"
         }
       ],
-      "title": { "template": "{{$.title}}" },
+      "title": {
+        "template": "{{$.title}}"
+      },
       "entitySingle": "blog post",
       "entityPlural": "blog posts",
-      "capabilities": { "comments": true, "audit": true },
+      "capabilities": {
+        "comments": true,
+        "audit": true
+      },
       "entryActivityActions": [
         {
           "toolId": "update-post",
-          "data": [{ "key": "$.where.id", "path": { "path": "$.id" } }],
-          "displayOrder": 1
+          "data": [
+            {
+              "key": "$.where.id",
+              "path": {
+                "path": "$.id"
+              }
+            }
+          ],
+          "displayOrder": 1,
+          "asDialog": true
         },
         {
           "toolId": "delete-post",
-          "data": [{ "key": "$.id", "path": { "path": "$.id" } }],
-          "displayOrder": 2
+          "data": [
+            {
+              "key": "$.id",
+              "path": {
+                "path": "$.id"
+              }
+            }
+          ],
+          "displayOrder": 2,
+          "asDialog": true
         }
       ],
-      "createEntryAction": { "toolId": "create-post" },
+      "createEntryAction": {
+        "toolId": "create-post"
+      },
       "embeddedTools": [
         {
           "id": "comments",
-          "title": { "template": "Comments" },
+          "title": {
+            "template": "Comments"
+          },
           "displayOrder": 1,
           "tools": [
             {
@@ -553,20 +754,31 @@
                 "data": [
                   {
                     "key": "$.where.parent.id.equals",
-                    "path": { "path": "$.id" }
+                    "path": {
+                      "path": "$.id"
+                    }
                   }
                 ],
-                "title": { "template": "comments" }
+                "title": {
+                  "template": "comments"
+                }
               },
               "responseOverrides": [
-                { "fieldLocation": { "path": "$.results[*].parentId" } }
+                {
+                  "fieldLocation": {
+                    "path": "$.results[*].parentId"
+                  }
+                }
               ]
             }
           ],
           "visible": true
         }
       ],
-      "displayLayout": { "type": "RECORD", "recordConfig": {} },
+      "displayLayout": {
+        "type": "RECORD",
+        "recordConfig": {}
+      },
       "filterConfig": {}
     },
     {
@@ -579,14 +791,18 @@
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
       "inputs": [
         {
-          "fieldLocation": { "path": "$.where" },
+          "fieldLocation": {
+            "path": "$.where"
+          },
           "fieldType": "TYPE_MESSAGE",
           "displayName": "Where",
           "visible": true,
           "scope": "FILTERS"
         },
         {
-          "fieldLocation": { "path": "$.first" },
+          "fieldLocation": {
+            "path": "$.first"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "First",
           "displayOrder": 1,
@@ -594,7 +810,9 @@
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.after" },
+          "fieldLocation": {
+            "path": "$.after"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "After",
           "displayOrder": 2,
@@ -602,7 +820,9 @@
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.last" },
+          "fieldLocation": {
+            "path": "$.last"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "Last",
           "displayOrder": 3,
@@ -610,7 +830,9 @@
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.before" },
+          "fieldLocation": {
+            "path": "$.before"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Before",
           "displayOrder": 4,
@@ -618,7 +840,9 @@
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.limit" },
+          "fieldLocation": {
+            "path": "$.limit"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "Limit",
           "displayOrder": 5,
@@ -626,7 +850,9 @@
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.offset" },
+          "fieldLocation": {
+            "path": "$.offset"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "Offset",
           "displayOrder": 6,
@@ -636,49 +862,65 @@
       ],
       "response": [
         {
-          "fieldLocation": { "path": "$.pageInfo" },
+          "fieldLocation": {
+            "path": "$.pageInfo"
+          },
           "fieldType": "TYPE_OBJECT",
           "displayName": "PageInfo",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.pageInfo.count" },
+          "fieldLocation": {
+            "path": "$.pageInfo.count"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "Count",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.pageInfo.totalCount" },
+          "fieldLocation": {
+            "path": "$.pageInfo.totalCount"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "Total count",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.pageInfo.hasNextPage" },
+          "fieldLocation": {
+            "path": "$.pageInfo.hasNextPage"
+          },
           "fieldType": "TYPE_BOOL",
           "displayName": "Has next page",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.pageInfo.startCursor" },
+          "fieldLocation": {
+            "path": "$.pageInfo.startCursor"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Start cursor",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.pageInfo.endCursor" },
+          "fieldLocation": {
+            "path": "$.pageInfo.endCursor"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "End cursor",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.pageInfo.pageNumber" },
+          "fieldLocation": {
+            "path": "$.pageInfo.pageNumber"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "Page Number",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.results[*].name" },
+          "fieldLocation": {
+            "path": "$.results[*].name"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Name",
           "visible": true,
@@ -686,7 +928,9 @@
           "fieldName": "name"
         },
         {
-          "fieldLocation": { "path": "$.results[*].id" },
+          "fieldLocation": {
+            "path": "$.results[*].id"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 2,
@@ -695,7 +939,9 @@
           "fieldName": "id"
         },
         {
-          "fieldLocation": { "path": "$.results[*].createdAt" },
+          "fieldLocation": {
+            "path": "$.results[*].createdAt"
+          },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 3,
@@ -704,7 +950,9 @@
           "fieldName": "createdAt"
         },
         {
-          "fieldLocation": { "path": "$.results[*].updatedAt" },
+          "fieldLocation": {
+            "path": "$.results[*].updatedAt"
+          },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 4,
@@ -713,42 +961,77 @@
           "fieldName": "updatedAt"
         }
       ],
-      "title": { "template": "Categories" },
+      "title": {
+        "template": "Categories"
+      },
       "entitySingle": "category",
       "entityPlural": "categories",
       "capabilities": {},
       "pagination": {
         "start": {
           "requestInput": "after",
-          "responseField": { "path": "$.pageInfo.startCursor" }
+          "responseField": {
+            "path": "$.pageInfo.startCursor"
+          }
         },
         "end": {
           "requestInput": "before",
-          "responseField": { "path": "$.pageInfo.endCursor" }
+          "responseField": {
+            "path": "$.pageInfo.endCursor"
+          }
         },
         "pageSize": {
           "requestInput": "first",
-          "responseField": { "path": "$.pageInfo.count" },
+          "responseField": {
+            "path": "$.pageInfo.count"
+          },
           "defaultValue": 50
         },
-        "nextPage": { "path": "$.pageInfo.hasNextPage" },
-        "totalCount": { "path": "$.pageInfo.totalCount" }
+        "nextPage": {
+          "path": "$.pageInfo.hasNextPage"
+        },
+        "totalCount": {
+          "path": "$.pageInfo.totalCount"
+        }
       },
       "entryActivityActions": [
         {
           "toolId": "get-category",
-          "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }],
-          "displayOrder": 1
+          "data": [
+            {
+              "key": "$.id",
+              "path": {
+                "path": "$.results[*].id"
+              }
+            }
+          ],
+          "displayOrder": 1,
+          "asDialog": false
         },
         {
           "toolId": "delete-category",
-          "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }],
-          "displayOrder": 2
+          "data": [
+            {
+              "key": "$.id",
+              "path": {
+                "path": "$.results[*].id"
+              }
+            }
+          ],
+          "displayOrder": 2,
+          "asDialog": true
         }
       ],
       "getEntryAction": {
         "toolId": "get-category",
-        "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
+        "data": [
+          {
+            "key": "$.id",
+            "path": {
+              "path": "$.results[*].id"
+            }
+          }
+        ]
       },
       "filterConfig": {}
     },
@@ -762,28 +1045,36 @@
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
       "inputs": [
         {
-          "fieldLocation": { "path": "$.where" },
+          "fieldLocation": {
+            "path": "$.where"
+          },
           "fieldType": "TYPE_MESSAGE",
           "displayName": "Where",
           "visible": true,
           "scope": "FILTERS"
         },
         {
-          "fieldLocation": { "path": "$.where.parent" },
+          "fieldLocation": {
+            "path": "$.where.parent"
+          },
           "fieldType": "TYPE_MESSAGE",
           "displayName": "Parent",
           "visible": true,
           "scope": "FILTERS"
         },
         {
-          "fieldLocation": { "path": "$.where.parent.id" },
+          "fieldLocation": {
+            "path": "$.where.parent.id"
+          },
           "fieldType": "TYPE_MESSAGE",
           "displayName": "Id",
           "visible": true,
           "scope": "FILTERS"
         },
         {
-          "fieldLocation": { "path": "$.where.parent.id.equals" },
+          "fieldLocation": {
+            "path": "$.where.parent.id.equals"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Equals",
           "visible": true,
@@ -791,7 +1082,9 @@
           "scope": "FILTERS"
         },
         {
-          "fieldLocation": { "path": "$.where.parent.id.oneOf" },
+          "fieldLocation": {
+            "path": "$.where.parent.id.oneOf"
+          },
           "fieldType": "TYPE_ID",
           "repeated": true,
           "displayName": "One of",
@@ -801,7 +1094,9 @@
           "scope": "FILTERS"
         },
         {
-          "fieldLocation": { "path": "$.where.parent.id.notEquals" },
+          "fieldLocation": {
+            "path": "$.where.parent.id.notEquals"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Not equals",
           "displayOrder": 2,
@@ -810,7 +1105,9 @@
           "scope": "FILTERS"
         },
         {
-          "fieldLocation": { "path": "$.first" },
+          "fieldLocation": {
+            "path": "$.first"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "First",
           "displayOrder": 1,
@@ -818,7 +1115,9 @@
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.after" },
+          "fieldLocation": {
+            "path": "$.after"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "After",
           "displayOrder": 2,
@@ -826,7 +1125,9 @@
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.last" },
+          "fieldLocation": {
+            "path": "$.last"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "Last",
           "displayOrder": 3,
@@ -834,7 +1135,9 @@
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.before" },
+          "fieldLocation": {
+            "path": "$.before"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Before",
           "displayOrder": 4,
@@ -842,7 +1145,9 @@
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.limit" },
+          "fieldLocation": {
+            "path": "$.limit"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "Limit",
           "displayOrder": 5,
@@ -850,7 +1155,9 @@
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.offset" },
+          "fieldLocation": {
+            "path": "$.offset"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "Offset",
           "displayOrder": 6,
@@ -860,49 +1167,65 @@
       ],
       "response": [
         {
-          "fieldLocation": { "path": "$.pageInfo" },
+          "fieldLocation": {
+            "path": "$.pageInfo"
+          },
           "fieldType": "TYPE_OBJECT",
           "displayName": "PageInfo",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.pageInfo.count" },
+          "fieldLocation": {
+            "path": "$.pageInfo.count"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "Count",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.pageInfo.totalCount" },
+          "fieldLocation": {
+            "path": "$.pageInfo.totalCount"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "Total count",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.pageInfo.hasNextPage" },
+          "fieldLocation": {
+            "path": "$.pageInfo.hasNextPage"
+          },
           "fieldType": "TYPE_BOOL",
           "displayName": "Has next page",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.pageInfo.startCursor" },
+          "fieldLocation": {
+            "path": "$.pageInfo.startCursor"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Start cursor",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.pageInfo.endCursor" },
+          "fieldLocation": {
+            "path": "$.pageInfo.endCursor"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "End cursor",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.pageInfo.pageNumber" },
+          "fieldLocation": {
+            "path": "$.pageInfo.pageNumber"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "Page Number",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.results[*].authorId" },
+          "fieldLocation": {
+            "path": "$.results[*].authorId"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Author",
           "visible": true,
@@ -910,7 +1233,9 @@
           "fieldName": "authorId"
         },
         {
-          "fieldLocation": { "path": "$.results[*].parentId" },
+          "fieldLocation": {
+            "path": "$.results[*].parentId"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Parent",
           "displayOrder": 1,
@@ -918,14 +1243,21 @@
           "link": {
             "toolId": "get-post",
             "data": [
-              { "key": "$.id", "path": { "path": "$.results[*].parentId" } }
+              {
+                "key": "$.id",
+                "path": {
+                  "path": "$.results[*].parentId"
+                }
+              }
             ]
           },
           "modelName": "Comment",
           "fieldName": "parentId"
         },
         {
-          "fieldLocation": { "path": "$.results[*].content" },
+          "fieldLocation": {
+            "path": "$.results[*].content"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Content",
           "displayOrder": 2,
@@ -934,7 +1266,9 @@
           "fieldName": "content"
         },
         {
-          "fieldLocation": { "path": "$.results[*].id" },
+          "fieldLocation": {
+            "path": "$.results[*].id"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 6,
@@ -943,7 +1277,9 @@
           "fieldName": "id"
         },
         {
-          "fieldLocation": { "path": "$.results[*].createdAt" },
+          "fieldLocation": {
+            "path": "$.results[*].createdAt"
+          },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 7,
@@ -952,7 +1288,9 @@
           "fieldName": "createdAt"
         },
         {
-          "fieldLocation": { "path": "$.results[*].updatedAt" },
+          "fieldLocation": {
+            "path": "$.results[*].updatedAt"
+          },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 8,
@@ -961,26 +1299,38 @@
           "fieldName": "updatedAt"
         }
       ],
-      "title": { "template": "Comments" },
+      "title": {
+        "template": "Comments"
+      },
       "entitySingle": "comment",
       "entityPlural": "comments",
       "capabilities": {},
       "pagination": {
         "start": {
           "requestInput": "after",
-          "responseField": { "path": "$.pageInfo.startCursor" }
+          "responseField": {
+            "path": "$.pageInfo.startCursor"
+          }
         },
         "end": {
           "requestInput": "before",
-          "responseField": { "path": "$.pageInfo.endCursor" }
+          "responseField": {
+            "path": "$.pageInfo.endCursor"
+          }
         },
         "pageSize": {
           "requestInput": "first",
-          "responseField": { "path": "$.pageInfo.count" },
+          "responseField": {
+            "path": "$.pageInfo.count"
+          },
           "defaultValue": 50
         },
-        "nextPage": { "path": "$.pageInfo.hasNextPage" },
-        "totalCount": { "path": "$.pageInfo.totalCount" }
+        "nextPage": {
+          "path": "$.pageInfo.hasNextPage"
+        },
+        "totalCount": {
+          "path": "$.pageInfo.totalCount"
+        }
       },
       "filterConfig": {}
     },
@@ -994,14 +1344,18 @@
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
       "inputs": [
         {
-          "fieldLocation": { "path": "$.where" },
+          "fieldLocation": {
+            "path": "$.where"
+          },
           "fieldType": "TYPE_MESSAGE",
           "displayName": "Where",
           "visible": true,
           "scope": "FILTERS"
         },
         {
-          "fieldLocation": { "path": "$.first" },
+          "fieldLocation": {
+            "path": "$.first"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "First",
           "displayOrder": 1,
@@ -1009,7 +1363,9 @@
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.after" },
+          "fieldLocation": {
+            "path": "$.after"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "After",
           "displayOrder": 2,
@@ -1017,7 +1373,9 @@
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.last" },
+          "fieldLocation": {
+            "path": "$.last"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "Last",
           "displayOrder": 3,
@@ -1025,7 +1383,9 @@
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.before" },
+          "fieldLocation": {
+            "path": "$.before"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Before",
           "displayOrder": 4,
@@ -1033,7 +1393,9 @@
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.limit" },
+          "fieldLocation": {
+            "path": "$.limit"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "Limit",
           "displayOrder": 5,
@@ -1041,7 +1403,9 @@
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.offset" },
+          "fieldLocation": {
+            "path": "$.offset"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "Offset",
           "displayOrder": 6,
@@ -1049,7 +1413,9 @@
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.orderBy" },
+          "fieldLocation": {
+            "path": "$.orderBy"
+          },
           "fieldType": "TYPE_UNION",
           "repeated": true,
           "displayName": "Order by",
@@ -1060,49 +1426,65 @@
       ],
       "response": [
         {
-          "fieldLocation": { "path": "$.pageInfo" },
+          "fieldLocation": {
+            "path": "$.pageInfo"
+          },
           "fieldType": "TYPE_OBJECT",
           "displayName": "PageInfo",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.pageInfo.count" },
+          "fieldLocation": {
+            "path": "$.pageInfo.count"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "Count",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.pageInfo.totalCount" },
+          "fieldLocation": {
+            "path": "$.pageInfo.totalCount"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "Total count",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.pageInfo.hasNextPage" },
+          "fieldLocation": {
+            "path": "$.pageInfo.hasNextPage"
+          },
           "fieldType": "TYPE_BOOL",
           "displayName": "Has next page",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.pageInfo.startCursor" },
+          "fieldLocation": {
+            "path": "$.pageInfo.startCursor"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Start cursor",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.pageInfo.endCursor" },
+          "fieldLocation": {
+            "path": "$.pageInfo.endCursor"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "End cursor",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.pageInfo.pageNumber" },
+          "fieldLocation": {
+            "path": "$.pageInfo.pageNumber"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "Page Number",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.results[*].title" },
+          "fieldLocation": {
+            "path": "$.results[*].title"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Title",
           "visible": true,
@@ -1111,7 +1493,9 @@
           "fieldName": "title"
         },
         {
-          "fieldLocation": { "path": "$.results[*].description" },
+          "fieldLocation": {
+            "path": "$.results[*].description"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Description",
           "displayOrder": 1,
@@ -1120,7 +1504,9 @@
           "fieldName": "description"
         },
         {
-          "fieldLocation": { "path": "$.results[*].content" },
+          "fieldLocation": {
+            "path": "$.results[*].content"
+          },
           "fieldType": "TYPE_MARKDOWN",
           "displayName": "Content",
           "displayOrder": 2,
@@ -1129,7 +1515,9 @@
           "fieldName": "content"
         },
         {
-          "fieldLocation": { "path": "$.results[*].published" },
+          "fieldLocation": {
+            "path": "$.results[*].published"
+          },
           "fieldType": "TYPE_BOOL",
           "displayName": "Published",
           "displayOrder": 3,
@@ -1138,7 +1526,9 @@
           "fieldName": "published"
         },
         {
-          "fieldLocation": { "path": "$.results[*].authorId" },
+          "fieldLocation": {
+            "path": "$.results[*].authorId"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Author",
           "displayOrder": 4,
@@ -1147,7 +1537,9 @@
           "fieldName": "authorId"
         },
         {
-          "fieldLocation": { "path": "$.results[*].image" },
+          "fieldLocation": {
+            "path": "$.results[*].image"
+          },
           "fieldType": "TYPE_FILE",
           "displayName": "Image",
           "displayOrder": 5,
@@ -1157,7 +1549,9 @@
           "fieldName": "image"
         },
         {
-          "fieldLocation": { "path": "$.results[*].tags" },
+          "fieldLocation": {
+            "path": "$.results[*].tags"
+          },
           "fieldType": "TYPE_STRING",
           "repeated": true,
           "displayName": "Tags",
@@ -1167,7 +1561,9 @@
           "fieldName": "tags"
         },
         {
-          "fieldLocation": { "path": "$.results[*].categoryId" },
+          "fieldLocation": {
+            "path": "$.results[*].categoryId"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Category",
           "displayOrder": 7,
@@ -1175,14 +1571,21 @@
           "link": {
             "toolId": "get-category",
             "data": [
-              { "key": "$.id", "path": { "path": "$.results[*].categoryId" } }
+              {
+                "key": "$.id",
+                "path": {
+                  "path": "$.results[*].categoryId"
+                }
+              }
             ]
           },
           "modelName": "BlogPost",
           "fieldName": "categoryId"
         },
         {
-          "fieldLocation": { "path": "$.results[*].comments" },
+          "fieldLocation": {
+            "path": "$.results[*].comments"
+          },
           "fieldType": "TYPE_MODEL",
           "repeated": true,
           "displayName": "Comments",
@@ -1193,7 +1596,9 @@
             "data": [
               {
                 "key": "$.where.parent.id.equals",
-                "path": { "path": "$.results[*].id" }
+                "path": {
+                  "path": "$.results[*].id"
+                }
               }
             ]
           },
@@ -1201,7 +1606,9 @@
           "fieldName": "comments"
         },
         {
-          "fieldLocation": { "path": "$.results[*].status" },
+          "fieldLocation": {
+            "path": "$.results[*].status"
+          },
           "fieldType": "TYPE_ENUM",
           "displayName": "Status",
           "displayOrder": 9,
@@ -1211,7 +1618,9 @@
           "fieldName": "status"
         },
         {
-          "fieldLocation": { "path": "$.results[*].id" },
+          "fieldLocation": {
+            "path": "$.results[*].id"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 13,
@@ -1220,7 +1629,9 @@
           "fieldName": "id"
         },
         {
-          "fieldLocation": { "path": "$.results[*].createdAt" },
+          "fieldLocation": {
+            "path": "$.results[*].createdAt"
+          },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 14,
@@ -1229,7 +1640,9 @@
           "fieldName": "createdAt"
         },
         {
-          "fieldLocation": { "path": "$.results[*].updatedAt" },
+          "fieldLocation": {
+            "path": "$.results[*].updatedAt"
+          },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 15,
@@ -1238,52 +1651,100 @@
           "fieldName": "updatedAt"
         }
       ],
-      "title": { "template": "Posts" },
+      "title": {
+        "template": "Posts"
+      },
       "entitySingle": "blog post",
       "entityPlural": "blog posts",
       "capabilities": {},
-      "relatedActions": [{ "toolId": "list-posts-embeds", "displayOrder": 1 }],
+      "relatedActions": [
+        {
+          "toolId": "list-posts-embeds",
+          "displayOrder": 1
+        }
+      ],
       "pagination": {
         "start": {
           "requestInput": "after",
-          "responseField": { "path": "$.pageInfo.startCursor" }
+          "responseField": {
+            "path": "$.pageInfo.startCursor"
+          }
         },
         "end": {
           "requestInput": "before",
-          "responseField": { "path": "$.pageInfo.endCursor" }
+          "responseField": {
+            "path": "$.pageInfo.endCursor"
+          }
         },
         "pageSize": {
           "requestInput": "first",
-          "responseField": { "path": "$.pageInfo.count" },
+          "responseField": {
+            "path": "$.pageInfo.count"
+          },
           "defaultValue": 50
         },
-        "nextPage": { "path": "$.pageInfo.hasNextPage" },
-        "totalCount": { "path": "$.pageInfo.totalCount" }
+        "nextPage": {
+          "path": "$.pageInfo.hasNextPage"
+        },
+        "totalCount": {
+          "path": "$.pageInfo.totalCount"
+        }
       },
       "entryActivityActions": [
         {
           "toolId": "get-post",
-          "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }],
-          "displayOrder": 1
+          "data": [
+            {
+              "key": "$.id",
+              "path": {
+                "path": "$.results[*].id"
+              }
+            }
+          ],
+          "displayOrder": 1,
+          "asDialog": false
         },
         {
           "toolId": "update-post",
           "data": [
-            { "key": "$.where.id", "path": { "path": "$.results[*].id" } }
+            {
+              "key": "$.where.id",
+              "path": {
+                "path": "$.results[*].id"
+              }
+            }
           ],
-          "displayOrder": 2
+          "displayOrder": 2,
+          "asDialog": true
         },
         {
           "toolId": "delete-post",
-          "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }],
-          "displayOrder": 3
+          "data": [
+            {
+              "key": "$.id",
+              "path": {
+                "path": "$.results[*].id"
+              }
+            }
+          ],
+          "displayOrder": 3,
+          "asDialog": true
         }
       ],
       "getEntryAction": {
         "toolId": "get-post",
-        "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
+        "data": [
+          {
+            "key": "$.id",
+            "path": {
+              "path": "$.results[*].id"
+            }
+          }
+        ]
       },
-      "createEntryAction": { "toolId": "create-post" },
+      "createEntryAction": {
+        "toolId": "create-post"
+      },
       "filterConfig": {}
     },
     {
@@ -1296,14 +1757,18 @@
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
       "inputs": [
         {
-          "fieldLocation": { "path": "$.where" },
+          "fieldLocation": {
+            "path": "$.where"
+          },
           "fieldType": "TYPE_MESSAGE",
           "displayName": "Where",
           "visible": true,
           "scope": "FILTERS"
         },
         {
-          "fieldLocation": { "path": "$.first" },
+          "fieldLocation": {
+            "path": "$.first"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "First",
           "displayOrder": 1,
@@ -1311,7 +1776,9 @@
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.after" },
+          "fieldLocation": {
+            "path": "$.after"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "After",
           "displayOrder": 2,
@@ -1319,7 +1786,9 @@
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.last" },
+          "fieldLocation": {
+            "path": "$.last"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "Last",
           "displayOrder": 3,
@@ -1327,7 +1796,9 @@
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.before" },
+          "fieldLocation": {
+            "path": "$.before"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Before",
           "displayOrder": 4,
@@ -1335,7 +1806,9 @@
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.limit" },
+          "fieldLocation": {
+            "path": "$.limit"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "Limit",
           "displayOrder": 5,
@@ -1343,7 +1816,9 @@
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.offset" },
+          "fieldLocation": {
+            "path": "$.offset"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "Offset",
           "displayOrder": 6,
@@ -1353,49 +1828,65 @@
       ],
       "response": [
         {
-          "fieldLocation": { "path": "$.pageInfo" },
+          "fieldLocation": {
+            "path": "$.pageInfo"
+          },
           "fieldType": "TYPE_OBJECT",
           "displayName": "PageInfo",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.pageInfo.count" },
+          "fieldLocation": {
+            "path": "$.pageInfo.count"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "Count",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.pageInfo.totalCount" },
+          "fieldLocation": {
+            "path": "$.pageInfo.totalCount"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "Total count",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.pageInfo.hasNextPage" },
+          "fieldLocation": {
+            "path": "$.pageInfo.hasNextPage"
+          },
           "fieldType": "TYPE_BOOL",
           "displayName": "Has next page",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.pageInfo.startCursor" },
+          "fieldLocation": {
+            "path": "$.pageInfo.startCursor"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Start cursor",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.pageInfo.endCursor" },
+          "fieldLocation": {
+            "path": "$.pageInfo.endCursor"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "End cursor",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.pageInfo.pageNumber" },
+          "fieldLocation": {
+            "path": "$.pageInfo.pageNumber"
+          },
           "fieldType": "TYPE_INT",
           "displayName": "Page Number",
           "scope": "PAGINATION"
         },
         {
-          "fieldLocation": { "path": "$.results[*].title" },
+          "fieldLocation": {
+            "path": "$.results[*].title"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Title",
           "visible": true,
@@ -1403,7 +1894,9 @@
           "fieldName": "title"
         },
         {
-          "fieldLocation": { "path": "$.results[*].description" },
+          "fieldLocation": {
+            "path": "$.results[*].description"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Description",
           "displayOrder": 1,
@@ -1412,7 +1905,9 @@
           "fieldName": "description"
         },
         {
-          "fieldLocation": { "path": "$.results[*].content" },
+          "fieldLocation": {
+            "path": "$.results[*].content"
+          },
           "fieldType": "TYPE_MARKDOWN",
           "displayName": "Content",
           "displayOrder": 2,
@@ -1421,7 +1916,9 @@
           "fieldName": "content"
         },
         {
-          "fieldLocation": { "path": "$.results[*].published" },
+          "fieldLocation": {
+            "path": "$.results[*].published"
+          },
           "fieldType": "TYPE_BOOL",
           "displayName": "Published",
           "displayOrder": 3,
@@ -1430,7 +1927,9 @@
           "fieldName": "published"
         },
         {
-          "fieldLocation": { "path": "$.results[*].author.email" },
+          "fieldLocation": {
+            "path": "$.results[*].author.email"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Email",
           "visible": true,
@@ -1438,7 +1937,9 @@
           "fieldName": "email"
         },
         {
-          "fieldLocation": { "path": "$.results[*].author.emailVerified" },
+          "fieldLocation": {
+            "path": "$.results[*].author.emailVerified"
+          },
           "fieldType": "TYPE_BOOL",
           "displayName": "Email verified",
           "displayOrder": 1,
@@ -1447,7 +1948,9 @@
           "fieldName": "emailVerified"
         },
         {
-          "fieldLocation": { "path": "$.results[*].author.password" },
+          "fieldLocation": {
+            "path": "$.results[*].author.password"
+          },
           "fieldType": "TYPE_PASSWORD",
           "displayName": "Password",
           "displayOrder": 2,
@@ -1456,7 +1959,9 @@
           "fieldName": "password"
         },
         {
-          "fieldLocation": { "path": "$.results[*].author.externalId" },
+          "fieldLocation": {
+            "path": "$.results[*].author.externalId"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "External id",
           "displayOrder": 3,
@@ -1465,7 +1970,9 @@
           "fieldName": "externalId"
         },
         {
-          "fieldLocation": { "path": "$.results[*].author.issuer" },
+          "fieldLocation": {
+            "path": "$.results[*].author.issuer"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Issuer",
           "displayOrder": 4,
@@ -1474,7 +1981,9 @@
           "fieldName": "issuer"
         },
         {
-          "fieldLocation": { "path": "$.results[*].author.name" },
+          "fieldLocation": {
+            "path": "$.results[*].author.name"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Name",
           "displayOrder": 5,
@@ -1483,7 +1992,9 @@
           "fieldName": "name"
         },
         {
-          "fieldLocation": { "path": "$.results[*].author.givenName" },
+          "fieldLocation": {
+            "path": "$.results[*].author.givenName"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Given name",
           "displayOrder": 6,
@@ -1492,7 +2003,9 @@
           "fieldName": "givenName"
         },
         {
-          "fieldLocation": { "path": "$.results[*].author.familyName" },
+          "fieldLocation": {
+            "path": "$.results[*].author.familyName"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Family name",
           "displayOrder": 7,
@@ -1501,7 +2014,9 @@
           "fieldName": "familyName"
         },
         {
-          "fieldLocation": { "path": "$.results[*].author.middleName" },
+          "fieldLocation": {
+            "path": "$.results[*].author.middleName"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Middle name",
           "displayOrder": 8,
@@ -1510,7 +2025,9 @@
           "fieldName": "middleName"
         },
         {
-          "fieldLocation": { "path": "$.results[*].author.nickName" },
+          "fieldLocation": {
+            "path": "$.results[*].author.nickName"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Nick name",
           "displayOrder": 9,
@@ -1519,7 +2036,9 @@
           "fieldName": "nickName"
         },
         {
-          "fieldLocation": { "path": "$.results[*].author.profile" },
+          "fieldLocation": {
+            "path": "$.results[*].author.profile"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Profile",
           "displayOrder": 10,
@@ -1528,7 +2047,9 @@
           "fieldName": "profile"
         },
         {
-          "fieldLocation": { "path": "$.results[*].author.picture" },
+          "fieldLocation": {
+            "path": "$.results[*].author.picture"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Picture",
           "displayOrder": 11,
@@ -1537,7 +2058,9 @@
           "fieldName": "picture"
         },
         {
-          "fieldLocation": { "path": "$.results[*].author.website" },
+          "fieldLocation": {
+            "path": "$.results[*].author.website"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Website",
           "displayOrder": 12,
@@ -1546,7 +2069,9 @@
           "fieldName": "website"
         },
         {
-          "fieldLocation": { "path": "$.results[*].author.gender" },
+          "fieldLocation": {
+            "path": "$.results[*].author.gender"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Gender",
           "displayOrder": 13,
@@ -1555,7 +2080,9 @@
           "fieldName": "gender"
         },
         {
-          "fieldLocation": { "path": "$.results[*].author.zoneInfo" },
+          "fieldLocation": {
+            "path": "$.results[*].author.zoneInfo"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Zone info",
           "displayOrder": 14,
@@ -1564,7 +2091,9 @@
           "fieldName": "zoneInfo"
         },
         {
-          "fieldLocation": { "path": "$.results[*].author.locale" },
+          "fieldLocation": {
+            "path": "$.results[*].author.locale"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Locale",
           "displayOrder": 15,
@@ -1573,7 +2102,9 @@
           "fieldName": "locale"
         },
         {
-          "fieldLocation": { "path": "$.results[*].author.id" },
+          "fieldLocation": {
+            "path": "$.results[*].author.id"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 17,
@@ -1582,7 +2113,9 @@
           "fieldName": "id"
         },
         {
-          "fieldLocation": { "path": "$.results[*].author.createdAt" },
+          "fieldLocation": {
+            "path": "$.results[*].author.createdAt"
+          },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 18,
@@ -1591,7 +2124,9 @@
           "fieldName": "createdAt"
         },
         {
-          "fieldLocation": { "path": "$.results[*].author.updatedAt" },
+          "fieldLocation": {
+            "path": "$.results[*].author.updatedAt"
+          },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 19,
@@ -1600,7 +2135,9 @@
           "fieldName": "updatedAt"
         },
         {
-          "fieldLocation": { "path": "$.results[*].authorId" },
+          "fieldLocation": {
+            "path": "$.results[*].authorId"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Author",
           "displayOrder": 4,
@@ -1609,7 +2146,9 @@
           "fieldName": "authorId"
         },
         {
-          "fieldLocation": { "path": "$.results[*].image" },
+          "fieldLocation": {
+            "path": "$.results[*].image"
+          },
           "fieldType": "TYPE_FILE",
           "displayName": "Image",
           "displayOrder": 5,
@@ -1619,7 +2158,9 @@
           "fieldName": "image"
         },
         {
-          "fieldLocation": { "path": "$.results[*].tags" },
+          "fieldLocation": {
+            "path": "$.results[*].tags"
+          },
           "fieldType": "TYPE_STRING",
           "repeated": true,
           "displayName": "Tags",
@@ -1629,7 +2170,9 @@
           "fieldName": "tags"
         },
         {
-          "fieldLocation": { "path": "$.results[*].category.name" },
+          "fieldLocation": {
+            "path": "$.results[*].category.name"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Name",
           "visible": true,
@@ -1637,7 +2180,9 @@
           "fieldName": "name"
         },
         {
-          "fieldLocation": { "path": "$.results[*].category.id" },
+          "fieldLocation": {
+            "path": "$.results[*].category.id"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 2,
@@ -1646,7 +2191,9 @@
           "fieldName": "id"
         },
         {
-          "fieldLocation": { "path": "$.results[*].category.createdAt" },
+          "fieldLocation": {
+            "path": "$.results[*].category.createdAt"
+          },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 3,
@@ -1655,7 +2202,9 @@
           "fieldName": "createdAt"
         },
         {
-          "fieldLocation": { "path": "$.results[*].category.updatedAt" },
+          "fieldLocation": {
+            "path": "$.results[*].category.updatedAt"
+          },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 4,
@@ -1664,7 +2213,9 @@
           "fieldName": "updatedAt"
         },
         {
-          "fieldLocation": { "path": "$.results[*].categoryId" },
+          "fieldLocation": {
+            "path": "$.results[*].categoryId"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Category",
           "displayOrder": 7,
@@ -1672,14 +2223,21 @@
           "link": {
             "toolId": "get-category",
             "data": [
-              { "key": "$.id", "path": { "path": "$.results[*].categoryId" } }
+              {
+                "key": "$.id",
+                "path": {
+                  "path": "$.results[*].categoryId"
+                }
+              }
             ]
           },
           "modelName": "BlogPost",
           "fieldName": "categoryId"
         },
         {
-          "fieldLocation": { "path": "$.results[*].comments" },
+          "fieldLocation": {
+            "path": "$.results[*].comments"
+          },
           "fieldType": "TYPE_MODEL",
           "repeated": true,
           "displayName": "Comments",
@@ -1690,7 +2248,9 @@
             "data": [
               {
                 "key": "$.where.parent.id.equals",
-                "path": { "path": "$.results[*].id" }
+                "path": {
+                  "path": "$.results[*].id"
+                }
               }
             ]
           },
@@ -1698,7 +2258,9 @@
           "fieldName": "comments"
         },
         {
-          "fieldLocation": { "path": "$.results[*].status" },
+          "fieldLocation": {
+            "path": "$.results[*].status"
+          },
           "fieldType": "TYPE_ENUM",
           "displayName": "Status",
           "displayOrder": 9,
@@ -1708,7 +2270,9 @@
           "fieldName": "status"
         },
         {
-          "fieldLocation": { "path": "$.results[*].id" },
+          "fieldLocation": {
+            "path": "$.results[*].id"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 13,
@@ -1717,7 +2281,9 @@
           "fieldName": "id"
         },
         {
-          "fieldLocation": { "path": "$.results[*].createdAt" },
+          "fieldLocation": {
+            "path": "$.results[*].createdAt"
+          },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 14,
@@ -1726,7 +2292,9 @@
           "fieldName": "createdAt"
         },
         {
-          "fieldLocation": { "path": "$.results[*].updatedAt" },
+          "fieldLocation": {
+            "path": "$.results[*].updatedAt"
+          },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 15,
@@ -1735,52 +2303,100 @@
           "fieldName": "updatedAt"
         }
       ],
-      "title": { "template": "Posts embeds" },
+      "title": {
+        "template": "Posts embeds"
+      },
       "entitySingle": "blog post",
       "entityPlural": "blog posts",
       "capabilities": {},
-      "relatedActions": [{ "toolId": "list-posts", "displayOrder": 1 }],
+      "relatedActions": [
+        {
+          "toolId": "list-posts",
+          "displayOrder": 1
+        }
+      ],
       "pagination": {
         "start": {
           "requestInput": "after",
-          "responseField": { "path": "$.pageInfo.startCursor" }
+          "responseField": {
+            "path": "$.pageInfo.startCursor"
+          }
         },
         "end": {
           "requestInput": "before",
-          "responseField": { "path": "$.pageInfo.endCursor" }
+          "responseField": {
+            "path": "$.pageInfo.endCursor"
+          }
         },
         "pageSize": {
           "requestInput": "first",
-          "responseField": { "path": "$.pageInfo.count" },
+          "responseField": {
+            "path": "$.pageInfo.count"
+          },
           "defaultValue": 50
         },
-        "nextPage": { "path": "$.pageInfo.hasNextPage" },
-        "totalCount": { "path": "$.pageInfo.totalCount" }
+        "nextPage": {
+          "path": "$.pageInfo.hasNextPage"
+        },
+        "totalCount": {
+          "path": "$.pageInfo.totalCount"
+        }
       },
       "entryActivityActions": [
         {
           "toolId": "get-post",
-          "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }],
-          "displayOrder": 1
+          "data": [
+            {
+              "key": "$.id",
+              "path": {
+                "path": "$.results[*].id"
+              }
+            }
+          ],
+          "displayOrder": 1,
+          "asDialog": false
         },
         {
           "toolId": "update-post",
           "data": [
-            { "key": "$.where.id", "path": { "path": "$.results[*].id" } }
+            {
+              "key": "$.where.id",
+              "path": {
+                "path": "$.results[*].id"
+              }
+            }
           ],
-          "displayOrder": 2
+          "displayOrder": 2,
+          "asDialog": true
         },
         {
           "toolId": "delete-post",
-          "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }],
-          "displayOrder": 3
+          "data": [
+            {
+              "key": "$.id",
+              "path": {
+                "path": "$.results[*].id"
+              }
+            }
+          ],
+          "displayOrder": 3,
+          "asDialog": true
         }
       ],
       "getEntryAction": {
         "toolId": "get-post",
-        "data": [{ "key": "$.id", "path": { "path": "$.results[*].id" } }]
+        "data": [
+          {
+            "key": "$.id",
+            "path": {
+              "path": "$.results[*].id"
+            }
+          }
+        ]
       },
-      "createEntryAction": { "toolId": "create-post" },
+      "createEntryAction": {
+        "toolId": "create-post"
+      },
       "filterConfig": {}
     },
     {
@@ -1793,20 +2409,26 @@
       "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
       "inputs": [
         {
-          "fieldLocation": { "path": "$.email" },
+          "fieldLocation": {
+            "path": "$.email"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Email",
           "visible": true
         },
         {
-          "fieldLocation": { "path": "$.redirectUrl" },
+          "fieldLocation": {
+            "path": "$.redirectUrl"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Redirect url",
           "displayOrder": 1,
           "visible": true
         }
       ],
-      "title": { "template": "Request password reset" },
+      "title": {
+        "template": "Request password reset"
+      },
       "entitySingle": "identity",
       "entityPlural": "identities",
       "capabilities": {},
@@ -1822,20 +2444,26 @@
       "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
       "inputs": [
         {
-          "fieldLocation": { "path": "$.token" },
+          "fieldLocation": {
+            "path": "$.token"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Token",
           "visible": true
         },
         {
-          "fieldLocation": { "path": "$.password" },
+          "fieldLocation": {
+            "path": "$.password"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Password",
           "displayOrder": 1,
           "visible": true
         }
       ],
-      "title": { "template": "Reset password" },
+      "title": {
+        "template": "Reset password"
+      },
       "entitySingle": "identity",
       "entityPlural": "identities",
       "capabilities": {},
@@ -1851,31 +2479,41 @@
       "implementation": "ACTION_IMPLEMENTATION_AUTO",
       "inputs": [
         {
-          "fieldLocation": { "path": "$.where" },
+          "fieldLocation": {
+            "path": "$.where"
+          },
           "fieldType": "TYPE_MESSAGE",
           "displayName": "Where",
           "visible": true,
           "scope": "FILTERS"
         },
         {
-          "fieldLocation": { "path": "$.where.id" },
+          "fieldLocation": {
+            "path": "$.where.id"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "visible": true,
-          "lookupAction": { "toolId": "list-posts" },
+          "lookupAction": {
+            "toolId": "list-posts"
+          },
           "modelName": "BlogPost",
           "fieldName": "id",
           "scope": "FILTERS"
         },
         {
-          "fieldLocation": { "path": "$.values" },
+          "fieldLocation": {
+            "path": "$.values"
+          },
           "fieldType": "TYPE_MESSAGE",
           "displayName": "Values",
           "displayOrder": 1,
           "visible": true
         },
         {
-          "fieldLocation": { "path": "$.values.title" },
+          "fieldLocation": {
+            "path": "$.values.title"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Title",
           "visible": true,
@@ -1883,7 +2521,9 @@
           "fieldName": "title"
         },
         {
-          "fieldLocation": { "path": "$.values.description" },
+          "fieldLocation": {
+            "path": "$.values.description"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Description",
           "displayOrder": 1,
@@ -1892,7 +2532,9 @@
           "fieldName": "description"
         },
         {
-          "fieldLocation": { "path": "$.values.content" },
+          "fieldLocation": {
+            "path": "$.values.content"
+          },
           "fieldType": "TYPE_MARKDOWN",
           "displayName": "Content",
           "displayOrder": 2,
@@ -1901,7 +2543,9 @@
           "fieldName": "content"
         },
         {
-          "fieldLocation": { "path": "$.values.tags" },
+          "fieldLocation": {
+            "path": "$.values.tags"
+          },
           "fieldType": "TYPE_STRING",
           "repeated": true,
           "displayName": "Tags",
@@ -1911,7 +2555,9 @@
           "fieldName": "tags"
         },
         {
-          "fieldLocation": { "path": "$.values.image" },
+          "fieldLocation": {
+            "path": "$.values.image"
+          },
           "fieldType": "TYPE_FILE",
           "displayName": "Image",
           "displayOrder": 4,
@@ -1920,22 +2566,33 @@
           "fieldName": "image"
         },
         {
-          "fieldLocation": { "path": "$.values.category" },
+          "fieldLocation": {
+            "path": "$.values.category"
+          },
           "fieldType": "TYPE_MESSAGE",
           "displayName": "Category",
           "displayOrder": 5,
           "visible": true
         },
         {
-          "fieldLocation": { "path": "$.values.category.id" },
+          "fieldLocation": {
+            "path": "$.values.category.id"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "visible": true,
-          "lookupAction": { "toolId": "list-categories" },
+          "lookupAction": {
+            "toolId": "list-categories"
+          },
           "getEntryAction": {
             "toolId": "get-category",
             "data": [
-              { "key": "$.id", "path": { "path": "$.values.category.id" } }
+              {
+                "key": "$.id",
+                "path": {
+                  "path": "$.values.category.id"
+                }
+              }
             ]
           },
           "modelName": "Category",
@@ -1944,7 +2601,9 @@
       ],
       "response": [
         {
-          "fieldLocation": { "path": "$.title" },
+          "fieldLocation": {
+            "path": "$.title"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Title",
           "visible": true,
@@ -1952,7 +2611,9 @@
           "fieldName": "title"
         },
         {
-          "fieldLocation": { "path": "$.description" },
+          "fieldLocation": {
+            "path": "$.description"
+          },
           "fieldType": "TYPE_STRING",
           "displayName": "Description",
           "displayOrder": 1,
@@ -1961,7 +2622,9 @@
           "fieldName": "description"
         },
         {
-          "fieldLocation": { "path": "$.content" },
+          "fieldLocation": {
+            "path": "$.content"
+          },
           "fieldType": "TYPE_MARKDOWN",
           "displayName": "Content",
           "displayOrder": 2,
@@ -1970,7 +2633,9 @@
           "fieldName": "content"
         },
         {
-          "fieldLocation": { "path": "$.published" },
+          "fieldLocation": {
+            "path": "$.published"
+          },
           "fieldType": "TYPE_BOOL",
           "displayName": "Published",
           "displayOrder": 3,
@@ -1979,7 +2644,9 @@
           "fieldName": "published"
         },
         {
-          "fieldLocation": { "path": "$.authorId" },
+          "fieldLocation": {
+            "path": "$.authorId"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Author",
           "displayOrder": 4,
@@ -1988,7 +2655,9 @@
           "fieldName": "authorId"
         },
         {
-          "fieldLocation": { "path": "$.image" },
+          "fieldLocation": {
+            "path": "$.image"
+          },
           "fieldType": "TYPE_FILE",
           "displayName": "Image",
           "displayOrder": 5,
@@ -1998,7 +2667,9 @@
           "fieldName": "image"
         },
         {
-          "fieldLocation": { "path": "$.tags" },
+          "fieldLocation": {
+            "path": "$.tags"
+          },
           "fieldType": "TYPE_STRING",
           "repeated": true,
           "displayName": "Tags",
@@ -2008,20 +2679,31 @@
           "fieldName": "tags"
         },
         {
-          "fieldLocation": { "path": "$.categoryId" },
+          "fieldLocation": {
+            "path": "$.categoryId"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Category",
           "displayOrder": 7,
           "visible": true,
           "link": {
             "toolId": "get-category",
-            "data": [{ "key": "$.id", "path": { "path": "$.categoryId" } }]
+            "data": [
+              {
+                "key": "$.id",
+                "path": {
+                  "path": "$.categoryId"
+                }
+              }
+            ]
           },
           "modelName": "BlogPost",
           "fieldName": "categoryId"
         },
         {
-          "fieldLocation": { "path": "$.comments" },
+          "fieldLocation": {
+            "path": "$.comments"
+          },
           "fieldType": "TYPE_MODEL",
           "repeated": true,
           "displayName": "Comments",
@@ -2030,14 +2712,21 @@
           "link": {
             "toolId": "list-comments",
             "data": [
-              { "key": "$.where.parent.id.equals", "path": { "path": "$.id" } }
+              {
+                "key": "$.where.parent.id.equals",
+                "path": {
+                  "path": "$.id"
+                }
+              }
             ]
           },
           "modelName": "BlogPost",
           "fieldName": "comments"
         },
         {
-          "fieldLocation": { "path": "$.status" },
+          "fieldLocation": {
+            "path": "$.status"
+          },
           "fieldType": "TYPE_ENUM",
           "displayName": "Status",
           "displayOrder": 9,
@@ -2047,7 +2736,9 @@
           "fieldName": "status"
         },
         {
-          "fieldLocation": { "path": "$.id" },
+          "fieldLocation": {
+            "path": "$.id"
+          },
           "fieldType": "TYPE_ID",
           "displayName": "Id",
           "displayOrder": 13,
@@ -2056,7 +2747,9 @@
           "fieldName": "id"
         },
         {
-          "fieldLocation": { "path": "$.createdAt" },
+          "fieldLocation": {
+            "path": "$.createdAt"
+          },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Created at",
           "displayOrder": 14,
@@ -2065,7 +2758,9 @@
           "fieldName": "createdAt"
         },
         {
-          "fieldLocation": { "path": "$.updatedAt" },
+          "fieldLocation": {
+            "path": "$.updatedAt"
+          },
           "fieldType": "TYPE_DATETIME",
           "displayName": "Updated at",
           "displayOrder": 15,
@@ -2074,13 +2769,22 @@
           "fieldName": "updatedAt"
         }
       ],
-      "title": { "template": "Update post" },
+      "title": {
+        "template": "Update post"
+      },
       "entitySingle": "blog post",
       "entityPlural": "blog posts",
       "capabilities": {},
       "getEntryAction": {
         "toolId": "get-post",
-        "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
+        "data": [
+          {
+            "key": "$.id",
+            "path": {
+              "path": "$.id"
+            }
+          }
+        ]
       },
       "filterConfig": {}
     }

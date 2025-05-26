@@ -316,6 +316,8 @@ func extractLinkConfig(generated, updated *toolsproto.ToolLink) *LinkConfig {
 			DisplayOrder:     &updated.DisplayOrder,
 			VisibleCondition: updated.VisibleCondition,
 			DataMapping:      updated.GetObjDataMapping(),
+			SkipConfirmation: updated.SkipConfirmation,
+			Emphasize:        updated.Emphasize,
 		}
 	}
 
@@ -327,6 +329,8 @@ func extractLinkConfig(generated, updated *toolsproto.ToolLink) *LinkConfig {
 		Description:      diffStringTemplate(generated.GetDescription(), updated.GetDescription()),
 		DisplayOrder:     diffInt(generated.GetDisplayOrder(), updated.GetDisplayOrder()),
 		VisibleCondition: diffString(generated.GetVisibleCondition(), updated.GetVisibleCondition()),
+		SkipConfirmation: diffBool(generated.GetSkipConfirmation(), updated.GetSkipConfirmation()),
+		Emphasize:        diffBool(generated.GetEmphasize(), updated.GetEmphasize()),
 	}
 	if generated.GetJSONDataMapping() != updated.GetJSONDataMapping() {
 		cfg.DataMapping = updated.GetObjDataMapping()
