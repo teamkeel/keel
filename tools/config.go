@@ -251,7 +251,8 @@ func (cfg *ActionToolConfig) hasChanges() bool {
 		len(cfg.EntryActivityActions) > 0 ||
 		cfg.DisplayLayout != nil ||
 		len(cfg.EmbeddedTools) > 0 ||
-		cfg.FilterConfig != nil
+		cfg.FilterConfig != nil ||
+		cfg.Pagination != nil
 }
 
 func (cfg *ActionToolConfig) applyOn(tool *toolsproto.ActionConfig) {
