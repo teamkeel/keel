@@ -251,7 +251,8 @@ func (cfg *ActionToolConfig) hasChanges() bool {
 		len(cfg.EntryActivityActions) > 0 ||
 		cfg.DisplayLayout != nil ||
 		len(cfg.EmbeddedTools) > 0 ||
-		cfg.FilterConfig != nil
+		cfg.FilterConfig != nil ||
+		cfg.Pagination != nil
 }
 
 func (cfg *ActionToolConfig) applyOn(tool *toolsproto.ActionConfig) {
@@ -360,7 +361,7 @@ func (cfg *PaginationConfig) applyOn(pagination *toolsproto.CursorPaginationConf
 
 	if cfg.PageSize != nil && cfg.PageSize.DefaultValue != nil {
 		pagination.PageSize = &toolsproto.CursorPaginationConfig_PageSizeConfig{
-			DefaultValue: *cfg.PageSize.DefaultValue,
+			DefaultValue: cfg.PageSize.DefaultValue,
 		}
 	}
 
@@ -602,8 +603,8 @@ type LinkConfig struct {
 	DisplayOrder     *int32  `json:"display_order,omitempty"`
 	VisibleCondition *string `json:"visible_condition,omitempty"`
 	DataMapping      []any   `json:"data_mapping,omitempty"`
-	SkipConfirmation *bool   `json:"skip_confirmation"`
-	Emphasize        *bool   `json:"emphasize"`
+	SkipConfirmation *bool   `json:"skip_confirmation,omitempty"`
+	Emphasize        *bool   `json:"emphasize,omitempty"`
 }
 
 type LinkConfigs []*LinkConfig
