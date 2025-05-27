@@ -360,7 +360,7 @@ func (cfg *PaginationConfig) applyOn(pagination *toolsproto.CursorPaginationConf
 
 	if cfg.PageSize != nil && cfg.PageSize.DefaultValue != nil {
 		pagination.PageSize = &toolsproto.CursorPaginationConfig_PageSizeConfig{
-			DefaultValue: *cfg.PageSize.DefaultValue,
+			DefaultValue: cfg.PageSize.DefaultValue,
 		}
 	}
 

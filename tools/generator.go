@@ -177,6 +177,7 @@ func (g *Generator) scaffoldTools() {
 				Action: action,
 			}
 
+			defaultPageSize := int32(50)
 			// List actions have pagination
 			if action.IsList() {
 				t.ActionConfig.Pagination = &toolsproto.CursorPaginationConfig{
@@ -191,7 +192,7 @@ func (g *Generator) scaffoldTools() {
 					PageSize: &toolsproto.CursorPaginationConfig_PageSizeConfig{
 						RequestInput:  "first",
 						ResponseField: &toolsproto.JsonPath{Path: "$.pageInfo.count"},
-						DefaultValue:  50,
+						DefaultValue:  &defaultPageSize,
 					},
 					NextPage:   &toolsproto.JsonPath{Path: "$.pageInfo.hasNextPage"},
 					TotalCount: &toolsproto.JsonPath{Path: "$.pageInfo.totalCount"},

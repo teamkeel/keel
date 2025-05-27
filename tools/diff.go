@@ -261,10 +261,6 @@ func extractPaginationConfig(generated, updated *toolsproto.CursorPaginationConf
 		return nil
 	}
 
-	if generated != nil && updated != nil {
-		return nil
-	}
-
 	if generated == nil && updated != nil {
 		if updated.PageSize == nil {
 			return nil
@@ -291,12 +287,12 @@ func extractPageSizeConfig(generated, updated *toolsproto.CursorPaginationConfig
 
 	if generated == nil && updated != nil {
 		return &PageSizeConfig{
-			DefaultValue: &updated.DefaultValue,
+			DefaultValue: updated.DefaultValue,
 		}
 	}
 
 	return &PageSizeConfig{
-		DefaultValue: diffInt(generated.DefaultValue, updated.DefaultValue),
+		DefaultValue: diffNullableInt(generated.DefaultValue, updated.DefaultValue),
 	}
 }
 
@@ -536,6 +532,18 @@ func diffInt(old, new int32) *int32 {
 	}
 
 	return nil
+}
+
+func diffNullableInt(old, new *int32) *int32 {
+	if old != nil && new != nil && *old == *new {
+		return nil
+	}
+
+	if old != nil && new == nil {
+		return new
+	}
+
+	return new
 }
 
 func diffBool(old, new bool) *bool {
