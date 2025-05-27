@@ -271,6 +271,12 @@ func extractPaginationConfig(generated, updated *toolsproto.CursorPaginationConf
 		}
 	}
 
+	pageSize := extractPageSizeConfig(generated.PageSize, updated.PageSize)
+
+	if pageSize == nil {
+		return nil
+	}
+
 	return &PaginationConfig{
 		PageSize: extractPageSizeConfig(generated.PageSize, updated.PageSize),
 	}
@@ -291,8 +297,14 @@ func extractPageSizeConfig(generated, updated *toolsproto.CursorPaginationConfig
 		}
 	}
 
+	defaultValue := diffNullableInt(generated.DefaultValue, updated.DefaultValue)
+
+	if defaultValue == nil {
+		return nil
+	}
+
 	return &PageSizeConfig{
-		DefaultValue: diffNullableInt(generated.DefaultValue, updated.DefaultValue),
+		DefaultValue: defaultValue,
 	}
 }
 
