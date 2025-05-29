@@ -133,14 +133,14 @@
         "defaultValue": {
           "type": "string"
         },
-        "helpText": {
-          "type": "string"
-        },
         "optional": {
           "type": "boolean"
         },
         "disabled": {
           "type": "boolean"
+        },
+        "helpText": {
+          "type": "string"
         },
         "validationError": {
           "type": "string"
@@ -149,15 +149,17 @@
       "additionalProperties": false,
       "required": [
         "__type",
+        "disabled",
         "label",
-        "name"
+        "name",
+        "optional"
       ]
     },
     "UiElementInputNumberApiResponse": {
       "type": "object",
       "properties": {
         "placeholder": {
-          "type": "number"
+          "type": "string"
         },
         "min": {
           "type": "number"
@@ -178,14 +180,14 @@
         "defaultValue": {
           "type": "number"
         },
-        "helpText": {
-          "type": "string"
-        },
         "optional": {
           "type": "boolean"
         },
         "disabled": {
           "type": "boolean"
+        },
+        "helpText": {
+          "type": "string"
         },
         "validationError": {
           "type": "string"
@@ -194,8 +196,10 @@
       "additionalProperties": false,
       "required": [
         "__type",
+        "disabled",
         "label",
-        "name"
+        "name",
+        "optional"
       ]
     },
     "UiElementDividerApiResponse": {
@@ -234,14 +238,14 @@
         "defaultValue": {
           "type": "boolean"
         },
-        "helpText": {
-          "type": "string"
-        },
         "optional": {
           "type": "boolean"
         },
         "disabled": {
           "type": "boolean"
+        },
+        "helpText": {
+          "type": "string"
         },
         "validationError": {
           "type": "string"
@@ -250,9 +254,11 @@
       "additionalProperties": false,
       "required": [
         "__type",
+        "disabled",
         "label",
         "mode",
-        "name"
+        "name",
+        "optional"
       ]
     },
     "UiElementMarkdownApiResponse": {
@@ -358,14 +364,14 @@
             }
           ]
         },
-        "helpText": {
-          "type": "string"
-        },
         "optional": {
           "type": "boolean"
         },
         "disabled": {
           "type": "boolean"
+        },
+        "helpText": {
+          "type": "string"
         },
         "validationError": {
           "type": "string"
@@ -374,8 +380,10 @@
       "additionalProperties": false,
       "required": [
         "__type",
+        "disabled",
         "label",
         "name",
+        "optional",
         "options"
       ]
     },
@@ -472,7 +480,7 @@
           ],
           "type": "string"
         },
-        "title": {
+        "caption": {
           "type": "string"
         },
         "__type": {
