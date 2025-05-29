@@ -10,6 +10,7 @@ import (
 
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/util"
 	"go.opentelemetry.io/otel"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -41,15 +42,16 @@ const (
 )
 
 type Run struct {
-	ID        string    `json:"id" gorm:"primaryKey;not null;default:null"`
-	TraceID   string    `json:"traceId"`
-	Status    Status    `json:"status"`
-	Name      string    `json:"name"`
-	Input     JSON      `json:"input" gorm:"type:jsonb;serializer:json"`
-	Steps     []Step    `json:"steps"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
-	Config    JSON      `json:"config" gorm:"-"` // Stages config component, omitted from db operations
+	ID          string    `json:"id" gorm:"primaryKey;not null;default:null"`
+	TraceID     string    `json:"traceId"`
+	Traceparent string    `json:"-"`
+	Status      Status    `json:"status"`
+	Name        string    `json:"name"`
+	Input       JSON      `json:"input" gorm:"type:jsonb;serializer:json"`
+	Steps       []Step    `json:"steps"`
+	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
+	Config      JSON      `json:"config" gorm:"-"` // Stages config component, omitted from db operations
 }
 
 func (Run) TableName() string {
@@ -183,6 +185,22 @@ func getRun(ctx context.Context, runID string) (*Run, error) {
 	return &run, nil
 }
 
+// GetTraceparent returns the traceparent from the db for the given run ID
+func GetTraceparent(ctx context.Context, runID string) (string, error) {
+	database, err := db.GetDatabase(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	var run Run
+	result := database.GetDB().Where("id = ?", runID).First(&run)
+	if result.Error != nil {
+		return "", result.Error
+	}
+
+	return run.Traceparent, nil
+}
+
 // updateRun will update the status of a flow run
 func updateRun(ctx context.Context, runID string, status Status) (*Run, error) {
 	database, err := db.GetDatabase(ctx)
@@ -197,16 +215,17 @@ func updateRun(ctx context.Context, runID string, status Status) (*Run, error) {
 }
 
 // createRun will create a new flow run with the given input
-func createRun(ctx context.Context, flow *proto.Flow, inputs any, traceID string) (*Run, error) {
+func createRun(ctx context.Context, flow *proto.Flow, inputs any, traceparent string) (*Run, error) {
 	if flow == nil {
 		return nil, fmt.Errorf("invalid flow")
 	}
 
 	run := Run{
-		Status:  StatusNew,
-		Input:   inputs,
-		Name:    flow.Name,
-		TraceID: traceID,
+		Status:      StatusNew,
+		Input:       inputs,
+		Name:        flow.Name,
+		Traceparent: traceparent,
+		TraceID:     util.ParseTraceparent(traceparent).TraceID().String(),
 	}
 
 	database, err := db.GetDatabase(ctx)
