@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/util"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -93,7 +94,7 @@ type FlowUIComponents struct {
 }
 
 // orchestrateRun will decide based on the db state if the flow should be ran or not
-func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, data map[string]any) (error, *FlowUIComponents) {
+func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, inputs map[string]any, data map[string]any) (error, *FlowUIComponents) {
 	run, err := getRun(ctx, runID)
 	if err != nil {
 		return err, nil
@@ -121,7 +122,7 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, data ma
 		}
 
 		// call the flow runtime
-		resp, err := o.CallFlow(ctx, run, data)
+		resp, err := o.CallFlow(ctx, run, inputs, data)
 		if err != nil {
 			// failed orchestrating, mark the run as failed and return the error
 			_, _ = updateRun(ctx, run.ID, StatusFailed)
@@ -178,7 +179,12 @@ func (o *Orchestrator) HandleEvent(ctx context.Context, event *EventWrapper) err
 			return err
 		}
 
-		err, _ := o.orchestrateRun(ctx, ev.RunID, ev.Data)
+		run, err := getRun(ctx, ev.RunID)
+		if err != nil {
+			return err
+		}
+
+		err, _ = o.orchestrateRun(ctx, run.ID, run.Input.(map[string]any), ev.Data)
 
 		return err
 	case EventNameFlowRunStarted:
@@ -198,7 +204,7 @@ func (o *Orchestrator) HandleEvent(ctx context.Context, event *EventWrapper) err
 		if err != nil {
 			return err
 		}
-		err, _ = o.orchestrateRun(ctx, run.ID, nil)
+		err, _ = o.orchestrateRun(ctx, run.ID, ev.Inputs, nil)
 
 		return err
 	}
@@ -240,7 +246,7 @@ func (o *Orchestrator) SendEvent(ctx context.Context, payload *EventWrapper) err
 }
 
 // CallFlow is a helper function to call the flows runtime and retrieve the Response Payload
-func (o *Orchestrator) CallFlow(ctx context.Context, run *Run, data map[string]any) (*FunctionsResponsePayload, error) {
+func (o *Orchestrator) CallFlow(ctx context.Context, run *Run, inputs map[string]any, data map[string]any) (*FunctionsResponsePayload, error) {
 	ctx, span := tracer.Start(ctx, "CallFlow")
 	defer span.End()
 
@@ -253,10 +259,20 @@ func (o *Orchestrator) CallFlow(ctx context.Context, run *Run, data map[string]a
 		return nil, fmt.Errorf("invalid flow run")
 	}
 
+	if flow.InputMessageName != "" {
+		message := o.schema.FindMessage(flow.InputMessageName)
+		var err error
+		inputs, err = actions.TransformInputs(o.schema, message, inputs, true)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	resp, meta, err := functions.CallFlow(
 		ctx,
 		flow,
 		run.ID,
+		inputs,
 		data,
 	)
 	if err != nil {

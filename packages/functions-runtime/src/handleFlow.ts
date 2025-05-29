@@ -56,16 +56,6 @@ async function handleFlow(request: any, config: any) {
           connString: request.meta?.secrets?.KEEL_DB_CONN,
         });
 
-        const flowRun = await db
-          .selectFrom("keel.flow_run")
-          .where("id", "=", runId)
-          .selectAll()
-          .executeTakeFirst();
-
-        if (!flowRun) {
-          throw new Error("no flow run found");
-        }
-
         const ctx = createFlowContext(
           request.meta.runId,
           request.meta.data,
@@ -91,7 +81,7 @@ async function handleFlow(request: any, config: any) {
         };
 
         // parse request params to convert objects into rich field types (e.g. InlineFile)
-        const inputs = parseInputs(flowRun.input);
+        const inputs = parseInputs(request.meta?.inputs);
 
         try {
           await tryExecuteFlow(db, async () => {
