@@ -54,6 +54,28 @@ flow ValidationBoolean {
     @permission(roles: [Admin])
 }
 
+enum MyEnum {
+    Value1
+    Value2
+}
+
+flow AllInputs {
+    inputs {
+        id ID?
+        text Text?
+        markdown Markdown?
+        bool Boolean?
+        number Number?
+        decimal Decimal?
+        date Date?
+        timestamp Timestamp?
+        file File?
+        duration Duration?
+        myEnum MyEnum?
+    }
+    @permission(roles: [Admin])
+}
+
 model Thing {
     fields {
         name Text?

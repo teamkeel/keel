@@ -1,4 +1,5 @@
 import { resetDatabase, models } from "@teamkeel/testing";
+import { MyEnum } from "@teamkeel/sdk";
 import { beforeEach, expect, test } from "vitest";
 
 beforeEach(resetDatabase);
@@ -18,7 +19,7 @@ TEST CASES
 [x] UI step validation
 [x] Check full API responses
 [ ] All UI elements response
-[ ] Test all Keel types as inputs
+[x] Test all Keel types as inputs
 [x] Permissions and identity tests
 [ ] Stages
 */
@@ -816,6 +817,57 @@ test("flows - boolean input validation", async () => {
   });
 });
 
+test("flows - all inputs", async () => {
+  const fileContents = "hello";
+  const dataUrl = `data:text/plain;name=my-file.txt;base64,${Buffer.from(
+    fileContents
+  ).toString("base64")}`;
+
+  const token = await getToken({ email: "admin@keel.xyz" });
+  const res = await startFlow({
+    name: "AllInputs",
+    token,
+    body: {
+      text: "text",
+      number: 1,
+      file: dataUrl,
+      date: "2021-01-01",
+      timestamp: "2021-01-01T12:30:15.000Z",
+      duration: "PT1000S",
+      bool: true,
+      decimal: 1.1,
+      enum: MyEnum.Value1,
+      markdown: "**Hello**",
+    },
+  });
+
+  expect(res.status).toBe(200);
+  expect(res.body).toEqual({
+    config: {
+      title: "All inputs",
+    },
+    createdAt: expect.any(String),
+    id: expect.any(String),
+    input: {
+      date: "2021-01-01",
+      duration: "PT1000S",
+      file: "data:text/plain;name=my-file.txt;base64,aGVsbG8=",
+      number: 1,
+      text: "text",
+      timestamp: "2021-01-01T12:30:15.000Z",
+      bool: true,
+      decimal: 1.1,
+      enum: MyEnum.Value1,
+      markdown: "**Hello**",
+    },
+    name: "AllInputs",
+    status: "FAILED",
+    steps: [],
+    traceId: expect.any(String),
+    updatedAt: expect.any(String),
+  });
+});
+
 test("flows - error in step with retries", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
   const res = await startFlow({ name: "ErrorInStep", token, body: {} });
@@ -1071,7 +1123,7 @@ test("flows - authorised starting, getting and listing flows", async () => {
 
   const resListAdmin = await listFlows({ token: adminToken });
   expect(resListAdmin.status).toBe(200);
-  expect(resListAdmin.body.flows.length).toBe(11);
+  expect(resListAdmin.body.flows.length).toBe(12);
   expect(resListAdmin.body.flows[0].name).toBe("ScalarStep");
   expect(resListAdmin.body.flows[1].name).toBe("MixedStepTypes");
   expect(resListAdmin.body.flows[2].name).toBe("Stepless");
@@ -1083,6 +1135,7 @@ test("flows - authorised starting, getting and listing flows", async () => {
   expect(resListAdmin.body.flows[8].name).toBe("OnlyFunctions");
   expect(resListAdmin.body.flows[9].name).toBe("ValidationText");
   expect(resListAdmin.body.flows[10].name).toBe("ValidationBoolean");
+  expect(resListAdmin.body.flows[11].name).toBe("AllInputs");
 
   const resListUser = await listFlows({ token: userToken });
   expect(resListUser.status).toBe(200);
