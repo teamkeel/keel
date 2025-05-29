@@ -11,7 +11,9 @@ import (
 	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/flows"
+	"github.com/teamkeel/keel/util"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 func FlowHandler(s *proto.Schema) common.HandlerFunc {
@@ -96,6 +98,12 @@ func FlowHandler(s *proto.Schema) common.HandlerFunc {
 
 			return common.NewJsonResponse(http.StatusOK, run, nil)
 		case 3:
+			// we're operating on a flow run (cancel/put values), we now need to set the tracing span context to the flow's trace
+			if traceparent, err := flows.GetTraceparent(ctx, pathParts[1]); err == nil {
+				sc := util.ParseTraceparent(traceparent)
+				ctx = trace.ContextWithSpanContext(ctx, sc)
+			}
+
 			if pathParts[2] == "cancel" {
 				// Cancel run: POST flows/json/[flowName]/[runID]/cancel
 				if r.Method != http.MethodPost {

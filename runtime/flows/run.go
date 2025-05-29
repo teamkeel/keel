@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/util"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
@@ -29,7 +30,7 @@ func StartFlow(ctx context.Context, flow *proto.Flow, inputs map[string]any) (ru
 		return
 	}
 
-	run, err = createRun(ctx, flow, inputs, span.SpanContext().TraceID().String())
+	run, err = createRun(ctx, flow, inputs, util.GetTraceparent(span.SpanContext()))
 	if err != nil {
 		err = fmt.Errorf("creating flow run: %w", err)
 		return
