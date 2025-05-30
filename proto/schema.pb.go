@@ -955,6 +955,7 @@ type Action struct {
 	// A ordered list of order by statements.
 	OrderBy []*OrderByStatement `protobuf:"bytes,10,rep,name=order_by,json=orderBy,proto3" json:"order_by,omitempty"`
 	// The name of the input message type for this action.
+	// This can be an empty string if there are no inputs and therefore no input message.
 	InputMessageName string `protobuf:"bytes,11,opt,name=input_message_name,json=inputMessageName,proto3" json:"input_message_name,omitempty"`
 	// The name of the response message type for this action when not a built-in action. This is because
 	// built-in action responses are determined by the action type (get, list, create, update, delete).
@@ -1773,7 +1774,7 @@ type TypeInfo struct {
 	Repeated bool `protobuf:"varint,4,opt,name=repeated,proto3" json:"repeated,omitempty"`
 	// A union type describes a value that can be one of several types.
 	// When TypeInfo's type property is set to UNION, then any one of the type names
-	// listed here can be used as input. Currently only support messages.
+	// listed here can be used as input. Currently only supports messages.
 	UnionNames []*wrapperspb.StringValue `protobuf:"bytes,7,rep,name=union_names,json=unionNames,proto3" json:"union_names,omitempty"`
 	// For types which are in a union, it is optional to provide a value to discriminate on.
 	// This is only useful in TypeScript type generation, where this will make type a string literal type.
