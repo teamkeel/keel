@@ -2,11 +2,11 @@ package actions
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
-	"golang.org/x/exp/slices"
 )
 
 // ValidActionInputTypesRule makes sure the inputs specified for all the actions

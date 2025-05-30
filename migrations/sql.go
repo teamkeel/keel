@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/iancoleman/strcase"
@@ -15,7 +16,6 @@ import (
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/schema/parser"
-	"golang.org/x/exp/slices"
 )
 
 var PostgresFieldTypes map[proto.Type]string = map[proto.Type]string{

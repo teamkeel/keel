@@ -8,9 +8,8 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
-
-	"golang.org/x/exp/slices"
 
 	"github.com/goccy/go-yaml"
 	"github.com/goccy/go-yaml/parser"

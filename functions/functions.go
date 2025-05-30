@@ -4,9 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"slices"
 	"strings"
-
-	"golang.org/x/exp/slices"
 
 	"github.com/iancoleman/strcase"
 	"github.com/segmentio/ksuid"

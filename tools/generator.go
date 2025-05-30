@@ -4,12 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 	"sort"
 	"strings"
 
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/schema/parser"
-	"golang.org/x/exp/slices"
 
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/proto"

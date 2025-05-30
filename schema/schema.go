@@ -3,13 +3,13 @@ package schema
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/proto"
-	"golang.org/x/exp/slices"
 
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/schema/node"
