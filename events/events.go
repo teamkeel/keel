@@ -48,7 +48,7 @@ type EventTarget struct {
 	PreviousData map[string]any `json:"previousData"`
 }
 
-// The event handler function to be executed for each subscriber event generated.
+// EventHandler is the function to be executed for each subscriber event generated.
 type EventHandler func(ctx context.Context, subscriber string, event *Event, traceparent string) error
 
 type handlerContextKey string

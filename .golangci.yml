@@ -9,7 +9,7 @@ linters:
       disable:
         - structtag
     staticcheck:
-      checks: ["all", "-ST1000", "-ST1003", "-ST1016", "-ST1020", "-ST1021", "-ST1022", "-SA1019", "-QF1001", "-QF1008", "-QF1002", "-ST1008", "-ST1019", "-ST1005", "-QF1012"]
+      checks: ["all", "-ST1000", "-ST1003", "-ST1016", "-ST1020", "-ST1022", "-SA1019", "-QF1001", "-QF1008", "-QF1002", "-ST1008", "-ST1019", "-ST1005", "-QF1012"]
     errcheck:
       exclude-functions:
         - os.RemoveAll

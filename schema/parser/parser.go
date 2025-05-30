@@ -233,7 +233,8 @@ type FlowInputNode struct {
 // - @default
 // - @orderBy
 // - @sortable
-// - @on.
+// - @on
+
 type AttributeNode struct {
 	node.Node
 

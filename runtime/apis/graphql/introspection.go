@@ -49,7 +49,7 @@ type introspectionField struct {
 	Type introsepctionTypeRef `json:"type"`
 }
 
-// Represents the result of executing github.com/teamkeel/graphql/testutil.IntrospectionQuery.
+// IntrospectionQueryResult represents the result of executing github.com/teamkeel/graphql/testutil.IntrospectionQuery.
 type IntrospectionQueryResult struct {
 	Schema struct {
 		MutationType struct {

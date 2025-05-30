@@ -22,8 +22,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-// Custom error codes returned from custom
-// function runtime
+// FunctionErrorCode represents custom error codes returned from custom function runtime
 // See packages/functions-runtime for original definition and more info.
 type FunctionErrorCode int
 

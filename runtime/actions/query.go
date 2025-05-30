@@ -248,7 +248,7 @@ func (o *QueryOperand) toSqlArgs() []any {
 	}
 }
 
-// The templated SQL statement and associated values, ready to be executed.
+// Statement is a templated SQL statement and associated values, ready to be executed.
 type Statement struct {
 	// The model that represents the table.
 	model *proto.Model

@@ -39,9 +39,11 @@ type S3BucketStore struct {
 	tracer     trace.Tracer
 }
 
+// CustomS3EndpointResolverV2 allows us to use a custom endpoint.
+//
 // If a custom endpoint is set we need to use a custom resolver. Just settng the base endpoint isn't enough for S3
 // as the default resolver uses the bucket name as a sub-domain, which likely won't work with the custom endpoint.
-// By impleenting a full resolver we can force it to be the endpoint we want.
+// By implementing a full resolver we can force it to be the endpoint we want.
 type CustomS3EndpointResolverV2 struct {
 	endpoint string
 }
