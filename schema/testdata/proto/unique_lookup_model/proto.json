@@ -69,8 +69,7 @@
             {
               "source": "bankAccount == ctx.identity.account"
             }
-          ],
-          "inputMessageName": "GetBankAccountInput"
+          ]
         }
       ]
     },
@@ -84,7 +83,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -121,7 +122,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
           "modelName": "Identity",
@@ -347,9 +350,6 @@
     },
     {
       "name": "ResetPasswordResponse"
-    },
-    {
-      "name": "GetBankAccountInput"
     }
   ]
 }

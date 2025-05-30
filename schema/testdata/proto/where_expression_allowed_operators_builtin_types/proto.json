@@ -310,7 +310,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -347,7 +349,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
           "modelName": "Identity",
@@ -581,20 +585,8 @@
       "name": "ResetPasswordResponse"
     },
     {
-      "name": "ListWithLiteralsWhere"
-    },
-    {
       "name": "ListWithLiteralsInput",
       "fields": [
-        {
-          "messageName": "ListWithLiteralsInput",
-          "name": "where",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "ListWithLiteralsWhere"
-          },
-          "optional": true
-        },
         {
           "messageName": "ListWithLiteralsInput",
           "name": "first",
@@ -646,20 +638,8 @@
       ]
     },
     {
-      "name": "ListWithFieldsWhere"
-    },
-    {
       "name": "ListWithFieldsInput",
       "fields": [
-        {
-          "messageName": "ListWithFieldsInput",
-          "name": "where",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "ListWithFieldsWhere"
-          },
-          "optional": true
-        },
         {
           "messageName": "ListWithFieldsInput",
           "name": "first",

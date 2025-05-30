@@ -195,21 +195,25 @@ func writeClientApiInterface(w *codegen.Writer, schema *proto.Schema, api *proto
 func writeClientActionType(w *codegen.Writer, schema *proto.Schema, action *proto.Action) {
 	msg := schema.FindMessage(action.InputMessageName)
 
-	w.Writef("%s: (i", action.Name)
+	if action.InputMessageName != "" {
+		w.Writef("%s: (i", action.Name)
 
-	// Check that all of the top level fields in the matching message are optional
-	if lo.EveryBy(msg.Fields, func(f *proto.MessageField) bool {
-		return f.Optional
-	}) {
-		w.Write("?")
+		// Check that all of the top level fields in the matching message are optional
+		if lo.EveryBy(msg.Fields, func(f *proto.MessageField) bool {
+			return f.Optional
+		}) {
+			w.Write("?")
+		}
+
+		inputType := action.InputMessageName
+		if inputType == parser.MessageFieldTypeAny {
+			inputType = "any"
+		}
+
+		w.Writef(`: %s) => `, inputType)
+	} else {
+		w.Writef("%s: () => ", action.Name)
 	}
-
-	inputType := action.InputMessageName
-	if inputType == parser.MessageFieldTypeAny {
-		inputType = "any"
-	}
-
-	w.Writef(`: %s) => `, inputType)
 
 	model := schema.FindModel(action.ModelName)
 	w.Writef(`Promise<APIResult<%s>>`, toClientActionReturnType(model, action))

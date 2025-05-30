@@ -178,7 +178,9 @@
           "type": "ACTION_TYPE_GET",
           "implementation": "ACTION_IMPLEMENTATION_AUTO",
           "inputMessageName": "GetReviewInput",
-          "responseEmbeds": ["book"]
+          "responseEmbeds": [
+            "book"
+          ]
         }
       ],
       "permissions": [
@@ -288,7 +290,9 @@
           "type": "ACTION_TYPE_LIST",
           "implementation": "ACTION_IMPLEMENTATION_AUTO",
           "inputMessageName": "ListBooksInput",
-          "responseEmbeds": ["author"]
+          "responseEmbeds": [
+            "author"
+          ]
         },
         {
           "modelName": "Book",
@@ -303,7 +307,10 @@
           "type": "ACTION_TYPE_GET",
           "implementation": "ACTION_IMPLEMENTATION_AUTO",
           "inputMessageName": "GetBookInput",
-          "responseEmbeds": ["code", "author"]
+          "responseEmbeds": [
+            "code",
+            "author"
+          ]
         },
         {
           "modelName": "Book",
@@ -406,7 +413,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -443,7 +452,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
           "modelName": "Identity",
@@ -708,7 +719,9 @@
             "modelName": "Author",
             "fieldName": "firstName"
           },
-          "target": ["firstName"]
+          "target": [
+            "firstName"
+          ]
         },
         {
           "messageName": "CreateAuthorInput",
@@ -718,12 +731,11 @@
             "modelName": "Author",
             "fieldName": "surname"
           },
-          "target": ["surname"]
+          "target": [
+            "surname"
+          ]
         }
       ]
-    },
-    {
-      "name": "ListAuthorsWhere"
     },
     {
       "name": "ListAuthorsOrderByFirstName",
@@ -752,15 +764,6 @@
     {
       "name": "ListAuthorsInput",
       "fields": [
-        {
-          "messageName": "ListAuthorsInput",
-          "name": "where",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "ListAuthorsWhere"
-          },
-          "optional": true
-        },
         {
           "messageName": "ListAuthorsInput",
           "name": "first",
@@ -835,7 +838,9 @@
             "modelName": "Review",
             "fieldName": "content"
           },
-          "target": ["content"]
+          "target": [
+            "content"
+          ]
         },
         {
           "messageName": "CreateReviewInput",
@@ -858,7 +863,10 @@
             "modelName": "Book",
             "fieldName": "id"
           },
-          "target": ["book", "id"]
+          "target": [
+            "book",
+            "id"
+          ]
         }
       ]
     },
@@ -873,7 +881,10 @@
             "messageName": "IdQueryInput"
           },
           "optional": true,
-          "target": ["book", "id"]
+          "target": [
+            "book",
+            "id"
+          ]
         }
       ]
     },
@@ -999,25 +1010,15 @@
             "modelName": "Review",
             "fieldName": "id"
           },
-          "target": ["id"]
+          "target": [
+            "id"
+          ]
         }
       ]
     },
     {
-      "name": "ListBooksWhere"
-    },
-    {
       "name": "ListBooksInput",
       "fields": [
-        {
-          "messageName": "ListBooksInput",
-          "name": "where",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "ListBooksWhere"
-          },
-          "optional": true
-        },
         {
           "messageName": "ListBooksInput",
           "name": "first",
@@ -1079,7 +1080,9 @@
             "modelName": "Book",
             "fieldName": "title"
           },
-          "target": ["title"]
+          "target": [
+            "title"
+          ]
         },
         {
           "messageName": "CreateBookInput",
@@ -1102,7 +1105,10 @@
             "modelName": "Author",
             "fieldName": "id"
           },
-          "target": ["author", "id"]
+          "target": [
+            "author",
+            "id"
+          ]
         }
       ]
     },
@@ -1117,7 +1123,9 @@
             "modelName": "Book",
             "fieldName": "id"
           },
-          "target": ["id"]
+          "target": [
+            "id"
+          ]
         }
       ]
     },
@@ -1132,7 +1140,9 @@
             "modelName": "Book",
             "fieldName": "id"
           },
-          "target": ["id"]
+          "target": [
+            "id"
+          ]
         }
       ]
     }

@@ -97,8 +97,8 @@ func (scm *Builder) PrepareAst(allInputFiles *reader.Inputs) ([]*parser.AST, err
 	// - For each of the .keel (schema) files specified...
 	// 		- Parse to AST
 	// 		- Add built-in fields
-	for i, oneInputSchemaFile := range allInputFiles.SchemaFiles {
-		declarations, err := parser.Parse(oneInputSchemaFile)
+	for i, file := range allInputFiles.SchemaFiles {
+		declarations, err := parser.Parse(file)
 		if err != nil {
 			// try to convert into a validation error and move to next schema file
 			if perr, ok := err.(parser.Error); ok {
@@ -109,8 +109,12 @@ func (scm *Builder) PrepareAst(allInputFiles *reader.Inputs) ([]*parser.AST, err
 				}, perr)
 				parseErrors.Errors = append(parseErrors.Errors, verr)
 			} else {
-				return nil, parseErrors, fmt.Errorf("parser.Parse() failed on file: %s, with error %v", oneInputSchemaFile.FileName, err)
+				return nil, parseErrors, fmt.Errorf("parser.Parse() failed on file: %s, with error %v", file.FileName, err)
 			}
+		}
+
+		if declarations == nil {
+			continue
 		}
 
 		// Insert built in models like Identity. We only want to call this once
@@ -120,7 +124,7 @@ func (scm *Builder) PrepareAst(allInputFiles *reader.Inputs) ([]*parser.AST, err
 		// before insertion of built in fields, so that built in fields such as
 		// primary key are added to the newly added built in models
 		if i == 0 {
-			scm.insertBuiltInModels(declarations, oneInputSchemaFile)
+			scm.insertBuiltInModels(declarations, file)
 		}
 
 		// This inserts the built in fields like "createdAt" etc. But it does not insert

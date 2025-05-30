@@ -61,8 +61,7 @@
             {
               "source": "account.email = ctx.identity.email"
             }
-          ],
-          "inputMessageName": "CreateAccountInput"
+          ]
         },
         {
           "modelName": "Account",
@@ -88,7 +87,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -125,7 +126,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
           "modelName": "Identity",
@@ -346,9 +349,6 @@
       "name": "ResetPasswordResponse"
     },
     {
-      "name": "CreateAccountInput"
-    },
-    {
       "name": "UpdateAccountWhere",
       "fields": [
         {
@@ -359,12 +359,11 @@
             "modelName": "Account",
             "fieldName": "id"
           },
-          "target": ["id"]
+          "target": [
+            "id"
+          ]
         }
       ]
-    },
-    {
-      "name": "UpdateAccountValues"
     },
     {
       "name": "UpdateAccountInput",
@@ -376,15 +375,6 @@
             "type": "TYPE_MESSAGE",
             "messageName": "UpdateAccountWhere"
           }
-        },
-        {
-          "messageName": "UpdateAccountInput",
-          "name": "values",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "UpdateAccountValues"
-          },
-          "optional": true
         }
       ]
     }

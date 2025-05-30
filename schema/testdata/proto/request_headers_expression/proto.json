@@ -53,8 +53,7 @@
             {
               "source": "apiKey.key = ctx.headers.X_API_TOKEN"
             }
-          ],
-          "inputMessageName": "CreateApiKeyInput"
+          ]
         }
       ]
     },
@@ -68,7 +67,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -105,7 +106,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
           "modelName": "Identity",
@@ -321,9 +324,6 @@
     },
     {
       "name": "ResetPasswordResponse"
-    },
-    {
-      "name": "CreateApiKeyInput"
     }
   ]
 }

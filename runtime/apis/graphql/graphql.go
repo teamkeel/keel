@@ -470,13 +470,13 @@ func (mk *graphqlSchemaBuilder) addAction(
 		Name: action.Name,
 	}
 
-	operationInputType, allOptionalInputs, err := mk.makeActionInputType(action)
-	if err != nil {
-		return err
-	}
-
 	// Only add input args if an input field exists.
-	if len(operationInputType.Fields()) > 0 {
+	if action.InputMessageName != "" && action.InputMessageName != parser.MessageFieldTypeAny {
+		operationInputType, allOptionalInputs, err := mk.makeActionInputType(action)
+		if err != nil {
+			return err
+		}
+
 		if allOptionalInputs {
 			// Input field is optional if all its fields are optional
 			field.Args = graphql.FieldConfigArgument{
@@ -918,6 +918,10 @@ func (mk *graphqlSchemaBuilder) inputTypeFor(field *proto.MessageField) (graphql
 // makeActionInputType generates an input type to reflect the inputs of the given
 // proto.Action - which can be used as the Args field in a graphql.Field.
 func (mk *graphqlSchemaBuilder) makeActionInputType(action *proto.Action) (*graphql.InputObject, bool, error) {
+	if action.InputMessageName == "" {
+		return nil, true, nil
+	}
+
 	message := mk.proto.FindMessage(action.InputMessageName)
 	allOptionalInputs := true
 

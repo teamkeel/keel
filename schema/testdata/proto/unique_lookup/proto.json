@@ -92,8 +92,7 @@
             {
               "source": "product.sku == \"123\""
             }
-          ],
-          "inputMessageName": "GetSpecificSkuInput"
+          ]
         },
         {
           "modelName": "Product",
@@ -164,8 +163,7 @@
             {
               "source": "product.sku == ctx.identity.user.assignedProduct.sku"
             }
-          ],
-          "inputMessageName": "GetbySkuFromCtxInput"
+          ]
         }
       ]
     },
@@ -259,7 +257,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -296,7 +296,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
           "modelName": "Identity",
@@ -564,7 +566,9 @@
             "modelName": "Product",
             "fieldName": "sku"
           },
-          "target": ["sku"]
+          "target": [
+            "sku"
+          ]
         }
       ]
     },
@@ -591,12 +595,11 @@
             "modelName": "Product",
             "fieldName": "name"
           },
-          "target": ["name"]
+          "target": [
+            "name"
+          ]
         }
       ]
-    },
-    {
-      "name": "GetSpecificSkuInput"
     },
     {
       "name": "GetbySkuAsInputAndShampooInput",
@@ -609,7 +612,9 @@
             "modelName": "Product",
             "fieldName": "sku"
           },
-          "target": ["sku"]
+          "target": [
+            "sku"
+          ]
         }
       ]
     },
@@ -660,9 +665,6 @@
           }
         }
       ]
-    },
-    {
-      "name": "GetbySkuFromCtxInput"
     }
   ]
 }

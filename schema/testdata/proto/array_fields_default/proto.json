@@ -121,8 +121,7 @@
           "modelName": "Thing",
           "name": "createThing",
           "type": "ACTION_TYPE_CREATE",
-          "implementation": "ACTION_IMPLEMENTATION_AUTO",
-          "inputMessageName": "CreateThingInput"
+          "implementation": "ACTION_IMPLEMENTATION_AUTO"
         }
       ]
     },
@@ -136,7 +135,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -173,7 +174,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
           "modelName": "Identity",
@@ -402,9 +405,6 @@
     },
     {
       "name": "ResetPasswordResponse"
-    },
-    {
-      "name": "CreateThingInput"
     }
   ]
 }

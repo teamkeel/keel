@@ -352,9 +352,6 @@
       ]
     },
     {
-      "name": "PublishedValues"
-    },
-    {
       "name": "PublishedInput",
       "fields": [
         {
@@ -364,15 +361,6 @@
             "type": "TYPE_MESSAGE",
             "messageName": "PublishedWhere"
           }
-        },
-        {
-          "messageName": "PublishedInput",
-          "name": "values",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "PublishedValues"
-          },
-          "optional": true
         }
       ]
     }

@@ -1,24 +1,17 @@
 {
   "models": [
     {
-      "name": "Author",
+      "name": "Account",
       "fields": [
         {
-          "modelName": "Author",
-          "name": "firstName",
+          "modelName": "Account",
+          "name": "email",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "modelName": "Author",
-          "name": "surname",
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        },
-        {
-          "modelName": "Author",
+          "modelName": "Account",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -30,7 +23,7 @@
           }
         },
         {
-          "modelName": "Author",
+          "modelName": "Account",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -40,7 +33,7 @@
           }
         },
         {
-          "modelName": "Author",
+          "modelName": "Account",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -52,21 +45,56 @@
       ],
       "actions": [
         {
-          "modelName": "Author",
-          "name": "listAuthors",
-          "type": "ACTION_TYPE_LIST",
+          "modelName": "Account",
+          "name": "createAccount",
+          "type": "ACTION_TYPE_CREATE",
           "implementation": "ACTION_IMPLEMENTATION_AUTO",
-          "orderBy": [
+          "setExpressions": [
             {
-              "fieldName": "firstName",
-              "direction": "ORDER_DIRECTION_ASCENDING"
-            },
+              "source": "account.email = ctx.identity.email"
+            }
+          ]
+        },
+        {
+          "modelName": "Account",
+          "name": "updateAccount",
+          "type": "ACTION_TYPE_UPDATE",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "setExpressions": [
             {
-              "fieldName": "surname",
-              "direction": "ORDER_DIRECTION_DECENDING"
+              "source": "account.email = ctx.identity.email"
             }
           ],
-          "inputMessageName": "ListAuthorsInput"
+          "inputMessageName": "UpdateAccountInput"
+        },
+        {
+          "modelName": "Account",
+          "name": "listAccounts",
+          "type": "ACTION_TYPE_LIST",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "ListAccountsInput"
+        },
+        {
+          "modelName": "Account",
+          "name": "getAccount",
+          "type": "ACTION_TYPE_GET",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "whereExpressions": [
+            {
+              "source": "account.id == \"123\""
+            }
+          ]
+        },
+        {
+          "modelName": "Account",
+          "name": "deleteAccount",
+          "type": "ACTION_TYPE_DELETE",
+          "implementation": "ACTION_IMPLEMENTATION_AUTO",
+          "whereExpressions": [
+            {
+              "source": "account.id == \"123\""
+            }
+          ]
         }
       ]
     },
@@ -266,13 +294,50 @@
   ],
   "apis": [
     {
+      "name": "Test",
+      "apiModels": [
+        {
+          "modelName": "Account",
+          "modelActions": [
+            {
+              "actionName": "createAccount"
+            },
+            {
+              "actionName": "updateAccount"
+            },
+            {
+              "actionName": "listAccounts"
+            },
+            {
+              "actionName": "getAccount"
+            },
+            {
+              "actionName": "deleteAccount"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "Api",
       "apiModels": [
         {
-          "modelName": "Author",
+          "modelName": "Account",
           "modelActions": [
             {
-              "actionName": "listAuthors"
+              "actionName": "createAccount"
+            },
+            {
+              "actionName": "updateAccount"
+            },
+            {
+              "actionName": "listAccounts"
+            },
+            {
+              "actionName": "getAccount"
+            },
+            {
+              "actionName": "deleteAccount"
             }
           ]
         },
@@ -339,10 +404,40 @@
       "name": "ResetPasswordResponse"
     },
     {
-      "name": "ListAuthorsInput",
+      "name": "UpdateAccountWhere",
       "fields": [
         {
-          "messageName": "ListAuthorsInput",
+          "messageName": "UpdateAccountWhere",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Account",
+            "fieldName": "id"
+          },
+          "target": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "UpdateAccountInput",
+      "fields": [
+        {
+          "messageName": "UpdateAccountInput",
+          "name": "where",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "UpdateAccountWhere"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ListAccountsInput",
+      "fields": [
+        {
+          "messageName": "ListAccountsInput",
           "name": "first",
           "type": {
             "type": "TYPE_INT"
@@ -350,7 +445,7 @@
           "optional": true
         },
         {
-          "messageName": "ListAuthorsInput",
+          "messageName": "ListAccountsInput",
           "name": "after",
           "type": {
             "type": "TYPE_STRING"
@@ -358,7 +453,7 @@
           "optional": true
         },
         {
-          "messageName": "ListAuthorsInput",
+          "messageName": "ListAccountsInput",
           "name": "last",
           "type": {
             "type": "TYPE_INT"
@@ -366,7 +461,7 @@
           "optional": true
         },
         {
-          "messageName": "ListAuthorsInput",
+          "messageName": "ListAccountsInput",
           "name": "before",
           "type": {
             "type": "TYPE_STRING"
@@ -374,7 +469,7 @@
           "optional": true
         },
         {
-          "messageName": "ListAuthorsInput",
+          "messageName": "ListAccountsInput",
           "name": "limit",
           "type": {
             "type": "TYPE_INT"
@@ -382,7 +477,7 @@
           "optional": true
         },
         {
-          "messageName": "ListAuthorsInput",
+          "messageName": "ListAccountsInput",
           "name": "offset",
           "type": {
             "type": "TYPE_INT"

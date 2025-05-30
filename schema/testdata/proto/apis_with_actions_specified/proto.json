@@ -124,7 +124,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -161,7 +163,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
           "modelName": "Identity",
@@ -405,7 +409,9 @@
             "modelName": "Author",
             "fieldName": "id"
           },
-          "target": ["id"]
+          "target": [
+            "id"
+          ]
         }
       ]
     },
@@ -420,25 +426,15 @@
             "modelName": "Author",
             "fieldName": "id"
           },
-          "target": ["id"]
+          "target": [
+            "id"
+          ]
         }
       ]
     },
     {
-      "name": "SearchBooksWhere"
-    },
-    {
       "name": "SearchBooksInput",
       "fields": [
-        {
-          "messageName": "SearchBooksInput",
-          "name": "where",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "SearchBooksWhere"
-          },
-          "optional": true
-        },
         {
           "messageName": "SearchBooksInput",
           "name": "first",
@@ -500,7 +496,9 @@
             "modelName": "Book",
             "fieldName": "id"
           },
-          "target": ["id"]
+          "target": [
+            "id"
+          ]
         }
       ]
     }

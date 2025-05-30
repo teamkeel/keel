@@ -70,7 +70,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -107,7 +109,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
           "modelName": "Identity",
@@ -325,9 +329,6 @@
       "name": "ResetPasswordResponse"
     },
     {
-      "name": "ListAuthorsWhere"
-    },
-    {
       "name": "ListAuthorsOrderByFirstName",
       "fields": [
         {
@@ -354,15 +355,6 @@
     {
       "name": "ListAuthorsInput",
       "fields": [
-        {
-          "messageName": "ListAuthorsInput",
-          "name": "where",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "ListAuthorsWhere"
-          },
-          "optional": true
-        },
         {
           "messageName": "ListAuthorsInput",
           "name": "first",

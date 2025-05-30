@@ -71,8 +71,7 @@
             {
               "source": "account.identity = ctx.identity"
             }
-          ],
-          "inputMessageName": "CreateAccountInput"
+          ]
         }
       ],
       "permissions": [
@@ -81,7 +80,9 @@
           "expression": {
             "source": "account.identity == ctx.identity"
           },
-          "actionTypes": ["ACTION_TYPE_CREATE"]
+          "actionTypes": [
+            "ACTION_TYPE_CREATE"
+          ]
         }
       ]
     },
@@ -95,7 +96,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -132,7 +135,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
           "modelName": "Identity",
@@ -358,9 +363,6 @@
     },
     {
       "name": "ResetPasswordResponse"
-    },
-    {
-      "name": "CreateAccountInput"
     }
   ]
 }

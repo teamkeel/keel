@@ -65,8 +65,7 @@
           "modelName": "Invoice",
           "name": "createInvoice",
           "type": "ACTION_TYPE_CREATE",
-          "implementation": "ACTION_IMPLEMENTATION_AUTO",
-          "inputMessageName": "CreateInvoiceInput"
+          "implementation": "ACTION_IMPLEMENTATION_AUTO"
         },
         {
           "modelName": "Invoice",
@@ -87,7 +86,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -124,7 +125,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
           "modelName": "Identity",
@@ -345,9 +348,6 @@
       "name": "ResetPasswordResponse"
     },
     {
-      "name": "CreateInvoiceInput"
-    },
-    {
       "name": "GetInvoiceInput",
       "fields": [
         {
@@ -358,7 +358,9 @@
             "modelName": "Invoice",
             "fieldName": "reference"
           },
-          "target": ["reference"]
+          "target": [
+            "reference"
+          ]
         }
       ]
     }
