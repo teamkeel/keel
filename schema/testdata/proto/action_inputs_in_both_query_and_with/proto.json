@@ -580,19 +580,6 @@
       ]
     },
     {
-      "name": "UpdateAccount3Values",
-      "fields": [
-        {
-          "messageName": "UpdateAccount3Values",
-          "name": "identity",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "UpdateAccount3IdentityInput"
-          }
-        }
-      ]
-    },
-    {
       "name": "UpdateAccount3IdentityInput",
       "fields": [
         {
@@ -604,6 +591,19 @@
             "fieldName": "id"
           },
           "target": ["identity", "id"]
+        }
+      ]
+    },
+    {
+      "name": "UpdateAccount3Values",
+      "fields": [
+        {
+          "messageName": "UpdateAccount3Values",
+          "name": "identity",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "UpdateAccount3IdentityInput"
+          }
         }
       ]
     },

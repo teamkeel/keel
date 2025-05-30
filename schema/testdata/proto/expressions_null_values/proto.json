@@ -354,9 +354,6 @@
       ]
     },
     {
-      "name": "RemoveTitleValues"
-    },
-    {
       "name": "RemoveTitleInput",
       "fields": [
         {
@@ -366,33 +363,12 @@
             "type": "TYPE_MESSAGE",
             "messageName": "RemoveTitleWhere"
           }
-        },
-        {
-          "messageName": "RemoveTitleInput",
-          "name": "values",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "RemoveTitleValues"
-          },
-          "optional": true
         }
       ]
     },
     {
-      "name": "ListPostsWithNoTitleWhere"
-    },
-    {
       "name": "ListPostsWithNoTitleInput",
       "fields": [
-        {
-          "messageName": "ListPostsWithNoTitleInput",
-          "name": "where",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "ListPostsWithNoTitleWhere"
-          },
-          "optional": true
-        },
         {
           "messageName": "ListPostsWithNoTitleInput",
           "name": "first",

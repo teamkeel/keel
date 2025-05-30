@@ -1,17 +1,21 @@
 {
   "type": "object",
   "properties": {
-    "values": { "$ref": "#/components/schemas/TestActionValues" },
-    "where": { "$ref": "#/components/schemas/TestActionWhere" }
+    "where": {
+      "$ref": "#/components/schemas/TestActionWhere"
+    }
   },
   "unevaluatedProperties": false,
   "required": ["where"],
   "components": {
     "schemas": {
-      "TestActionValues": { "type": "object", "unevaluatedProperties": false },
       "TestActionWhere": {
         "type": "object",
-        "properties": { "id": { "type": "string" } },
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
         "unevaluatedProperties": false,
         "required": ["id"]
       }

@@ -71,8 +71,7 @@ func TestJSONSchemaGeneration(t *testing.T) {
 			if diff != jsondiff.FullMatch {
 				t.Errorf("actual JSON schema does not match expected: %s", explanation)
 
-				fmt.Printf("Actual (%s):", name)
-				fmt.Println(string(jsonSchemaBytes))
+				fmt.Println(name + ":\n" + string(jsonSchemaBytes))
 			}
 		})
 	}

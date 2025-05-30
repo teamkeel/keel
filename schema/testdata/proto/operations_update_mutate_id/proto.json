@@ -560,19 +560,6 @@
       ]
     },
     {
-      "name": "UpdatePersonCompanyIdValues",
-      "fields": [
-        {
-          "messageName": "UpdatePersonCompanyIdValues",
-          "name": "employer",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "UpdatePersonCompanyIdEmployerInput"
-          }
-        }
-      ]
-    },
-    {
       "name": "UpdatePersonCompanyIdEmployerInput",
       "fields": [
         {
@@ -584,6 +571,19 @@
             "fieldName": "id"
           },
           "target": ["employer", "id"]
+        }
+      ]
+    },
+    {
+      "name": "UpdatePersonCompanyIdValues",
+      "fields": [
+        {
+          "messageName": "UpdatePersonCompanyIdValues",
+          "name": "employer",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "UpdatePersonCompanyIdEmployerInput"
+          }
         }
       ]
     },

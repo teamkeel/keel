@@ -80,8 +80,7 @@
             {
               "source": "thing.numbers = [123, 456]"
             }
-          ],
-          "inputMessageName": "CreateThingInput"
+          ]
         },
         {
           "modelName": "Thing",
@@ -98,8 +97,7 @@
             {
               "source": "thing.numbers = []"
             }
-          ],
-          "inputMessageName": "CreateEmptyThingInput"
+          ]
         },
         {
           "modelName": "Thing",
@@ -116,8 +114,7 @@
             {
               "source": "thing.numbers = null"
             }
-          ],
-          "inputMessageName": "CreateNullThingInput"
+          ]
         }
       ]
     },
@@ -403,15 +400,6 @@
     },
     {
       "name": "ResetPasswordResponse"
-    },
-    {
-      "name": "CreateThingInput"
-    },
-    {
-      "name": "CreateEmptyThingInput"
-    },
-    {
-      "name": "CreateNullThingInput"
     }
   ]
 }

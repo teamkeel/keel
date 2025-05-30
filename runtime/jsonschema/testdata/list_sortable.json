@@ -15,8 +15,7 @@
           { "$ref": "#/components/schemas/TestActionOrderByFirstName" }
         ]
       }
-    },
-    "where": { "$ref": "#/components/schemas/TestActionWhere" }
+    }
   },
   "unevaluatedProperties": false,
   "components": {
@@ -38,8 +37,7 @@
         "unevaluatedProperties": false,
         "required": ["surname"],
         "title": "surname"
-      },
-      "TestActionWhere": { "type": "object", "unevaluatedProperties": false }
+      }
     }
   }
 }

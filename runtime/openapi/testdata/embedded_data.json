@@ -407,8 +407,7 @@
                         }
                       ]
                     }
-                  },
-                  "where": { "$ref": "#/components/schemas/ListAuthorsWhere" }
+                  }
                 },
                 "unevaluatedProperties": false
               }
@@ -484,8 +483,7 @@
                   "first": { "type": "number" },
                   "last": { "type": "number" },
                   "limit": { "type": "number" },
-                  "offset": { "type": "number" },
-                  "where": { "$ref": "#/components/schemas/ListBooksWhere" }
+                  "offset": { "type": "number" }
                 },
                 "unevaluatedProperties": false
               }
@@ -813,8 +811,6 @@
         "required": ["surname"],
         "title": "surname"
       },
-      "ListAuthorsWhere": { "type": "object", "unevaluatedProperties": false },
-      "ListBooksWhere": { "type": "object", "unevaluatedProperties": false },
       "ListReviewsBookInput": {
         "type": "object",
         "properties": { "id": { "$ref": "#/components/schemas/IdQueryInput" } },

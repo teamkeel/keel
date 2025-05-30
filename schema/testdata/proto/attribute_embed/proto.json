@@ -723,9 +723,6 @@
       ]
     },
     {
-      "name": "ListAuthorsWhere"
-    },
-    {
       "name": "ListAuthorsOrderByFirstName",
       "fields": [
         {
@@ -752,15 +749,6 @@
     {
       "name": "ListAuthorsInput",
       "fields": [
-        {
-          "messageName": "ListAuthorsInput",
-          "name": "where",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "ListAuthorsWhere"
-          },
-          "optional": true
-        },
         {
           "messageName": "ListAuthorsInput",
           "name": "first",
@@ -1004,20 +992,8 @@
       ]
     },
     {
-      "name": "ListBooksWhere"
-    },
-    {
       "name": "ListBooksInput",
       "fields": [
-        {
-          "messageName": "ListBooksInput",
-          "name": "where",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "ListBooksWhere"
-          },
-          "optional": true
-        },
         {
           "messageName": "ListBooksInput",
           "name": "first",

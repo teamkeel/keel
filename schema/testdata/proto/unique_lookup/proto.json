@@ -92,8 +92,7 @@
             {
               "source": "product.sku == \"123\""
             }
-          ],
-          "inputMessageName": "GetSpecificSkuInput"
+          ]
         },
         {
           "modelName": "Product",
@@ -164,8 +163,7 @@
             {
               "source": "product.sku == ctx.identity.user.assignedProduct.sku"
             }
-          ],
-          "inputMessageName": "GetbySkuFromCtxInput"
+          ]
         }
       ]
     },
@@ -596,9 +594,6 @@
       ]
     },
     {
-      "name": "GetSpecificSkuInput"
-    },
-    {
       "name": "GetbySkuAsInputAndShampooInput",
       "fields": [
         {
@@ -660,9 +655,6 @@
           }
         }
       ]
-    },
-    {
-      "name": "GetbySkuFromCtxInput"
     }
   ]
 }

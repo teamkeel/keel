@@ -130,38 +130,44 @@ func Generate(ctx context.Context, schema *proto.Schema, api *proto.Api) OpenAPI
 	for _, actionName := range proto.GetActionNamesForApi(schema, api) {
 		action := schema.FindAction(actionName)
 
-		inputSchema := jsonschema.JSONSchemaForActionInput(ctx, schema, action)
-		endpoint := fmt.Sprintf("/%s/json/%s", strings.ToLower(api.Name), action.Name)
+		var requestBody *RequestBodyObject
+		if action.InputMessageName != "" {
+			inputSchema := jsonschema.JSONSchemaForActionInput(ctx, schema, action)
 
-		// Merge components from this request schema into OpenAPI components
-		if inputSchema.Components != nil {
-			for name, comp := range inputSchema.Components.Schemas {
-				components.Schemas[name] = comp
+			// Merge components from this request schema into OpenAPI components
+			if inputSchema.Components != nil {
+				for name, comp := range inputSchema.Components.Schemas {
+					components.Schemas[name] = comp
+				}
+				inputSchema.Components = nil
 			}
-			inputSchema.Components = nil
+
+			requestBody = &RequestBodyObject{
+				Description: action.Name + " Request",
+				Content: map[string]MediaTypeObject{
+					"application/json": {
+						Schema: inputSchema,
+					},
+				},
+			}
 		}
 
 		responseSchema := jsonschema.JSONSchemaForActionResponse(ctx, schema, action)
 
 		if responseSchema.Components != nil {
+			// Merge components from this response schema into OpenAPI components
 			for name, comp := range responseSchema.Components.Schemas {
 				components.Schemas[name] = comp
 			}
-
 			responseSchema.Components = nil
 		}
+
+		endpoint := fmt.Sprintf("/%s/json/%s", strings.ToLower(api.Name), action.Name)
 
 		spec.Paths[endpoint] = PathItemObject{
 			Post: &OperationObject{
 				OperationID: &action.Name,
-				RequestBody: &RequestBodyObject{
-					Description: action.Name + " Request",
-					Content: map[string]MediaTypeObject{
-						"application/json": {
-							Schema: inputSchema,
-						},
-					},
-				},
+				RequestBody: requestBody,
 				Responses: map[string]ResponseObject{
 					"200": {
 						Description: action.Name + " Response",

@@ -346,9 +346,6 @@
       ]
     },
     {
-      "name": "UpdateMyModelValues"
-    },
-    {
       "name": "UpdateMyModelInput",
       "fields": [
         {
@@ -358,15 +355,6 @@
             "type": "TYPE_MESSAGE",
             "messageName": "UpdateMyModelWhere"
           }
-        },
-        {
-          "messageName": "UpdateMyModelInput",
-          "name": "values",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "UpdateMyModelValues"
-          },
-          "optional": true
         }
       ]
     }

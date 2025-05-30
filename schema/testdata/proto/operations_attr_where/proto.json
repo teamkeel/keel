@@ -54,8 +54,7 @@
             {
               "source": "foo.f1 == \"foo\""
             }
-          ],
-          "inputMessageName": "OperationAInput"
+          ]
         }
       ]
     },
@@ -322,9 +321,6 @@
     },
     {
       "name": "ResetPasswordResponse"
-    },
-    {
-      "name": "OperationAInput"
     }
   ]
 }

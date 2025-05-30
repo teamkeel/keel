@@ -452,6 +452,21 @@
       ]
     },
     {
+      "name": "UpdateChild1ParentInput",
+      "fields": [
+        {
+          "messageName": "UpdateChild1ParentInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "ParentModel",
+            "fieldName": "id"
+          },
+          "target": ["parent", "id"]
+        }
+      ]
+    },
+    {
       "name": "UpdateChild1Values",
       "fields": [
         {
@@ -471,21 +486,6 @@
             "type": "TYPE_MESSAGE",
             "messageName": "UpdateChild1ParentInput"
           }
-        }
-      ]
-    },
-    {
-      "name": "UpdateChild1ParentInput",
-      "fields": [
-        {
-          "messageName": "UpdateChild1ParentInput",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "ParentModel",
-            "fieldName": "id"
-          },
-          "target": ["parent", "id"]
         }
       ]
     },
@@ -587,6 +587,36 @@
       ]
     },
     {
+      "name": "UpdateChild3ParentInput",
+      "fields": [
+        {
+          "messageName": "UpdateChild3ParentInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "ParentModel",
+            "fieldName": "id"
+          },
+          "target": ["parent", "id"]
+        }
+      ]
+    },
+    {
+      "name": "UpdateChild3ParentOptionalInput",
+      "fields": [
+        {
+          "messageName": "UpdateChild3ParentOptionalInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "ParentModel",
+            "fieldName": "id"
+          },
+          "target": ["parentOptional", "id"]
+        }
+      ]
+    },
+    {
       "name": "UpdateChild3Values",
       "fields": [
         {
@@ -615,36 +645,6 @@
             "messageName": "UpdateChild3ParentOptionalInput"
           },
           "nullable": true
-        }
-      ]
-    },
-    {
-      "name": "UpdateChild3ParentInput",
-      "fields": [
-        {
-          "messageName": "UpdateChild3ParentInput",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "ParentModel",
-            "fieldName": "id"
-          },
-          "target": ["parent", "id"]
-        }
-      ]
-    },
-    {
-      "name": "UpdateChild3ParentOptionalInput",
-      "fields": [
-        {
-          "messageName": "UpdateChild3ParentOptionalInput",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "ParentModel",
-            "fieldName": "id"
-          },
-          "target": ["parentOptional", "id"]
         }
       ]
     },

@@ -65,8 +65,7 @@
           "modelName": "Invoice",
           "name": "createInvoice",
           "type": "ACTION_TYPE_CREATE",
-          "implementation": "ACTION_IMPLEMENTATION_AUTO",
-          "inputMessageName": "CreateInvoiceInput"
+          "implementation": "ACTION_IMPLEMENTATION_AUTO"
         },
         {
           "modelName": "Invoice",
@@ -343,9 +342,6 @@
     },
     {
       "name": "ResetPasswordResponse"
-    },
-    {
-      "name": "CreateInvoiceInput"
     },
     {
       "name": "GetInvoiceInput",

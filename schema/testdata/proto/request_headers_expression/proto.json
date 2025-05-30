@@ -53,8 +53,7 @@
             {
               "source": "apiKey.key = ctx.headers.X_API_TOKEN"
             }
-          ],
-          "inputMessageName": "CreateApiKeyInput"
+          ]
         }
       ]
     },
@@ -321,9 +320,6 @@
     },
     {
       "name": "ResetPasswordResponse"
-    },
-    {
-      "name": "CreateApiKeyInput"
     }
   ]
 }

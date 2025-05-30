@@ -6,18 +6,25 @@
         {
           "modelName": "Record",
           "name": "name",
-          "type": { "type": "TYPE_STRING" }
+          "type": {
+            "type": "TYPE_STRING"
+          }
         },
         {
           "modelName": "Record",
           "name": "owner",
-          "type": { "type": "TYPE_MODEL", "modelName": "User" },
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "User"
+          },
           "foreignKeyFieldName": "ownerId"
         },
         {
           "modelName": "Record",
           "name": "ownerId",
-          "type": { "type": "TYPE_ID" },
+          "type": {
+            "type": "TYPE_ID"
+          },
           "foreignKeyInfo": {
             "relatedModelName": "User",
             "relatedModelField": "id"
@@ -26,13 +33,18 @@
         {
           "modelName": "Record",
           "name": "organisation",
-          "type": { "type": "TYPE_MODEL", "modelName": "Organisation" },
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Organisation"
+          },
           "foreignKeyFieldName": "organisationId"
         },
         {
           "modelName": "Record",
           "name": "organisationId",
-          "type": { "type": "TYPE_ID" },
+          "type": {
+            "type": "TYPE_ID"
+          },
           "foreignKeyInfo": {
             "relatedModelName": "Organisation",
             "relatedModelField": "id"
@@ -41,13 +53,22 @@
         {
           "modelName": "Record",
           "name": "isActive",
-          "type": { "type": "TYPE_BOOL" },
-          "defaultValue": { "expression": { "source": "false" } }
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "defaultValue": {
+            "expression": {
+              "source": "false"
+            }
+          }
         },
         {
           "modelName": "Record",
           "name": "parent",
-          "type": { "type": "TYPE_MODEL", "modelName": "Record" },
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Record"
+          },
           "optional": true,
           "foreignKeyFieldName": "parentId",
           "inverseFieldName": "children"
@@ -55,7 +76,9 @@
         {
           "modelName": "Record",
           "name": "parentId",
-          "type": { "type": "TYPE_ID" },
+          "type": {
+            "type": "TYPE_ID"
+          },
           "optional": true,
           "foreignKeyInfo": {
             "relatedModelName": "Record",
@@ -75,22 +98,34 @@
         {
           "modelName": "Record",
           "name": "id",
-          "type": { "type": "TYPE_ID" },
+          "type": {
+            "type": "TYPE_ID"
+          },
           "unique": true,
           "primaryKey": true,
-          "defaultValue": { "useZeroValue": true }
+          "defaultValue": {
+            "useZeroValue": true
+          }
         },
         {
           "modelName": "Record",
           "name": "createdAt",
-          "type": { "type": "TYPE_DATETIME" },
-          "defaultValue": { "useZeroValue": true }
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
         },
         {
           "modelName": "Record",
           "name": "updatedAt",
-          "type": { "type": "TYPE_DATETIME" },
-          "defaultValue": { "useZeroValue": true }
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
         }
       ],
       "actions": [
@@ -100,7 +135,9 @@
           "type": "ACTION_TYPE_CREATE",
           "implementation": "ACTION_IMPLEMENTATION_AUTO",
           "setExpressions": [
-            { "source": "record.owner = ctx.identity.user" },
+            {
+              "source": "record.owner = ctx.identity.user"
+            },
             {
               "source": "record.organisation.id = ctx.identity.user.organisation.id"
             },
@@ -116,7 +153,9 @@
           "type": "ACTION_TYPE_UPDATE",
           "implementation": "ACTION_IMPLEMENTATION_AUTO",
           "setExpressions": [
-            { "source": "record.owner = ctx.identity.user" },
+            {
+              "source": "record.owner = ctx.identity.user"
+            },
             {
               "source": "record.organisation.id = ctx.identity.user.organisation.id"
             },
@@ -134,7 +173,10 @@
         {
           "modelName": "User",
           "name": "identity",
-          "type": { "type": "TYPE_MODEL", "modelName": "Identity" },
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Identity"
+          },
           "unique": true,
           "foreignKeyFieldName": "identityId",
           "inverseFieldName": "user"
@@ -142,7 +184,9 @@
         {
           "modelName": "User",
           "name": "identityId",
-          "type": { "type": "TYPE_ID" },
+          "type": {
+            "type": "TYPE_ID"
+          },
           "unique": true,
           "foreignKeyInfo": {
             "relatedModelName": "Identity",
@@ -152,14 +196,19 @@
         {
           "modelName": "User",
           "name": "organisation",
-          "type": { "type": "TYPE_MODEL", "modelName": "Organisation" },
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Organisation"
+          },
           "foreignKeyFieldName": "organisationId",
           "inverseFieldName": "users"
         },
         {
           "modelName": "User",
           "name": "organisationId",
-          "type": { "type": "TYPE_ID" },
+          "type": {
+            "type": "TYPE_ID"
+          },
           "foreignKeyInfo": {
             "relatedModelName": "Organisation",
             "relatedModelField": "id"
@@ -168,28 +217,46 @@
         {
           "modelName": "User",
           "name": "isAdmin",
-          "type": { "type": "TYPE_BOOL" },
-          "defaultValue": { "expression": { "source": "false" } }
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "defaultValue": {
+            "expression": {
+              "source": "false"
+            }
+          }
         },
         {
           "modelName": "User",
           "name": "id",
-          "type": { "type": "TYPE_ID" },
+          "type": {
+            "type": "TYPE_ID"
+          },
           "unique": true,
           "primaryKey": true,
-          "defaultValue": { "useZeroValue": true }
+          "defaultValue": {
+            "useZeroValue": true
+          }
         },
         {
           "modelName": "User",
           "name": "createdAt",
-          "type": { "type": "TYPE_DATETIME" },
-          "defaultValue": { "useZeroValue": true }
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
         },
         {
           "modelName": "User",
           "name": "updatedAt",
-          "type": { "type": "TYPE_DATETIME" },
-          "defaultValue": { "useZeroValue": true }
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
         }
       ]
     },
@@ -209,28 +276,46 @@
         {
           "modelName": "Organisation",
           "name": "isActive",
-          "type": { "type": "TYPE_BOOL" },
-          "defaultValue": { "expression": { "source": "true" } }
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "defaultValue": {
+            "expression": {
+              "source": "true"
+            }
+          }
         },
         {
           "modelName": "Organisation",
           "name": "id",
-          "type": { "type": "TYPE_ID" },
+          "type": {
+            "type": "TYPE_ID"
+          },
           "unique": true,
           "primaryKey": true,
-          "defaultValue": { "useZeroValue": true }
+          "defaultValue": {
+            "useZeroValue": true
+          }
         },
         {
           "modelName": "Organisation",
           "name": "createdAt",
-          "type": { "type": "TYPE_DATETIME" },
-          "defaultValue": { "useZeroValue": true }
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
         },
         {
           "modelName": "Organisation",
           "name": "updatedAt",
-          "type": { "type": "TYPE_DATETIME" },
-          "defaultValue": { "useZeroValue": true }
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
         }
       ]
     },
@@ -240,125 +325,176 @@
         {
           "modelName": "Identity",
           "name": "email",
-          "type": { "type": "TYPE_STRING" },
+          "type": {
+            "type": "TYPE_STRING"
+          },
           "optional": true,
           "uniqueWith": ["issuer"]
         },
         {
           "modelName": "Identity",
           "name": "emailVerified",
-          "type": { "type": "TYPE_BOOL" },
-          "defaultValue": { "expression": { "source": "false" } }
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "defaultValue": {
+            "expression": {
+              "source": "false"
+            }
+          }
         },
         {
           "modelName": "Identity",
           "name": "password",
-          "type": { "type": "TYPE_PASSWORD" },
+          "type": {
+            "type": "TYPE_PASSWORD"
+          },
           "optional": true
         },
         {
           "modelName": "Identity",
           "name": "externalId",
-          "type": { "type": "TYPE_STRING" },
+          "type": {
+            "type": "TYPE_STRING"
+          },
           "optional": true
         },
         {
           "modelName": "Identity",
           "name": "issuer",
-          "type": { "type": "TYPE_STRING" },
+          "type": {
+            "type": "TYPE_STRING"
+          },
           "optional": true,
           "uniqueWith": ["email"]
         },
         {
           "modelName": "Identity",
           "name": "name",
-          "type": { "type": "TYPE_STRING" },
+          "type": {
+            "type": "TYPE_STRING"
+          },
           "optional": true
         },
         {
           "modelName": "Identity",
           "name": "givenName",
-          "type": { "type": "TYPE_STRING" },
+          "type": {
+            "type": "TYPE_STRING"
+          },
           "optional": true
         },
         {
           "modelName": "Identity",
           "name": "familyName",
-          "type": { "type": "TYPE_STRING" },
+          "type": {
+            "type": "TYPE_STRING"
+          },
           "optional": true
         },
         {
           "modelName": "Identity",
           "name": "middleName",
-          "type": { "type": "TYPE_STRING" },
+          "type": {
+            "type": "TYPE_STRING"
+          },
           "optional": true
         },
         {
           "modelName": "Identity",
           "name": "nickName",
-          "type": { "type": "TYPE_STRING" },
+          "type": {
+            "type": "TYPE_STRING"
+          },
           "optional": true
         },
         {
           "modelName": "Identity",
           "name": "profile",
-          "type": { "type": "TYPE_STRING" },
+          "type": {
+            "type": "TYPE_STRING"
+          },
           "optional": true
         },
         {
           "modelName": "Identity",
           "name": "picture",
-          "type": { "type": "TYPE_STRING" },
+          "type": {
+            "type": "TYPE_STRING"
+          },
           "optional": true
         },
         {
           "modelName": "Identity",
           "name": "website",
-          "type": { "type": "TYPE_STRING" },
+          "type": {
+            "type": "TYPE_STRING"
+          },
           "optional": true
         },
         {
           "modelName": "Identity",
           "name": "gender",
-          "type": { "type": "TYPE_STRING" },
+          "type": {
+            "type": "TYPE_STRING"
+          },
           "optional": true
         },
         {
           "modelName": "Identity",
           "name": "zoneInfo",
-          "type": { "type": "TYPE_STRING" },
+          "type": {
+            "type": "TYPE_STRING"
+          },
           "optional": true
         },
         {
           "modelName": "Identity",
           "name": "locale",
-          "type": { "type": "TYPE_STRING" },
+          "type": {
+            "type": "TYPE_STRING"
+          },
           "optional": true
         },
         {
           "modelName": "Identity",
           "name": "id",
-          "type": { "type": "TYPE_ID" },
+          "type": {
+            "type": "TYPE_ID"
+          },
           "unique": true,
           "primaryKey": true,
-          "defaultValue": { "useZeroValue": true }
+          "defaultValue": {
+            "useZeroValue": true
+          }
         },
         {
           "modelName": "Identity",
           "name": "createdAt",
-          "type": { "type": "TYPE_DATETIME" },
-          "defaultValue": { "useZeroValue": true }
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
         },
         {
           "modelName": "Identity",
           "name": "updatedAt",
-          "type": { "type": "TYPE_DATETIME" },
-          "defaultValue": { "useZeroValue": true }
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
         },
         {
           "modelName": "Identity",
           "name": "user",
-          "type": { "type": "TYPE_MODEL", "modelName": "User" },
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "User"
+          },
           "optional": true,
           "inverseFieldName": "identity"
         }
@@ -390,56 +526,82 @@
         {
           "modelName": "Record",
           "modelActions": [
-            { "actionName": "createRecord" },
-            { "actionName": "updateRecordOwner" }
+            {
+              "actionName": "createRecord"
+            },
+            {
+              "actionName": "updateRecordOwner"
+            }
           ]
         },
-        { "modelName": "User" },
-        { "modelName": "Organisation" },
+        {
+          "modelName": "User"
+        },
+        {
+          "modelName": "Organisation"
+        },
         {
           "modelName": "Identity",
           "modelActions": [
-            { "actionName": "requestPasswordReset" },
-            { "actionName": "resetPassword" }
+            {
+              "actionName": "requestPasswordReset"
+            },
+            {
+              "actionName": "resetPassword"
+            }
           ]
         }
       ]
     }
   ],
   "messages": [
-    { "name": "Any" },
+    {
+      "name": "Any"
+    },
     {
       "name": "RequestPasswordResetInput",
       "fields": [
         {
           "messageName": "RequestPasswordResetInput",
           "name": "email",
-          "type": { "type": "TYPE_STRING" }
+          "type": {
+            "type": "TYPE_STRING"
+          }
         },
         {
           "messageName": "RequestPasswordResetInput",
           "name": "redirectUrl",
-          "type": { "type": "TYPE_STRING" }
+          "type": {
+            "type": "TYPE_STRING"
+          }
         }
       ]
     },
-    { "name": "RequestPasswordResetResponse" },
+    {
+      "name": "RequestPasswordResetResponse"
+    },
     {
       "name": "ResetPasswordInput",
       "fields": [
         {
           "messageName": "ResetPasswordInput",
           "name": "token",
-          "type": { "type": "TYPE_STRING" }
+          "type": {
+            "type": "TYPE_STRING"
+          }
         },
         {
           "messageName": "ResetPasswordInput",
           "name": "password",
-          "type": { "type": "TYPE_STRING" }
+          "type": {
+            "type": "TYPE_STRING"
+          }
         }
       ]
     },
-    { "name": "ResetPasswordResponse" },
+    {
+      "name": "ResetPasswordResponse"
+    },
     {
       "name": "CreateRecordInput",
       "fields": [
@@ -470,7 +632,6 @@
         }
       ]
     },
-    { "name": "UpdateRecordOwnerValues" },
     {
       "name": "UpdateRecordOwnerInput",
       "fields": [
@@ -481,15 +642,6 @@
             "type": "TYPE_MESSAGE",
             "messageName": "UpdateRecordOwnerWhere"
           }
-        },
-        {
-          "messageName": "UpdateRecordOwnerInput",
-          "name": "values",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "UpdateRecordOwnerValues"
-          },
-          "optional": true
         }
       ]
     }

@@ -561,9 +561,6 @@
       ]
     },
     {
-      "name": "KillValues"
-    },
-    {
       "name": "KillInput",
       "fields": [
         {
@@ -573,15 +570,6 @@
             "type": "TYPE_MESSAGE",
             "messageName": "KillWhere"
           }
-        },
-        {
-          "messageName": "KillInput",
-          "name": "values",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "KillValues"
-          },
-          "optional": true
         }
       ]
     }
