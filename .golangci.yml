@@ -75,7 +75,7 @@ linters:
     - grouper
     - iface
     - importas
-    # - inamedparam
+    - inamedparam
     - ineffassign
     # - interfacebloat
     # - intrange
