@@ -571,10 +571,10 @@ func createAuditTriggerStmts(triggers []*TriggerRow, model *proto.Model) string 
 			`CREATE TRIGGER %s AFTER UPDATE ON %s REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();`, update, Identifier(model.GetName())))
 	}
 
-	delete := fmt.Sprintf("%s_delete", modelLower)
-	if _, found := lo.Find(triggers, func(t *TriggerRow) bool { return t.TriggerName == delete && t.TableName == modelLower }); !found {
+	del := fmt.Sprintf("%s_delete", modelLower)
+	if _, found := lo.Find(triggers, func(t *TriggerRow) bool { return t.TriggerName == del && t.TableName == modelLower }); !found {
 		statements = append(statements, fmt.Sprintf(
-			`CREATE TRIGGER %s AFTER DELETE ON %s REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();`, delete, Identifier(model.GetName())))
+			`CREATE TRIGGER %s AFTER DELETE ON %s REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();`, del, Identifier(model.GetName())))
 	}
 
 	return strings.Join(statements, "\n")

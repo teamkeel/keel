@@ -305,15 +305,15 @@ func parseUnixCron(tokens *Tokens) (*CronExpression, error) {
 				if !cfg.stepValues {
 					return nil, Error{Message: fmt.Sprintf("step values are not allowed in %s field", cfg.label), Token: token}
 				}
-				min := cfg.min
-				if min == 0 {
-					min = 1
+				minute := cfg.min
+				if minute == 0 {
+					minute = 1
 				}
 				trimmed := strings.TrimPrefix(token.Value, "*/")
 				n, err := strconv.Atoi(trimmed)
-				if err != nil || n < min || n > cfg.max {
+				if err != nil || n < minute || n > cfg.max {
 					return nil, Error{
-						Message: fmt.Sprintf("invalid step value '%s' for %s field - must be integer between %d and %d", trimmed, cfg.label, min, cfg.max),
+						Message: fmt.Sprintf("invalid step value '%s' for %s field - must be integer between %d and %d", trimmed, cfg.label, minute, cfg.max),
 						Token:   token,
 					}
 				}

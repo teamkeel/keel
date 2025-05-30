@@ -530,48 +530,48 @@ func extractToolGroupLinkConfig(generated, updated *toolsproto.ToolGroup_GroupAc
 	return &cfg
 }
 
-func diffString(old, new string) *string {
-	if old != new {
-		return &new
+func diffString(old, updated string) *string {
+	if old != updated {
+		return &updated
 	}
 
 	return nil
 }
 
-func diffInt(old, new int32) *int32 {
-	if old != new {
-		return &new
+func diffInt(old, updated int32) *int32 {
+	if old != updated {
+		return &updated
 	}
 
 	return nil
 }
 
-func diffNullableInt(old, new *int32) *int32 {
-	if old != nil && new != nil && *old == *new {
+func diffNullableInt(old, updated *int32) *int32 {
+	if old != nil && updated != nil && *old == *updated {
 		return nil
 	}
 
-	if old != nil && new == nil {
-		return new
+	if old != nil && updated == nil {
+		return updated
 	}
 
-	return new
+	return updated
 }
 
-func diffBool(old, new bool) *bool {
-	if old != new {
-		return &new
+func diffBool(old, updated bool) *bool {
+	if old != updated {
+		return &updated
 	}
 
 	return nil
 }
 
-func diffStringTemplate(old, new *toolsproto.StringTemplate) *string {
-	if new != nil {
-		if old != nil && old.GetTemplate() == new.GetTemplate() {
+func diffStringTemplate(old, updated *toolsproto.StringTemplate) *string {
+	if updated != nil {
+		if old != nil && old.GetTemplate() == updated.GetTemplate() {
 			return nil
 		}
-		return &new.Template
+		return &updated.Template
 	}
 	return nil
 }

@@ -1488,11 +1488,11 @@ func (scm *Builder) makeAPI(decl *parser.DeclarationNode) {
 }
 
 func (scm *Builder) makeAnyType() {
-	any := &proto.Message{
+	anyMsg := &proto.Message{
 		Name: "Any",
 	}
 
-	scm.proto.Messages = append(scm.proto.Messages, any)
+	scm.proto.Messages = append(scm.proto.Messages, anyMsg)
 }
 
 func (scm *Builder) makeMessage(decl *parser.DeclarationNode) {
