@@ -1,1 +1,884 @@
-{"openapi":"3.1.0","info":{"title":"FlowsAPI","version":"1"},"paths":{"/flows/json":{"get":{"operationId":"listFlows","responses":{"200":{"description":"","content":{"application/json":{"schema":{"type":"object","properties":{"flows":{"type":"array","items":{"type":"object","properties":{"name":{"type":"string"}}}}}}}}},"400":{"description":"","content":{"application/json":{"schema":{"properties":{"code":{"type":"string"},"data":{"type":["object","null"],"properties":{"errors":{"type":"array","properties":{"error":{"type":"string"},"field":{"type":"string"}}}}},"message":{"type":"string"}}}}}}}}},"/flows/json/AnotherWorkflow":{"post":{"operationId":"AnotherWorkflow","requestBody":{"description":"AnotherWorkflow Request","content":{"application/json":{"schema":{"type":"object","properties":{"age":{"type":"number"}},"unevaluatedProperties":false,"required":["age"]}}}},"responses":{"200":{"description":"Flow Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/Run"}}}},"400":{"description":"Flow Response Errors","content":{"application/json":{"schema":{"properties":{"code":{"type":"string"},"data":{"type":["object","null"],"properties":{"errors":{"type":"array","properties":{"error":{"type":"string"},"field":{"type":"string"}}}}},"message":{"type":"string"}}}}}}}}},"/flows/json/MyWorkflow":{"post":{"operationId":"MyWorkflow","requestBody":{"description":"MyWorkflow Request","content":{"application/json":{"schema":{"type":"object","properties":{"age":{"type":"number"},"name":{"type":"string"}},"unevaluatedProperties":false,"required":["name","age"]}}}},"responses":{"200":{"description":"Flow Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/Run"}}}},"400":{"description":"Flow Response Errors","content":{"application/json":{"schema":{"properties":{"code":{"type":"string"},"data":{"type":["object","null"],"properties":{"errors":{"type":"array","properties":{"error":{"type":"string"},"field":{"type":"string"}}}}},"message":{"type":"string"}}}}}}}}},"/flows/json/{flow}":{"post":{"operationId":"startFlow","requestBody":{"description":"","content":{"application/json":{"schema":{"type":"object","additionalProperties":true}}}},"responses":{"200":{"description":"Flow Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/Run"}}}},"400":{"description":"Flow Response Errors","content":{"application/json":{"schema":{"properties":{"code":{"type":"string"},"data":{"type":["object","null"],"properties":{"errors":{"type":"array","properties":{"error":{"type":"string"},"field":{"type":"string"}}}}},"message":{"type":"string"}}}}}}}},"get":{"operationId":"getFlow","responses":{"200":{"description":"","content":{"application/json":{"schema":{"type":"array","items":{"$ref":"#/components/schemas/Run"}}}}},"400":{"description":"","content":{"application/json":{"schema":{"properties":{"code":{"type":"string"},"data":{"type":["object","null"],"properties":{"errors":{"type":"array","properties":{"error":{"type":"string"},"field":{"type":"string"}}}}},"message":{"type":"string"}}}}}}}},"parameters":[{"name":"flow","in":"path","required":true,"description":"","schema":{"type":"string"}}]},"/flows/json/{flow}/{runId}":{"get":{"operationId":"getFlowRun","responses":{"200":{"description":"Flow Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/Run"}}}},"400":{"description":"Flow Response Errors","content":{"application/json":{"schema":{"properties":{"code":{"type":"string"},"data":{"type":["object","null"],"properties":{"errors":{"type":"array","properties":{"error":{"type":"string"},"field":{"type":"string"}}}}},"message":{"type":"string"}}}}}}}},"parameters":[{"name":"flow","in":"path","required":true,"description":"","schema":{"type":"string"}},{"name":"runId","in":"path","required":true,"description":"","schema":{"type":"string"}}]},"/flows/json/{flow}/{runId}/cancel":{"post":{"operationId":"cancelFlowRun","responses":{"200":{"description":"Flow Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/Run"}}}},"400":{"description":"Flow Response Errors","content":{"application/json":{"schema":{"properties":{"code":{"type":"string"},"data":{"type":["object","null"],"properties":{"errors":{"type":"array","properties":{"error":{"type":"string"},"field":{"type":"string"}}}}},"message":{"type":"string"}}}}}}}},"parameters":[{"name":"flow","in":"path","required":true,"description":"","schema":{"type":"string"}},{"name":"runId","in":"path","required":true,"description":"","schema":{"type":"string"}}]},"/flows/json/{flow}/{runId}/{stepId}":{"put":{"operationId":"putFlowStep","requestBody":{"description":"","content":{"application/json":{"schema":{"type":"object","additionalProperties":true}}}},"responses":{"200":{"description":"Flow Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/Run"}}}},"400":{"description":"Flow Response Errors","content":{"application/json":{"schema":{"properties":{"code":{"type":"string"},"data":{"type":["object","null"],"properties":{"errors":{"type":"array","properties":{"error":{"type":"string"},"field":{"type":"string"}}}}},"message":{"type":"string"}}}}}}}},"parameters":[{"name":"flow","in":"path","required":true,"description":"","schema":{"type":"string"}},{"name":"runId","in":"path","required":true,"description":"","schema":{"type":"string"}},{"name":"stepId","in":"path","required":true,"description":"","schema":{"type":"string"}}]}},"components":{"schemas":{"Run":{"type":"object","properties":{"config":{"type":"object","properties":{"description":{"type":"string"},"stages":{"type":"array","items":{"type":"object","properties":{"description":{"type":"string"},"initiallyHidden":{"type":"boolean"},"key":{"type":"string"},"name":{"type":"string"}},"additionalProperties":false,"required":["key","name"]}},"title":{"type":"string"}},"additionalProperties":false,"required":["title"]},"createdAt":{"type":"string","format":"date-time"},"id":{"type":"string"},"input":{"type":["object","null"],"additionalProperties":true},"name":{"type":"string"},"status":{"type":"string","enum":["NEW","RUNNING","AWAITING_INPUT","FAILED","COMPLETED","CANCELLED"]},"steps":{"type":"array","items":{"$ref":"#/components/schemas/Step"}},"traceId":{"type":"string"},"updatedAt":{"type":"string","format":"date-time"}},"required":["id","status","name","traceId","createdAt","updatedAt","steps","config","input"]},"Step":{"type":"object","properties":{"createdAt":{"type":"string","format":"date-time"},"endTime":{"type":["string","null"],"format":"date-time"},"error":{"type":["string","null"]},"id":{"type":"string"},"name":{"type":"string"},"runId":{"type":"string"},"stage":{"type":["string","null"]},"startTime":{"type":["string","null"],"format":"date-time"},"status":{"type":"string","enum":["PENDING","FAILED","COMPLETED"]},"type":{"type":"string","enum":["FUNCTION","UI"]},"ui":{"$ref":"#/components/schemas/UiConfig"},"updatedAt":{"type":"string","format":"date-time"},"value":{"type":["string","object","array","integer","number","boolean","null"],"additionalProperties":true}},"required":["id","runId","status","name","type","createdAt","updatedAt","value","ui","startTime","endTime","error"]},"UiConfig":{"type":"object","properties":{"__type":{"type":"string","const":"ui.page"},"actions":{"type":"array","items":{"$ref":"#/components/schemas/UiConfig/$defs/PageActions"}},"content":{"type":"array","items":{"anyOf":[{"$ref":"#/components/schemas/UiConfig/$defs/UiElementInputTextApiResponse"},{"$ref":"#/components/schemas/UiConfig/$defs/UiElementInputNumberApiResponse"},{"$ref":"#/components/schemas/UiConfig/$defs/UiElementDividerApiResponse"},{"$ref":"#/components/schemas/UiConfig/$defs/UiElementInputBooleanApiResponse"},{"$ref":"#/components/schemas/UiConfig/$defs/UiElementMarkdownApiResponse"},{"$ref":"#/components/schemas/UiConfig/$defs/UiElementTableApiResponse"},{"$ref":"#/components/schemas/UiConfig/$defs/UiElementSelectOneApiResponse"},{"$ref":"#/components/schemas/UiConfig/$defs/UiElementHeaderApiResponse"},{"$ref":"#/components/schemas/UiConfig/$defs/UiElementBannerApiResponse"},{"$ref":"#/components/schemas/UiConfig/$defs/UiElementImageApiResponse"},{"$ref":"#/components/schemas/UiConfig/$defs/UiElementCodeApiResponse"},{"$ref":"#/components/schemas/UiConfig/$defs/UiElementGridApiResponse"},{"$ref":"#/components/schemas/UiConfig/$defs/UiElementListApiResponse"}]}},"description":{"type":"string"},"stage":{"type":"string"},"title":{"type":"string"}},"additionalProperties":false,"required":["__type","content"],"$defs":{"BannerMode":{"type":"string","enum":["error","info","success","warning"]},"ElementDataType":{"anyOf":[{"type":"string","format":"date-time"},{"type":["string","number","boolean"]}]},"PageActions":{"anyOf":[{"type":"object","properties":{"label":{"type":"string"},"mode":{"type":"string","enum":["destructive","primary","secondary"]},"value":{"type":"string"}},"additionalProperties":false,"required":["label","value"]},{"type":"string"}]},"UiElementBannerApiResponse":{"type":"object","properties":{"__type":{"type":"string","const":"ui.display.banner"},"description":{"type":"string"},"mode":{"$ref":"#/components/schemas/UiConfig/$defs/BannerMode"},"title":{"type":"string"}},"additionalProperties":false,"required":["__type","description","mode","title"]},"UiElementCodeApiResponse":{"type":"object","properties":{"__type":{"type":"string","const":"ui.display.code"},"code":{"type":"string"},"language":{"type":"string"}},"additionalProperties":false,"required":["__type","code"]},"UiElementDividerApiResponse":{"type":"object","properties":{"__type":{"type":"string","const":"ui.display.divider"}},"additionalProperties":false,"required":["__type"]},"UiElementGridApiResponse":{"type":"object","properties":{"__type":{"type":"string","const":"ui.display.grid"},"data":{"type":"array","items":{"type":"object","properties":{"description":{"type":"string"},"image":{"type":"object","properties":{"alt":{"type":"string"},"aspectRatio":{"type":"number"},"fit":{"type":"string","enum":["contain","cover"]},"url":{"type":"string"}},"additionalProperties":false,"required":["url"]},"title":{"type":"string"}},"additionalProperties":false}}},"additionalProperties":false,"required":["__type","data"]},"UiElementHeaderApiResponse":{"type":"object","properties":{"__type":{"type":"string","const":"ui.display.header"},"description":{"type":"string"},"level":{"type":"number"},"title":{"type":"string"}},"additionalProperties":false,"required":["__type","description","level","title"]},"UiElementImageApiResponse":{"type":"object","properties":{"__type":{"type":"string","const":"ui.display.image"},"alt":{"type":"string"},"size":{"type":"string","enum":["full","large","medium","small","thumbnail"]},"title":{"type":"string"},"url":{"type":"string"}},"additionalProperties":false,"required":["__type","url"]},"UiElementInputBooleanApiResponse":{"type":"object","properties":{"__type":{"type":"string","const":"ui.input.boolean"},"defaultValue":{"type":"boolean"},"disabled":{"type":"boolean"},"helpText":{"type":"string"},"label":{"type":"string"},"mode":{"type":"string","enum":["checkbox","switch"]},"name":{"type":"string"},"optional":{"type":"boolean"},"validationError":{"type":"string"}},"additionalProperties":false,"required":["__type","label","mode","name"]},"UiElementInputNumberApiResponse":{"type":"object","properties":{"__type":{"type":"string","const":"ui.input.number"},"defaultValue":{"type":"number"},"disabled":{"type":"boolean"},"helpText":{"type":"string"},"label":{"type":"string"},"max":{"type":"number"},"min":{"type":"number"},"name":{"type":"string"},"optional":{"type":"boolean"},"placeholder":{"type":"number"},"validationError":{"type":"string"}},"additionalProperties":false,"required":["__type","label","name"]},"UiElementInputTextApiResponse":{"type":"object","properties":{"__type":{"type":"string","const":"ui.input.text"},"defaultValue":{"type":"string"},"disabled":{"type":"boolean"},"helpText":{"type":"string"},"label":{"type":"string"},"maxLength":{"type":"number"},"minLength":{"type":"number"},"multiline":{"type":"boolean"},"name":{"type":"string"},"optional":{"type":"boolean"},"placeholder":{"type":"string"},"validationError":{"type":"string"}},"additionalProperties":false,"required":["__type","label","name"]},"UiElementListApiResponse":{"type":"object","properties":{"__type":{"type":"string","const":"ui.display.list"},"data":{"type":"array","items":{"type":"object","properties":{"description":{"type":"string"},"image":{"type":"object","properties":{"alt":{"type":"string"},"fit":{"type":"string","enum":["contain","cover"]},"url":{"type":"string"}},"additionalProperties":false,"required":["url"]},"title":{"type":"string"}},"additionalProperties":false}}},"additionalProperties":false,"required":["__type","data"]},"UiElementMarkdownApiResponse":{"type":"object","properties":{"__type":{"type":"string","const":"ui.display.markdown"},"content":{"type":"string"}},"additionalProperties":false,"required":["__type","content"]},"UiElementSelectOneApiResponse":{"type":"object","properties":{"__type":{"type":"string","const":"ui.select.one"},"defaultValue":{"anyOf":[{"type":"string","format":"date-time"},{"type":["string","number","boolean"]}]},"disabled":{"type":"boolean"},"helpText":{"type":"string"},"label":{"type":"string"},"name":{"type":"string"},"optional":{"type":"boolean"},"options":{"type":"array","items":{"anyOf":[{"type":"string","format":"date-time"},{"type":"object","properties":{"label":{"type":"string"},"value":{"$ref":"#/components/schemas/UiConfig/$defs/ElementDataType"}},"additionalProperties":false,"required":["label","value"]},{"type":["string","number","boolean"]}]}},"validationError":{"type":"string"}},"additionalProperties":false,"required":["__type","label","name","options"]},"UiElementTableApiResponse":{"type":"object","properties":{"__type":{"type":"string","const":"ui.display.table"},"columns":{"type":"array","items":{"type":"string"}},"data":{"type":"array","items":{}}},"additionalProperties":false,"required":["__type","data"]}}}}}}
+{
+  "openapi": "3.1.0",
+  "info": { "title": "FlowsAPI", "version": "1" },
+  "paths": {
+    "/flows/json": {
+      "get": {
+        "operationId": "listFlows",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "flows": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": { "name": { "type": "string" } }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": { "type": "string" },
+                    "data": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
+                          }
+                        }
+                      }
+                    },
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/flows/json/AnotherWorkflow": {
+      "post": {
+        "operationId": "AnotherWorkflow",
+        "requestBody": {
+          "description": "AnotherWorkflow Request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": { "age": { "type": "number" } },
+                "unevaluatedProperties": false,
+                "required": ["age"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Flow Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Run" }
+              }
+            }
+          },
+          "400": {
+            "description": "Flow Response Errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": { "type": "string" },
+                    "data": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
+                          }
+                        }
+                      }
+                    },
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/flows/json/MyWorkflow": {
+      "post": {
+        "operationId": "MyWorkflow",
+        "requestBody": {
+          "description": "MyWorkflow Request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "age": { "type": "number" },
+                  "name": { "type": "string" }
+                },
+                "unevaluatedProperties": false,
+                "required": ["name", "age"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Flow Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Run" }
+              }
+            }
+          },
+          "400": {
+            "description": "Flow Response Errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": { "type": "string" },
+                    "data": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
+                          }
+                        }
+                      }
+                    },
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/flows/json/{flow}": {
+      "post": {
+        "operationId": "startFlow",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": { "type": "object", "additionalProperties": true }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Flow Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Run" }
+              }
+            }
+          },
+          "400": {
+            "description": "Flow Response Errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": { "type": "string" },
+                    "data": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
+                          }
+                        }
+                      }
+                    },
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "getFlow",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Run" }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": { "type": "string" },
+                    "data": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
+                          }
+                        }
+                      }
+                    },
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "flow",
+          "in": "path",
+          "required": true,
+          "description": "",
+          "schema": { "type": "string" }
+        }
+      ]
+    },
+    "/flows/json/{flow}/{runId}": {
+      "get": {
+        "operationId": "getFlowRun",
+        "responses": {
+          "200": {
+            "description": "Flow Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Run" }
+              }
+            }
+          },
+          "400": {
+            "description": "Flow Response Errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": { "type": "string" },
+                    "data": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
+                          }
+                        }
+                      }
+                    },
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "flow",
+          "in": "path",
+          "required": true,
+          "description": "",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "runId",
+          "in": "path",
+          "required": true,
+          "description": "",
+          "schema": { "type": "string" }
+        }
+      ]
+    },
+    "/flows/json/{flow}/{runId}/cancel": {
+      "post": {
+        "operationId": "cancelFlowRun",
+        "responses": {
+          "200": {
+            "description": "Flow Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Run" }
+              }
+            }
+          },
+          "400": {
+            "description": "Flow Response Errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": { "type": "string" },
+                    "data": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
+                          }
+                        }
+                      }
+                    },
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "flow",
+          "in": "path",
+          "required": true,
+          "description": "",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "runId",
+          "in": "path",
+          "required": true,
+          "description": "",
+          "schema": { "type": "string" }
+        }
+      ]
+    },
+    "/flows/json/{flow}/{runId}/{stepId}": {
+      "put": {
+        "operationId": "putFlowStep",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": { "type": "object", "additionalProperties": true }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Flow Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Run" }
+              }
+            }
+          },
+          "400": {
+            "description": "Flow Response Errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": { "type": "string" },
+                    "data": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
+                          }
+                        }
+                      }
+                    },
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "flow",
+          "in": "path",
+          "required": true,
+          "description": "",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "runId",
+          "in": "path",
+          "required": true,
+          "description": "",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "stepId",
+          "in": "path",
+          "required": true,
+          "description": "",
+          "schema": { "type": "string" }
+        }
+      ]
+    }
+  },
+  "components": {
+    "schemas": {
+      "Run": {
+        "type": "object",
+        "properties": {
+          "config": {
+            "type": "object",
+            "properties": {
+              "description": { "type": "string" },
+              "stages": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "description": { "type": "string" },
+                    "initiallyHidden": { "type": "boolean" },
+                    "key": { "type": "string" },
+                    "name": { "type": "string" }
+                  },
+                  "additionalProperties": false,
+                  "required": ["key", "name"]
+                }
+              },
+              "title": { "type": "string" }
+            },
+            "additionalProperties": false,
+            "required": ["title"]
+          },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "id": { "type": "string" },
+          "input": { "type": ["object", "null"], "additionalProperties": true },
+          "name": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": [
+              "NEW",
+              "RUNNING",
+              "AWAITING_INPUT",
+              "FAILED",
+              "COMPLETED",
+              "CANCELLED"
+            ]
+          },
+          "steps": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Step" }
+          },
+          "traceId": { "type": "string" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        },
+        "required": [
+          "id",
+          "status",
+          "name",
+          "traceId",
+          "createdAt",
+          "updatedAt",
+          "steps",
+          "config",
+          "input"
+        ]
+      },
+      "Step": {
+        "type": "object",
+        "properties": {
+          "createdAt": { "type": "string", "format": "date-time" },
+          "endTime": { "type": ["string", "null"], "format": "date-time" },
+          "error": { "type": ["string", "null"] },
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "runId": { "type": "string" },
+          "stage": { "type": ["string", "null"] },
+          "startTime": { "type": ["string", "null"], "format": "date-time" },
+          "status": {
+            "type": "string",
+            "enum": ["PENDING", "FAILED", "COMPLETED"]
+          },
+          "type": { "type": "string", "enum": ["FUNCTION", "UI"] },
+          "ui": { "$ref": "#/components/schemas/UiConfig" },
+          "updatedAt": { "type": "string", "format": "date-time" },
+          "value": {
+            "type": [
+              "string",
+              "object",
+              "array",
+              "integer",
+              "number",
+              "boolean",
+              "null"
+            ],
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "id",
+          "runId",
+          "status",
+          "name",
+          "type",
+          "createdAt",
+          "updatedAt",
+          "value",
+          "ui",
+          "startTime",
+          "endTime",
+          "error"
+        ]
+      },
+      "UiConfig": {
+        "type": "object",
+        "properties": {
+          "__type": { "type": "string", "const": "ui.page" },
+          "actions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UiConfig/$defs/PageActions"
+            }
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementInputTextApiResponse"
+                },
+                {
+                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementInputNumberApiResponse"
+                },
+                {
+                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementDividerApiResponse"
+                },
+                {
+                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementInputBooleanApiResponse"
+                },
+                {
+                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementMarkdownApiResponse"
+                },
+                {
+                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementTableApiResponse"
+                },
+                {
+                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementSelectOneApiResponse"
+                },
+                {
+                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementHeaderApiResponse"
+                },
+                {
+                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementBannerApiResponse"
+                },
+                {
+                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementImageApiResponse"
+                },
+                {
+                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementCodeApiResponse"
+                },
+                {
+                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementGridApiResponse"
+                },
+                {
+                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementListApiResponse"
+                }
+              ]
+            }
+          },
+          "description": { "type": "string" },
+          "stage": { "type": "string" },
+          "title": { "type": "string" }
+        },
+        "additionalProperties": false,
+        "required": ["__type", "content"],
+        "$defs": {
+          "BannerMode": {
+            "type": "string",
+            "enum": ["error", "info", "success", "warning"]
+          },
+          "ElementDataType": {
+            "anyOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": ["string", "number", "boolean"] }
+            ]
+          },
+          "PageActions": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "label": { "type": "string" },
+                  "mode": {
+                    "type": "string",
+                    "enum": ["destructive", "primary", "secondary"]
+                  },
+                  "value": { "type": "string" }
+                },
+                "additionalProperties": false,
+                "required": ["label", "value"]
+              },
+              { "type": "string" }
+            ]
+          },
+          "UiElementBannerApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": { "type": "string", "const": "ui.display.banner" },
+              "description": { "type": "string" },
+              "mode": {
+                "$ref": "#/components/schemas/UiConfig/$defs/BannerMode"
+              },
+              "title": { "type": "string" }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "description", "mode", "title"]
+          },
+          "UiElementCodeApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": { "type": "string", "const": "ui.display.code" },
+              "code": { "type": "string" },
+              "language": { "type": "string" }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "code"]
+          },
+          "UiElementDividerApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": { "type": "string", "const": "ui.display.divider" }
+            },
+            "additionalProperties": false,
+            "required": ["__type"]
+          },
+          "UiElementGridApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": { "type": "string", "const": "ui.display.grid" },
+              "data": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "description": { "type": "string" },
+                    "image": {
+                      "type": "object",
+                      "properties": {
+                        "alt": { "type": "string" },
+                        "aspectRatio": { "type": "number" },
+                        "fit": {
+                          "type": "string",
+                          "enum": ["contain", "cover"]
+                        },
+                        "url": { "type": "string" }
+                      },
+                      "additionalProperties": false,
+                      "required": ["url"]
+                    },
+                    "title": { "type": "string" }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "data"]
+          },
+          "UiElementHeaderApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": { "type": "string", "const": "ui.display.header" },
+              "description": { "type": "string" },
+              "level": { "type": "number" },
+              "title": { "type": "string" }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "description", "level", "title"]
+          },
+          "UiElementImageApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": { "type": "string", "const": "ui.display.image" },
+              "alt": { "type": "string" },
+              "size": {
+                "type": "string",
+                "enum": ["full", "large", "medium", "small", "thumbnail"]
+              },
+              "title": { "type": "string" },
+              "url": { "type": "string" }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "url"]
+          },
+          "UiElementInputBooleanApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": { "type": "string", "const": "ui.input.boolean" },
+              "defaultValue": { "type": "boolean" },
+              "disabled": { "type": "boolean" },
+              "helpText": { "type": "string" },
+              "label": { "type": "string" },
+              "mode": { "type": "string", "enum": ["checkbox", "switch"] },
+              "name": { "type": "string" },
+              "optional": { "type": "boolean" },
+              "validationError": { "type": "string" }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "label", "mode", "name"]
+          },
+          "UiElementInputNumberApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": { "type": "string", "const": "ui.input.number" },
+              "defaultValue": { "type": "number" },
+              "disabled": { "type": "boolean" },
+              "helpText": { "type": "string" },
+              "label": { "type": "string" },
+              "max": { "type": "number" },
+              "min": { "type": "number" },
+              "name": { "type": "string" },
+              "optional": { "type": "boolean" },
+              "placeholder": { "type": "number" },
+              "validationError": { "type": "string" }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "label", "name"]
+          },
+          "UiElementInputTextApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": { "type": "string", "const": "ui.input.text" },
+              "defaultValue": { "type": "string" },
+              "disabled": { "type": "boolean" },
+              "helpText": { "type": "string" },
+              "label": { "type": "string" },
+              "maxLength": { "type": "number" },
+              "minLength": { "type": "number" },
+              "multiline": { "type": "boolean" },
+              "name": { "type": "string" },
+              "optional": { "type": "boolean" },
+              "placeholder": { "type": "string" },
+              "validationError": { "type": "string" }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "label", "name"]
+          },
+          "UiElementListApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": { "type": "string", "const": "ui.display.list" },
+              "data": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "description": { "type": "string" },
+                    "image": {
+                      "type": "object",
+                      "properties": {
+                        "alt": { "type": "string" },
+                        "fit": {
+                          "type": "string",
+                          "enum": ["contain", "cover"]
+                        },
+                        "url": { "type": "string" }
+                      },
+                      "additionalProperties": false,
+                      "required": ["url"]
+                    },
+                    "title": { "type": "string" }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "data"]
+          },
+          "UiElementMarkdownApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": { "type": "string", "const": "ui.display.markdown" },
+              "content": { "type": "string" }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "content"]
+          },
+          "UiElementSelectOneApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": { "type": "string", "const": "ui.select.one" },
+              "defaultValue": {
+                "anyOf": [
+                  { "type": "string", "format": "date-time" },
+                  { "type": ["string", "number", "boolean"] }
+                ]
+              },
+              "disabled": { "type": "boolean" },
+              "helpText": { "type": "string" },
+              "label": { "type": "string" },
+              "name": { "type": "string" },
+              "optional": { "type": "boolean" },
+              "options": {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    { "type": "string", "format": "date-time" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "label": { "type": "string" },
+                        "value": {
+                          "$ref": "#/components/schemas/UiConfig/$defs/ElementDataType"
+                        }
+                      },
+                      "additionalProperties": false,
+                      "required": ["label", "value"]
+                    },
+                    { "type": ["string", "number", "boolean"] }
+                  ]
+                }
+              },
+              "validationError": { "type": "string" }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "label", "name", "options"]
+          },
+          "UiElementTableApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": { "type": "string", "const": "ui.display.table" },
+              "columns": { "type": "array", "items": { "type": "string" } },
+              "data": { "type": "array", "items": {} }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "data"]
+          }
+        }
+      }
+    }
+  }
+}

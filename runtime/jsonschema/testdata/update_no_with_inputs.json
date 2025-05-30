@@ -6,9 +6,7 @@
     }
   },
   "unevaluatedProperties": false,
-  "required": [
-    "where"
-  ],
+  "required": ["where"],
   "components": {
     "schemas": {
       "TestActionWhere": {
@@ -19,9 +17,7 @@
           }
         },
         "unevaluatedProperties": false,
-        "required": [
-          "id"
-        ]
+        "required": ["id"]
       }
     }
   }

@@ -1,1 +1,274 @@
-{"openapi":"3.1.0","info":{"title":"Test","version":"1"},"paths":{"/test/json/createAccount":{"post":{"operationId":"createAccount","responses":{"200":{"description":"createAccount Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/Account"}}}},"400":{"description":"createAccount Response Errors","content":{"application/json":{"schema":{"properties":{"code":{"type":"string"},"data":{"type":["object","null"],"properties":{"errors":{"type":"array","properties":{"error":{"type":"string"},"field":{"type":"string"}}}}},"message":{"type":"string"}}}}}}}}},"/test/json/deleteAccount":{"post":{"operationId":"deleteAccount","responses":{"200":{"description":"deleteAccount Response","content":{"application/json":{"schema":{"type":"string"}}}},"400":{"description":"deleteAccount Response Errors","content":{"application/json":{"schema":{"properties":{"code":{"type":"string"},"data":{"type":["object","null"],"properties":{"errors":{"type":"array","properties":{"error":{"type":"string"},"field":{"type":"string"}}}}},"message":{"type":"string"}}}}}}}}},"/test/json/getAccount":{"post":{"operationId":"getAccount","responses":{"200":{"description":"getAccount Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/Account"}}}},"400":{"description":"getAccount Response Errors","content":{"application/json":{"schema":{"properties":{"code":{"type":"string"},"data":{"type":["object","null"],"properties":{"errors":{"type":"array","properties":{"error":{"type":"string"},"field":{"type":"string"}}}}},"message":{"type":"string"}}}}}}}}},"/test/json/listAccounts":{"post":{"operationId":"listAccounts","requestBody":{"description":"listAccounts Request","content":{"application/json":{"schema":{"type":"object","properties":{"after":{"type":"string"},"before":{"type":"string"},"first":{"type":"number"},"last":{"type":"number"},"limit":{"type":"number"},"offset":{"type":"number"}},"unevaluatedProperties":false}}}},"responses":{"200":{"description":"listAccounts Response","content":{"application/json":{"schema":{"properties":{"pageInfo":{"properties":{"count":{"type":"number"},"endCursor":{"type":"string"},"hasNextPage":{"type":"boolean"},"pageNumber":{"type":"number"},"startCursor":{"type":"string"},"totalCount":{"type":"number"}}},"results":{"type":"array","items":{"$ref":"#/components/schemas/Account"}}}}}}},"400":{"description":"listAccounts Response Errors","content":{"application/json":{"schema":{"properties":{"code":{"type":"string"},"data":{"type":["object","null"],"properties":{"errors":{"type":"array","properties":{"error":{"type":"string"},"field":{"type":"string"}}}}},"message":{"type":"string"}}}}}}}}},"/test/json/updateAccount":{"post":{"operationId":"updateAccount","requestBody":{"description":"updateAccount Request","content":{"application/json":{"schema":{"type":"object","properties":{"where":{"$ref":"#/components/schemas/UpdateAccountWhere"}},"unevaluatedProperties":false,"required":["where"]}}}},"responses":{"200":{"description":"updateAccount Response","content":{"application/json":{"schema":{"$ref":"#/components/schemas/Account"}}}},"400":{"description":"updateAccount Response Errors","content":{"application/json":{"schema":{"properties":{"code":{"type":"string"},"data":{"type":["object","null"],"properties":{"errors":{"type":"array","properties":{"error":{"type":"string"},"field":{"type":"string"}}}}},"message":{"type":"string"}}}}}}}}}},"components":{"schemas":{"Account":{"properties":{"createdAt":{"type":"string","format":"date-time"},"email":{"type":"string"},"id":{"type":"string"},"updatedAt":{"type":"string","format":"date-time"}},"required":["email","id","createdAt","updatedAt"]},"UpdateAccountWhere":{"type":"object","properties":{"id":{"type":"string"}},"unevaluatedProperties":false,"required":["id"]}}}}
+{
+  "openapi": "3.1.0",
+  "info": { "title": "Test", "version": "1" },
+  "paths": {
+    "/test/json/createAccount": {
+      "post": {
+        "operationId": "createAccount",
+        "responses": {
+          "200": {
+            "description": "createAccount Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Account" }
+              }
+            }
+          },
+          "400": {
+            "description": "createAccount Response Errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": { "type": "string" },
+                    "data": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
+                          }
+                        }
+                      }
+                    },
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/test/json/deleteAccount": {
+      "post": {
+        "operationId": "deleteAccount",
+        "responses": {
+          "200": {
+            "description": "deleteAccount Response",
+            "content": {
+              "application/json": { "schema": { "type": "string" } }
+            }
+          },
+          "400": {
+            "description": "deleteAccount Response Errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": { "type": "string" },
+                    "data": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
+                          }
+                        }
+                      }
+                    },
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/test/json/getAccount": {
+      "post": {
+        "operationId": "getAccount",
+        "responses": {
+          "200": {
+            "description": "getAccount Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Account" }
+              }
+            }
+          },
+          "400": {
+            "description": "getAccount Response Errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": { "type": "string" },
+                    "data": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
+                          }
+                        }
+                      }
+                    },
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/test/json/listAccounts": {
+      "post": {
+        "operationId": "listAccounts",
+        "requestBody": {
+          "description": "listAccounts Request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "after": { "type": "string" },
+                  "before": { "type": "string" },
+                  "first": { "type": "number" },
+                  "last": { "type": "number" },
+                  "limit": { "type": "number" },
+                  "offset": { "type": "number" }
+                },
+                "unevaluatedProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "listAccounts Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "pageInfo": {
+                      "properties": {
+                        "count": { "type": "number" },
+                        "endCursor": { "type": "string" },
+                        "hasNextPage": { "type": "boolean" },
+                        "pageNumber": { "type": "number" },
+                        "startCursor": { "type": "string" },
+                        "totalCount": { "type": "number" }
+                      }
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Account" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "listAccounts Response Errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": { "type": "string" },
+                    "data": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
+                          }
+                        }
+                      }
+                    },
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/test/json/updateAccount": {
+      "post": {
+        "operationId": "updateAccount",
+        "requestBody": {
+          "description": "updateAccount Request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "where": { "$ref": "#/components/schemas/UpdateAccountWhere" }
+                },
+                "unevaluatedProperties": false,
+                "required": ["where"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "updateAccount Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Account" }
+              }
+            }
+          },
+          "400": {
+            "description": "updateAccount Response Errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": { "type": "string" },
+                    "data": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
+                          }
+                        }
+                      }
+                    },
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Account": {
+        "properties": {
+          "createdAt": { "type": "string", "format": "date-time" },
+          "email": { "type": "string" },
+          "id": { "type": "string" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["email", "id", "createdAt", "updatedAt"]
+      },
+      "UpdateAccountWhere": {
+        "type": "object",
+        "properties": { "id": { "type": "string" } },
+        "unevaluatedProperties": false,
+        "required": ["id"]
+      }
+    }
+  }
+}
