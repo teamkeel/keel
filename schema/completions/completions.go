@@ -1231,7 +1231,7 @@ func getFieldNamesAtPath(asts []*parser.AST, model *parser.ModelNode, idents []s
 		return nil, false
 	}
 
-	for i := 0; i < len(idents); i++ {
+	for i := range idents {
 		ident := idents[i]
 		field := query.ModelField(model, ident)
 		if field == nil {

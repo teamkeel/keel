@@ -78,7 +78,7 @@ linters:
     - inamedparam
     - ineffassign
     # - interfacebloat
-    # - intrange
+    - intrange
     # - ireturn
     # - lll
     - loggercheck

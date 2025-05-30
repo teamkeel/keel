@@ -174,7 +174,7 @@ func (o *QueryOperand) toSqlOperandString(query *QueryBuilder) string {
 		return "?"
 	case o.IsValue() && o.IsArrayValue():
 		operands := []string{}
-		for i := 0; i < reflect.ValueOf(o.value).Len(); i++ {
+		for range reflect.ValueOf(o.value).Len() {
 			operands = append(operands, "?")
 		}
 
@@ -234,7 +234,7 @@ func (o *QueryOperand) toSqlArgs() []any {
 		// Safely map rhs slice to []any
 		slice := reflect.ValueOf(o.value)
 		inValues := make([]any, slice.Len())
-		for i := 0; i < slice.Len(); i++ {
+		for i := range slice.Len() {
 			inValues[i] = slice.Index(i).Interface()
 		}
 
@@ -732,11 +732,11 @@ func (query *QueryBuilder) applyCursorFilter(cursor string, isBackwards bool) er
 	}
 
 	// For each column being ordered, we need to filter those which proceed the cursor row.
-	for i := 0; i < len(query.orderBy); i++ {
+	for i := range len(query.orderBy) {
 		if i > 0 {
 			query.OpenParenthesis()
 		}
-		for j := 0; j < i; j++ {
+		for j := range i {
 			orderClause := query.orderBy[j]
 
 			inline := NewQuery(query.Model)

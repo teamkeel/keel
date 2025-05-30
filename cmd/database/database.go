@@ -440,7 +440,7 @@ func connectAndWaitForDbServer(serverConnectionInfo *db.ConnectionInfo) (server 
 
 	// ping() the database until it is available.
 	var pingError error
-	for i := 0; i < 20; i++ {
+	for range 20 {
 		if pingError = server.Ping(); pingError == nil {
 			break
 		}
