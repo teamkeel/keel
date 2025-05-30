@@ -1,6 +1,10 @@
 version: "2"
 linters: 
   settings:
+    tagalign:
+      align: true
+      sort: false
+      strict: false
     govet:
       disable:
         - structtag
@@ -108,7 +112,7 @@ linters:
     - spancheck
     - sqlclosecheck
     - staticcheck
-    # - tagalign
+    - tagalign
     # - tagliatelle
     - testableexamples
     # - testifylint
@@ -126,3 +130,8 @@ linters:
     # - wsl
     - zerologlint
   
+  exclusions:
+    rules:
+      - path: schema/parser/parser.go
+        linters:
+          - tagalign

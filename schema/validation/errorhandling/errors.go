@@ -38,7 +38,7 @@ const (
 
 type ErrorDetails struct {
 	Message string `json:"message" yaml:"message"`
-	Hint    string `json:"hint" yaml:"hint"`
+	Hint    string `json:"hint"    yaml:"hint"`
 }
 
 type TemplateLiterals struct {
@@ -48,7 +48,7 @@ type TemplateLiterals struct {
 type ValidationError struct {
 	*ErrorDetails
 
-	Code   string   `json:"code" regexp:"\\d+"`
+	Code   string   `json:"code"             regexp:"\\d+"`
 	Pos    LexerPos `json:"pos,omitempty"`
 	EndPos LexerPos `json:"endPos,omitempty"`
 }

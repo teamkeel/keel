@@ -42,16 +42,16 @@ const (
 )
 
 type Run struct {
-	ID          string    `json:"id" gorm:"primaryKey;not null;default:null"`
+	ID          string    `json:"id"        gorm:"primaryKey;not null;default:null"`
 	TraceID     string    `json:"traceId"`
 	Traceparent string    `json:"-"`
 	Status      Status    `json:"status"`
 	Name        string    `json:"name"`
-	Input       JSON      `json:"input" gorm:"type:jsonb;serializer:json"`
+	Input       JSON      `json:"input"     gorm:"type:jsonb;serializer:json"`
 	Steps       []Step    `json:"steps"`
 	CreatedAt   time.Time `json:"createdAt"`
 	UpdatedAt   time.Time `json:"updatedAt"`
-	Config      JSON      `json:"config" gorm:"-"` // Stages config component, omitted from db operations
+	Config      JSON      `json:"config"    gorm:"-"` // Stages config component, omitted from db operations
 }
 
 func (Run) TableName() string {
@@ -93,19 +93,19 @@ func (r *Run) SetUIComponents(c *FlowUIComponents) {
 }
 
 type Step struct {
-	ID        string     `json:"id" gorm:"primaryKey;not null;default:null"`
+	ID        string     `json:"id"        gorm:"primaryKey;not null;default:null"`
 	Name      string     `json:"name"`
 	RunID     string     `json:"runId"`
 	Status    StepStatus `json:"status"`
 	Type      StepType   `json:"type"`
-	Value     JSON       `json:"value" gorm:"type:jsonb;serializer:json"`
+	Value     JSON       `json:"value"     gorm:"type:jsonb;serializer:json"`
 	Stage     *string    `json:"stage"`
 	Error     *string    `json:"error"`
 	StartTime *time.Time `json:"startTime"`
 	EndTime   *time.Time `json:"endTime"`
 	CreatedAt time.Time  `json:"createdAt"`
 	UpdatedAt time.Time  `json:"updatedAt"`
-	UI        JSON       `json:"ui" gorm:"-"` // UI component, omitted from db operations
+	UI        JSON       `json:"ui"        gorm:"-"` // UI component, omitted from db operations
 }
 
 func (Step) TableName() string {
