@@ -89,11 +89,12 @@ func (s *Server) ListTraces(ctx context.Context, input *rpc.ListTracesRequest) (
 				case "error":
 					if f.Value == "true" && !v.HasError {
 						filteredOut = true
-						break
 					} else if f.Value == "false" && v.HasError {
 						filteredOut = true
-						break
 					}
+				}
+				if filteredOut {
+					break
 				}
 			}
 			if filteredOut {
