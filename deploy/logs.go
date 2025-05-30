@@ -84,7 +84,6 @@ func StreamLogs(ctx context.Context, args *StreamLogsArgs) error {
 		}
 
 		for _, name := range lambdaNames {
-			name := name
 			g.Go(func() error {
 				e, err := fetchLogs(ctx, logs, name, args)
 				if err != nil {

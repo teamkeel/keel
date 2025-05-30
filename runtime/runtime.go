@@ -330,7 +330,6 @@ func NewRouter(s *proto.Schema) *httprouter.Router {
 	router := httprouter.New()
 
 	for _, route := range s.GetRoutes() {
-		route := route
 		var method string
 
 		switch route.GetMethod() {

@@ -957,7 +957,6 @@ func TestToSQL(t *testing.T) {
 	}
 
 	for _, fixture := range fixtures {
-		fixture := fixture
 		t.Run(fixture.name, func(t *testing.T) {
 			t.Parallel()
 			builder := &schema.Builder{}

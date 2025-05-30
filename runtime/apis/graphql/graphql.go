@@ -267,8 +267,6 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 	mk.types[fmt.Sprintf("model-%s", model.GetName())] = object
 
 	for _, field := range model.GetFields() {
-		field := field
-
 		// Passwords are omitted from GraphQL responses
 		if field.GetType().GetType() == proto.Type_TYPE_PASSWORD {
 			continue

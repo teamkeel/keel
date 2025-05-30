@@ -13,7 +13,6 @@ func GetFreePort(preferredPorts ...string) (string, error) {
 	var port string
 
 	for _, v := range append(preferredPorts, "0") {
-		v := v
 		port, err = func() (string, error) {
 			addr, err := net.ResolveTCPAddr("tcp", ":"+v)
 			if err != nil {
