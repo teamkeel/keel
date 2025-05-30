@@ -563,7 +563,7 @@ func (g *Generator) generateResponses() error {
 
 		// if the action has a response message, let's generate it
 		if tool.Action.ResponseMessageName != "" {
-			// get the message message
+			// get the message
 			msg := g.Schema.FindMessage(tool.Action.ResponseMessageName)
 			if msg == nil {
 				return ErrInvalidSchema

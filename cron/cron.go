@@ -503,7 +503,7 @@ func (t *Tokens) MatchOrNil(expected ...string) (*Token, error) {
 	return tok, nil
 }
 
-// Match is like like MatchOrNil but will return an error if the returned token is nil
+// Match is like MatchOrNil but will return an error if the returned token is nil
 func (t *Tokens) Match(expected ...string) (*Token, error) {
 	tok, err := t.MatchOrNil(expected...)
 	if err != nil {

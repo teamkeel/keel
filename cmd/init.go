@@ -396,6 +396,7 @@ func printSuccess(v string) {
 }
 
 func printLogo() {
+	//nolint: dupword
 	logo := `	                                       
                   bbbb                 
                bbbbbbbbb               

@@ -264,7 +264,7 @@ func GeneratePermissionStatement(scope *Scope, permissions []*proto.PermissionRu
 	return query.SelectStatement(), nil
 }
 
-// getEmailAndDomain requires that the the given scope's context
+// getEmailAndDomain requires that the given scope's context
 // contains an authenticated user
 func getEmailAndDomain(ctx context.Context) (email string, domain string, verified bool, err error) {
 	// Use the authenticated identity's id to lookup their email address.

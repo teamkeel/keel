@@ -116,7 +116,7 @@ func ToGraphQLSchemaLanguage(response common.Response) string {
 			return aIndex > bIndex
 		}
 
-		// Then order by input types, types, and enums
+		// Then order by input types, and enums
 		kindOrder := []string{"ENUM", "OBJECT", "INPUT_OBJECT"}
 		aIndex = lo.IndexOf(kindOrder, aType.Kind)
 		bIndex = lo.IndexOf(kindOrder, bType.Kind)

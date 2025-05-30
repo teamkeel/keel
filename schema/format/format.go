@@ -311,7 +311,7 @@ func printActionInputs(writer *Writer, inputs []*parser.ActionInputNode, isArbit
 	writer.write("(")
 	writer.indent()
 
-	// If there any any comments in the action inputs then we need to print
+	// If there any comments in the action inputs then we need to print
 	// each input on it's own line, to allow space for the comments
 	isMultiline := HasComments(lo.Map(inputs, func(i *parser.ActionInputNode, _ int) node.ParserNode {
 		return i

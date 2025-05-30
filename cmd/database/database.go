@@ -287,7 +287,7 @@ func findImage(dockerClient *client.Client) (*image.Summary, error) {
 }
 
 // findContainer obtains a reference to the Postgres container we make, if one exists.
-// If it cannot find it it returns container as nil.
+// If it cannot find it, it then returns container as nil.
 func findContainer(dockerClient *client.Client) (container *types.Container, err error) {
 	containers, err := dockerClient.ContainerList(context.Background(), dockerContainer.ListOptions{
 		All: true,

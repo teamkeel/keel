@@ -163,7 +163,7 @@ func (p *paginationFields) IsBackwards() bool {
 	return p.Before != nil
 }
 
-// getRun returns the flow run with the given ID. If no flow run found, nil nil is returned.
+// getRun returns the flow run with the given ID. If no flow run found, nil/nil is returned.
 func getRun(ctx context.Context, runID string) (*Run, error) {
 	database, err := db.GetDatabase(ctx)
 	if err != nil {
