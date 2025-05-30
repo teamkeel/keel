@@ -389,7 +389,7 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 func writeJSON(w http.ResponseWriter, status int, body any) {
 	b, _ := json.Marshal(body)
 	w.WriteHeader(status)
-	w.Header().Set("content-type", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 	_, _ = w.Write(b)
 }
 

@@ -297,7 +297,7 @@ func parseJsonBody(r *http.Request) (data any, err error) {
 }
 
 func HasContentType(headers http.Header, mimetype string) bool {
-	contentType := headers.Get("Content-type")
+	contentType := headers.Get("Content-Type")
 	if contentType == "" {
 		return mimetype == "application/octet-stream"
 	}

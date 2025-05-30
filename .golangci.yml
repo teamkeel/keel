@@ -30,7 +30,7 @@ linters:
     - asciicheck
     - bidichk
     # - bodyclose
-    # - canonicalheader
+    - canonicalheader
     # - containedctx
     # - contextcheck
     # - copyloopvar
