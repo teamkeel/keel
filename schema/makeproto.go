@@ -74,8 +74,8 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 	//  - 'Api' has not already been defined in the schema
 	if scm.Config == nil || scm.Config.DefaultApi() {
 		defaultApiOverridden := false
-		for _, api := range scm.proto.Apis {
-			if api.Name == parser.DefaultApi {
+		for _, api := range scm.proto.GetApis() {
+			if api.GetName() == parser.DefaultApi {
 				defaultApiOverridden = true
 			}
 		}
@@ -95,14 +95,14 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 func defaultAPI(scm *proto.Schema) *proto.Api {
 	var apiModels []*proto.ApiModel
 
-	for _, m := range scm.Models {
+	for _, m := range scm.GetModels() {
 		apiModel := &proto.ApiModel{
-			ModelName:    m.Name,
+			ModelName:    m.GetName(),
 			ModelActions: []*proto.ApiModelAction{},
 		}
 
-		for _, a := range m.Actions {
-			apiModel.ModelActions = append(apiModel.ModelActions, &proto.ApiModelAction{ActionName: a.Name})
+		for _, a := range m.GetActions() {
+			apiModel.ModelActions = append(apiModel.ModelActions, &proto.ApiModelAction{ActionName: a.GetName()})
 		}
 
 		apiModels = append(apiModels, apiModel)
@@ -918,7 +918,7 @@ func makeEnumArrayQueryInputMessage(name string, enumName string) *proto.Message
 
 func (scm *Builder) makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.Message, error) {
 	var prefix string
-	switch typeInfo.Type {
+	switch typeInfo.GetType() {
 	case proto.Type_TYPE_ID:
 		prefix = "ID"
 	case proto.Type_TYPE_STRING:
@@ -936,15 +936,15 @@ func (scm *Builder) makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.
 	case proto.Type_TYPE_DURATION:
 		prefix = "Duration"
 	case proto.Type_TYPE_ENUM:
-		prefix = typeInfo.EnumName.Value
+		prefix = typeInfo.GetEnumName().GetValue()
 	}
 
-	if typeInfo.Repeated {
+	if typeInfo.GetRepeated() {
 		msgName := makeInputMessageName(fmt.Sprintf("%sArrayQuery", prefix))
 
 		var enumName *wrapperspb.StringValue
-		if typeInfo.Type == proto.Type_TYPE_ENUM {
-			enumName = typeInfo.EnumName
+		if typeInfo.GetType() == proto.Type_TYPE_ENUM {
+			enumName = typeInfo.GetEnumName()
 		}
 
 		var allQueryMsg *proto.Message
@@ -953,7 +953,7 @@ func (scm *Builder) makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.
 		allQueryMsgName := makeInputMessageName(fmt.Sprintf("%sArrayAllQuery", prefix))
 		anyQueryMsgName := makeInputMessageName(fmt.Sprintf("%sArrayAnyQuery", prefix))
 
-		switch typeInfo.Type {
+		switch typeInfo.GetType() {
 		case proto.Type_TYPE_ID:
 
 		case proto.Type_TYPE_STRING:
@@ -978,10 +978,10 @@ func (scm *Builder) makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.
 			allQueryMsg = makeDurationArrayQueryInputMessage(allQueryMsgName)
 			anyQueryMsg = makeDurationArrayQueryInputMessage(anyQueryMsgName)
 		case proto.Type_TYPE_ENUM:
-			allQueryMsg = makeEnumArrayQueryInputMessage(allQueryMsgName, typeInfo.EnumName.Value)
-			anyQueryMsg = makeEnumArrayQueryInputMessage(anyQueryMsgName, typeInfo.EnumName.Value)
+			allQueryMsg = makeEnumArrayQueryInputMessage(allQueryMsgName, typeInfo.GetEnumName().GetValue())
+			anyQueryMsg = makeEnumArrayQueryInputMessage(anyQueryMsgName, typeInfo.GetEnumName().GetValue())
 		default:
-			return nil, fmt.Errorf("unsupported array query type %s", typeInfo.Type.String())
+			return nil, fmt.Errorf("unsupported array query type %s", typeInfo.GetType().String())
 		}
 
 		scm.proto.Messages = append(scm.proto.Messages, allQueryMsg)
@@ -994,7 +994,7 @@ func (scm *Builder) makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.
 				Optional:    true,
 				Nullable:    true,
 				Type: &proto.TypeInfo{
-					Type:     typeInfo.Type,
+					Type:     typeInfo.GetType(),
 					EnumName: enumName,
 					Repeated: true,
 				},
@@ -1005,7 +1005,7 @@ func (scm *Builder) makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.
 				Optional:    true,
 				Nullable:    true,
 				Type: &proto.TypeInfo{
-					Type:     typeInfo.Type,
+					Type:     typeInfo.GetType(),
 					EnumName: enumName,
 					Repeated: true,
 				},
@@ -1033,7 +1033,7 @@ func (scm *Builder) makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.
 
 	msgName := makeInputMessageName(fmt.Sprintf("%sQuery", prefix))
 
-	switch typeInfo.Type {
+	switch typeInfo.GetType() {
 	case proto.Type_TYPE_ID:
 		return makeIDQueryInputMessage(msgName, typeInfo.GetModelName()), nil
 	case proto.Type_TYPE_STRING:
@@ -1051,9 +1051,9 @@ func (scm *Builder) makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.
 	case proto.Type_TYPE_DURATION:
 		return makeDurationQueryInputMessage(msgName), nil
 	case proto.Type_TYPE_ENUM:
-		return makeEnumQueryInputMessage(msgName, typeInfo.EnumName.Value), nil
+		return makeEnumQueryInputMessage(msgName, typeInfo.GetEnumName().GetValue()), nil
 	default:
-		return nil, fmt.Errorf("unsupported query type %s", typeInfo.Type.String())
+		return nil, fmt.Errorf("unsupported query type %s", typeInfo.GetType().String())
 	}
 }
 
@@ -1067,7 +1067,7 @@ func makeListOrderByMessages(actionName string, fieldNames []string) []*proto.Me
 		}
 
 		message.Fields = append(message.Fields, &proto.MessageField{
-			MessageName: message.Name,
+			MessageName: message.GetName(),
 			Name:        fieldName,
 			Optional:    false,
 			Nullable:    false,
@@ -1123,8 +1123,8 @@ func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Mes
 
 			// Does the field already exist from a previous input?
 			fieldAlreadyCreated := false
-			for _, f := range currMessage.Fields {
-				if f.Name == fragment {
+			for _, f := range currMessage.GetFields() {
+				if f.GetName() == fragment {
 					fieldAlreadyCreated = true
 				}
 			}
@@ -1150,7 +1150,7 @@ func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Mes
 					Optional: input.Optional,
 					// List op implicit inputs are not nullable, because they will have a query type.
 					Nullable:    action.Type.Value != parser.ActionTypeList && field.Optional,
-					MessageName: currMessage.Name,
+					MessageName: currMessage.GetName(),
 				})
 
 				currMessage = &proto.Message{
@@ -1159,8 +1159,8 @@ func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Mes
 				}
 				scm.proto.Messages = append(scm.proto.Messages, currMessage)
 			} else {
-				for _, m := range scm.proto.Messages {
-					if m.Name == relatedModelMessageName {
+				for _, m := range scm.proto.GetMessages() {
+					if m.GetName() == relatedModelMessageName {
 						currMessage = m
 					}
 				}
@@ -1176,7 +1176,7 @@ func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Mes
 					panic(err.Error())
 				}
 
-				if !lo.SomeBy(scm.proto.Messages, func(m *proto.Message) bool { return m.Name == queryMessage.Name }) {
+				if !lo.SomeBy(scm.proto.GetMessages(), func(m *proto.Message) bool { return m.GetName() == queryMessage.GetName() }) {
 					scm.proto.Messages = append(scm.proto.Messages, queryMessage)
 				}
 
@@ -1184,11 +1184,11 @@ func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Mes
 					Name: fragment,
 					Type: &proto.TypeInfo{
 						Type:        proto.Type_TYPE_MESSAGE,
-						MessageName: wrapperspb.String(queryMessage.Name)},
+						MessageName: wrapperspb.String(queryMessage.GetName())},
 					Target:      target,
 					Optional:    input.Optional,
 					Nullable:    false,
-					MessageName: currMessage.Name,
+					MessageName: currMessage.GetName(),
 				})
 			} else {
 				// If this is the last or only target, then we add the field to the current message using the typeInfo.
@@ -1198,7 +1198,7 @@ func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Mes
 					Target:      target,
 					Optional:    input.Optional,
 					Nullable:    targetsOptionalField,
-					MessageName: currMessage.Name,
+					MessageName: currMessage.GetName(),
 				})
 			}
 		}
@@ -1228,7 +1228,7 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 					Type:        typeInfo,
 					Optional:    input.Optional,
 					Nullable:    false, // TODO: can explicit inputs use the null value?
-					MessageName: rootMessage.Name,
+					MessageName: rootMessage.GetName(),
 				})
 			}
 		}
@@ -1262,7 +1262,7 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 					Type:        typeInfo,
 					Optional:    input.Optional,
 					Nullable:    false, // TODO: can explicit inputs use the null value?
-					MessageName: valuesMessage.Name,
+					MessageName: valuesMessage.GetName(),
 				})
 			}
 		}
@@ -1273,8 +1273,8 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 			Fields: []*proto.MessageField{
 				{
 					Name: "where",
-					Optional: len(whereMessage.Fields) == 0 || lo.EveryBy(whereMessage.Fields, func(f *proto.MessageField) bool {
-						return f.Optional
+					Optional: len(whereMessage.GetFields()) == 0 || lo.EveryBy(whereMessage.GetFields(), func(f *proto.MessageField) bool {
+						return f.GetOptional()
 					}),
 					MessageName: makeInputMessageName(action.Name.Value),
 					Type: &proto.TypeInfo{
@@ -1284,8 +1284,8 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 				},
 				{
 					Name: "values",
-					Optional: len(valuesMessage.Fields) == 0 || lo.EveryBy(valuesMessage.Fields, func(f *proto.MessageField) bool {
-						return f.Optional
+					Optional: len(valuesMessage.GetFields()) == 0 || lo.EveryBy(valuesMessage.GetFields(), func(f *proto.MessageField) bool {
+						return f.GetOptional()
 					}),
 					MessageName: makeInputMessageName(action.Name.Value),
 					Type: &proto.TypeInfo{
@@ -1328,8 +1328,8 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 			Fields: []*proto.MessageField{
 				{
 					Name: "where",
-					Optional: len(whereMessage.Fields) == 0 || lo.EveryBy(whereMessage.Fields, func(f *proto.MessageField) bool {
-						return f.Optional
+					Optional: len(whereMessage.GetFields()) == 0 || lo.EveryBy(whereMessage.GetFields(), func(f *proto.MessageField) bool {
+						return f.GetOptional()
 					}),
 					MessageName: makeInputMessageName(action.Name.Value),
 					Type: &proto.TypeInfo{
@@ -1398,7 +1398,7 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 				Type: &proto.TypeInfo{
 					Type:       proto.Type_TYPE_UNION,
 					Repeated:   true,
-					UnionNames: lo.Map(orderByMessages, func(m *proto.Message, _ int) *wrapperspb.StringValue { return wrapperspb.String(m.Name) }),
+					UnionNames: lo.Map(orderByMessages, func(m *proto.Message, _ int) *wrapperspb.StringValue { return wrapperspb.String(m.GetName()) }),
 				},
 			}
 
@@ -1421,10 +1421,10 @@ func (scm *Builder) makeModel(decl *parser.DeclarationNode) {
 	for _, section := range parserModel.Sections {
 		switch {
 		case section.Fields != nil:
-			fields := scm.makeFields(section.Fields, protoModel.Name)
+			fields := scm.makeFields(section.Fields, protoModel.GetName())
 			protoModel.Fields = append(protoModel.Fields, fields...)
 		case section.Actions != nil:
-			ops := scm.makeActions(section.Actions, protoModel.Name, parserModel.BuiltIn)
+			ops := scm.makeActions(section.Actions, protoModel.GetName(), parserModel.BuiltIn)
 			protoModel.Actions = append(protoModel.Actions, ops...)
 		case section.Attribute != nil:
 			scm.applyModelAttribute(parserModel, protoModel, section.Attribute)
@@ -1509,15 +1509,15 @@ func (scm *Builder) makeMessage(decl *parser.DeclarationNode) {
 			MessageName: parserMsg.Name.Value,
 		}
 
-		if field.Type.Type == proto.Type_TYPE_ENUM {
+		if field.GetType().GetType() == proto.Type_TYPE_ENUM {
 			field.Type.EnumName = wrapperspb.String(f.Type.Value)
 		}
 
-		if field.Type.Type == proto.Type_TYPE_MESSAGE {
+		if field.GetType().GetType() == proto.Type_TYPE_MESSAGE {
 			field.Type.MessageName = wrapperspb.String(f.Type.Value)
 		}
 
-		if field.Type.Type == proto.Type_TYPE_MODEL {
+		if field.GetType().GetType() == proto.Type_TYPE_MODEL {
 			field.Type.ModelName = wrapperspb.String(f.Type.Value)
 		}
 
@@ -1564,12 +1564,12 @@ func (scm *Builder) makeJob(decl *parser.DeclarationNode) {
 		case section.Inputs != nil:
 			scm.applyJobInputs(message, section.Inputs)
 		default:
-			panic(fmt.Sprintf("unhandled section when parsing job '%s'", job.Name))
+			panic(fmt.Sprintf("unhandled section when parsing job '%s'", job.GetName()))
 		}
 	}
 
-	if len(message.Fields) > 0 {
-		job.InputMessageName = message.Name
+	if len(message.GetFields()) > 0 {
+		job.InputMessageName = message.GetName()
 		scm.proto.Messages = append(scm.proto.Messages, message)
 	}
 
@@ -1625,12 +1625,12 @@ func (scm *Builder) makeFlow(decl *parser.DeclarationNode) {
 		case section.Inputs != nil:
 			scm.applyFlowInputs(message, section.Inputs)
 		default:
-			panic(fmt.Sprintf("unhandled section when parsing flow '%s'", flow.Name))
+			panic(fmt.Sprintf("unhandled section when parsing flow '%s'", flow.GetName()))
 		}
 	}
 
-	if len(message.Fields) > 0 {
-		flow.InputMessageName = message.Name
+	if len(message.GetFields()) > 0 {
+		flow.InputMessageName = message.GetName()
 		scm.proto.Messages = append(scm.proto.Messages, message)
 	}
 
@@ -1702,7 +1702,7 @@ func (scm *Builder) makeField(parserField *parser.FieldNode, modelName string) *
 
 	// If this is a HasMany or BelongsTo relationship field - see if we can mark it with
 	// an explicit InverseFieldName - i.e. one defined by an @relation attribute.
-	if protoField.Type.Type == proto.Type_TYPE_MODEL {
+	if protoField.GetType().GetType() == proto.Type_TYPE_MODEL {
 		scm.setInverseFieldName(parserField, protoField)
 	}
 
@@ -1716,7 +1716,7 @@ func (scm *Builder) setInverseFieldName(thisParserField *parser.FieldNode, thisP
 	// We have to look in the related model's fields, to see if any of them have an @relation
 	// attribute that refers back to this field.
 
-	nameOfRelatedModel := thisProtoField.Type.ModelName.Value
+	nameOfRelatedModel := thisProtoField.GetType().GetModelName().GetValue()
 	relatedModel := query.Model(scm.asts, nameOfRelatedModel)
 
 	// Use the field name in @relation(fieldName) if this attribute exists
@@ -1729,13 +1729,13 @@ func (scm *Builder) setInverseFieldName(thisParserField *parser.FieldNode, thisP
 
 	// If no @relation attribute exists, then look for a match in the related model fields' @relation attributes
 	for _, remoteField := range query.ModelFields(relatedModel) {
-		if remoteField.Type.Value != thisProtoField.ModelName {
+		if remoteField.Type.Value != thisProtoField.GetModelName() {
 			continue
 		}
 		relationAttr := query.FieldGetAttribute(remoteField, parser.AttributeRelation)
 		if relationAttr != nil {
 			inverseFieldName := attributeFirstArgAsIdentifier(relationAttr)
-			if inverseFieldName == thisProtoField.Name {
+			if inverseFieldName == thisProtoField.GetName() {
 				thisProtoField.InverseFieldName = wrapperspb.String(remoteField.Name.Value)
 				return
 			}
@@ -1745,10 +1745,10 @@ func (scm *Builder) setInverseFieldName(thisParserField *parser.FieldNode, thisP
 	// If there are no @relation attributes that match, then we know that there is only one relation
 	// between these models of this exact relationship type and in this direction
 	for _, remoteField := range query.ModelFields(relatedModel) {
-		if remoteField.Type.Value != thisProtoField.ModelName {
+		if remoteField.Type.Value != thisProtoField.GetModelName() {
 			continue
 		}
-		if nameOfRelatedModel == thisProtoField.ModelName && remoteField.Name.Value == thisProtoField.Name {
+		if nameOfRelatedModel == thisProtoField.GetModelName() && remoteField.Name.Value == thisProtoField.GetName() {
 			continue
 		}
 		if query.ValidOneToHasMany(thisParserField, remoteField) ||
@@ -1827,7 +1827,7 @@ func (scm *Builder) makeAction(action *parser.ActionNode, modelName string, buil
 			}
 		} else {
 			// Create an empty message if there is no input defined.
-			message := &proto.Message{Name: protoAction.InputMessageName}
+			message := &proto.Message{Name: protoAction.GetInputMessageName()}
 			scm.proto.Messages = append(scm.proto.Messages, message)
 		}
 
@@ -1884,7 +1884,7 @@ func (scm *Builder) inferParserInputType(
 			targetsOptionalField = true
 		}
 
-		protoType = scm.parserFieldToProtoTypeInfo(field).Type
+		protoType = scm.parserFieldToProtoTypeInfo(field).GetType()
 
 		modelName = &wrapperspb.StringValue{
 			Value: currModel.Name.Value,
@@ -2007,13 +2007,13 @@ func (scm *Builder) applyModelAttribute(parserModel *parser.ModelNode, protoMode
 	switch attribute.Name.Value {
 	case parser.AttributePermission:
 		perm := scm.permissionAttributeToProtoPermission(attribute)
-		perm.ModelName = protoModel.Name
+		perm.ModelName = protoModel.GetName()
 		protoModel.Permissions = append(protoModel.Permissions, perm)
 	case parser.AttributeOn:
 		subscriberName, _ := resolve.AsIdent(attribute.Arguments[1].Expression)
 
 		// Create the subscriber if it has not yet been created yet.
-		subscriber := proto.FindSubscriber(scm.proto.Subscribers, subscriberName.Fragments[0])
+		subscriber := proto.FindSubscriber(scm.proto.GetSubscribers(), subscriberName.Fragments[0])
 		if subscriber == nil {
 			subscriber = &proto.Subscriber{
 				Name:             subscriberName.Fragments[0],
@@ -2030,7 +2030,7 @@ func (scm *Builder) applyModelAttribute(parserModel *parser.ModelNode, protoMode
 			actionType := scm.mapToActionType(arg.Fragments[0])
 			eventName := makeEventName(parserModel.Name.Value, mapToEventType(actionType))
 
-			event := proto.FindEvent(scm.proto.Events, eventName)
+			event := proto.FindEvent(scm.proto.GetEvents(), eventName)
 			if event == nil {
 				event = &proto.Event{
 					Name:       eventName,
@@ -2048,9 +2048,9 @@ func (scm *Builder) applyModelAttribute(parserModel *parser.ModelNode, protoMode
 // makeSubscriberInputMessages creates the event input messages for the subscriber functions.
 // The signature of these messages depends on which events the subscriber is handling.
 func (scm *Builder) makeSubscriberInputMessages() {
-	for _, subscriber := range scm.proto.Subscribers {
+	for _, subscriber := range scm.proto.GetSubscribers() {
 		message := &proto.Message{
-			Name:   subscriber.InputMessageName,
+			Name:   subscriber.GetInputMessageName(),
 			Fields: []*proto.MessageField{},
 			Type: &proto.TypeInfo{
 				Type:       proto.Type_TYPE_UNION,
@@ -2060,23 +2060,23 @@ func (scm *Builder) makeSubscriberInputMessages() {
 
 		scm.proto.Messages = append(scm.proto.Messages, message)
 
-		for _, eventName := range subscriber.EventNames {
-			event := proto.FindEvent(scm.proto.Events, eventName)
+		for _, eventName := range subscriber.GetEventNames() {
+			event := proto.FindEvent(scm.proto.GetEvents(), eventName)
 
 			eventMessage := &proto.Message{
-				Name:   makeSubscriberMessageEventName(subscriber.Name, event.ModelName, mapToEventType(event.ActionType)),
+				Name:   makeSubscriberMessageEventName(subscriber.GetName(), event.GetModelName(), mapToEventType(event.GetActionType())),
 				Fields: []*proto.MessageField{},
 			}
 
 			eventTargetMessage := &proto.Message{
-				Name:   makeSubscriberMessageEventTargetName(subscriber.Name, event.ModelName, mapToEventType(event.ActionType)),
+				Name:   makeSubscriberMessageEventTargetName(subscriber.GetName(), event.GetModelName(), mapToEventType(event.GetActionType())),
 				Fields: []*proto.MessageField{},
 			}
 
-			eventName := makeEventName(event.ModelName, mapToEventType(event.ActionType))
+			eventName := makeEventName(event.GetModelName(), mapToEventType(event.GetActionType()))
 
 			eventMessage.Fields = append(eventMessage.Fields, &proto.MessageField{
-				MessageName: eventMessage.Name,
+				MessageName: eventMessage.GetName(),
 				Name:        "eventName",
 				Type: &proto.TypeInfo{
 					Type:               proto.Type_TYPE_STRING_LITERAL,
@@ -2085,60 +2085,60 @@ func (scm *Builder) makeSubscriberInputMessages() {
 			})
 
 			eventMessage.Fields = append(eventMessage.Fields, &proto.MessageField{
-				MessageName: eventMessage.Name,
+				MessageName: eventMessage.GetName(),
 				Name:        "occurredAt",
 				Type:        &proto.TypeInfo{Type: proto.Type_TYPE_TIMESTAMP},
 			})
 
 			eventMessage.Fields = append(eventMessage.Fields, &proto.MessageField{
-				MessageName: eventMessage.Name,
+				MessageName: eventMessage.GetName(),
 				Name:        "identityId",
 				Optional:    true,
 				Type:        &proto.TypeInfo{Type: proto.Type_TYPE_ID},
 			})
 
 			eventMessage.Fields = append(eventMessage.Fields, &proto.MessageField{
-				MessageName: eventMessage.Name,
+				MessageName: eventMessage.GetName(),
 				Name:        "target",
 				Type: &proto.TypeInfo{
 					Type:        proto.Type_TYPE_MESSAGE,
-					MessageName: wrapperspb.String(eventTargetMessage.Name),
+					MessageName: wrapperspb.String(eventTargetMessage.GetName()),
 				},
 			})
 
 			eventTargetMessage.Fields = append(eventTargetMessage.Fields, &proto.MessageField{
-				MessageName: eventTargetMessage.Name,
+				MessageName: eventTargetMessage.GetName(),
 				Name:        "id",
 				Type:        &proto.TypeInfo{Type: proto.Type_TYPE_ID},
 			})
 
 			eventTargetMessage.Fields = append(eventTargetMessage.Fields, &proto.MessageField{
-				MessageName: eventTargetMessage.Name,
+				MessageName: eventTargetMessage.GetName(),
 				Name:        "type",
 				Type:        &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
 			})
 
 			eventTargetMessage.Fields = append(eventTargetMessage.Fields, &proto.MessageField{
-				MessageName: eventTargetMessage.Name,
+				MessageName: eventTargetMessage.GetName(),
 				Name:        "data",
 				Type: &proto.TypeInfo{
 					Type:      proto.Type_TYPE_MODEL,
-					ModelName: wrapperspb.String(event.ModelName),
+					ModelName: wrapperspb.String(event.GetModelName()),
 				},
 			})
 
-			if event.ActionType != proto.ActionType_ACTION_TYPE_CREATE {
+			if event.GetActionType() != proto.ActionType_ACTION_TYPE_CREATE {
 				eventTargetMessage.Fields = append(eventTargetMessage.Fields, &proto.MessageField{
-					MessageName: eventTargetMessage.Name,
+					MessageName: eventTargetMessage.GetName(),
 					Name:        "previousData",
 					Type: &proto.TypeInfo{
 						Type:      proto.Type_TYPE_MODEL,
-						ModelName: wrapperspb.String(event.ModelName),
+						ModelName: wrapperspb.String(event.GetModelName()),
 					},
 				})
 			}
 
-			message.Type.UnionNames = append(message.Type.UnionNames, wrapperspb.String(eventMessage.Name))
+			message.Type.UnionNames = append(message.Type.UnionNames, wrapperspb.String(eventMessage.GetName()))
 			scm.proto.Messages = append(scm.proto.Messages, eventMessage)
 			scm.proto.Messages = append(scm.proto.Messages, eventTargetMessage)
 		}
@@ -2151,7 +2151,7 @@ func (scm *Builder) applyActionAttributes(action *parser.ActionNode, protoAction
 		case parser.AttributePermission:
 			perm := scm.permissionAttributeToProtoPermission(attribute)
 			perm.ModelName = modelName
-			perm.ActionName = wrapperspb.String(protoAction.Name)
+			perm.ActionName = wrapperspb.String(protoAction.GetName())
 			protoAction.Permissions = append(protoAction.Permissions, perm)
 		case parser.AttributeWhere:
 			expr := attribute.Arguments[0].Expression.String()
@@ -2332,7 +2332,7 @@ func (scm *Builder) applyJobInputs(protoMessage *proto.Message, inputs []*parser
 	for _, input := range inputs {
 		protoField := &proto.MessageField{
 			Name:        input.Name.Value,
-			MessageName: protoMessage.Name,
+			MessageName: protoMessage.GetName(),
 			Type: &proto.TypeInfo{
 				Type:     scm.parserTypeToProtoType(input.Type.Value),
 				Repeated: input.Repeated,
@@ -2340,7 +2340,7 @@ func (scm *Builder) applyJobInputs(protoMessage *proto.Message, inputs []*parser
 			Optional: input.Optional,
 		}
 
-		if protoField.Type.Type == proto.Type_TYPE_ENUM {
+		if protoField.GetType().GetType() == proto.Type_TYPE_ENUM {
 			protoField.Type.EnumName = wrapperspb.String(input.Type.Value)
 		}
 
@@ -2359,7 +2359,7 @@ func (scm *Builder) applyFlowInputs(protoMessage *proto.Message, inputs []*parse
 	for _, input := range inputs {
 		protoField := &proto.MessageField{
 			Name:        input.Name.Value,
-			MessageName: protoMessage.Name,
+			MessageName: protoMessage.GetName(),
 			Type: &proto.TypeInfo{
 				Type:     scm.parserTypeToProtoType(input.Type.Value),
 				Repeated: input.Repeated,
@@ -2367,11 +2367,11 @@ func (scm *Builder) applyFlowInputs(protoMessage *proto.Message, inputs []*parse
 			Optional: input.Optional,
 		}
 
-		if protoField.Type.Type == proto.Type_TYPE_ENUM {
+		if protoField.GetType().GetType() == proto.Type_TYPE_ENUM {
 			protoField.Type.EnumName = wrapperspb.String(input.Type.Value)
 		}
 
-		if protoField.Type.Type == proto.Type_TYPE_MODEL {
+		if protoField.GetType().GetType() == proto.Type_TYPE_MODEL {
 			protoField.Type.ModelName = wrapperspb.String(input.Type.Value)
 		}
 

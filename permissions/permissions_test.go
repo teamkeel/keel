@@ -972,9 +972,9 @@ secrets:
 
 			var model *proto.Model
 			var action *proto.Action
-			for _, m := range s.Models {
-				for _, a := range m.Actions {
-					if a.Name == fixture.action {
+			for _, m := range s.GetModels() {
+				for _, a := range m.GetActions() {
+					if a.GetName() == fixture.action {
 						action = a
 						model = m
 					}

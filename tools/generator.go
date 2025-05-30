@@ -153,7 +153,7 @@ func (g *Generator) scaffoldTools() {
 
 	for _, model := range g.Schema.GetModels() {
 		for _, action := range model.GetActions() {
-			if !slices.Contains(proto.GetActionNamesForApi(g.Schema, api), action.Name) {
+			if !slices.Contains(proto.GetActionNamesForApi(g.Schema, api), action.GetName()) {
 				continue
 			}
 
@@ -161,8 +161,8 @@ func (g *Generator) scaffoldTools() {
 				ID: casing.ToKebab(action.GetName()),
 				ActionConfig: &toolsproto.ActionConfig{
 					Id:             casing.ToKebab(action.GetName()),
-					ApiNames:       g.Schema.FindApiNames(model.Name, action.Name),
-					Name:           casing.ToSentenceCase(action.Name),
+					ApiNames:       g.Schema.FindApiNames(model.GetName(), action.GetName()),
+					Name:           casing.ToSentenceCase(action.GetName()),
 					ActionName:     action.GetName(),
 					ModelName:      model.GetName(),
 					ActionType:     action.GetType(),
@@ -215,8 +215,8 @@ func (g *Generator) scaffoldTools() {
 		t := Tool{
 			ID: casing.ToKebab(flow.GetName()),
 			FlowConfig: &toolsproto.FlowConfig{
-				Name:     casing.ToSentenceCase(flow.Name),
-				FlowName: flow.Name,
+				Name:     casing.ToSentenceCase(flow.GetName()),
+				FlowName: flow.GetName(),
 			},
 			Flow: flow,
 		}
@@ -247,14 +247,14 @@ func (g *Generator) decorateTools() error {
 	for _, tool := range g.actionTools() {
 		// for all inputs that are IDs that have a get_entry_action link (e.g. used to lookup a related model field),
 		// find the get(id) tool and decorate the data mapping now that we have all inputs and responses generated
-		for _, input := range tool.ActionConfig.Inputs {
-			if input.GetEntryAction != nil && input.GetEntryAction.ToolId != "" {
-				if entryToolID := g.findGetByIDTool(input.GetEntryAction.ToolId); entryToolID != "" {
+		for _, input := range tool.ActionConfig.GetInputs() {
+			if input.GetGetEntryAction() != nil && input.GetGetEntryAction().GetToolId() != "" {
+				if entryToolID := g.findGetByIDTool(input.GetGetEntryAction().GetToolId()); entryToolID != "" {
 					input.GetEntryAction.ToolId = entryToolID
 					input.GetEntryAction.Data = []*toolsproto.DataMapping{
 						{
 							Key:  g.Tools[entryToolID].getIDInputFieldPath(),
-							Path: input.FieldLocation,
+							Path: input.GetFieldLocation(),
 						},
 					}
 				} else {
@@ -266,8 +266,8 @@ func (g *Generator) decorateTools() error {
 
 		// for all responses that have a link for to-many fields,
 		// decorate the data mapping now that we have all inputs and responses generated
-		for _, response := range tool.ActionConfig.Response {
-			if !tool.Action.IsArbitraryFunction() && response.Link != nil && response.Link.ToolId != "" && response.Link.Data[0].Path == nil {
+		for _, response := range tool.ActionConfig.GetResponse() {
+			if !tool.Action.IsArbitraryFunction() && response.GetLink() != nil && response.GetLink().GetToolId() != "" && response.GetLink().GetData()[0].GetPath() == nil {
 				response.Link.Data[0].Path = &toolsproto.JsonPath{
 					Path: tool.getIDResponseFieldPath(),
 				}
@@ -289,7 +289,7 @@ func (g *Generator) generateRelatedActionsLinks() {
 		}
 
 		// we search for more than one list tool as the results will include the one we're on
-		if relatedTools := g.findListTools(tool.Model.Name); len(relatedTools) > 1 {
+		if relatedTools := g.findListTools(tool.Model.GetName()); len(relatedTools) > 1 {
 			for _, relatedID := range relatedTools {
 				if id != relatedID {
 					displayOrder++
@@ -316,7 +316,7 @@ func (g *Generator) generateEntryActivityActionsLinks() {
 		}
 
 		// entry activity actions for GET and LIST that have an id response
-		inputPaths := g.findAllByIDTools(tool.Model.Name, id)
+		inputPaths := g.findAllByIDTools(tool.Model.GetName(), id)
 
 		// now we sort the tools by name But with deletes at the end
 		ids := []string{}
@@ -374,8 +374,8 @@ func (g *Generator) generateGetEntryActionLinks() {
 			continue
 		}
 		// get entry action for tools that operate on a model instance/s (create/update/list).
-		if tool.Action.IsList() || tool.Action.IsUpdate() || tool.Action.Type == proto.ActionType_ACTION_TYPE_CREATE {
-			if getToolID := g.findGetByIDTool(tool.Model.Name); getToolID != "" {
+		if tool.Action.IsList() || tool.Action.IsUpdate() || tool.Action.GetType() == proto.ActionType_ACTION_TYPE_CREATE {
+			if getToolID := g.findGetByIDTool(tool.Model.GetName()); getToolID != "" {
 				tool.ActionConfig.GetEntryAction = &toolsproto.ToolLink{
 					ToolId: getToolID,
 					Data: []*toolsproto.DataMapping{
@@ -395,7 +395,7 @@ func (g *Generator) generateGetEntryActionLinks() {
 func (g *Generator) generateCreateEntryActionLinks() {
 	for _, tool := range g.actionTools() {
 		if tool.Action.IsList() || tool.Action.IsGet() {
-			if createToolId := g.findCreateTool(tool.Model.Name); createToolId != "" {
+			if createToolId := g.findCreateTool(tool.Model.GetName()); createToolId != "" {
 				//TODO: improvement: add datamapping from list actions to the create action if there are any filtered fields
 				tool.ActionConfig.CreateEntryAction = &toolsproto.ToolLink{
 					ToolId: createToolId,
@@ -416,37 +416,37 @@ func (g *Generator) generateEmbeddedTools() {
 		}
 		displayOrder := 0
 
-		for _, f := range tool.Model.Fields {
+		for _, f := range tool.Model.GetFields() {
 			// skip if the field is not a HasMany relationship
 			if !f.IsHasMany() {
 				continue
 			}
 
 			// find the list tools for the related model
-			listTools := g.findListTools(f.Type.ModelName.Value)
+			listTools := g.findListTools(f.GetType().GetModelName().GetValue())
 			for _, toolId := range listTools {
 				// check if there is an input for the foreign key
-				if input := g.Tools[toolId].getInput("$.where." + f.InverseFieldName.Value + ".id.equals"); input != nil {
+				if input := g.Tools[toolId].getInput("$.where." + f.GetInverseFieldName().GetValue() + ".id.equals"); input != nil {
 					displayOrder++
 					// embed the tool as a tool group
 					tool.ActionConfig.EmbeddedTools = append(tool.ActionConfig.EmbeddedTools, &toolsproto.ToolGroup{
-						Id:           f.Name,
-						Title:        &toolsproto.StringTemplate{Template: casing.ToSentenceCase(f.Name)}, // e.g. `Order items` on a getOrder action
+						Id:           f.GetName(),
+						Title:        &toolsproto.StringTemplate{Template: casing.ToSentenceCase(f.GetName())}, // e.g. `Order items` on a getOrder action
 						DisplayOrder: int32(displayOrder),
 						Tools: []*toolsproto.ToolGroup_GroupActionLink{
 							{
 								ActionLink: &toolsproto.ToolLink{
 									ToolId: toolId,
-									Title:  &toolsproto.StringTemplate{Template: f.Name}, // e.g. `orderItems` on a getOrder action
+									Title:  &toolsproto.StringTemplate{Template: f.GetName()}, // e.g. `orderItems` on a getOrder action
 									Data: []*toolsproto.DataMapping{
 										{
-											Key:  input.FieldLocation.Path,
+											Key:  input.GetFieldLocation().GetPath(),
 											Path: &toolsproto.JsonPath{Path: tool.getIDResponseFieldPath()},
 										},
 									},
 								},
 								ResponseOverrides: []*toolsproto.ResponseOverrides{{
-									FieldLocation: &toolsproto.JsonPath{Path: "$.results[*]." + f.InverseFieldName.Value + "Id"},
+									FieldLocation: &toolsproto.JsonPath{Path: "$.results[*]." + f.GetInverseFieldName().GetValue() + "Id"},
 									Visible:       false,
 								}},
 							},
@@ -465,17 +465,17 @@ func (g *Generator) generateEmbeddedTools() {
 func (g *Generator) generateInputs() error {
 	for _, tool := range g.actionTools() {
 		// if the action does not have a input message, it means we don't have any inputs for this tool
-		if tool.Action.InputMessageName == "" {
+		if tool.Action.GetInputMessageName() == "" {
 			continue
 		}
 
 		// get the input message
-		msg := g.Schema.FindMessage(tool.Action.InputMessageName)
+		msg := g.Schema.FindMessage(tool.Action.GetInputMessageName())
 		if msg == nil {
 			return ErrInvalidSchema
 		}
 
-		fields, err := g.makeInputsForMessage(tool.Action.Type, msg, "", nil)
+		fields, err := g.makeInputsForMessage(tool.Action.GetType(), msg, "", nil)
 		if err != nil {
 			return err
 		}
@@ -485,14 +485,14 @@ func (g *Generator) generateInputs() error {
 		// used later on when generating the response
 		if orderBy := msg.GetOrderByField(); orderBy != nil {
 			sortableFields := []string{}
-			for _, unionMsgName := range orderBy.Type.GetUnionNames() {
+			for _, unionMsgName := range orderBy.GetType().GetUnionNames() {
 				unionMsg := g.Schema.FindMessage(unionMsgName.GetValue())
 				if unionMsg == nil {
 					return ErrInvalidSchema
 				}
-				for _, f := range unionMsg.Fields {
-					if f.Type.Type == proto.Type_TYPE_SORT_DIRECTION {
-						sortableFields = append(sortableFields, f.Name)
+				for _, f := range unionMsg.GetFields() {
+					if f.GetType().GetType() == proto.Type_TYPE_SORT_DIRECTION {
+						sortableFields = append(sortableFields, f.GetName())
 					}
 				}
 			}
@@ -508,12 +508,12 @@ func (g *Generator) generateInputs() error {
 func (g *Generator) generateFlowInputs() error {
 	for _, tool := range g.flowTools() {
 		// if the flow does not have a input message, it means we don't have any inputs for this tool
-		if tool.Flow.InputMessageName == "" {
+		if tool.Flow.GetInputMessageName() == "" {
 			continue
 		}
 
 		// get the input message
-		msg := g.Schema.FindMessage(tool.Flow.InputMessageName)
+		msg := g.Schema.FindMessage(tool.Flow.GetInputMessageName())
 		if msg == nil {
 			return ErrInvalidSchema
 		}
@@ -527,20 +527,20 @@ func (g *Generator) generateFlowInputs() error {
 			}
 
 			config := &toolsproto.FlowInputConfig{
-				FieldLocation: &toolsproto.JsonPath{Path: `$.` + f.Name},
-				FieldType:     f.Type.Type,
-				Repeated:      f.Type.Repeated,
-				DisplayName:   casing.ToSentenceCase(f.Name),
+				FieldLocation: &toolsproto.JsonPath{Path: `$.` + f.GetName()},
+				FieldType:     f.GetType().GetType(),
+				Repeated:      f.GetType().GetRepeated(),
+				DisplayName:   casing.ToSentenceCase(f.GetName()),
 				DisplayOrder:  int32(i),
 			}
 
-			if f.Type.ModelName != nil {
+			if f.GetType().GetModelName() != nil {
 				config.ModelName = &f.Type.ModelName.Value
 			}
-			if f.Type.FieldName != nil {
+			if f.GetType().GetFieldName() != nil {
 				config.FieldName = &f.Type.FieldName.Value
 			}
-			if f.Type.EnumName != nil {
+			if f.GetType().GetEnumName() != nil {
 				config.EnumName = &f.Type.EnumName.Value
 			}
 
@@ -562,9 +562,9 @@ func (g *Generator) generateResponses() error {
 		}
 
 		// if the action has a response message, let's generate it
-		if tool.Action.ResponseMessageName != "" {
+		if tool.Action.GetResponseMessageName() != "" {
 			// get the message
-			msg := g.Schema.FindMessage(tool.Action.ResponseMessageName)
+			msg := g.Schema.FindMessage(tool.Action.GetResponseMessageName())
 			if msg == nil {
 				return ErrInvalidSchema
 			}
@@ -590,7 +590,7 @@ func (g *Generator) generateResponses() error {
 			pathPrefix = ".results[*]"
 			tool.ActionConfig.Response = append(tool.ActionConfig.Response, getPageInfoResponses()...)
 
-			if len(tool.Action.Facets) > 0 {
+			if len(tool.Action.GetFacets()) > 0 {
 				resultInfo, err := getResultInfoResponses(g.Schema, tool.Action)
 				if err != nil {
 					return err
@@ -619,28 +619,28 @@ func (g *Generator) makeInputsForMessage(
 	for i, f := range msg.GetFields() {
 		var fScope toolsproto.RequestFieldConfig_ScopeType
 		if scope == nil {
-			fScope = inferInputType(actionType, f.Name)
+			fScope = inferInputType(actionType, f.GetName())
 		} else {
 			fScope = *scope
 		}
 		if f.IsMessage() {
-			submsg := g.Schema.FindMessage(f.Type.MessageName.Value)
+			submsg := g.Schema.FindMessage(f.GetType().GetMessageName().GetValue())
 			if submsg == nil {
 				return nil, ErrInvalidSchema
 			}
 
 			fields = append(fields, &toolsproto.RequestFieldConfig{
 				Scope:         fScope,
-				FieldLocation: &toolsproto.JsonPath{Path: `$` + pathPrefix + "." + f.Name},
-				FieldType:     f.Type.Type,
-				Repeated:      f.Type.Repeated,
-				DisplayName:   casing.ToSentenceCase(f.Name),
+				FieldLocation: &toolsproto.JsonPath{Path: `$` + pathPrefix + "." + f.GetName()},
+				FieldType:     f.GetType().GetType(),
+				Repeated:      f.GetType().GetRepeated(),
+				DisplayName:   casing.ToSentenceCase(f.GetName()),
 				DisplayOrder:  int32(i),
 				Visible:       true,
 			})
 
-			prefix := pathPrefix + "." + f.Name
-			if f.Type.Repeated {
+			prefix := pathPrefix + "." + f.GetName()
+			if f.GetType().GetRepeated() {
 				prefix = prefix + "[*]"
 			}
 
@@ -655,27 +655,27 @@ func (g *Generator) makeInputsForMessage(
 
 		config := &toolsproto.RequestFieldConfig{
 			Scope:         fScope,
-			FieldLocation: &toolsproto.JsonPath{Path: `$` + pathPrefix + "." + f.Name},
-			FieldType:     f.Type.Type,
-			Repeated:      f.Type.Repeated,
-			DisplayName:   casing.ToSentenceCase(f.Name),
+			FieldLocation: &toolsproto.JsonPath{Path: `$` + pathPrefix + "." + f.GetName()},
+			FieldType:     f.GetType().GetType(),
+			Repeated:      f.GetType().GetRepeated(),
+			DisplayName:   casing.ToSentenceCase(f.GetName()),
 			DisplayOrder:  int32(i),
 			Visible:       true,
 		}
 
-		if f.Type.ModelName != nil {
+		if f.GetType().GetModelName() != nil {
 			config.ModelName = &f.Type.ModelName.Value
 		}
-		if f.Type.FieldName != nil {
+		if f.GetType().GetFieldName() != nil {
 			config.FieldName = &f.Type.FieldName.Value
 		}
-		if f.Type.EnumName != nil {
+		if f.GetType().GetEnumName() != nil {
 			config.EnumName = &f.Type.EnumName.Value
 		}
 
-		if f.Type.ModelName != nil && f.Type.FieldName != nil && proto.FindField(g.Schema.Models, f.Type.ModelName.Value, f.Type.FieldName.Value).Unique {
+		if f.GetType().GetModelName() != nil && f.GetType().GetFieldName() != nil && proto.FindField(g.Schema.GetModels(), f.GetType().GetModelName().GetValue(), f.GetType().GetFieldName().GetValue()).GetUnique() {
 			// generate action link placeholders
-			if lookupToolsIDs := g.findListTools(f.Type.ModelName.Value); len(lookupToolsIDs) > 0 {
+			if lookupToolsIDs := g.findListTools(f.GetType().GetModelName().GetValue()); len(lookupToolsIDs) > 0 {
 				config.LookupAction = &toolsproto.ToolLink{
 					ToolId: lookupToolsIDs[0],
 				}
@@ -685,9 +685,9 @@ func (g *Generator) makeInputsForMessage(
 			// inputs and responses have been generated ; this is a placeholder that will have it's data populated later
 			// in the generation process
 			// We do not add a GetEntryAction for the 'id' (or any unique lookup) input on a 'get', 'create' or 'update' action of a model, however do we add it for related models
-			if !((actionType == proto.ActionType_ACTION_TYPE_GET || actionType == proto.ActionType_ACTION_TYPE_CREATE || actionType == proto.ActionType_ACTION_TYPE_UPDATE) && len(f.Target) == 1) {
+			if !((actionType == proto.ActionType_ACTION_TYPE_GET || actionType == proto.ActionType_ACTION_TYPE_CREATE || actionType == proto.ActionType_ACTION_TYPE_UPDATE) && len(f.GetTarget()) == 1) {
 				config.GetEntryAction = &toolsproto.ToolLink{
-					ToolId: f.Type.ModelName.Value, // TODO: this is a bit of a hack placeholder because we do not know the underlying model which the field is pointing to during post-processing
+					ToolId: f.GetType().GetModelName().GetValue(), // TODO: this is a bit of a hack placeholder because we do not know the underlying model which the field is pointing to during post-processing
 				}
 			}
 		}
@@ -703,23 +703,23 @@ func (g *Generator) makeResponsesForMessage(msg *proto.Message, pathPrefix strin
 	order := 0
 	for _, f := range msg.GetFields() {
 		if f.IsMessage() {
-			submsg := g.Schema.FindMessage(f.Type.MessageName.Value)
+			submsg := g.Schema.FindMessage(f.GetType().GetMessageName().GetValue())
 			if submsg == nil {
 				return nil, ErrInvalidSchema
 			}
 
 			fields = append(fields, &toolsproto.ResponseFieldConfig{
 				Scope:         toolsproto.ResponseFieldConfig_DEFAULT,
-				FieldLocation: &toolsproto.JsonPath{Path: `$` + pathPrefix + "." + f.Name},
-				FieldType:     f.Type.Type,
-				Repeated:      f.Type.Repeated,
-				DisplayName:   casing.ToSentenceCase(f.Name),
-				DisplayOrder:  computeFieldOrder(&order, len(msg.GetFields()), f.Name),
+				FieldLocation: &toolsproto.JsonPath{Path: `$` + pathPrefix + "." + f.GetName()},
+				FieldType:     f.GetType().GetType(),
+				Repeated:      f.GetType().GetRepeated(),
+				DisplayName:   casing.ToSentenceCase(f.GetName()),
+				DisplayOrder:  computeFieldOrder(&order, len(msg.GetFields()), f.GetName()),
 				Visible:       true,
 			})
 
-			prefix := pathPrefix + "." + f.Name
-			if f.Type.Repeated {
+			prefix := pathPrefix + "." + f.GetName()
+			if f.GetType().GetRepeated() {
 				prefix = prefix + "[*]"
 			}
 
@@ -730,24 +730,24 @@ func (g *Generator) makeResponsesForMessage(msg *proto.Message, pathPrefix strin
 			fields = append(fields, subFields...)
 
 			continue
-		} else if f.Type.Type == proto.Type_TYPE_MODEL {
-			model := g.Schema.FindModel(f.Type.ModelName.Value)
+		} else if f.GetType().GetType() == proto.Type_TYPE_MODEL {
+			model := g.Schema.FindModel(f.GetType().GetModelName().GetValue())
 			if model == nil {
 				return nil, ErrInvalidSchema
 			}
 
 			fields = append(fields, &toolsproto.ResponseFieldConfig{
 				Scope:         toolsproto.ResponseFieldConfig_DEFAULT,
-				FieldLocation: &toolsproto.JsonPath{Path: `$` + pathPrefix + "." + f.Name},
-				FieldType:     f.Type.Type,
-				Repeated:      f.Type.Repeated,
-				DisplayName:   casing.ToSentenceCase(f.Name),
-				DisplayOrder:  computeFieldOrder(&order, len(msg.GetFields()), f.Name),
+				FieldLocation: &toolsproto.JsonPath{Path: `$` + pathPrefix + "." + f.GetName()},
+				FieldType:     f.GetType().GetType(),
+				Repeated:      f.GetType().GetRepeated(),
+				DisplayName:   casing.ToSentenceCase(f.GetName()),
+				DisplayOrder:  computeFieldOrder(&order, len(msg.GetFields()), f.GetName()),
 				Visible:       true,
 			})
 
-			prefix := pathPrefix + "." + f.Name
-			if f.Type.Repeated {
+			prefix := pathPrefix + "." + f.GetName()
+			if f.GetType().GetRepeated() {
 				prefix = prefix + "[*]"
 			}
 
@@ -762,15 +762,15 @@ func (g *Generator) makeResponsesForMessage(msg *proto.Message, pathPrefix strin
 
 		config := &toolsproto.ResponseFieldConfig{
 			Scope:         toolsproto.ResponseFieldConfig_DEFAULT,
-			FieldLocation: &toolsproto.JsonPath{Path: `$` + pathPrefix + "." + f.Name},
-			FieldType:     f.Type.Type,
-			Repeated:      f.Type.Repeated,
-			DisplayName:   casing.ToSentenceCase(f.Name),
+			FieldLocation: &toolsproto.JsonPath{Path: `$` + pathPrefix + "." + f.GetName()},
+			FieldType:     f.GetType().GetType(),
+			Repeated:      f.GetType().GetRepeated(),
+			DisplayName:   casing.ToSentenceCase(f.GetName()),
 			Visible:       true,
-			DisplayOrder:  computeFieldOrder(&order, len(msg.GetFields()), f.Name),
+			DisplayOrder:  computeFieldOrder(&order, len(msg.GetFields()), f.GetName()),
 			Sortable: func() bool {
 				for _, fn := range sortableFields {
-					if fn == f.Name {
+					if fn == f.GetName() {
 						return true
 					}
 				}
@@ -801,7 +801,7 @@ func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string,
 
 			for _, embed := range embeddings {
 				frags := strings.Split(embed, ".")
-				if frags[0] == f.Name {
+				if frags[0] == f.GetName() {
 					found = true
 					// if we have to embed a child model for this field, we need to pass them through with the first segment removed
 					if len(frags) > 1 {
@@ -810,11 +810,11 @@ func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string,
 				}
 			}
 			if found {
-				prefix := pathPrefix + "." + f.Name
+				prefix := pathPrefix + "." + f.GetName()
 				if f.IsHasMany() {
 					prefix = prefix + "[*]"
 				}
-				embeddedFields, err := g.makeResponsesForModel(g.Schema.FindModel(f.Type.ModelName.Value), prefix, fieldEmbeddings, []string{})
+				embeddedFields, err := g.makeResponsesForModel(g.Schema.FindModel(f.GetType().GetModelName().GetValue()), prefix, fieldEmbeddings, []string{})
 				if err != nil {
 					return nil, err
 				}
@@ -828,22 +828,22 @@ func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string,
 
 		config := &toolsproto.ResponseFieldConfig{
 			Scope:         toolsproto.ResponseFieldConfig_DEFAULT,
-			FieldLocation: &toolsproto.JsonPath{Path: `$` + pathPrefix + "." + f.Name},
-			FieldType:     f.Type.Type,
-			Repeated:      f.Type.Repeated,
+			FieldLocation: &toolsproto.JsonPath{Path: `$` + pathPrefix + "." + f.GetName()},
+			FieldType:     f.GetType().GetType(),
+			Repeated:      f.GetType().GetRepeated(),
 			DisplayName: func() string {
 				// if the field is a model (relationship), the display name of the field should be the
 				// name of the related field without the ID suffix; e.g. "Category" instead of "Category id"
 				if f.IsForeignKey() {
-					return casing.ToSentenceCase(strings.TrimSuffix(f.Name, "Id"))
+					return casing.ToSentenceCase(strings.TrimSuffix(f.GetName(), "Id"))
 				}
-				return casing.ToSentenceCase(f.Name)
+				return casing.ToSentenceCase(f.GetName())
 			}(),
 			Visible:      true,
-			DisplayOrder: computeFieldOrder(&order, len(model.GetFields()), f.Name),
+			DisplayOrder: computeFieldOrder(&order, len(model.GetFields()), f.GetName()),
 			Sortable: func() bool {
 				for _, fn := range sortableFields {
-					if fn == f.Name {
+					if fn == f.GetName() {
 						return true
 					}
 				}
@@ -852,7 +852,7 @@ func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string,
 			ModelName: &f.ModelName,
 			FieldName: &f.Name,
 			EnumName: func() *string {
-				if f.Type.EnumName != nil {
+				if f.GetType().GetEnumName() != nil {
 					return &f.Type.EnumName.Value
 				}
 				return nil
@@ -865,14 +865,14 @@ func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string,
 
 		// if this field is a model, we add a link to the action used to retrieve the related model. Note that inputs are
 		// generated first, so we're safe to create a tool/action link now
-		if f.IsForeignKey() && f.ForeignKeyInfo.RelatedModelField == fieldNameID {
-			if getToolID := g.findGetByIDTool(f.ForeignKeyInfo.RelatedModelName); getToolID != "" {
+		if f.IsForeignKey() && f.GetForeignKeyInfo().GetRelatedModelField() == fieldNameID {
+			if getToolID := g.findGetByIDTool(f.GetForeignKeyInfo().GetRelatedModelName()); getToolID != "" {
 				config.Link = &toolsproto.ToolLink{
 					ToolId: getToolID,
 					Data: []*toolsproto.DataMapping{
 						{
 							Key:  g.Tools[getToolID].getIDInputFieldPath(),
-							Path: config.FieldLocation,
+							Path: config.GetFieldLocation(),
 						},
 					},
 				}
@@ -880,12 +880,12 @@ func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string,
 		}
 
 		if f.IsHasMany() {
-			if getToolID, input := g.findListByForeignID(f.Type.ModelName.Value, f.InverseFieldName.Value); getToolID != "" {
+			if getToolID, input := g.findListByForeignID(f.GetType().GetModelName().GetValue(), f.GetInverseFieldName().GetValue()); getToolID != "" {
 				config.Link = &toolsproto.ToolLink{
 					ToolId: getToolID,
 					Data: []*toolsproto.DataMapping{
 						{
-							Key: input.FieldLocation.Path,
+							Key: input.GetFieldLocation().GetPath(),
 						},
 					},
 				}
@@ -916,7 +916,7 @@ func computeFieldOrder(currentOrder *int, fieldCount int, fieldName string) int3
 func (g *Generator) findListTools(modelName string) []string {
 	ids := []string{}
 	for id, tool := range g.actionTools() {
-		if tool.IsActionBased() && tool.Model.Name == modelName && tool.Action.IsList() {
+		if tool.IsActionBased() && tool.Model.GetName() == modelName && tool.Action.IsList() {
 			ids = append(ids, id)
 		}
 	}
@@ -929,7 +929,7 @@ func (g *Generator) findListTools(modelName string) []string {
 // findCreateTool will search for a get tool for the given model.
 func (g *Generator) findCreateTool(modelName string) string {
 	for id, tool := range g.actionTools() {
-		if tool.Model.Name == modelName && tool.Action.IsCreate() {
+		if tool.Model.GetName() == modelName && tool.Action.IsCreate() {
 			return id
 		}
 	}
@@ -944,7 +944,7 @@ func (g *Generator) findGetByIDTool(modelName string) string {
 	}
 
 	for id, tool := range g.actionTools() {
-		if tool.Model.Name == modelName && tool.Action.IsGet() && tool.hasOnlyIDInput() {
+		if tool.Model.GetName() == modelName && tool.Action.IsGet() && tool.hasOnlyIDInput() {
 			return id
 		}
 	}
@@ -955,7 +955,7 @@ func (g *Generator) findGetByIDTool(modelName string) string {
 // findGetByIDTool will search for a get tool for the given model that takes in an ID and has no @embeds defined.
 func (g *Generator) findGetByIDWithoutEmbedsTool(modelName string) string {
 	for id, tool := range g.actionTools() {
-		if tool.Model.Name == modelName && tool.Action.IsGet() && tool.hasOnlyIDInput() && len(tool.Action.ResponseEmbeds) == 0 {
+		if tool.Model.GetName() == modelName && tool.Action.IsGet() && tool.hasOnlyIDInput() && len(tool.Action.GetResponseEmbeds()) == 0 {
 			return id
 		}
 	}
@@ -967,7 +967,7 @@ func (g *Generator) findGetByIDWithoutEmbedsTool(modelName string) string {
 // It will also return the request input field for that tool.
 func (g *Generator) findListByForeignID(modelName string, inverseFieldName string) (string, *toolsproto.RequestFieldConfig) {
 	for id, tool := range g.actionTools() {
-		if input := tool.getInput("$.where." + inverseFieldName + ".id.equals"); tool.Model.Name == modelName && tool.Action.Type == proto.ActionType_ACTION_TYPE_LIST && input != nil {
+		if input := tool.getInput("$.where." + inverseFieldName + ".id.equals"); tool.Model.GetName() == modelName && tool.Action.GetType() == proto.ActionType_ACTION_TYPE_LIST && input != nil {
 			return id, input
 		}
 	}
@@ -987,7 +987,7 @@ func (g *Generator) findAllByIDTools(modelName string, ignoreID string) map[stri
 		if id == ignoreID {
 			continue
 		}
-		if tool.Model.Name != modelName {
+		if tool.Model.GetName() != modelName {
 			continue
 		}
 
@@ -1000,9 +1000,9 @@ func (g *Generator) findAllByIDTools(modelName string, ignoreID string) map[stri
 		// if we have a UPDATE that includes a where.ID
 		if tool.Action.IsUpdate() {
 			idInputPath := ""
-			for _, input := range tool.ActionConfig.Inputs {
-				if input.FieldType == proto.Type_TYPE_ID && input.FieldLocation.Path == "$.where.id" {
-					idInputPath = input.FieldLocation.Path
+			for _, input := range tool.ActionConfig.GetInputs() {
+				if input.GetFieldType() == proto.Type_TYPE_ID && input.GetFieldLocation().GetPath() == "$.where.id" {
+					idInputPath = input.GetFieldLocation().GetPath()
 				}
 			}
 			if idInputPath != "" {
@@ -1041,24 +1041,24 @@ func (g *Generator) makeCapabilities(action *proto.Action) *toolsproto.Capabilit
 // If no text fields found, we revert to the sentence-cased action name (also removing the list/get/read prefixes
 // (e.g. Invoices instead of List invoices).
 func (g *Generator) makeTitle(action *proto.Action, model *proto.Model) *toolsproto.StringTemplate {
-	if action.IsGet() || action.Type == proto.ActionType_ACTION_TYPE_READ {
+	if action.IsGet() || action.GetType() == proto.ActionType_ACTION_TYPE_READ {
 		fields := model.GetFields()
-		if len(fields) > 0 && fields[0].Type.Type == proto.Type_TYPE_STRING {
+		if len(fields) > 0 && fields[0].GetType().GetType() == proto.Type_TYPE_STRING {
 			return &toolsproto.StringTemplate{
 				Template: "{{$." + fields[0].GetName() + "}}",
 			}
 		}
 	}
 
-	actionName := action.Name
+	actionName := action.GetName()
 
-	switch action.Type {
+	switch action.GetType() {
 	case proto.ActionType_ACTION_TYPE_GET:
-		actionName = strings.TrimPrefix(action.Name, "get")
+		actionName = strings.TrimPrefix(action.GetName(), "get")
 	case proto.ActionType_ACTION_TYPE_LIST:
-		actionName = strings.TrimPrefix(action.Name, "list")
+		actionName = strings.TrimPrefix(action.GetName(), "list")
 	case proto.ActionType_ACTION_TYPE_READ:
-		actionName = strings.TrimPrefix(action.Name, "read")
+		actionName = strings.TrimPrefix(action.GetName(), "read")
 	}
 
 	return &toolsproto.StringTemplate{
@@ -1141,33 +1141,33 @@ func getResultInfoResponses(schema *proto.Schema, action *proto.Action) ([]*tool
 	for _, field := range facetFields {
 		config = append(config,
 			&toolsproto.ResponseFieldConfig{
-				FieldLocation: &toolsproto.JsonPath{Path: fmt.Sprintf("$.resultInfo.%s", field.Name)},
+				FieldLocation: &toolsproto.JsonPath{Path: fmt.Sprintf("$.resultInfo.%s", field.GetName())},
 				FieldType:     proto.Type_TYPE_OBJECT,
-				DisplayName:   fmt.Sprintf("%s facets", field.Name),
+				DisplayName:   fmt.Sprintf("%s facets", field.GetName()),
 				Visible:       false,
 				Scope:         toolsproto.ResponseFieldConfig_FACETS,
 			},
 		)
 
-		switch field.Type.Type {
+		switch field.GetType().GetType() {
 		case proto.Type_TYPE_DECIMAL, proto.Type_TYPE_INT:
 			config = append(config,
 				&toolsproto.ResponseFieldConfig{
-					FieldLocation: &toolsproto.JsonPath{Path: fmt.Sprintf("$.resultInfo.%s.min", field.Name)},
-					FieldType:     field.Type.Type,
+					FieldLocation: &toolsproto.JsonPath{Path: fmt.Sprintf("$.resultInfo.%s.min", field.GetName())},
+					FieldType:     field.GetType().GetType(),
 					DisplayName:   "Minimum",
 					Visible:       false,
 					Scope:         toolsproto.ResponseFieldConfig_FACETS,
 				},
 				&toolsproto.ResponseFieldConfig{
-					FieldLocation: &toolsproto.JsonPath{Path: fmt.Sprintf("$.resultInfo.%s.max", field.Name)},
-					FieldType:     field.Type.Type,
+					FieldLocation: &toolsproto.JsonPath{Path: fmt.Sprintf("$.resultInfo.%s.max", field.GetName())},
+					FieldType:     field.GetType().GetType(),
 					DisplayName:   "Maximum",
 					Visible:       false,
 					Scope:         toolsproto.ResponseFieldConfig_FACETS,
 				},
 				&toolsproto.ResponseFieldConfig{
-					FieldLocation: &toolsproto.JsonPath{Path: fmt.Sprintf("$.resultInfo.%s.avg", field.Name)},
+					FieldLocation: &toolsproto.JsonPath{Path: fmt.Sprintf("$.resultInfo.%s.avg", field.GetName())},
 					FieldType:     proto.Type_TYPE_DECIMAL,
 					DisplayName:   "Average",
 					Visible:       false,
@@ -1177,15 +1177,15 @@ func getResultInfoResponses(schema *proto.Schema, action *proto.Action) ([]*tool
 		case proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP, proto.Type_TYPE_DURATION:
 			config = append(config,
 				&toolsproto.ResponseFieldConfig{
-					FieldLocation: &toolsproto.JsonPath{Path: fmt.Sprintf("$.resultInfo.%s.min", field.Name)},
-					FieldType:     field.Type.Type,
+					FieldLocation: &toolsproto.JsonPath{Path: fmt.Sprintf("$.resultInfo.%s.min", field.GetName())},
+					FieldType:     field.GetType().GetType(),
 					DisplayName:   "Minimum",
 					Visible:       false,
 					Scope:         toolsproto.ResponseFieldConfig_FACETS,
 				},
 				&toolsproto.ResponseFieldConfig{
-					FieldLocation: &toolsproto.JsonPath{Path: fmt.Sprintf("$.resultInfo.%s.max", field.Name)},
-					FieldType:     field.Type.Type,
+					FieldLocation: &toolsproto.JsonPath{Path: fmt.Sprintf("$.resultInfo.%s.max", field.GetName())},
+					FieldType:     field.GetType().GetType(),
 					DisplayName:   "Maximum",
 					Visible:       false,
 					Scope:         toolsproto.ResponseFieldConfig_FACETS,
@@ -1194,14 +1194,14 @@ func getResultInfoResponses(schema *proto.Schema, action *proto.Action) ([]*tool
 		case proto.Type_TYPE_ENUM, proto.Type_TYPE_STRING:
 			config = append(config,
 				&toolsproto.ResponseFieldConfig{
-					FieldLocation: &toolsproto.JsonPath{Path: fmt.Sprintf("$.resultInfo.%s[*].value", field.Name)},
+					FieldLocation: &toolsproto.JsonPath{Path: fmt.Sprintf("$.resultInfo.%s[*].value", field.GetName())},
 					FieldType:     proto.Type_TYPE_STRING,
 					DisplayName:   "Value",
 					Visible:       false,
 					Scope:         toolsproto.ResponseFieldConfig_FACETS,
 				},
 				&toolsproto.ResponseFieldConfig{
-					FieldLocation: &toolsproto.JsonPath{Path: fmt.Sprintf("$.resultInfo.%s[*].count", field.Name)},
+					FieldLocation: &toolsproto.JsonPath{Path: fmt.Sprintf("$.resultInfo.%s[*].count", field.GetName())},
 					FieldType:     proto.Type_TYPE_INT,
 					DisplayName:   "Count",
 					Visible:       false,
@@ -1209,7 +1209,7 @@ func getResultInfoResponses(schema *proto.Schema, action *proto.Action) ([]*tool
 				},
 			)
 		default:
-			return nil, fmt.Errorf("unsupported facet field type: %s", field.Type.Type)
+			return nil, fmt.Errorf("unsupported facet field type: %s", field.GetType().GetType())
 		}
 	}
 
@@ -1250,11 +1250,11 @@ func inferInputType(actionType proto.ActionType, fieldName string) toolsproto.Re
 
 // hasOnlyIDInput checks if the tool takes only one input, an ID.
 func (t *Tool) hasOnlyIDInput() bool {
-	if len(t.ActionConfig.Inputs) != 1 {
+	if len(t.ActionConfig.GetInputs()) != 1 {
 		return false
 	}
-	for _, input := range t.ActionConfig.Inputs {
-		if input.FieldType != proto.Type_TYPE_ID {
+	for _, input := range t.ActionConfig.GetInputs() {
+		if input.GetFieldType() != proto.Type_TYPE_ID {
 			return false
 		}
 	}
@@ -1264,9 +1264,9 @@ func (t *Tool) hasOnlyIDInput() bool {
 
 // getIDInputFieldPath returns the path of the first input field that's an ID.
 func (t *Tool) getIDInputFieldPath() string {
-	for _, input := range t.ActionConfig.Inputs {
-		if input.FieldType == proto.Type_TYPE_ID && input.DisplayName == casing.ToSentenceCase(fieldNameID) {
-			return input.FieldLocation.Path
+	for _, input := range t.ActionConfig.GetInputs() {
+		if input.GetFieldType() == proto.Type_TYPE_ID && input.GetDisplayName() == casing.ToSentenceCase(fieldNameID) {
+			return input.GetFieldLocation().GetPath()
 		}
 	}
 
@@ -1275,8 +1275,8 @@ func (t *Tool) getIDInputFieldPath() string {
 
 // getInput finds and returns an inpub by it's path; returns nil if not found.
 func (t *Tool) getInput(path string) *toolsproto.RequestFieldConfig {
-	for _, input := range t.ActionConfig.Inputs {
-		if input.FieldLocation.Path == path {
+	for _, input := range t.ActionConfig.GetInputs() {
+		if input.GetFieldLocation().GetPath() == path {
 			return input
 		}
 	}
@@ -1291,9 +1291,9 @@ func (t *Tool) getIDResponseFieldPath() string {
 	if t.Action.IsList() {
 		expectedPath = "$.results[*].id"
 	}
-	for _, response := range t.ActionConfig.Response {
-		if response.FieldType == proto.Type_TYPE_ID && response.FieldLocation.Path == expectedPath {
-			return response.FieldLocation.Path
+	for _, response := range t.ActionConfig.GetResponse() {
+		if response.GetFieldType() == proto.Type_TYPE_ID && response.GetFieldLocation().GetPath() == expectedPath {
+			return response.GetFieldLocation().GetPath()
 		}
 	}
 

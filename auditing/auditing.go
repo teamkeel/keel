@@ -188,16 +188,16 @@ func processEventsSql(schema *proto.Schema, traceId string) (string, []any, erro
 		return "", nil, errors.New("traceId cannot be empty")
 	}
 
-	if len(schema.Events) == 0 {
+	if len(schema.GetEvents()) == 0 {
 		return "", nil, errors.New("there are no events defined in this schema")
 	}
 
 	args := []any{}
 
 	conditions := []string{}
-	for _, e := range schema.Events {
-		table := casing.ToSnake(e.ModelName)
-		op, err := opFromActionType(e.ActionType)
+	for _, e := range schema.GetEvents() {
+		table := casing.ToSnake(e.GetModelName())
+		op, err := opFromActionType(e.GetActionType())
 		if err != nil {
 			return "", nil, err
 		}

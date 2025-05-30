@@ -11,24 +11,24 @@ import (
 
 // Applies all implicit input filters to the query.
 func (query *QueryBuilder) ApplyImplicitFilters(scope *Scope, args map[string]any) error {
-	message := proto.FindWhereInputMessage(scope.Schema, scope.Action.Name)
+	message := proto.FindWhereInputMessage(scope.Schema, scope.Action.GetName())
 	if message == nil {
 		return nil
 	}
 
-	for _, input := range message.Fields {
+	for _, input := range message.GetFields() {
 		if !input.IsModelField() {
 			// Skip if this is an explicit input (probably used in a @where)
 			continue
 		}
 
-		value, ok := args[input.Name]
+		value, ok := args[input.GetName()]
 
 		if !ok {
-			return fmt.Errorf("this expected input: %s, is missing from this provided args map: %+v", input.Name, args)
+			return fmt.Errorf("this expected input: %s, is missing from this provided args map: %+v", input.GetName(), args)
 		}
 
-		err := query.whereByImplicitFilter(scope, input.Target, Equals, value)
+		err := query.whereByImplicitFilter(scope, input.GetTarget(), Equals, value)
 		if err != nil {
 			return err
 		}
@@ -43,7 +43,7 @@ func (query *QueryBuilder) ApplyImplicitFilters(scope *Scope, args map[string]an
 // Include a filter (where condition) on the query based on an implicit input filter.
 func (query *QueryBuilder) whereByImplicitFilter(scope *Scope, targetField []string, operator ActionOperator, value any) error {
 	// Implicit inputs don't include the base model as the first fragment (unlike expressions), so we include it
-	fragments := append([]string{casing.ToLowerCamel(scope.Action.ModelName)}, targetField...)
+	fragments := append([]string{casing.ToLowerCamel(scope.Action.GetModelName())}, targetField...)
 
 	// The lhs QueryOperand is determined from the fragments in the implicit input field
 	left, err := operandFromFragments(scope.Schema, fragments)
@@ -71,8 +71,8 @@ func (query *QueryBuilder) whereByImplicitFilter(scope *Scope, targetField []str
 
 // Applies all exlicit where attribute filters to the query.
 func (query *QueryBuilder) applyExpressionFilters(scope *Scope, args map[string]any) error {
-	for _, where := range scope.Action.WhereExpressions {
-		expression, err := parser.ParseExpression(where.Source)
+	for _, where := range scope.Action.GetWhereExpressions() {
+		expression, err := parser.ParseExpression(where.GetSource())
 		if err != nil {
 			return err
 		}

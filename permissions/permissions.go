@@ -134,7 +134,7 @@ var _ resolve.Visitor[*statement] = new(permissionGen)
 // The returned SQL uses "?" placeholders for values and the returned list of values indicates
 // what values should be provided to the query at runtime.
 func ToSQL(s *proto.Schema, m *proto.Model, action *proto.Action) (sql string, values []*Value, err error) {
-	tableName := identifier(m.Name)
+	tableName := identifier(m.GetName())
 	pkField := identifier(m.PrimaryKeyFieldName())
 
 	stmt := &statement{
@@ -144,7 +144,7 @@ func ToSQL(s *proto.Schema, m *proto.Model, action *proto.Action) (sql string, v
 	permissions := proto.PermissionsForAction(s, action)
 
 	for _, p := range permissions {
-		if p.Expression == nil {
+		if p.GetExpression() == nil {
 			continue
 		}
 
@@ -153,7 +153,7 @@ func ToSQL(s *proto.Schema, m *proto.Model, action *proto.Action) (sql string, v
 			stmt.expression += " or "
 		}
 
-		expr, err := parser.ParseExpression(p.Expression.Source)
+		expr, err := parser.ParseExpression(p.GetExpression().GetSource())
 		if err != nil {
 			return sql, values, err
 		}
@@ -193,11 +193,11 @@ func handleOperand(s *proto.Schema, model *proto.Model, ident *parser.Expression
 	switch ident.Fragments[0] {
 	case "ctx":
 		return handleContext(s, ident, stmt)
-	case casing.ToLowerCamel(model.Name):
+	case casing.ToLowerCamel(model.GetName()):
 		return handleModel(s, model, ident, stmt)
 	default:
 		// If not context of model must be enum, but still worth checking to be sure
-		enum := proto.FindEnum(s.Enums, ident.Fragments[0])
+		enum := proto.FindEnum(s.GetEnums(), ident.Fragments[0])
 		if enum == nil {
 			return fmt.Errorf("unknown ident %s", ident.Fragments[0])
 		}
@@ -292,14 +292,14 @@ func handleModel(s *proto.Schema, model *proto.Model, ident *parser.ExpressionId
 
 		// Remaining fragments
 		default:
-			field := proto.FindField(s.Models, model.Name, f)
+			field := proto.FindField(s.GetModels(), model.GetName(), f)
 			if field == nil {
-				return fmt.Errorf("model %s has no field %s", model.Name, f)
+				return fmt.Errorf("model %s has no field %s", model.GetName(), f)
 			}
 
 			isLast := i == len(ident.Fragments)-1
-			isModel := field.Type.Type == proto.Type_TYPE_MODEL
-			hasFk := field.ForeignKeyFieldName != nil
+			isModel := field.GetType().GetType() == proto.Type_TYPE_MODEL
+			hasFk := field.GetForeignKeyFieldName() != nil
 
 			if isModel && (!isLast || !hasFk) {
 				// Left alias is the source table
@@ -311,28 +311,28 @@ func handleModel(s *proto.Schema, model *proto.Model, ident *parser.ExpressionId
 				// Right alias is the join table
 				rightAlias := fieldName
 
-				field := proto.FindField(s.Models, model.Name, f)
+				field := proto.FindField(s.GetModels(), model.GetName(), f)
 				if field == nil {
-					return fmt.Errorf("model %s has no field %s", model.Name, f)
+					return fmt.Errorf("model %s has no field %s", model.GetName(), f)
 				}
 
-				joinModel := s.FindModel(field.Type.ModelName.Value)
+				joinModel := s.FindModel(field.GetType().GetModelName().GetValue())
 				if joinModel == nil {
-					return fmt.Errorf("model %s not found in schema", model.Name)
+					return fmt.Errorf("model %s not found in schema", model.GetName())
 				}
 
-				leftFieldName := proto.GetForeignKeyFieldName(s.Models, field)
+				leftFieldName := proto.GetForeignKeyFieldName(s.GetModels(), field)
 				rightFieldName := joinModel.PrimaryKeyFieldName()
 
 				// If not belongs to then swap foreign/primary key
 				if !field.IsBelongsTo() {
 					leftFieldName = model.PrimaryKeyFieldName()
-					rightFieldName = proto.GetForeignKeyFieldName(s.Models, field)
+					rightFieldName = proto.GetForeignKeyFieldName(s.GetModels(), field)
 				}
 
 				stmt.joins = append(stmt.joins, fmt.Sprintf(
 					"LEFT JOIN %s AS %s ON %s.%s = %s.%s",
-					identifier(joinModel.Name),
+					identifier(joinModel.GetName()),
 					identifier(rightAlias),
 					identifier(leftAlias),
 					identifier(leftFieldName),
@@ -348,9 +348,9 @@ func handleModel(s *proto.Schema, model *proto.Model, ident *parser.ExpressionId
 				fieldName = identifier(fieldName)
 
 				// Then append the field name as a quoted identifier
-				if field.Type.Type == proto.Type_TYPE_MODEL {
-					if field.ForeignKeyFieldName != nil {
-						fieldName += "." + identifier(field.ForeignKeyFieldName.Value)
+				if field.GetType().GetType() == proto.Type_TYPE_MODEL {
+					if field.GetForeignKeyFieldName() != nil {
+						fieldName += "." + identifier(field.GetForeignKeyFieldName().GetValue())
 					} else {
 						fieldName += "." + identifier("id")
 					}

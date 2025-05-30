@@ -10,7 +10,7 @@ import (
 // For example, a where condition might filter on reading data,
 // such as: @where(post.author.isActive).
 func IsModelDbColumn(model *proto.Model, fragments []string) bool {
-	return fragments[0] == strcase.ToLowerCamel(model.Name)
+	return fragments[0] == strcase.ToLowerCamel(model.GetName())
 }
 
 // IsContextDbColumn returns true if the expression refers to a value on the context
@@ -100,17 +100,17 @@ func IsImplicitInput(schema *proto.Schema, action *proto.Action, fragments []str
 	foundImplicitWhereInput := false
 	foundImplicitValueInput := false
 
-	whereInputs := proto.FindWhereInputMessage(schema, action.Name)
+	whereInputs := proto.FindWhereInputMessage(schema, action.GetName())
 	if whereInputs != nil {
-		_, foundImplicitWhereInput = lo.Find(whereInputs.Fields, func(in *proto.MessageField) bool {
-			return in.Name == fragments[0] && in.IsModelField()
+		_, foundImplicitWhereInput = lo.Find(whereInputs.GetFields(), func(in *proto.MessageField) bool {
+			return in.GetName() == fragments[0] && in.IsModelField()
 		})
 	}
 
-	valuesInputs := proto.FindValuesInputMessage(schema, action.Name)
+	valuesInputs := proto.FindValuesInputMessage(schema, action.GetName())
 	if valuesInputs != nil {
-		_, foundImplicitValueInput = lo.Find(valuesInputs.Fields, func(in *proto.MessageField) bool {
-			return in.Name == fragments[0] && in.IsModelField()
+		_, foundImplicitValueInput = lo.Find(valuesInputs.GetFields(), func(in *proto.MessageField) bool {
+			return in.GetName() == fragments[0] && in.IsModelField()
 		})
 	}
 
@@ -126,17 +126,17 @@ func IsInput(schema *proto.Schema, action *proto.Action, fragments []string) boo
 	foundExplicitWhereInput := false
 	foundExplicitValueInput := false
 
-	whereInputs := proto.FindWhereInputMessage(schema, action.Name)
+	whereInputs := proto.FindWhereInputMessage(schema, action.GetName())
 	if whereInputs != nil {
-		_, foundExplicitWhereInput = lo.Find(whereInputs.Fields, func(in *proto.MessageField) bool {
-			return in.Name == fragments[0]
+		_, foundExplicitWhereInput = lo.Find(whereInputs.GetFields(), func(in *proto.MessageField) bool {
+			return in.GetName() == fragments[0]
 		})
 	}
 
-	valuesInputs := proto.FindValuesInputMessage(schema, action.Name)
+	valuesInputs := proto.FindValuesInputMessage(schema, action.GetName())
 	if valuesInputs != nil {
-		_, foundExplicitValueInput = lo.Find(valuesInputs.Fields, func(in *proto.MessageField) bool {
-			return in.Name == fragments[0]
+		_, foundExplicitValueInput = lo.Find(valuesInputs.GetFields(), func(in *proto.MessageField) bool {
+			return in.GetName() == fragments[0]
 		})
 	}
 

@@ -84,18 +84,18 @@ func (v *setQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
 	}
 
 	if model != nil && expressions.IsModelDbColumn(model, normalised) && len(normalised) > 2 {
-		switch v.action.Type {
+		switch v.action.GetType() {
 		case proto.ActionType_ACTION_TYPE_CREATE:
 			// This section performs a field lookup on a to-be related model as an inline query
 
-			field := proto.FindField(v.schema.Models, model.Name, ident.Fragments[1])
-			model = v.schema.FindModel(field.Type.ModelName.Value)
+			field := proto.FindField(v.schema.GetModels(), model.GetName(), ident.Fragments[1])
+			model = v.schema.FindModel(field.GetType().GetModelName().GetValue())
 			query := NewQuery(model)
 
-			relatedModelField := proto.FindField(v.schema.Models, v.model.Name, normalised[1])
+			relatedModelField := proto.FindField(v.schema.GetModels(), v.model.GetName(), normalised[1])
 
 			subFragments := normalised[1:]
-			subFragments[0] = strcase.ToLowerCamel(relatedModelField.Type.ModelName.Value)
+			subFragments[0] = strcase.ToLowerCamel(relatedModelField.GetType().GetModelName().GetValue())
 
 			err := query.AddJoinFromFragments(v.schema, subFragments)
 			if err != nil {
@@ -151,7 +151,7 @@ func (v *setQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
 			v.operand = InlineQuery(query, selectField)
 		}
 	} else {
-		if v.action.Type == proto.ActionType_ACTION_TYPE_UPDATE && v.inputs["values"] != nil {
+		if v.action.GetType() == proto.ActionType_ACTION_TYPE_UPDATE && v.inputs["values"] != nil {
 			v.inputs = v.inputs["values"].(map[string]any)
 		}
 

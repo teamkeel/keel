@@ -42,7 +42,7 @@ func NewScope(
 	ctx context.Context,
 	action *proto.Action,
 	schema *proto.Schema) *Scope {
-	model := schema.FindModel(action.ModelName)
+	model := schema.FindModel(action.GetModelName())
 
 	return &Scope{
 		Context: ctx,
@@ -80,12 +80,12 @@ func NewJobScope(
 }
 
 func Execute(scope *Scope, input any) (result any, meta *common.ResponseMetadata, err error) {
-	ctx, span := tracer.Start(scope.Context, scope.Action.Name)
+	ctx, span := tracer.Start(scope.Context, scope.Action.GetName())
 	defer span.End()
 
 	span.SetAttributes(
-		attribute.String("action", scope.Action.Name),
-		attribute.String("model", scope.Model.Name),
+		attribute.String("action", scope.Action.GetName()),
+		attribute.String("model", scope.Model.GetName()),
 	)
 
 	scope = scope.WithContext(ctx)
@@ -95,8 +95,8 @@ func Execute(scope *Scope, input any) (result any, meta *common.ResponseMetadata
 	inputsAsMap, isMap := input.(map[string]any)
 
 	if isMap {
-		message := scope.Schema.FindMessage(scope.Action.InputMessageName)
-		isFunction := scope.Action.Implementation == proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
+		message := scope.Schema.FindMessage(scope.Action.GetInputMessageName())
+		isFunction := scope.Action.GetImplementation() == proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
 
 		inputsAsMap, err = TransformInputs(scope.Schema, message, inputsAsMap, isFunction)
 		if err != nil {
@@ -104,7 +104,7 @@ func Execute(scope *Scope, input any) (result any, meta *common.ResponseMetadata
 		}
 	}
 
-	switch scope.Action.Implementation {
+	switch scope.Action.GetImplementation() {
 	case proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM:
 		result, meta, err = executeCustomFunction(scope, input)
 	case proto.ActionImplementation_ACTION_IMPLEMENTATION_RUNTIME:
@@ -126,7 +126,7 @@ func Execute(scope *Scope, input any) (result any, meta *common.ResponseMetadata
 		}
 		result, err = executeAutoAction(scope, inputsAsMap)
 	default:
-		return nil, nil, fmt.Errorf("unhandled unknown action %s of type %s", scope.Action.Name, scope.Action.Implementation)
+		return nil, nil, fmt.Errorf("unhandled unknown action %s of type %s", scope.Action.GetName(), scope.Action.GetImplementation())
 	}
 
 	// Generate and send any events for this context.
@@ -160,7 +160,7 @@ func executeCustomFunction(scope *Scope, inputs any) (any, *common.ResponseMetad
 
 	resp, meta, err := functions.CallFunction(
 		scope.Context,
-		scope.Action.Name,
+		scope.Action.GetName(),
 		inputs,
 		permissionState,
 	)
@@ -174,7 +174,7 @@ func executeCustomFunction(scope *Scope, inputs any) (any, *common.ResponseMetad
 		Status:  meta.Status,
 	}
 
-	message := scope.Schema.FindMessage(scope.Action.ResponseMessageName)
+	message := scope.Schema.FindMessage(scope.Action.GetResponseMessageName())
 
 	if asMap, ok := resp.(map[string]any); ok {
 		resp, err = transformMessageFileResponses(scope.Context, scope.Schema, message, asMap)
@@ -188,7 +188,7 @@ func executeCustomFunction(scope *Scope, inputs any) (any, *common.ResponseMetad
 	// to "wrap" the results here.
 	// TODO: come up with a better implementation for list functions that can support
 	// pagination
-	if scope.Action.Type == proto.ActionType_ACTION_TYPE_LIST {
+	if scope.Action.GetType() == proto.ActionType_ACTION_TYPE_LIST {
 		results, _ := resp.([]any)
 		return map[string]any{
 			"results": results,
@@ -209,7 +209,7 @@ func executeCustomFunction(scope *Scope, inputs any) (any, *common.ResponseMetad
 }
 
 func executeRuntimeAction(scope *Scope, inputs map[string]any) (any, error) {
-	switch scope.Action.Name {
+	switch scope.Action.GetName() {
 	case requestPasswordResetActionName:
 		err := ResetRequestPassword(scope, inputs)
 		return map[string]any{}, err
@@ -217,12 +217,12 @@ func executeRuntimeAction(scope *Scope, inputs map[string]any) (any, error) {
 		err := ResetPassword(scope, inputs)
 		return map[string]any{}, err
 	default:
-		return nil, fmt.Errorf("unhandled runtime action: %s", scope.Action.Name)
+		return nil, fmt.Errorf("unhandled runtime action: %s", scope.Action.GetName())
 	}
 }
 
 func executeAutoAction(scope *Scope, inputs map[string]any) (any, error) {
-	switch scope.Action.Type {
+	switch scope.Action.GetType() {
 	case proto.ActionType_ACTION_TYPE_GET:
 		v, err := Get(scope, inputs)
 		// Get() can return nil, but for some reason if we don't explicitly
@@ -246,6 +246,6 @@ func executeAutoAction(scope *Scope, inputs map[string]any) (any, error) {
 		result, err := List(scope, inputs)
 		return result, err
 	default:
-		return nil, fmt.Errorf("unhandled auto action type: %s", scope.Action.Type.String())
+		return nil, fmt.Errorf("unhandled auto action type: %s", scope.Action.GetType().String())
 	}
 }

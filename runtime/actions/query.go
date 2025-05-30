@@ -360,7 +360,7 @@ func WithTimezone(tz string) QueryBuilderOption {
 func NewQuery(model *proto.Model, opts ...QueryBuilderOption) *QueryBuilder {
 	qb := &QueryBuilder{
 		Model:      model,
-		table:      casing.ToSnake(model.Name),
+		table:      casing.ToSnake(model.GetName()),
 		selection:  []string{},
 		distinctOn: []string{},
 		joins:      []joinClause{},
@@ -580,12 +580,12 @@ func (query *QueryBuilder) SelectFacets(scope *Scope, input map[string]any) erro
 		// when calculating the facet data
 		subWhere := map[string]any{}
 		for k, v := range where {
-			if k != field.Name {
+			if k != field.GetName() {
 				subWhere[k] = v
 			}
 		}
 
-		column := strcase.ToSnake(field.Name)
+		column := strcase.ToSnake(field.GetName())
 
 		facetQuery := NewQuery(scope.Model)
 
@@ -601,7 +601,7 @@ func (query *QueryBuilder) SelectFacets(scope *Scope, input map[string]any) erro
 
 		var statement *Statement
 		var sel string
-		switch field.Type.Type {
+		switch field.GetType().GetType() {
 		case proto.Type_TYPE_DECIMAL, proto.Type_TYPE_INT, proto.Type_TYPE_DURATION:
 			sel = fmt.Sprintf(`json_build_object(
 				'min', MIN(%s),
@@ -618,10 +618,10 @@ func (query *QueryBuilder) SelectFacets(scope *Scope, input map[string]any) erro
 			facetQuery.SelectClause(sel)
 			statement = facetQuery.SelectStatement()
 		case proto.Type_TYPE_ID, proto.Type_TYPE_STRING, proto.Type_TYPE_ENUM:
-			facetQuery.Select(Field(field.Name))
+			facetQuery.Select(Field(field.GetName()))
 			facetQuery.SelectClause("COUNT(*) as \"count\"")
-			facetQuery.AppendOrderBy(Field(field.Name), "ASC")
-			facetQuery.GroupBy(Field(field.Name))
+			facetQuery.AppendOrderBy(Field(field.GetName()), "ASC")
+			facetQuery.GroupBy(Field(field.GetName()))
 			subStatement := facetQuery.SelectStatement()
 
 			sel = fmt.Sprintf(`SELECT
@@ -640,7 +640,7 @@ func (query *QueryBuilder) SelectFacets(scope *Scope, input map[string]any) erro
 				args:     subStatement.args,
 			}
 		default:
-			return fmt.Errorf("unsupported facet field type: %s", field.Type.Type)
+			return fmt.Errorf("unsupported facet field type: %s", field.GetType().GetType())
 		}
 
 		sql += fmt.Sprintf("%s AS (%s)", sqlQuote(fmt.Sprintf("%s_facets", column)), statement.template)
@@ -937,7 +937,7 @@ func (query *QueryBuilder) InsertStatement(ctx context.Context) *Statement {
 
 // Recursively generates in common table expression insert query for the write values graph.
 func (query *QueryBuilder) generateInsertCte(ctes []string, args []any, row *Row, foreignKey *proto.Field, primaryKeyTableAlias string) ([]string, []any, string) {
-	alias := fmt.Sprintf("new_%v_%s", makeAlias(query.writeValues, row), casing.ToSnake(row.model.Name))
+	alias := fmt.Sprintf("new_%v_%s", makeAlias(query.writeValues, row), casing.ToSnake(row.model.GetName()))
 	columnNames := []string{}
 
 	// Rows which this row references need to created first, and the primary needs to be extracted (as a SELECT statement from them to insert into this row.
@@ -948,14 +948,14 @@ func (query *QueryBuilder) generateInsertCte(ctes []string, args []any, row *Row
 
 		// For every row that this references, we need to set the foreign key.
 		// For example, on the Sale row; customerId = (SELECT id FROM new_customer_1)
-		row.values[r.foreignKey.ForeignKeyFieldName.Value] = Raw(fmt.Sprintf("(SELECT \"id\" FROM %s)", sqlQuote(primaryKeyTable)))
+		row.values[r.foreignKey.GetForeignKeyFieldName().GetValue()] = Raw(fmt.Sprintf("(SELECT \"id\" FROM %s)", sqlQuote(primaryKeyTable)))
 	}
 
 	// Does this foreign key of the relationship exist on this row?
 	// This means this row exists as a referencedBy row for another.
 	// For example, on the SaleItem row; saleId = (SELECT id FROM new_sale_1)
-	if foreignKey != nil && row.model.Name == foreignKey.ModelName {
-		row.values[foreignKey.ForeignKeyFieldName.Value] = Raw(fmt.Sprintf("(SELECT \"id\" FROM %s)", sqlQuote(primaryKeyTableAlias)))
+	if foreignKey != nil && row.model.GetName() == foreignKey.GetModelName() {
+		row.values[foreignKey.GetForeignKeyFieldName().GetValue()] = Raw(fmt.Sprintf("(SELECT \"id\" FROM %s)", sqlQuote(primaryKeyTableAlias)))
 	}
 
 	// Make iterating through the map with deterministic ordering
@@ -1044,7 +1044,7 @@ func (query *QueryBuilder) generateInsertCte(ctes []string, args []any, row *Row
 
 	cte := fmt.Sprintf("%s AS (INSERT INTO %s %s RETURNING *)",
 		sqlQuote(alias),
-		sqlQuote(casing.ToSnake(row.model.Name)),
+		sqlQuote(casing.ToSnake(row.model.GetName())),
 		values)
 
 	ctes = append(ctes, cte)
@@ -1064,10 +1064,10 @@ func makeAlias(graph *Row, row *Row) int {
 	modelCount := map[string]int{}
 
 	for _, r := range rows {
-		modelCount[r.model.Name] += 1
+		modelCount[r.model.GetName()] += 1
 
 		if r == row {
-			return modelCount[r.model.Name]
+			return modelCount[r.model.GetName()]
 		}
 	}
 
@@ -1425,15 +1425,15 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 	}
 
 	// For certain types, we need to parse them into a format the runtime understands.
-	for _, f := range statement.model.Fields {
-		if f.Type.Type == proto.Type_TYPE_MODEL {
+	for _, f := range statement.model.GetFields() {
+		if f.GetType().GetType() == proto.Type_TYPE_MODEL {
 			continue
 		}
 
-		col := strcase.ToSnake(f.Name)
+		col := strcase.ToSnake(f.GetName())
 
 		// If this field uses @sequence then drop the __sequence field as we don't want to return that
-		if f.Sequence != nil {
+		if f.GetSequence() != nil {
 			for _, row := range rows {
 				delete(row, col+"__sequence")
 			}
@@ -1441,12 +1441,12 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 
 		for _, row := range rows {
 			if val, ok := row[col]; ok && val != nil {
-				if f.Type.Repeated {
+				if f.GetType().GetRepeated() {
 					// Array fields are currently read as a single string (e.g. '{science, technology, arts}'), and
 					// therefore we need to parse them into correctly typed arrays and rewrite them to the result.
 
 					arr := val.(string)
-					switch f.Type.Type {
+					switch f.GetType().GetType() {
 					case proto.Type_TYPE_STRING, proto.Type_TYPE_ENUM, proto.Type_TYPE_ID, proto.Type_TYPE_MARKDOWN, proto.Type_TYPE_DURATION:
 						row[col], err = ParsePostgresArray[string](arr, func(s string) (string, error) {
 							return s, nil
@@ -1480,13 +1480,13 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 							return fi, nil
 						})
 					default:
-						return nil, nil, nil, fmt.Errorf("missing parsing implementation for array type %s", f.Type.Type)
+						return nil, nil, nil, fmt.Errorf("missing parsing implementation for array type %s", f.GetType().GetType())
 					}
 					if err != nil {
 						return nil, nil, nil, err
 					}
 				} else {
-					switch f.Type.Type {
+					switch f.GetType().GetType() {
 					case proto.Type_TYPE_VECTOR:
 						row[col], err = ParsePostgresArray[float64](val.(string), func(s string) (float64, error) {
 							return strconv.ParseFloat(s, 64)

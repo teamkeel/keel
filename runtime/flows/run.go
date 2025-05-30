@@ -37,7 +37,7 @@ func StartFlow(ctx context.Context, flow *proto.Flow, inputs map[string]any) (ru
 	}
 
 	span.SetAttributes(
-		attribute.String("flow", flow.Name),
+		attribute.String("flow", flow.GetName()),
 		attribute.String("flowRun.id", run.ID),
 	)
 

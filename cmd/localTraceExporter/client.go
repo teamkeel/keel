@@ -89,12 +89,12 @@ func (c *client) UploadTraces(ctx context.Context, protoSpans []*tracepb.Resourc
 	for _, ResourceSpan := range protoSpans {
 		scopedSpans := ResourceSpan.GetScopeSpans()
 		for _, scopedSpans := range scopedSpans {
-			for _, span := range scopedSpans.Spans {
-				traceID := hex.EncodeToString(span.TraceId)
+			for _, span := range scopedSpans.GetSpans() {
+				traceID := hex.EncodeToString(span.GetTraceId())
 				traces[traceID] = append(traces[traceID], span)
 
-				start := time.Unix(0, int64(span.StartTimeUnixNano))
-				end := time.Unix(0, int64(span.EndTimeUnixNano))
+				start := time.Unix(0, int64(span.GetStartTimeUnixNano()))
+				end := time.Unix(0, int64(span.GetEndTimeUnixNano()))
 
 				summary, has := traceSummary[traceID]
 				if !has {
@@ -116,16 +116,16 @@ func (c *client) UploadTraces(ctx context.Context, protoSpans []*tracepb.Resourc
 				}
 
 				if span.ParentSpanId == nil {
-					summary.RootName = span.Name
+					summary.RootName = span.GetName()
 
-					for _, attr := range span.Attributes {
-						if attr.Key == "type" {
-							summary.Type = attr.Value.GetStringValue()
+					for _, attr := range span.GetAttributes() {
+						if attr.GetKey() == "type" {
+							summary.Type = attr.GetValue().GetStringValue()
 						}
 					}
 				}
 
-				if span.Status.Code == tracepb.Status_STATUS_CODE_ERROR {
+				if span.GetStatus().GetCode() == tracepb.Status_STATUS_CODE_ERROR {
 					summary.HasError = true
 				}
 

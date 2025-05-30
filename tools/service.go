@@ -295,7 +295,7 @@ func (s *Service) DuplicateTool(ctx context.Context, toolID string) (*toolsproto
 
 	if duplicate.IsActionBased() {
 		duplicate.ActionConfig.Name += " (copy)"
-		duplicate.ActionConfig.Id = duplicate.Id
+		duplicate.ActionConfig.Id = duplicate.GetId()
 	} else {
 		duplicate.FlowConfig.Name += " (copy)"
 	}
@@ -369,7 +369,7 @@ func (s *Service) GetTools(ctx context.Context) (*toolsproto.Tools, error) {
 				}
 			}
 			gen.Id = cfg.ID
-			if gen.ActionConfig != nil {
+			if gen.GetActionConfig() != nil {
 				gen.ActionConfig.Id = cfg.ID
 			}
 
@@ -425,7 +425,7 @@ func (s *Service) ConfigureTool(ctx context.Context, updated *toolsproto.Tool) (
 		return nil, fmt.Errorf("retrieving tools: %w", err)
 	}
 
-	return tools.FindByID(updated.Id), nil
+	return tools.FindByID(updated.GetId()), nil
 }
 
 // getGeneratedTool will return the generated tool for the given action/flow name.

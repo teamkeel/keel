@@ -8,7 +8,7 @@ import (
 
 // FileFields will return a slice of fields for the model that are of type file.
 func (m *Model) FileFields() []*Field {
-	return lo.Filter(m.Fields, func(f *Field, _ int) bool {
+	return lo.Filter(m.GetFields(), func(f *Field, _ int) bool {
 		return f.IsFile()
 	})
 }
@@ -20,8 +20,8 @@ func (m *Model) HasFiles() bool {
 
 // FieldNames provides a (sorted) list of the fields in the model of the given name.
 func (m *Model) FieldNames() []string {
-	names := lo.Map(m.Fields, func(x *Field, _ int) string {
-		return x.Name
+	names := lo.Map(m.GetFields(), func(x *Field, _ int) string {
+		return x.GetName()
 	})
 	sort.Strings(names)
 	return names
@@ -30,19 +30,19 @@ func (m *Model) FieldNames() []string {
 // ForeignKeyFields returns all the fields in the given model which have their ForeignKeyInfo
 // populated.
 func (m *Model) ForeignKeyFields() []*Field {
-	return lo.Filter(m.Fields, func(f *Field, _ int) bool {
-		return f.ForeignKeyInfo != nil
+	return lo.Filter(m.GetFields(), func(f *Field, _ int) bool {
+		return f.GetForeignKeyInfo() != nil
 	})
 }
 
 // PrimaryKeyFieldName returns the name of the field in the given model,
 // that is marked as being the model's primary key. (Or empty string).
 func (m *Model) PrimaryKeyFieldName() string {
-	field, _ := lo.Find(m.Fields, func(f *Field) bool {
-		return f.PrimaryKey
+	field, _ := lo.Find(m.GetFields(), func(f *Field) bool {
+		return f.GetPrimaryKey()
 	})
 	if field != nil {
-		return field.Name
+		return field.GetName()
 	}
 	return ""
 }
@@ -50,8 +50,8 @@ func (m *Model) PrimaryKeyFieldName() string {
 // GetComputedFields returns all the computed fields on the given model.
 func (m *Model) GetComputedFields() []*Field {
 	fields := []*Field{}
-	for _, f := range m.Fields {
-		if f.ComputedExpression != nil {
+	for _, f := range m.GetFields() {
+		if f.GetComputedExpression() != nil {
 			fields = append(fields, f)
 		}
 	}
@@ -60,8 +60,8 @@ func (m *Model) GetComputedFields() []*Field {
 
 // GetComputedFields returns all the computed fields on the given model.
 func (m *Model) FindField(name string) *Field {
-	for _, f := range m.Fields {
-		if f.Name == name {
+	for _, f := range m.GetFields() {
+		if f.GetName() == name {
 			return f
 		}
 	}

@@ -16,8 +16,8 @@ func pushAuditModel(schema *proto.Schema) {
 // popAuditModel removes any instances present of a KeelAudit model from the given
 // schema.
 func popAuditModel(schema *proto.Schema) {
-	schema.Models = lo.Reject(schema.Models, func(m *proto.Model, _ int) bool {
-		return m.Name == strcase.ToCamel(auditing.TableName)
+	schema.Models = lo.Reject(schema.GetModels(), func(m *proto.Model, _ int) bool {
+		return m.GetName() == strcase.ToCamel(auditing.TableName)
 	})
 }
 

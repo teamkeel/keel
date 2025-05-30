@@ -378,7 +378,7 @@ export enum Gender {
 }`
 
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeEnum(w, s.Enums[0])
+		writeEnum(w, s.GetEnums()[0])
 	})
 }
 
@@ -391,7 +391,7 @@ export interface GenderWhereCondition {
 }`
 
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeEnumWhereCondition(w, s.Enums[0])
+		writeEnumWhereCondition(w, s.GetEnums()[0])
 	})
 }
 
@@ -1852,7 +1852,7 @@ export declare const VerifyEmail: runtime.FuncWithConfig<{(fn: (ctx: SubscriberC
 export declare const SendWelcomeEmail: runtime.FuncWithConfig<{(fn: (ctx: SubscriberContextAPI, event: SendWelcomeEmailEvent) => Promise<void>): Promise<void>}>;`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		for _, s := range s.Subscribers {
+		for _, s := range s.GetSubscribers() {
 			writeSubscriberFunctionWrapperType(w, s)
 		}
 	})
@@ -1882,7 +1882,7 @@ export declare const AdHocJobWithInputs: runtime.FuncWithConfig<{(fn: (ctx: JobC
 export declare const AdHocJobWithoutInputs: runtime.FuncWithConfig<{(fn: (ctx: JobContextAPI) => Promise<void>): Promise<void>}>;`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		for _, j := range s.Jobs {
+		for _, j := range s.GetJobs() {
 			writeJobFunctionWrapperType(w, j)
 		}
 	})
@@ -1935,7 +1935,7 @@ export declare const MyFlow: { <const C extends runtime.FlowConfig>(config: C, f
 export declare const MyFlowWithoutInputs: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C>) };`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		for _, f := range s.Flows {
+		for _, f := range s.GetFlows() {
 			writeFlowFunctionWrapperType(w, f)
 		}
 	})
@@ -2217,7 +2217,7 @@ const tableConfigMap = {
 };`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeTableConfig(w, s.Models)
+		writeTableConfig(w, s.GetModels())
 	})
 }
 

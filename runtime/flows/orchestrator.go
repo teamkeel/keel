@@ -259,8 +259,8 @@ func (o *Orchestrator) CallFlow(ctx context.Context, run *Run, inputs map[string
 		return nil, fmt.Errorf("invalid flow run")
 	}
 
-	if flow.InputMessageName != "" {
-		message := o.schema.FindMessage(flow.InputMessageName)
+	if flow.GetInputMessageName() != "" {
+		message := o.schema.FindMessage(flow.GetInputMessageName())
 		var err error
 		inputs, err = actions.TransformInputs(o.schema, message, inputs, true)
 		if err != nil {

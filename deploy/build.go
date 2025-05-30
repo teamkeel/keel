@@ -424,13 +424,13 @@ func generateFunctionsHandler(schema *proto.Schema, cfg *config.ProjectConfig) (
 	routes := []string{}
 	actionTypes := map[string]string{}
 
-	for _, model := range schema.Models {
-		for _, op := range model.Actions {
-			if op.Implementation != proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM {
+	for _, model := range schema.GetModels() {
+		for _, op := range model.GetActions() {
+			if op.GetImplementation() != proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM {
 				continue
 			}
-			functions[op.Name] = op.Name
-			actionTypes[op.Name] = op.Type.String()
+			functions[op.GetName()] = op.GetName()
+			actionTypes[op.GetName()] = op.GetType().String()
 		}
 	}
 
@@ -440,23 +440,23 @@ func generateFunctionsHandler(schema *proto.Schema, cfg *config.ProjectConfig) (
 		}
 	}
 
-	for _, job := range schema.Jobs {
-		jobName := strcase.ToLowerCamel(job.Name)
+	for _, job := range schema.GetJobs() {
+		jobName := strcase.ToLowerCamel(job.GetName())
 		jobs = append(jobs, jobName)
 	}
 
-	for _, subscriber := range schema.Subscribers {
-		subscriberName := strcase.ToLowerCamel(subscriber.Name)
+	for _, subscriber := range schema.GetSubscribers() {
+		subscriberName := strcase.ToLowerCamel(subscriber.GetName())
 		subscribers = append(subscribers, subscriberName)
 	}
 
-	for _, flow := range schema.Flows {
-		flowName := strcase.ToLowerCamel(flow.Name)
+	for _, flow := range schema.GetFlows() {
+		flowName := strcase.ToLowerCamel(flow.GetName())
 		flows = append(flows, flowName)
 	}
 
-	for _, route := range schema.Routes {
-		routes = append(routes, route.Handler)
+	for _, route := range schema.GetRoutes() {
+		routes = append(routes, route.GetHandler())
 	}
 
 	var tmpl = template.Must(template.New("handler.js").Parse(functionsHandlerTemplate))

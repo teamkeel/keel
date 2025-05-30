@@ -233,11 +233,11 @@ func TestGeneratedComputed(t *testing.T) {
 			schema, err := builder.MakeFromInputs(schemaFiles)
 			assert.NoError(t, err)
 
-			model := schema.Models[0]
+			model := schema.GetModels()[0]
 			fieldName := strings.Split(testCase.field, " ")[0]
-			field := proto.FindField(schema.Models, model.Name, fieldName)
+			field := proto.FindField(schema.GetModels(), model.GetName(), fieldName)
 
-			expression, err := parser.ParseExpression(field.ComputedExpression.Source)
+			expression, err := parser.ParseExpression(field.GetComputedExpression().GetSource())
 			assert.NoError(t, err)
 
 			sql, err := resolve.RunCelVisitor(expression, actions.GenerateComputedFunction(schema, model, field))

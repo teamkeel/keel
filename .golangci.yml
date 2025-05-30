@@ -103,7 +103,7 @@ linters:
     # - prealloc
     # - predeclared
     - promlinter
-    # - protogetter
+    - protogetter
     - reassign
     # - recvcheck
     # - revive

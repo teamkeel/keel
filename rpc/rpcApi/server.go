@@ -43,7 +43,7 @@ func (s *Server) RunSQLQuery(ctx context.Context, input *rpc.SQLQueryInput) (*rp
 		}, err
 	}
 
-	result, err := database.ExecuteQuery(ctx, input.Query)
+	result, err := database.ExecuteQuery(ctx, input.GetQuery())
 	if err != nil {
 		return &rpc.SQLQueryResponse{
 			Status: rpc.SQLQueryStatus_failed,
@@ -74,22 +74,22 @@ func (s *Server) ListTraces(ctx context.Context, input *rpc.ListTracesRequest) (
 	list := []*rpc.TraceItem{}
 
 	for k, v := range traces {
-		if input.After != nil && v.StartTime.Before(input.After.AsTime()) {
+		if input.GetAfter() != nil && v.StartTime.Before(input.GetAfter().AsTime()) {
 			continue
 		}
 
-		if input.Before != nil && v.StartTime.After(input.Before.AsTime()) {
+		if input.GetBefore() != nil && v.StartTime.After(input.GetBefore().AsTime()) {
 			continue
 		}
 
 		if input.Filters != nil {
 			filteredOut := false
-			for _, f := range input.Filters {
-				switch f.Field {
+			for _, f := range input.GetFilters() {
+				switch f.GetField() {
 				case "error":
-					if f.Value == "true" && !v.HasError {
+					if f.GetValue() == "true" && !v.HasError {
 						filteredOut = true
-					} else if f.Value == "false" && v.HasError {
+					} else if f.GetValue() == "false" && v.HasError {
 						filteredOut = true
 					}
 				}
@@ -128,20 +128,20 @@ func (s *Server) ListTraces(ctx context.Context, input *rpc.ListTracesRequest) (
 	}
 
 	sort.Slice(list, func(i, j int) bool {
-		return list[i].StartTime.AsTime().After(list[j].StartTime.AsTime())
+		return list[i].GetStartTime().AsTime().After(list[j].GetStartTime().AsTime())
 	})
 
-	if int(input.Offset) > len(list) {
+	if int(input.GetOffset()) > len(list) {
 		list = []*rpc.TraceItem{}
 	} else {
-		list = list[input.Offset:]
+		list = list[input.GetOffset():]
 	}
 
-	if input.Limit > int32(len(list)) {
+	if input.GetLimit() > int32(len(list)) {
 		input.Limit = int32(len(list))
 	}
 
-	list = list[:input.Limit]
+	list = list[:input.GetLimit()]
 
 	return &rpc.ListTracesResponse{
 		Traces: list,
@@ -149,7 +149,7 @@ func (s *Server) ListTraces(ctx context.Context, input *rpc.ListTracesRequest) (
 }
 
 func (s *Server) GetTrace(ctx context.Context, input *rpc.GetTraceRequest) (*rpc.GetTraceResponse, error) {
-	trace := localTraceExporter.GetTrace(input.TraceId)
+	trace := localTraceExporter.GetTrace(input.GetTraceId())
 
 	if trace == nil {
 		return nil, twirp.NewError(twirp.NotFound, "trace not found")
@@ -185,7 +185,7 @@ func (s *Server) ListTools(ctx context.Context, input *rpc.ListToolsRequest) (*r
 	}
 	return &rpc.ListToolsResponse{
 		Tools:       tools.ActionConfigs(),
-		ToolConfigs: tools.Configs,
+		ToolConfigs: tools.GetConfigs(),
 	}, nil
 }
 
@@ -230,7 +230,7 @@ func (s *Server) ResetTools(ctx context.Context, req *rpc.ResetToolsRequest) (*r
 
 	return &rpc.ResetToolsResponse{
 		Tools:       tools.ActionConfigs(),
-		ToolConfigs: tools.Configs,
+		ToolConfigs: tools.GetConfigs(),
 	}, nil
 }
 

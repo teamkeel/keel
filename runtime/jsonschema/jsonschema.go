@@ -106,23 +106,23 @@ func ValidateResponse(ctx context.Context, schema *proto.Schema, action *proto.A
 }
 
 func JSONSchemaForActionInput(ctx context.Context, schema *proto.Schema, action *proto.Action) JSONSchema {
-	inputMessage := schema.FindMessage(action.InputMessageName)
+	inputMessage := schema.FindMessage(action.GetInputMessageName())
 	return JSONSchemaForMessage(ctx, schema, action, inputMessage, true)
 }
 
 func JSONSchemaForActionResponse(ctx context.Context, schema *proto.Schema, action *proto.Action) JSONSchema {
-	if action.ResponseMessageName != "" {
-		responseMsg := schema.FindMessage(action.ResponseMessageName)
+	if action.GetResponseMessageName() != "" {
+		responseMsg := schema.FindMessage(action.GetResponseMessageName())
 
 		return JSONSchemaForMessage(ctx, schema, action, responseMsg, false)
 	}
 
 	// If we've reached this point then we know that we are dealing with built-in actions
-	switch action.Type {
+	switch action.GetType() {
 	case proto.ActionType_ACTION_TYPE_CREATE, proto.ActionType_ACTION_TYPE_GET, proto.ActionType_ACTION_TYPE_UPDATE:
 		// these action types return the serialized model
 
-		model := schema.FindModel(action.ModelName)
+		model := schema.FindModel(action.GetModelName())
 
 		if len(action.GetResponseEmbeds()) > 0 {
 			return objectSchemaForModel(ctx, schema, model, false, action.GetResponseEmbeds())
@@ -132,7 +132,7 @@ func JSONSchemaForActionResponse(ctx context.Context, schema *proto.Schema, acti
 	case proto.ActionType_ACTION_TYPE_LIST:
 		// array of models
 
-		model := schema.FindModel(action.ModelName)
+		model := schema.FindModel(action.GetModelName())
 
 		modelSchema := JSONSchema{}
 		if len(action.GetResponseEmbeds()) > 0 {
@@ -186,9 +186,9 @@ func jsonSchemaForFacets(schema *proto.Schema, action *proto.Action) *JSONSchema
 	}
 
 	for _, field := range facetFields {
-		switch field.Type.Type {
+		switch field.GetType().GetType() {
 		case proto.Type_TYPE_DECIMAL, proto.Type_TYPE_INT:
-			facetSchema.Properties[field.Name] = JSONSchema{
+			facetSchema.Properties[field.GetName()] = JSONSchema{
 				Properties: map[string]JSONSchema{
 					"min": {
 						Type: "number",
@@ -202,7 +202,7 @@ func jsonSchemaForFacets(schema *proto.Schema, action *proto.Action) *JSONSchema
 				},
 			}
 		case proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
-			facetSchema.Properties[field.Name] = JSONSchema{
+			facetSchema.Properties[field.GetName()] = JSONSchema{
 				Properties: map[string]JSONSchema{
 					"min": {
 						Type:   "string",
@@ -215,7 +215,7 @@ func jsonSchemaForFacets(schema *proto.Schema, action *proto.Action) *JSONSchema
 				},
 			}
 		case proto.Type_TYPE_DATE:
-			facetSchema.Properties[field.Name] = JSONSchema{
+			facetSchema.Properties[field.GetName()] = JSONSchema{
 				Properties: map[string]JSONSchema{
 					"min": {
 						Type:   "string",
@@ -228,7 +228,7 @@ func jsonSchemaForFacets(schema *proto.Schema, action *proto.Action) *JSONSchema
 				},
 			}
 		case proto.Type_TYPE_DURATION:
-			facetSchema.Properties[field.Name] = JSONSchema{
+			facetSchema.Properties[field.GetName()] = JSONSchema{
 				Properties: map[string]JSONSchema{
 					"min": {
 						Type:   "string",
@@ -241,7 +241,7 @@ func jsonSchemaForFacets(schema *proto.Schema, action *proto.Action) *JSONSchema
 				},
 			}
 		case proto.Type_TYPE_ENUM, proto.Type_TYPE_STRING:
-			facetSchema.Properties[field.Name] = JSONSchema{
+			facetSchema.Properties[field.GetName()] = JSONSchema{
 				Type: "array",
 				Items: &JSONSchema{
 					Type: "object",
@@ -263,7 +263,7 @@ func jsonSchemaForFacets(schema *proto.Schema, action *proto.Action) *JSONSchema
 
 func contains(s []*proto.MessageField, e string) bool {
 	for _, input := range s {
-		if input.Name == e {
+		if input.GetName() == e {
 			return true
 		}
 	}
@@ -279,7 +279,7 @@ func JSONSchemaForMessage(ctx context.Context, schema *proto.Schema, action *pro
 	}
 
 	messageIsNil := message == nil
-	isAny := !messageIsNil && message.Name == parser.MessageFieldTypeAny
+	isAny := !messageIsNil && message.GetName() == parser.MessageFieldTypeAny
 
 	root := JSONSchema{
 		Type:                  "object",
@@ -299,21 +299,21 @@ func JSONSchemaForMessage(ctx context.Context, schema *proto.Schema, action *pro
 
 	if !isAny {
 		// Certain messages should only allow one field to be set per request so we set these as a oneOf property
-		oneOfGroupFields := (len(message.Fields) == 3 && contains(message.Fields, "equals") && contains(message.Fields, "notEquals") && contains(message.Fields, "oneOf"))
-		oneOfConditions := message.Name == "StringQueryInput" || message.Name == "BooleanQueryInput" || oneOfGroupFields
+		oneOfGroupFields := (len(message.GetFields()) == 3 && contains(message.GetFields(), "equals") && contains(message.GetFields(), "notEquals") && contains(message.GetFields(), "oneOf"))
+		oneOfConditions := message.GetName() == "StringQueryInput" || message.GetName() == "BooleanQueryInput" || oneOfGroupFields
 		// For these query inputs, we should allow multiple fields
-		anyOfConditions := message.Name == "DateQueryInput" || message.Name == "TimestampQueryInput" || message.Name == "IntQueryInput"
+		anyOfConditions := message.GetName() == "DateQueryInput" || message.GetName() == "TimestampQueryInput" || message.GetName() == "IntQueryInput"
 
 		if oneOfConditions || anyOfConditions {
 			jsonSchema := []JSONSchema{}
 
-			for _, field := range message.Fields {
+			for _, field := range message.GetFields() {
 				jsonSchemaOption := JSONSchema{
 					Type:       "object",
 					Properties: map[string]JSONSchema{},
 				}
 
-				prop := jsonSchemaForField(ctx, schema, action, field.Type, field.Nullable, []string{}, isInput)
+				prop := jsonSchemaForField(ctx, schema, action, field.GetType(), field.GetNullable(), []string{}, isInput)
 
 				// Merge components from this request schema into OpenAPI components
 				if prop.Components != nil {
@@ -323,9 +323,9 @@ func JSONSchemaForMessage(ctx context.Context, schema *proto.Schema, action *pro
 					prop.Components = nil
 				}
 
-				jsonSchemaOption.Properties[field.Name] = prop
-				jsonSchemaOption.Title = field.Name
-				jsonSchemaOption.Required = append(jsonSchemaOption.Required, field.Name)
+				jsonSchemaOption.Properties[field.GetName()] = prop
+				jsonSchemaOption.Title = field.GetName()
+				jsonSchemaOption.Required = append(jsonSchemaOption.Required, field.GetName())
 				// https://json-schema.org/understanding-json-schema/reference/object#unevaluatedproperties
 
 				jsonSchema = append(jsonSchema, jsonSchemaOption)
@@ -339,8 +339,8 @@ func JSONSchemaForMessage(ctx context.Context, schema *proto.Schema, action *pro
 
 			root.Type = nil
 		} else {
-			for _, field := range message.Fields {
-				prop := jsonSchemaForField(ctx, schema, action, field.Type, field.Nullable, []string{}, isInput)
+			for _, field := range message.GetFields() {
+				prop := jsonSchemaForField(ctx, schema, action, field.GetType(), field.GetNullable(), []string{}, isInput)
 
 				// Merge components from this request schema into OpenAPI components
 				if prop.Components != nil {
@@ -350,11 +350,11 @@ func JSONSchemaForMessage(ctx context.Context, schema *proto.Schema, action *pro
 					prop.Components = nil
 				}
 
-				root.Properties[field.Name] = prop
+				root.Properties[field.GetName()] = prop
 
 				// If the input is not optional then mark it required in the JSON schema
-				if !field.Optional {
-					root.Required = append(root.Required, field.Name)
+				if !field.GetOptional() {
+					root.Required = append(root.Required, field.GetName())
 				}
 			}
 		}
@@ -379,33 +379,33 @@ func jsonSchemaForModel(ctx context.Context, schema *proto.Schema, model *proto.
 
 	if isRepeated {
 		s.Type = "array"
-		s.Items = &JSONSchema{Ref: fmt.Sprintf("#/components/schemas/%s", model.Name)}
+		s.Items = &JSONSchema{Ref: fmt.Sprintf("#/components/schemas/%s", model.GetName())}
 	} else {
-		s = JSONSchema{Ref: fmt.Sprintf("#/components/schemas/%s", model.Name)}
+		s = JSONSchema{Ref: fmt.Sprintf("#/components/schemas/%s", model.GetName())}
 	}
 
-	for _, field := range model.Fields {
+	for _, field := range model.GetFields() {
 		// if the field of model type, then we don't want to include this because JSON-based
 		// apis don't serialize nested relations
-		if field.Type.Type == proto.Type_TYPE_MODEL {
+		if field.GetType().GetType() == proto.Type_TYPE_MODEL {
 			continue
 		}
 
-		fieldSchema := jsonSchemaForField(ctx, schema, nil, field.Type, field.Optional, []string{}, false)
+		fieldSchema := jsonSchemaForField(ctx, schema, nil, field.GetType(), field.GetOptional(), []string{}, false)
 
-		definitionSchema.Properties[field.Name] = fieldSchema
+		definitionSchema.Properties[field.GetName()] = fieldSchema
 
 		// If the field is not optional then mark it as required in the JSON schema
-		if !field.Optional {
-			definitionSchema.Required = append(definitionSchema.Required, field.Name)
+		if !field.GetOptional() {
+			definitionSchema.Required = append(definitionSchema.Required, field.GetName())
 		}
 	}
 
 	schemas := map[string]JSONSchema{}
 
-	components.Schemas[model.Name] = definitionSchema
+	components.Schemas[model.GetName()] = definitionSchema
 
-	schemas[model.Name] = definitionSchema
+	schemas[model.GetName()] = definitionSchema
 
 	s.Components = components
 
@@ -421,12 +421,12 @@ func objectSchemaForModel(ctx context.Context, schema *proto.Schema, model *prot
 		Schemas: map[string]JSONSchema{},
 	}
 
-	for _, field := range model.Fields {
+	for _, field := range model.GetFields() {
 		fieldEmbeddings := []string{}
 
 		// if the field is of ID type, and the related model is embedded, we do not want to include it in the schema
-		if field.Type.Type == proto.Type_TYPE_ID && field.ForeignKeyInfo != nil {
-			relatedModel := strings.TrimSuffix(field.Name, "Id")
+		if field.GetType().GetType() == proto.Type_TYPE_ID && field.GetForeignKeyInfo() != nil {
+			relatedModel := strings.TrimSuffix(field.GetName(), "Id")
 			skip := false
 			for _, embed := range embeddings {
 				frags := strings.Split(embed, ".")
@@ -442,12 +442,12 @@ func objectSchemaForModel(ctx context.Context, schema *proto.Schema, model *prot
 
 		// if the field of model type, and the model is not included in embeddings,
 		// then we don't want to include this
-		if field.Type.Type == proto.Type_TYPE_MODEL {
+		if field.GetType().GetType() == proto.Type_TYPE_MODEL {
 			found := false
 
 			for _, embed := range embeddings {
 				frags := strings.Split(embed, ".")
-				if frags[0] == field.Name {
+				if frags[0] == field.GetName() {
 					found = true
 					// if we have to embed a child model for this field, we need to pass them through the field schema
 					// with the first segment removed
@@ -462,7 +462,7 @@ func objectSchemaForModel(ctx context.Context, schema *proto.Schema, model *prot
 			}
 		}
 
-		fieldSchema := jsonSchemaForField(ctx, schema, nil, field.Type, field.Optional, fieldEmbeddings, false)
+		fieldSchema := jsonSchemaForField(ctx, schema, nil, field.GetType(), field.GetOptional(), fieldEmbeddings, false)
 		// If that nested field component has ref fields itself, then its components must be bundled.
 		if fieldSchema.Components != nil {
 			for cName, comp := range fieldSchema.Components.Schemas {
@@ -471,11 +471,11 @@ func objectSchemaForModel(ctx context.Context, schema *proto.Schema, model *prot
 			fieldSchema.Components = nil
 		}
 
-		s.Properties[field.Name] = fieldSchema
+		s.Properties[field.GetName()] = fieldSchema
 
 		// If the field is not optional then mark it as required in the JSON schema
-		if !field.Optional {
-			s.Required = append(s.Required, field.Name)
+		if !field.GetOptional() {
+			s.Required = append(s.Required, field.GetName())
 		}
 	}
 
@@ -497,7 +497,7 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto
 	}
 	prop := JSONSchema{}
 
-	switch t.Type {
+	switch t.GetType() {
 	case proto.Type_TYPE_ANY:
 		anyOf := []JSONSchema{}
 		for _, v := range AnyTypes {
@@ -506,7 +506,7 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto
 		prop.AnyOf = anyOf
 	case proto.Type_TYPE_MESSAGE:
 		// Add the nested message to schema components.
-		message := schema.FindMessage(t.MessageName.Value)
+		message := schema.FindMessage(t.GetMessageName().GetValue())
 		component := JSONSchemaForMessage(ctx, schema, action, message, isInput)
 
 		// If that nested message component has ref fields itself, then its components must be bundled.
@@ -517,13 +517,13 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto
 			component.Components = nil
 		}
 
-		name := t.MessageName.Value
+		name := t.GetMessageName().GetValue()
 		if isNullableField {
 			component.allowNull()
 			name = "Nullable" + name
 		}
 
-		if t.Repeated {
+		if t.GetRepeated() {
 			prop.Type = "array"
 			prop.Items = &JSONSchema{Ref: fmt.Sprintf("#/components/schemas/%s", name)}
 		} else {
@@ -535,13 +535,13 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto
 	case proto.Type_TYPE_UNION:
 		// Union types can be modelled using oneOf.
 		oneOf := []JSONSchema{}
-		for _, m := range t.UnionNames {
+		for _, m := range t.GetUnionNames() {
 			// Add the nested message to schema components.
-			message := schema.FindMessage(m.Value)
+			message := schema.FindMessage(m.GetValue())
 			component := JSONSchemaForMessage(ctx, schema, action, message, isInput)
 
 			// Components of oneOf properties should only have one field per property and we should set a title.
-			oneOfFieldName := message.Fields[0].Name
+			oneOfFieldName := message.GetFields()[0].GetName()
 			component.Title = oneOfFieldName
 
 			// If that nested message component has ref fields itself, then its components must be bundled.
@@ -552,7 +552,7 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto
 				component.Components = nil
 			}
 
-			name := message.Name
+			name := message.GetName()
 			if isNullableField {
 				component.allowNull()
 				name = "Nullable" + name
@@ -564,7 +564,7 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto
 			components.Schemas[name] = component
 		}
 
-		if t.Repeated {
+		if t.GetRepeated() {
 			prop.Type = "array"
 			prop.Items = &JSONSchema{OneOf: oneOf}
 		} else {
@@ -587,13 +587,13 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto
 		prop.Type = "number"
 		prop.Format = "float"
 	case proto.Type_TYPE_MODEL:
-		model := schema.FindModel(t.ModelName.Value)
+		model := schema.FindModel(t.GetModelName().GetValue())
 
 		modelSchema := JSONSchema{}
 		if len(embeddings) > 0 {
-			modelSchema = objectSchemaForModel(ctx, schema, model, t.Repeated, embeddings)
+			modelSchema = objectSchemaForModel(ctx, schema, model, t.GetRepeated(), embeddings)
 		} else {
-			modelSchema = jsonSchemaForModel(ctx, schema, model, t.Repeated)
+			modelSchema = jsonSchemaForModel(ctx, schema, model, t.GetRepeated())
 		}
 
 		// If that nested message component has ref fields itself, then its components must be bundled.
@@ -607,11 +607,11 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto
 		if len(embeddings) > 0 {
 			prop = modelSchema
 		} else {
-			if t.Repeated {
-				prop.Items = &JSONSchema{Ref: fmt.Sprintf("#/components/schemas/%s", model.Name)}
+			if t.GetRepeated() {
+				prop.Items = &JSONSchema{Ref: fmt.Sprintf("#/components/schemas/%s", model.GetName())}
 				prop.Type = "array"
 			} else {
-				prop = JSONSchema{Ref: fmt.Sprintf("#/components/schemas/%s", model.Name)}
+				prop = JSONSchema{Ref: fmt.Sprintf("#/components/schemas/%s", model.GetName())}
 			}
 		}
 	case proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
@@ -625,11 +625,11 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto
 		prop.Type = "string"
 	case proto.Type_TYPE_ENUM:
 		// For enum's we actually don't need to set the `type` field at all
-		enum, _ := lo.Find(schema.Enums, func(e *proto.Enum) bool {
-			return e.Name == t.EnumName.Value
+		enum, _ := lo.Find(schema.GetEnums(), func(e *proto.Enum) bool {
+			return e.GetName() == t.GetEnumName().GetValue()
 		})
 
-		for _, v := range enum.Values {
+		for _, v := range enum.GetValues() {
 			prop.Enum = append(prop.Enum, &v.Name)
 		}
 
@@ -660,7 +660,7 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto
 		}
 	}
 
-	if t.Repeated && (t.Type != proto.Type_TYPE_MESSAGE && t.Type != proto.Type_TYPE_MODEL && t.Type != proto.Type_TYPE_UNION) {
+	if t.GetRepeated() && (t.GetType() != proto.Type_TYPE_MESSAGE && t.GetType() != proto.Type_TYPE_MODEL && t.GetType() != proto.Type_TYPE_UNION) {
 		prop.Items = &JSONSchema{Type: prop.Type, Enum: prop.Enum, Format: prop.Format}
 		prop.Enum = nil
 		prop.Format = ""

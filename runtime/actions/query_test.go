@@ -4049,7 +4049,7 @@ func TestQueryBuilder(t *testing.T) {
 			}
 
 			var statement *actions.Statement
-			switch action.Type {
+			switch action.GetType() {
 			case proto.ActionType_ACTION_TYPE_GET:
 				statement, err = actions.GenerateGetStatement(query, scope, testCase.input)
 			case proto.ActionType_ACTION_TYPE_LIST:
@@ -4061,7 +4061,7 @@ func TestQueryBuilder(t *testing.T) {
 			case proto.ActionType_ACTION_TYPE_DELETE:
 				statement, err = actions.GenerateDeleteStatement(query, scope, testCase.input)
 			default:
-				require.NoError(t, fmt.Errorf("unhandled action type %s in sql generation", action.Type.String()))
+				require.NoError(t, fmt.Errorf("unhandled action type %s in sql generation", action.GetType().String()))
 			}
 
 			if err != nil {
@@ -4099,7 +4099,7 @@ func generateQueryScope(ctx context.Context, schemaString string, actionName str
 		return nil, nil, nil, fmt.Errorf("action not found in schema: %s", actionName)
 	}
 
-	model := schema.FindModel(action.ModelName)
+	model := schema.FindModel(action.GetModelName())
 	query := actions.NewQuery(model)
 	scope := actions.NewScope(ctx, action, schema)
 

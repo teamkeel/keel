@@ -5,16 +5,16 @@ import (
 )
 
 func extractConfig(generated, updated *toolsproto.Tool) *ToolConfig {
-	if generated.Type != updated.Type {
+	if generated.GetType() != updated.GetType() {
 		return nil
 	}
 
 	var cfg *ToolConfig
 
 	if generated.IsActionBased() {
-		cfg = extractActionConfig(generated.ActionConfig, updated.ActionConfig).toToolConfig()
+		cfg = extractActionConfig(generated.GetActionConfig(), updated.GetActionConfig()).toToolConfig()
 	} else {
-		cfg = extractFlowConfig(generated.FlowConfig, updated.FlowConfig).toToolConfig()
+		cfg = extractFlowConfig(generated.GetFlowConfig(), updated.GetFlowConfig()).toToolConfig()
 	}
 	cfg.setID(updated.GetId())
 	return cfg
@@ -22,10 +22,10 @@ func extractConfig(generated, updated *toolsproto.Tool) *ToolConfig {
 
 func extractFlowConfig(generated, updated *toolsproto.FlowConfig) *FlowToolConfig {
 	cfg := &FlowToolConfig{
-		FlowName:           updated.FlowName,
+		FlowName:           updated.GetFlowName(),
 		Name:               diffString(generated.GetName(), updated.GetName()),
 		HelpText:           diffStringTemplate(generated.GetHelpText(), updated.GetHelpText()),
-		CompletionRedirect: extractLinkConfig(generated.CompletionRedirect, updated.CompletionRedirect),
+		CompletionRedirect: extractLinkConfig(generated.GetCompletionRedirect(), updated.GetCompletionRedirect()),
 	}
 
 	cfg.Inputs = FlowInputConfigs{}
@@ -46,21 +46,21 @@ func extractFlowConfig(generated, updated *toolsproto.FlowConfig) *FlowToolConfi
 
 func extractActionConfig(generated, updated *toolsproto.ActionConfig) *ActionToolConfig {
 	cfg := &ActionToolConfig{
-		ID:                   updated.Id,
-		ActionName:           updated.ActionName,
+		ID:                   updated.GetId(),
+		ActionName:           updated.GetActionName(),
 		Name:                 diffString(generated.GetName(), updated.GetName()),
 		Icon:                 diffString(generated.GetIcon(), updated.GetIcon()),
 		Title:                diffStringTemplate(generated.GetTitle(), updated.GetTitle()),
 		HelpText:             diffStringTemplate(generated.GetHelpText(), updated.GetHelpText()),
 		EntitySingle:         diffString(generated.GetEntitySingle(), updated.GetEntitySingle()),
 		EntityPlural:         diffString(generated.GetEntityPlural(), updated.GetEntityPlural()),
-		Pagination:           extractPaginationConfig(generated.Pagination, updated.Pagination),
-		CreateEntryAction:    extractLinkConfig(generated.CreateEntryAction, updated.CreateEntryAction),
-		GetEntryAction:       extractLinkConfig(generated.GetEntryAction, updated.GetEntryAction),
-		EntryActivityActions: extractLinkConfigs(generated.EntryActivityActions, updated.EntryActivityActions),
-		RelatedActions:       extractLinkConfigs(generated.RelatedActions, updated.RelatedActions),
-		EmbeddedTools:        extractToolGroupConfigs(generated.EmbeddedTools, updated.EmbeddedTools),
-		FilterConfig:         extractFilterConfig(generated.FilterConfig, updated.FilterConfig),
+		Pagination:           extractPaginationConfig(generated.GetPagination(), updated.GetPagination()),
+		CreateEntryAction:    extractLinkConfig(generated.GetCreateEntryAction(), updated.GetCreateEntryAction()),
+		GetEntryAction:       extractLinkConfig(generated.GetGetEntryAction(), updated.GetGetEntryAction()),
+		EntryActivityActions: extractLinkConfigs(generated.GetEntryActivityActions(), updated.GetEntryActivityActions()),
+		RelatedActions:       extractLinkConfigs(generated.GetRelatedActions(), updated.GetRelatedActions()),
+		EmbeddedTools:        extractToolGroupConfigs(generated.GetEmbeddedTools(), updated.GetEmbeddedTools()),
+		FilterConfig:         extractFilterConfig(generated.GetFilterConfig(), updated.GetFilterConfig()),
 	}
 
 	if caps := generated.GetCapabilities().Diff(updated.GetCapabilities()); len(caps) > 0 {
@@ -97,10 +97,10 @@ func extractActionConfig(generated, updated *toolsproto.ActionConfig) *ActionToo
 	cfg.ExternalLinks = ExternalLinks{}
 	for _, el := range updated.GetExternalLinks() {
 		cfg.ExternalLinks = append(cfg.ExternalLinks, &ExternalLink{
-			Label:            el.GetLabel().Template,
-			Href:             el.GetHref().Template,
+			Label:            el.GetLabel().GetTemplate(),
+			Href:             el.GetHref().GetTemplate(),
 			Icon:             el.Icon,
-			DisplayOrder:     el.DisplayOrder,
+			DisplayOrder:     el.GetDisplayOrder(),
 			VisibleCondition: el.VisibleCondition,
 		})
 	}
@@ -108,17 +108,17 @@ func extractActionConfig(generated, updated *toolsproto.ActionConfig) *ActionToo
 	for _, s := range updated.GetSections() {
 		cfg.Sections = append(cfg.Sections, &Section{
 			Name:             s.GetName(),
-			Title:            s.GetTitle().Template,
+			Title:            s.GetTitle().GetTemplate(),
 			Description:      diffStringTemplate(nil, s.GetDescription()),
 			VisibleCondition: s.VisibleCondition,
-			DisplayOrder:     s.DisplayOrder,
-			Visible:          s.Visible,
+			DisplayOrder:     s.GetDisplayOrder(),
+			Visible:          s.GetVisible(),
 		})
 	}
 
-	if generated.DisplayLayout.JSON() != updated.DisplayLayout.JSON() {
+	if generated.GetDisplayLayout().JSON() != updated.GetDisplayLayout().JSON() {
 		cfg.DisplayLayout = &DisplayLayoutConfig{
-			Config: updated.DisplayLayout.AsObj(),
+			Config: updated.GetDisplayLayout().AsObj(),
 		}
 	}
 
@@ -135,23 +135,23 @@ func extractInputConfig(generated, updated *toolsproto.RequestFieldConfig) *Inpu
 		Placeholder:      diffStringTemplate(generated.GetPlaceholder(), updated.GetPlaceholder()),
 		VisibleCondition: diffString(generated.GetVisibleCondition(), updated.GetVisibleCondition()),
 		SectionName:      diffString(generated.GetSectionName(), updated.GetSectionName()),
-		LookupAction:     extractLinkConfig(generated.LookupAction, updated.LookupAction),
-		GetEntryAction:   extractLinkConfig(generated.GetEntryAction, updated.GetEntryAction),
+		LookupAction:     extractLinkConfig(generated.GetLookupAction(), updated.GetLookupAction()),
+		GetEntryAction:   extractLinkConfig(generated.GetGetEntryAction(), updated.GetGetEntryAction()),
 	}
 
-	if updated.DefaultValue != nil {
-		switch updated.DefaultValue.Value.(type) {
+	if updated.GetDefaultValue() != nil {
+		switch updated.GetDefaultValue().GetValue().(type) {
 		case *toolsproto.ScalarValue_Bool:
-			val := updated.DefaultValue.GetBool()
+			val := updated.GetDefaultValue().GetBool()
 			cfg.DefaultValue = &ScalarValue{BoolValue: &val}
 		case *toolsproto.ScalarValue_Float:
-			val := updated.DefaultValue.GetFloat()
+			val := updated.GetDefaultValue().GetFloat()
 			cfg.DefaultValue = &ScalarValue{FloatValue: &val}
 		case *toolsproto.ScalarValue_String_:
-			val := updated.DefaultValue.GetString_()
+			val := updated.GetDefaultValue().GetString_()
 			cfg.DefaultValue = &ScalarValue{StringValue: &val}
 		case *toolsproto.ScalarValue_Integer:
-			val := updated.DefaultValue.GetInteger()
+			val := updated.GetDefaultValue().GetInteger()
 			cfg.DefaultValue = &ScalarValue{IntValue: &val}
 		}
 	}
@@ -171,19 +171,19 @@ func extractFlowInputConfig(generated, updated *toolsproto.FlowInputConfig) *Flo
 		Placeholder:  diffStringTemplate(generated.GetPlaceholder(), updated.GetPlaceholder()),
 	}
 
-	if updated.DefaultValue != nil {
-		switch updated.DefaultValue.Value.(type) {
+	if updated.GetDefaultValue() != nil {
+		switch updated.GetDefaultValue().GetValue().(type) {
 		case *toolsproto.ScalarValue_Bool:
-			val := updated.DefaultValue.GetBool()
+			val := updated.GetDefaultValue().GetBool()
 			cfg.DefaultValue = &ScalarValue{BoolValue: &val}
 		case *toolsproto.ScalarValue_Float:
-			val := updated.DefaultValue.GetFloat()
+			val := updated.GetDefaultValue().GetFloat()
 			cfg.DefaultValue = &ScalarValue{FloatValue: &val}
 		case *toolsproto.ScalarValue_String_:
-			val := updated.DefaultValue.GetString_()
+			val := updated.GetDefaultValue().GetString_()
 			cfg.DefaultValue = &ScalarValue{StringValue: &val}
 		case *toolsproto.ScalarValue_Integer:
-			val := updated.DefaultValue.GetInteger()
+			val := updated.GetDefaultValue().GetInteger()
 			cfg.DefaultValue = &ScalarValue{IntValue: &val}
 		}
 	}
@@ -204,7 +204,7 @@ func extractResponseConfig(generated, updated *toolsproto.ResponseFieldConfig) *
 		HelpText:         diffStringTemplate(generated.GetHelpText(), updated.GetHelpText()),
 		VisibleCondition: diffString(generated.GetVisibleCondition(), updated.GetVisibleCondition()),
 		SectionName:      diffString(generated.GetSectionName(), updated.GetSectionName()),
-		Link:             extractLinkConfig(generated.Link, updated.Link),
+		Link:             extractLinkConfig(generated.GetLink(), updated.GetLink()),
 	}
 
 	if !cfg.hasChanges() {
@@ -219,17 +219,17 @@ func extractLinkConfigs(generated, updated []*toolsproto.ToolLink) LinkConfigs {
 	// we will use a map to keep track of the generated links that have already been configured
 	availableLinks := map[string]bool{}
 	for _, l := range generated {
-		availableLinks[l.ToolId] = true
+		availableLinks[l.GetToolId()] = true
 	}
 
 	for _, l := range updated {
-		if available, ok := availableLinks[l.ToolId]; ok && available {
+		if available, ok := availableLinks[l.GetToolId()]; ok && available {
 			// if we have a generated link that hasn't been configured yet (still available), let's use that and diff it with our updated link
-			if cfg := extractLinkConfig(toolsproto.FindLinkByToolID(generated, l.ToolId), l); cfg != nil {
+			if cfg := extractLinkConfig(toolsproto.FindLinkByToolID(generated, l.GetToolId()), l); cfg != nil {
 				cfgs = append(cfgs, cfg)
 			}
 			// mark it as used
-			availableLinks[l.ToolId] = false
+			availableLinks[l.GetToolId()] = false
 
 			continue
 		}
@@ -262,23 +262,23 @@ func extractPaginationConfig(generated, updated *toolsproto.CursorPaginationConf
 	}
 
 	if generated == nil && updated != nil {
-		if updated.PageSize == nil {
+		if updated.GetPageSize() == nil {
 			return nil
 		}
 
 		return &PaginationConfig{
-			PageSize: extractPageSizeConfig(nil, updated.PageSize),
+			PageSize: extractPageSizeConfig(nil, updated.GetPageSize()),
 		}
 	}
 
-	pageSize := extractPageSizeConfig(generated.PageSize, updated.PageSize)
+	pageSize := extractPageSizeConfig(generated.GetPageSize(), updated.GetPageSize())
 
 	if pageSize == nil {
 		return nil
 	}
 
 	return &PaginationConfig{
-		PageSize: extractPageSizeConfig(generated.PageSize, updated.PageSize),
+		PageSize: extractPageSizeConfig(generated.GetPageSize(), updated.GetPageSize()),
 	}
 }
 
@@ -316,7 +316,7 @@ func extractLinkConfig(generated, updated *toolsproto.ToolLink) *LinkConfig {
 	// we have a link and we've removed it
 	if generated != nil && updated == nil {
 		return &LinkConfig{
-			ToolID:  generated.ToolId,
+			ToolID:  generated.GetToolId(),
 			Deleted: diffBool(false, true),
 		}
 	}
@@ -324,7 +324,7 @@ func extractLinkConfig(generated, updated *toolsproto.ToolLink) *LinkConfig {
 	// we didn't have a link, and now we've added it
 	if generated == nil && updated != nil {
 		return &LinkConfig{
-			ToolID:           updated.ToolId,
+			ToolID:           updated.GetToolId(),
 			AsDialog:         updated.AsDialog,
 			Title:            diffStringTemplate(nil, updated.GetTitle()),
 			Description:      diffStringTemplate(nil, updated.GetDescription()),
@@ -338,7 +338,7 @@ func extractLinkConfig(generated, updated *toolsproto.ToolLink) *LinkConfig {
 
 	// we may have updated the link config
 	cfg := LinkConfig{
-		ToolID:           generated.ToolId,
+		ToolID:           generated.GetToolId(),
 		AsDialog:         diffBool(generated.GetAsDialog(), updated.GetAsDialog()),
 		Title:            diffStringTemplate(generated.GetTitle(), updated.GetTitle()),
 		Description:      diffStringTemplate(generated.GetDescription(), updated.GetDescription()),
@@ -370,11 +370,11 @@ func extractToolGroupConfigs(generated, updated []*toolsproto.ToolGroup) ToolGro
 	for _, g := range updated {
 		if available, ok := availableGroups[g.GetId()]; ok && available {
 			// if we have a generated group that hasn't been configured yet (still available), let's use that and diff it with our updated group
-			if cfg := extractToolGroupConfig(toolsproto.FindToolGroupByID(generated, g.Id), g); cfg != nil {
+			if cfg := extractToolGroupConfig(toolsproto.FindToolGroupByID(generated, g.GetId()), g); cfg != nil {
 				cfgs = append(cfgs, cfg)
 			}
 			// mark it as used
-			availableGroups[g.Id] = false
+			availableGroups[g.GetId()] = false
 
 			continue
 		}
@@ -427,9 +427,9 @@ func extractToolGroupConfig(generated, updated *toolsproto.ToolGroup) *ToolGroup
 	// we didn't have a group, and now we've added it
 	if generated == nil && updated != nil {
 		return &ToolGroupConfig{
-			ID:           updated.Id,
+			ID:           updated.GetId(),
 			Visible:      &updated.Visible,
-			Tools:        extractToolGroupLinkConfigs(nil, updated.Tools),
+			Tools:        extractToolGroupLinkConfigs(nil, updated.GetTools()),
 			DisplayOrder: &updated.DisplayOrder,
 			Title:        diffStringTemplate(nil, updated.GetTitle()),
 		}
@@ -437,10 +437,10 @@ func extractToolGroupConfig(generated, updated *toolsproto.ToolGroup) *ToolGroup
 
 	// we may have updated the tool group config
 	cfg := ToolGroupConfig{
-		ID:           generated.Id,
+		ID:           generated.GetId(),
 		Title:        diffStringTemplate(generated.GetTitle(), updated.GetTitle()),
 		DisplayOrder: diffInt(generated.GetDisplayOrder(), updated.GetDisplayOrder()),
-		Tools:        extractToolGroupLinkConfigs(generated.Tools, updated.Tools),
+		Tools:        extractToolGroupLinkConfigs(generated.GetTools(), updated.GetTools()),
 		Visible:      diffBool(generated.GetVisible(), updated.GetVisible()),
 	}
 
@@ -457,17 +457,17 @@ func extractToolGroupLinkConfigs(generated, updated []*toolsproto.ToolGroup_Grou
 	// we will use a map to keep track of the generated links that have already been configured
 	availableLinks := map[string]bool{}
 	for _, l := range generated {
-		availableLinks[l.ActionLink.ToolId] = true
+		availableLinks[l.GetActionLink().GetToolId()] = true
 	}
 
 	for _, l := range updated {
-		if available, ok := availableLinks[l.ActionLink.ToolId]; ok && available {
+		if available, ok := availableLinks[l.GetActionLink().GetToolId()]; ok && available {
 			// if we have a generated link that hasn't been configured yet (still available), let's use that and diff it with our updated link
-			if cfg := extractToolGroupLinkConfig(toolsproto.FindToolGroupLinkByToolID(generated, l.ActionLink.ToolId), l); cfg != nil {
+			if cfg := extractToolGroupLinkConfig(toolsproto.FindToolGroupLinkByToolID(generated, l.GetActionLink().GetToolId()), l); cfg != nil {
 				cfgs = append(cfgs, cfg)
 			}
 			// mark it as used
-			availableLinks[l.ActionLink.ToolId] = false
+			availableLinks[l.GetActionLink().GetToolId()] = false
 
 			continue
 		}
@@ -498,7 +498,7 @@ func extractToolGroupLinkConfig(generated, updated *toolsproto.ToolGroup_GroupAc
 	// we have a link and we've removed it
 	if generated != nil && updated == nil {
 		return &ToolGroupLinkConfig{
-			ActionLink: &LinkConfig{ToolID: generated.ActionLink.ToolId},
+			ActionLink: &LinkConfig{ToolID: generated.GetActionLink().GetToolId()},
 			Deleted:    diffBool(false, true),
 		}
 	}
@@ -506,15 +506,15 @@ func extractToolGroupLinkConfig(generated, updated *toolsproto.ToolGroup_GroupAc
 	// we didn't have a link, and now we've added it
 	if generated == nil && updated != nil {
 		return &ToolGroupLinkConfig{
-			ActionLink:        extractLinkConfig(nil, updated.ActionLink),
+			ActionLink:        extractLinkConfig(nil, updated.GetActionLink()),
 			ResponseOverrides: updated.GetResponseOverridesMap(),
 		}
 	}
 
-	linkDiff := extractLinkConfig(generated.ActionLink, updated.ActionLink)
+	linkDiff := extractLinkConfig(generated.GetActionLink(), updated.GetActionLink())
 	if linkDiff == nil {
 		linkDiff = &LinkConfig{
-			ToolID: updated.ActionLink.ToolId,
+			ToolID: updated.GetActionLink().GetToolId(),
 		}
 	}
 
@@ -568,7 +568,7 @@ func diffBool(old, new bool) *bool {
 
 func diffStringTemplate(old, new *toolsproto.StringTemplate) *string {
 	if new != nil {
-		if old != nil && old.Template == new.Template {
+		if old != nil && old.GetTemplate() == new.GetTemplate() {
 			return nil
 		}
 		return &new.Template

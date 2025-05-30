@@ -223,7 +223,7 @@ func createRun(ctx context.Context, flow *proto.Flow, inputs any, traceparent st
 	run := Run{
 		Status:      StatusNew,
 		Input:       inputs,
-		Name:        flow.Name,
+		Name:        flow.GetName(),
 		Traceparent: traceparent,
 		TraceID:     util.ParseTraceparent(traceparent).TraceID().String(),
 	}
@@ -253,7 +253,7 @@ func listRuns(ctx context.Context, flow *proto.Flow, page *paginationFields) ([]
 
 	var runs []*Run
 
-	q := database.GetDB().Where("name = ?", flow.Name).Limit(page.GetLimit())
+	q := database.GetDB().Where("name = ?", flow.GetName()).Limit(page.GetLimit())
 
 	if page != nil {
 		if page.IsBackwards() {

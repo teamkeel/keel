@@ -25,7 +25,7 @@ func (h *DefaultTypeHandler) ToSQL(value interface{}, field *proto.Field) (strin
 
 	switch v := value.(type) {
 	case string:
-		if field != nil && field.Type.Type == proto.Type_TYPE_OBJECT {
+		if field != nil && field.GetType().GetType() == proto.Type_TYPE_OBJECT {
 			// For JSONB fields, keep the JSON as is
 			return fmt.Sprintf("'%s'", strings.ReplaceAll(v, "'", "''")), nil
 		}
@@ -118,8 +118,8 @@ func (h *ArrayTypeHandler) ToSQL(value interface{}, field *proto.Field) (string,
 				arrayStr[i] = fmt.Sprintf("'%s'", strings.ReplaceAll(element, "'", "''"))
 			}
 			arrayExpr := fmt.Sprintf("ARRAY[%s]", strings.Join(arrayStr, ", "))
-			if field != nil && field.Type.Repeated {
-				switch field.Type.Type {
+			if field != nil && field.GetType().GetRepeated() {
+				switch field.GetType().GetType() {
 				case proto.Type_TYPE_INT:
 					arrayExpr += "::integer[]"
 				case proto.Type_TYPE_DECIMAL:
@@ -212,8 +212,8 @@ func (m *Migrations) SnapshotDatabase(ctx context.Context) (string, error) {
 				columns = append(columns, col)
 				continue
 			}
-			field := proto.FindField(m.Schema.Models, model, casing.ToLowerCamel(col))
-			if field != nil && field.ComputedExpression == nil {
+			field := proto.FindField(m.Schema.GetModels(), model, casing.ToLowerCamel(col))
+			if field != nil && field.GetComputedExpression() == nil {
 				columns = append(columns, col)
 			}
 		}
@@ -261,14 +261,14 @@ func (m *Migrations) SnapshotDatabase(ctx context.Context) (string, error) {
 					continue
 				}
 
-				field := proto.FindField(m.Schema.Models, model, casing.ToLowerCamel(col))
+				field := proto.FindField(m.Schema.GetModels(), model, casing.ToLowerCamel(col))
 
 				var handler TypeHandler
 				handler = &DefaultTypeHandler{}
 				if field != nil {
-					if field.Type.Repeated {
+					if field.GetType().GetRepeated() {
 						handler = &ArrayTypeHandler{}
-					} else if h, ok := typeHandlers[field.Type.Type]; ok {
+					} else if h, ok := typeHandlers[field.GetType().GetType()]; ok {
 						handler = h
 					}
 				}
