@@ -216,6 +216,7 @@ func TestGeneratedComputed(t *testing.T) {
 	t.Parallel()
 	for _, testCase := range computedTestCases {
 		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
 			raw := strings.Replace(testCase.keelSchema, "#placeholder#", testCase.field, 1)
 
 			schemaFiles :=

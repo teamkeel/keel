@@ -2529,6 +2529,7 @@ func TestSDKTypings(t *testing.T) {
 
 	for _, fixture := range fixtures {
 		t.Run(fixture.name, func(t *testing.T) {
+			t.Parallel()
 			err := codegen.GeneratedFiles{
 				{
 					Path:     "code.ts",

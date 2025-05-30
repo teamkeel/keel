@@ -114,7 +114,7 @@ linters:
     # - testifylint
     # - testpackage
     # - thelper
-    # - tparallel
+    - tparallel
     - unconvert
     - unparam
     - unused
