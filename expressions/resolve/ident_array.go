@@ -9,7 +9,7 @@ import (
 
 var ErrExpressionNotValidIdentArray = errors.New("expression is not an ident array")
 
-// AsIdentArray expects and retrieves the array of idents
+// AsIdentArray expects and retrieves the array of idents.
 func AsIdentArray(expression *parser.Expression) ([]*parser.ExpressionIdent, error) {
 	ident, err := RunCelVisitor(expression, identArray())
 	if err != nil {

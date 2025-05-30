@@ -108,7 +108,7 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 	return http.HandlerFunc(httpHandler)
 }
 
-// NewAuthHandler handles requests to the authentication endpoints
+// NewAuthHandler handles requests to the authentication endpoints.
 func NewAuthHandler(schema *proto.Schema) func(http.ResponseWriter, *http.Request) common.Response {
 	handleProviders := authapi.ProvidersHandler(schema)
 	handleToken := authapi.TokenEndpointHandler(schema)
@@ -147,7 +147,7 @@ func NewAuthHandler(schema *proto.Schema) func(http.ResponseWriter, *http.Reques
 	}
 }
 
-// NewApiHandler handles requests to the customer APIs
+// NewApiHandler handles requests to the customer APIs.
 func NewApiHandler(s *proto.Schema) common.HandlerFunc {
 	handlers := map[string]common.HandlerFunc{}
 
@@ -189,7 +189,7 @@ func NewApiHandler(s *proto.Schema) common.HandlerFunc {
 	})
 }
 
-// NewFlowsHandler handles requests to the customer flows
+// NewFlowsHandler handles requests to the customer flows.
 func NewFlowsHandler(s *proto.Schema) common.HandlerFunc {
 	defaultFlowHandler := flowsapi.FlowHandler(s)
 

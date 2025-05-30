@@ -81,13 +81,13 @@ type Migrations struct {
 	SQL string
 }
 
-// HasModelFieldChanges returns true if the migrations contain model field changes to be applied
+// HasModelFieldChanges returns true if the migrations contain model field changes to be applied.
 func (m *Migrations) HasModelFieldChanges() bool {
 	return m.SQL != ""
 }
 
 // Apply executes the migrations against the database
-// If dryRun is true, then the changes are rolled back
+// If dryRun is true, then the changes are rolled back.
 func (m *Migrations) Apply(ctx context.Context, dryRun bool) error {
 	ctx, span := tracer.Start(ctx, "Apply Migrations")
 	defer span.End()
@@ -170,7 +170,7 @@ func (m *Migrations) Apply(ctx context.Context, dryRun bool) error {
 
 // New creates a new Migrations instance for the given schema and database.
 // Introspection is performed on the database to work out what schema changes
-// need to be applied to result in the database schema matching the Keel schema
+// need to be applied to result in the database schema matching the Keel schema.
 func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migrations, error) {
 	_, span := tracer.Start(ctx, "Generate Migrations")
 	defer span.End()
@@ -483,7 +483,7 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 
 // compositeUniqueConstraintsForModel finds all composite unique constraints in model and
 // returns a map where the keys are constraint names and the keys are the field names in
-// that constraint
+// that constraint.
 func compositeUniqueConstraintsForModel(model *proto.Model) map[string][]string {
 	uniqueConstraints := map[string][]string{}
 	for _, field := range model.Fields {
@@ -497,7 +497,7 @@ func compositeUniqueConstraintsForModel(model *proto.Model) map[string][]string 
 }
 
 // compositeUniqueConstraints generates SQL statements for dropping or creating composite
-// unique constraints for model
+// unique constraints for model.
 func compositeUniqueConstraints(schema *proto.Schema, model *proto.Model, constraints []*ConstraintRow) (statements []string, err error) {
 	uniqueConstraints := compositeUniqueConstraintsForModel(model)
 
@@ -531,7 +531,7 @@ type depPair struct {
 	ident *parser.ExpressionIdent
 }
 
-// computedFieldDependencies returns a map of computed fields and every field it depends on
+// computedFieldDependencies returns a map of computed fields and every field it depends on.
 func computedFieldDependencies(schema *proto.Schema) (map[*proto.Field][]*depPair, error) {
 	dependencies := map[*proto.Field][]*depPair{}
 
@@ -586,7 +586,7 @@ func computedFieldDependencies(schema *proto.Schema) (map[*proto.Field][]*depPai
 	return dependencies, nil
 }
 
-// computedFieldsStmts generates SQL statements for dropping or creating functions and triggers for computed fields
+// computedFieldsStmts generates SQL statements for dropping or creating functions and triggers for computed fields.
 func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRow) (changes []*DatabaseChange, statements []string, err error) {
 	existingComputedFnNames := lo.Map(existingComputedFns, func(f *FunctionRow, _ int) string {
 		return f.RoutineName

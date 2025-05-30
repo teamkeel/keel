@@ -172,7 +172,7 @@ func NewHandler(s *proto.Schema, api *proto.Api) common.HandlerFunc {
 }
 
 // NewGraphQLSchema creates a map of graphql.Schema objects where the keys
-// are the API names from the provided proto.Schema
+// are the API names from the provided proto.Schema.
 func NewGraphQLSchema(proto *proto.Schema, api *proto.Api) (*graphql.Schema, error) {
 	m := &graphqlSchemaBuilder{
 		proto: proto,
@@ -253,7 +253,7 @@ func (mk *graphqlSchemaBuilder) addGlobals() {
 }
 
 // addModel generates the graphql type to represent the given proto.Model, and inserts it into
-// mk.types
+// mk.types.
 func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, error) {
 	if out, ok := mk.types[fmt.Sprintf("model-%s", model.Name)]; ok {
 		return out.(*graphql.Object), nil
@@ -456,7 +456,7 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 	return object, nil
 }
 
-// addOperation generates the graphql field object to represent the given proto.Action
+// addOperation generates the graphql field object to represent the given proto.Action.
 func (mk *graphqlSchemaBuilder) addAction(
 	action *proto.Action,
 	schema *proto.Schema) error {
@@ -706,7 +706,7 @@ func (mk *graphqlSchemaBuilder) addMessage(message *proto.Message) (graphql.Outp
 }
 
 // addModel generates the graphql type to represent the given proto.Model, and inserts it into
-// mk.types
+// mk.types.
 func (mk *graphqlSchemaBuilder) addModelInput(model *proto.Model) (graphql.Input, error) {
 	if in, ok := mk.types[fmt.Sprintf("model-%s", model.Name)]; ok {
 		return in.(graphql.Input), nil

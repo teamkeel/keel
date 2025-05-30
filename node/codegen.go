@@ -1249,7 +1249,7 @@ func writeFunctionImplementation(w *codegen.Writer, schema *proto.Schema, action
 }
 
 // isModelInput returs true if `field` targets a model field, either directly
-// or via a child field)
+// or via a child field).
 func isModelInput(schema *proto.Schema, field *proto.MessageField) bool {
 	if len(field.Target) > 0 {
 		return true
@@ -1799,7 +1799,7 @@ func tsDocComment(w *codegen.Writer, f func(w *codegen.Writer)) {
 }
 
 // toResponseType generates a response type name for the given action name. This is to be used for actions that contain
-// embedded data
+// embedded data.
 func toResponseType(actionName string) string {
 	return casing.ToCamel(actionName) + "Response"
 }

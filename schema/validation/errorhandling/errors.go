@@ -11,7 +11,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// error codes
+// error codes.
 const (
 	ErrorUpperCamel                      = "E001"
 	ErrorActionNameLowerCamel            = "E002"

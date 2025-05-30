@@ -7,7 +7,7 @@ import (
 	"github.com/teamkeel/keel/runtime/actions"
 )
 
-// AuthoriseFlow will check that the context's identity is authorised to access the given flow in the context of the given schema
+// AuthoriseFlow will check that the context's identity is authorised to access the given flow in the context of the given schema.
 func AuthoriseFlow(ctx context.Context, schema *proto.Schema, flow *proto.Flow) (bool, error) {
 	// if the flow doesn't have any permission rules, do not authorise
 	if len(flow.Permissions) == 0 {
@@ -33,7 +33,7 @@ func AuthoriseFlow(ctx context.Context, schema *proto.Schema, flow *proto.Flow) 
 	return false, nil
 }
 
-// AuthorisedFlows returns a list of flows from the given schema for which the current context user is authorised to view
+// AuthorisedFlows returns a list of flows from the given schema for which the current context user is authorised to view.
 func AuthorisedFlows(ctx context.Context, schema *proto.Schema) ([]*proto.Flow, error) {
 	flows := []*proto.Flow{}
 	for _, f := range schema.Flows {

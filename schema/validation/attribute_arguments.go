@@ -8,7 +8,7 @@ import (
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
-// AttributeArgumentsRules tests for the very basic rules around required arguments for attributes
+// AttributeArgumentsRules tests for the very basic rules around required arguments for attributes.
 func AttributeArgumentsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 	var field *parser.FieldNode
 	var action *parser.ActionNode

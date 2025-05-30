@@ -19,7 +19,7 @@ import (
 	"go.opentelemetry.io/otel/trace/noop"
 )
 
-// Event names
+// Event names.
 const (
 	Created = "created"
 	Updated = "updated"

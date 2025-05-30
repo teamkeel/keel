@@ -12,7 +12,7 @@ import (
 	"github.com/teamkeel/keel/schema/parser"
 )
 
-// GenerateSelectQuery visits the expression and adds select clauses to the provided query builder
+// GenerateSelectQuery visits the expression and adds select clauses to the provided query builder.
 func GenerateSelectQuery(ctx context.Context, schema *proto.Schema, model *proto.Model, action *proto.Action, inputs map[string]any) resolve.Visitor[*QueryOperand] {
 	return &setQueryGen{
 		ctx:    ctx,

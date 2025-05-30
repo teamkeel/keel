@@ -460,7 +460,7 @@ type Tokens struct {
 	currIndex int
 }
 
-// Peek returns the next token or nil but does not advance the current token
+// Peek returns the next token or nil but does not advance the current token.
 func (t *Tokens) Peek() *Token {
 	i := t.currIndex
 	i++
@@ -470,7 +470,7 @@ func (t *Tokens) Peek() *Token {
 	return t.tokens[i]
 }
 
-// Next returns the next token or nil and advances the current token
+// Next returns the next token or nil and advances the current token.
 func (t *Tokens) Next() *Token {
 	t.currIndex++
 	if t.currIndex > len(t.tokens)-1 {
@@ -480,7 +480,7 @@ func (t *Tokens) Next() *Token {
 }
 
 // MatchOrNil is like Next() but checks that the next token (if it exists)
-// matches one of the expected values
+// matches one of the expected values.
 func (t *Tokens) MatchOrNil(expected ...string) (*Token, error) {
 	tok := t.Next()
 	if tok == nil {
@@ -503,7 +503,7 @@ func (t *Tokens) MatchOrNil(expected ...string) (*Token, error) {
 	return tok, nil
 }
 
-// Match is like MatchOrNil but will return an error if the returned token is nil
+// Match is like MatchOrNil but will return an error if the returned token is nil.
 func (t *Tokens) Match(expected ...string) (*Token, error) {
 	tok, err := t.MatchOrNil(expected...)
 	if err != nil {

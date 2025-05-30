@@ -12,7 +12,7 @@ import (
 // handleFileUploads will check the inputs for any file uploads for the scope's action and upload them
 //
 // Currently inline files will be provided as input in a data-url format, we will store these files and change the inputs
-// to a structure that will be then saved in the db
+// to a structure that will be then saved in the db.
 func handleFileUploads(scope *Scope, inputs map[string]any) (map[string]any, error) {
 	// we handle file uploads for UPDATE and CREATE actions
 	if scope.Action.Type != proto.ActionType_ACTION_TYPE_UPDATE && scope.Action.Type != proto.ActionType_ACTION_TYPE_CREATE {
@@ -74,7 +74,7 @@ func handleFileUploads(scope *Scope, inputs map[string]any) (map[string]any, err
 	return inputs, nil
 }
 
-// transformModelFileResponses will take the results for the given scope's action execution and parse and transform the file responses
+// transformModelFileResponses will take the results for the given scope's action execution and parse and transform the file responses.
 func transformModelFileResponses(ctx context.Context, model *proto.Model, results map[string]any) (map[string]any, error) {
 	if model == nil {
 		return results, nil
@@ -125,7 +125,7 @@ func transformModelFileResponses(ctx context.Context, model *proto.Model, result
 	return results, nil
 }
 
-// transformMessageFileResponses will take the results from the functions runtime and parse and transform the file responses
+// transformMessageFileResponses will take the results from the functions runtime and parse and transform the file responses.
 func transformMessageFileResponses(ctx context.Context, schema *proto.Schema, message *proto.Message, results map[string]any) (map[string]any, error) {
 	if message == nil {
 		return results, nil

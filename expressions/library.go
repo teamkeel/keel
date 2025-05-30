@@ -12,7 +12,7 @@ func standardKeelLibrary() cel.EnvOption {
 	return cel.Lib(&standardKeelLib{})
 }
 
-// LibraryName returns our standard library for expressions
+// LibraryName returns our standard library for expressions.
 func (*standardKeelLib) LibraryName() string {
 	return "keel"
 }

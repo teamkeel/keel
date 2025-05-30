@@ -7,7 +7,7 @@ import (
 	"github.com/teamkeel/keel/schema/node"
 )
 
-// Token represents a single token e.g. "@" or "model"
+// Token represents a single token e.g. "@" or "model".
 type Token struct {
 	Value string
 	Pos   *node.Position
@@ -181,9 +181,7 @@ func (t *TokensAtPosition) FindPrevMultipleOnLine(values ...string) (string, *To
 	}
 }
 
-/**
-* Find a previous token with a given value on the same line as the current token
-**/
+// FindPrevOnLine finds a previous token with a given value on the same line as the current token.
 func (t *TokensAtPosition) FindPrevOnLine(value string) *TokensAtPosition {
 	prev := t.FindPrev(value)
 	if prev.Line() == t.Line() {
@@ -192,9 +190,7 @@ func (t *TokensAtPosition) FindPrevOnLine(value string) *TokensAtPosition {
 	return nil
 }
 
-/**
-* Find a previous token with a given value on the same line the given offset
-**/
+// FindPrevOnLineAt finds a previous token with a given value on the same line the given offset.
 func (t *TokensAtPosition) FindPrevOnLineAt(value string, offset int) *TokensAtPosition {
 	prev := t.FindPrev(value)
 	if prev.Line() == offset {
@@ -221,9 +217,7 @@ func (t *TokensAtPosition) Is(others ...*TokensAtPosition) bool {
 	return false
 }
 
-/**
-* Returns true of the current token is at the beginning of a new line
-**/
+// IsNewLine returns true of the current token is at the beginning of a new line.
 func (t *TokensAtPosition) IsNewLine() bool {
 	return t.Line() > t.Prev().Line()
 }

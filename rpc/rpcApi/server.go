@@ -250,7 +250,7 @@ func (s *Server) DuplicateTool(ctx context.Context, req *rpc.DuplicateToolReques
 	}, nil
 }
 
-// makeToolsService will create a tools service for this server's request (taking in the schema and config from context)
+// makeToolsService will create a tools service for this server's request (taking in the schema and config from context).
 func (s *Server) makeToolsService(ctx context.Context) (*tools.Service, error) {
 	schema, err := GetSchema(ctx)
 	if err != nil {

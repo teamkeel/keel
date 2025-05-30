@@ -97,7 +97,7 @@ const (
 	ErrMethodNotFound = "ERR_ACTION_NOT_FOUND"
 	// The HTTP method is not allowed for this request.
 	ErrHttpMethodNotAllowed = "ERR_HTTP_METHOD_NOT_ALLOWED"
-	// An unexpected error happened from user code
+	// An unexpected error happened from user code.
 	ErrUnknown = "ERR_UNKNOWN"
 )
 

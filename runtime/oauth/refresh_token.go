@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	// Character length of crypo-generated refresh token
+	// Character length of crypo-generated refresh token.
 	refreshTokenLength = 64
 )
 
@@ -201,7 +201,7 @@ func RevokeRefreshToken(ctx context.Context, refreshTokenRaw string) error {
 	return nil
 }
 
-// hashToken will produce a 256-bit SHA3 hash without salt
+// hashToken will produce a 256-bit SHA3 hash without salt.
 func hashToken(input string) (string, error) {
 	hash := sha3.New256()
 	_, err := hash.Write([]byte(input))

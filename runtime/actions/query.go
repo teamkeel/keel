@@ -150,7 +150,7 @@ func (o *QueryOperand) IsNull() bool {
 	return o.query == nil && o.table == "" && o.column == "" && o.value == nil && o.raw == ""
 }
 
-// Generates the string operand that will be used in the actual SQL statement
+// Generates the string operand that will be used in the actual SQL statement.
 func (o *QueryOperand) toSqlOperandString(query *QueryBuilder) string {
 	switch {
 	case o.IsValue() && !o.IsArrayValue():
@@ -223,7 +223,7 @@ func (o *QueryOperand) toSqlOperandString(query *QueryBuilder) string {
 	}
 }
 
-// Generates the value that will be used as an argument for a SQL template
+// Generates the value that will be used as an argument for a SQL template.
 func (o *QueryOperand) toSqlArgs() []any {
 	switch {
 	case o.IsTimePeriodValue():
@@ -350,7 +350,7 @@ func WithJoinType(joinType JoinType) QueryBuilderOption {
 	}
 }
 
-// WithTimezone sets the time zone for the query
+// WithTimezone sets the time zone for the query.
 func WithTimezone(tz string) QueryBuilderOption {
 	return func(qb *QueryBuilder) {
 		qb.timezone = tz
@@ -453,7 +453,7 @@ func (query *QueryBuilder) DistinctOn(operand *QueryOperand) {
 	}
 }
 
-// Include a WHERE condition, ANDed to the existing filters (unless an OR has been specified)
+// Include a WHERE condition, ANDed to the existing filters (unless an OR has been specified).
 func (query *QueryBuilder) Where(left *QueryOperand, operator ActionOperator, right *QueryOperand) error {
 	template, args, err := query.generateConditionTemplate(left, operator, right)
 	if err != nil {
@@ -722,7 +722,7 @@ func (query *QueryBuilder) ApplyPaging(page Page) error {
 	return nil
 }
 
-// Apply forward pagination 'after' cursor filter to the query, or backwards `before` cursor
+// Apply forward pagination 'after' cursor filter to the query, or backwards `before` cursor.
 func (query *QueryBuilder) applyCursorFilter(cursor string, isBackwards bool) error {
 	query.And()
 
@@ -1762,7 +1762,7 @@ func toLowerCamelMaps(maps []map[string]any) []map[string]any {
 }
 
 // given a variadic list of tokens (e.g sqlQuote("person", "id")),
-// returns sql friendly quoted tokens: "person"."id"
+// returns sql friendly quoted tokens: "person"."id".
 func sqlQuote(tokens ...string) string {
 	quotedTokens := []string{}
 
@@ -1813,7 +1813,7 @@ func setTraceIdClause() string {
 }
 
 // cleanSql removes redundant whitespace from SQL statements while preserving
-// required spaces between keywords and identifiers
+// required spaces between keywords and identifiers.
 func cleanSql(sql string) string {
 	// Replace multiple spaces with single space
 	sql = strings.Join(strings.Fields(sql), " ")

@@ -16,7 +16,7 @@ import (
 var permissions = make(map[string]*expressions.Parser)
 var mutex sync.Mutex
 
-// defaultPermission will cache the base CEL environment for a schema
+// defaultPermission will cache the base CEL environment for a schema.
 func defaultPermission(schema []*parser.AST) (*expressions.Parser, error) {
 	mutex.Lock()
 	defer mutex.Unlock()

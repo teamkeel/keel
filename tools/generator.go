@@ -87,7 +87,7 @@ const fieldNameID = "id"
 
 var ErrInvalidSchema = errors.New("invalid schema")
 
-// NewGenerator creates a new tool config generator for the given schema
+// NewGenerator creates a new tool config generator for the given schema.
 func NewGenerator(schema *proto.Schema, keelConfig *config.ProjectConfig) (*Generator, error) {
 	return &Generator{
 		Schema:     schema,
@@ -95,7 +95,7 @@ func NewGenerator(schema *proto.Schema, keelConfig *config.ProjectConfig) (*Gene
 	}, nil
 }
 
-// GetTools returns all the tools that have been generated in alphabetical order. These include both action and flow tools
+// GetTools returns all the tools that have been generated in alphabetical order. These include both action and flow tools.
 func (g *Generator) GetTools() []*toolsproto.Tool {
 	tools := []*toolsproto.Tool{}
 	ids := []string{}
@@ -111,7 +111,7 @@ func (g *Generator) GetTools() []*toolsproto.Tool {
 	return tools
 }
 
-// Generate will generate all the tools for this generator's schema
+// Generate will generate all the tools for this generator's schema.
 func (g *Generator) Generate(ctx context.Context) error {
 	if g.Schema == nil {
 		return ErrInvalidSchema
@@ -408,7 +408,7 @@ func (g *Generator) generateCreateEntryActionLinks() {
 
 // generateEmbeddedTools will create links to embedded actions. These are generated for GET actions for models that
 // have HasMany relationships provided that:
-// - the related model has a list action that has the parent field as a filter
+// - the related model has a list action that has the parent field as a filter.
 func (g *Generator) generateEmbeddedTools() {
 	for _, tool := range g.actionTools() {
 		if !tool.Action.IsGet() {
@@ -461,7 +461,7 @@ func (g *Generator) generateEmbeddedTools() {
 	}
 }
 
-// generateInputs will make the inputs for all action based tools
+// generateInputs will make the inputs for all action based tools.
 func (g *Generator) generateInputs() error {
 	for _, tool := range g.actionTools() {
 		// if the action does not have a input message, it means we don't have any inputs for this tool
@@ -504,7 +504,7 @@ func (g *Generator) generateInputs() error {
 	return nil
 }
 
-// generateFlowInputs will make the inputs for all flow based tools
+// generateFlowInputs will make the inputs for all flow based tools.
 func (g *Generator) generateFlowInputs() error {
 	for _, tool := range g.flowTools() {
 		// if the flow does not have a input message, it means we don't have any inputs for this tool
@@ -553,7 +553,7 @@ func (g *Generator) generateFlowInputs() error {
 	return nil
 }
 
-// generateResponses will make the responses for all action based tools
+// generateResponses will make the responses for all action based tools.
 func (g *Generator) generateResponses() error {
 	for _, tool := range g.actionTools() {
 		// skip tools that are flow based
@@ -788,7 +788,7 @@ func (g *Generator) makeResponsesForMessage(msg *proto.Message, pathPrefix strin
 	return fields, nil
 }
 
-// makeResponsesForModel will return an array of response fields for the given model
+// makeResponsesForModel will return an array of response fields for the given model.
 func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string, embeddings []string, sortableFields []string) ([]*toolsproto.ResponseFieldConfig, error) {
 	fields := []*toolsproto.ResponseFieldConfig{}
 	order := 0
@@ -912,7 +912,7 @@ func computeFieldOrder(currentOrder *int, fieldCount int, fieldName string) int3
 	return int32(val)
 }
 
-// findListTools will search for list tools for the given model
+// findListTools will search for list tools for the given model.
 func (g *Generator) findListTools(modelName string) []string {
 	ids := []string{}
 	for id, tool := range g.actionTools() {
@@ -926,7 +926,7 @@ func (g *Generator) findListTools(modelName string) []string {
 	return ids
 }
 
-// findCreateTool will search for a get tool for the given model
+// findCreateTool will search for a get tool for the given model.
 func (g *Generator) findCreateTool(modelName string) string {
 	for id, tool := range g.actionTools() {
 		if tool.Model.Name == modelName && tool.Action.IsCreate() {
@@ -937,7 +937,7 @@ func (g *Generator) findCreateTool(modelName string) string {
 	return ""
 }
 
-// findGetByIDTool will search for a get tool for the given model that takes in an ID. It will prioritise a get(id) action without @embeds
+// findGetByIDTool will search for a get tool for the given model that takes in an ID. It will prioritise a get(id) action without @embeds.
 func (g *Generator) findGetByIDTool(modelName string) string {
 	if id := g.findGetByIDWithoutEmbedsTool(modelName); id != "" {
 		return id
@@ -952,7 +952,7 @@ func (g *Generator) findGetByIDTool(modelName string) string {
 	return ""
 }
 
-// findGetByIDTool will search for a get tool for the given model that takes in an ID and has no @embeds defined
+// findGetByIDTool will search for a get tool for the given model that takes in an ID and has no @embeds defined.
 func (g *Generator) findGetByIDWithoutEmbedsTool(modelName string) string {
 	for id, tool := range g.actionTools() {
 		if tool.Model.Name == modelName && tool.Action.IsGet() && tool.hasOnlyIDInput() && len(tool.Action.ResponseEmbeds) == 0 {
@@ -964,7 +964,7 @@ func (g *Generator) findGetByIDWithoutEmbedsTool(modelName string) string {
 }
 
 // findListByForeignID will search for a list tool for the given model which takes a specific foreign key as an input
-// It will also return the request input field for that tool
+// It will also return the request input field for that tool.
 func (g *Generator) findListByForeignID(modelName string, inverseFieldName string) (string, *toolsproto.RequestFieldConfig) {
 	for id, tool := range g.actionTools() {
 		if input := tool.getInput("$.where." + inverseFieldName + ".id.equals"); tool.Model.Name == modelName && tool.Action.Type == proto.ActionType_ACTION_TYPE_LIST && input != nil {
@@ -1017,7 +1017,7 @@ func (g *Generator) findAllByIDTools(modelName string, ignoreID string) map[stri
 
 // makeCapabilities generates the makeCapabilities/features available for a tool generated for the given action.
 // Audit trail is enabled just for GET actions
-// Comments are enabled just for GET actions
+// Comments are enabled just for GET actions.
 func (g *Generator) makeCapabilities(action *proto.Action) *toolsproto.Capabilities {
 	c := &toolsproto.Capabilities{
 		Comments: false,
@@ -1039,7 +1039,7 @@ func (g *Generator) makeCapabilities(action *proto.Action) *toolsproto.Capabilit
 //   - The title will be a template including the value of the first field of the model, only if that field is a text field
 //
 // If no text fields found, we revert to the sentence-cased action name (also removing the list/get/read prefixes
-// (e.g. Invoices instead of List invoices)
+// (e.g. Invoices instead of List invoices).
 func (g *Generator) makeTitle(action *proto.Action, model *proto.Model) *toolsproto.StringTemplate {
 	if action.IsGet() || action.Type == proto.ActionType_ACTION_TYPE_READ {
 		fields := model.GetFields()
@@ -1070,7 +1070,7 @@ func (g *Generator) makeFilterConfig() *toolsproto.FilterConfig {
 	return &toolsproto.FilterConfig{}
 }
 
-// getPageInfoResponses will return the responses for pageInfo (by default available on all autogenerated LIST actions)
+// getPageInfoResponses will return the responses for pageInfo (by default available on all autogenerated LIST actions).
 func getPageInfoResponses() []*toolsproto.ResponseFieldConfig {
 	return []*toolsproto.ResponseFieldConfig{
 		{
@@ -1125,7 +1125,7 @@ func getPageInfoResponses() []*toolsproto.ResponseFieldConfig {
 	}
 }
 
-// getPageInfoResponses will return the responses for resultInfo if applicable
+// getPageInfoResponses will return the responses for resultInfo if applicable.
 func getResultInfoResponses(schema *proto.Schema, action *proto.Action) ([]*toolsproto.ResponseFieldConfig, error) {
 	config := []*toolsproto.ResponseFieldConfig{
 		{
@@ -1224,7 +1224,7 @@ func getResultInfoResponses(schema *proto.Schema, action *proto.Action) ([]*tool
 // - after
 // - last
 // - before
-// - orderBy
+// - orderBy.
 func inferInputType(actionType proto.ActionType, fieldName string) toolsproto.RequestFieldConfig_ScopeType {
 	switch actionType {
 	case proto.ActionType_ACTION_TYPE_LIST:
@@ -1248,7 +1248,7 @@ func inferInputType(actionType proto.ActionType, fieldName string) toolsproto.Re
 	return toolsproto.RequestFieldConfig_DEFAULT
 }
 
-// hasOnlyIDInput checks if the tool takes only one input, an ID
+// hasOnlyIDInput checks if the tool takes only one input, an ID.
 func (t *Tool) hasOnlyIDInput() bool {
 	if len(t.ActionConfig.Inputs) != 1 {
 		return false
@@ -1262,7 +1262,7 @@ func (t *Tool) hasOnlyIDInput() bool {
 	return true
 }
 
-// getIDInputFieldPath returns the path of the first input field that's an ID
+// getIDInputFieldPath returns the path of the first input field that's an ID.
 func (t *Tool) getIDInputFieldPath() string {
 	for _, input := range t.ActionConfig.Inputs {
 		if input.FieldType == proto.Type_TYPE_ID && input.DisplayName == casing.ToSentenceCase(fieldNameID) {
@@ -1273,7 +1273,7 @@ func (t *Tool) getIDInputFieldPath() string {
 	return ""
 }
 
-// getInput finds and returns an inpub by it's path; returns nil if not found
+// getInput finds and returns an inpub by it's path; returns nil if not found.
 func (t *Tool) getInput(path string) *toolsproto.RequestFieldConfig {
 	for _, input := range t.ActionConfig.Inputs {
 		if input.FieldLocation.Path == path {
@@ -1285,7 +1285,7 @@ func (t *Tool) getInput(path string) *toolsproto.RequestFieldConfig {
 }
 
 // getIDResponseFieldPath returns the path of the first response field that's an ID at top level (i.e. results[*].id
-// rather than results[*].embedded.id for list actions). Returns empty string if ID is not part of the response
+// rather than results[*].embedded.id for list actions). Returns empty string if ID is not part of the response.
 func (t *Tool) getIDResponseFieldPath() string {
 	expectedPath := "$.id"
 	if t.Action.IsList() {

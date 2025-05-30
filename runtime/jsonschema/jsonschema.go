@@ -687,7 +687,7 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto
 //	| Note that there is no null type; instead, the nullable
 //	| attribute is used as a modifier of the base type.
 //
-// We currently only support JSON schema
+// We currently only support JSON schema.
 func (s *JSONSchema) allowNull() {
 	t := s.Type
 	switch t := t.(type) {
@@ -720,7 +720,7 @@ func ErrorsToString(errs []gojsonschema.ResultError) (ret string) {
 
 type RelaxedDateFormatChecker struct{}
 
-// Checks that the value matches the a ISO8601 except the date component is mandatory
+// Checks that the value matches the a ISO8601 except the date component is mandatory.
 func (f RelaxedDateFormatChecker) IsFormat(input interface{}) bool {
 	asString, ok := input.(string)
 	if !ok {

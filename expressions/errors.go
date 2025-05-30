@@ -9,7 +9,7 @@ import (
 	"github.com/google/cel-go/common/types"
 )
 
-// converters which translate cel errors into better keel validation messages
+// converters which translate cel errors into better keel validation messages.
 var messageConverters = []errorConverter{
 	undefinedField,
 	noFieldSelection,

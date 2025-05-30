@@ -52,7 +52,7 @@ func RunCelVisitor[T any](expression *parser.Expression, visitor Visitor[T]) (T,
 	return resolver.run(expression)
 }
 
-// CelVisitor steps through the CEL AST and calls out to the visitor
+// CelVisitor steps through the CEL AST and calls out to the visitor.
 type CelVisitor[T any] struct {
 	visitor    Visitor[T]
 	expression *parser.Expression

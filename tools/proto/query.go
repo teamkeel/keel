@@ -6,7 +6,7 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-// ActionConfigs will return all the actionConfigs in this selection of tools
+// ActionConfigs will return all the actionConfigs in this selection of tools.
 func (tools *Tools) ActionConfigs() []*ActionConfig {
 	if tools == nil {
 		return nil
@@ -21,7 +21,7 @@ func (tools *Tools) ActionConfigs() []*ActionConfig {
 	return cfgs
 }
 
-// FindByID finds a tool in the given tools message by id
+// FindByID finds a tool in the given tools message by id.
 func (tools *Tools) FindByID(id string) *Tool {
 	if tools == nil {
 		return nil
@@ -36,7 +36,7 @@ func (tools *Tools) FindByID(id string) *Tool {
 	return nil
 }
 
-// DiffIDs will return a subset of the given tools which do not exist in our current tools wrapper
+// DiffIDs will return a subset of the given tools which do not exist in our current tools wrapper.
 func (tools *Tools) DiffIDs(ids []string) []string {
 	diffs := []string{}
 	for _, id := range ids {
@@ -50,7 +50,7 @@ func (tools *Tools) DiffIDs(ids []string) []string {
 
 // GetOperationName will return the name of the operation that drives this tool.
 //
-// For action based tools, this will be the actionName, for flow based tools, the flow name
+// For action based tools, this will be the actionName, for flow based tools, the flow name.
 func (t *Tool) GetOperationName() string {
 	if t.IsActionBased() {
 		return t.GetActionConfig().ActionName
@@ -59,7 +59,7 @@ func (t *Tool) GetOperationName() string {
 	return t.GetFlowConfig().FlowName
 }
 
-// IsActionBased checks if the tool is driven by an API action
+// IsActionBased checks if the tool is driven by an API action.
 func (t *Tool) IsActionBased() bool {
 	return t.Type == Tool_ACTION && t.ActionConfig != nil
 }

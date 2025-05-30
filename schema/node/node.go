@@ -119,7 +119,7 @@ func (n Node) InRange(position Position) bool {
 // Collection blocks with no content such as fields {} return
 // no nodes which means we cant purely rely on node.inRange check
 // so it is necessary to examine the underlying tokens
-// emitted by the parser
+// emitted by the parser.
 func BoundaryTokensInRange(position Position, start lexer.Token, end lexer.Token) bool {
 	col := position.Column
 	line := position.Line

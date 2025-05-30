@@ -16,7 +16,7 @@ import (
 	"github.com/teamkeel/keel/schema/parser"
 )
 
-// GenerateComputedFunction visits the expression and generates a SQL expression
+// GenerateComputedFunction visits the expression and generates a SQL expression.
 func GenerateComputedFunction(schema *proto.Schema, model *proto.Model, field *proto.Field) resolve.Visitor[string] {
 	return &computedQueryGen{
 		schema:    schema,

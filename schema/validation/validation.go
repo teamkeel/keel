@@ -93,7 +93,7 @@ var visitorFuncs = []VisitorFunc{
 }
 
 // RunAllValidators will run all the validators available. If withWarnings is true, it will return the errors even if
-// they contain just warnings
+// they contain just warnings.
 func (v *Validator) RunAllValidators(withWarnings bool) (errs *errorhandling.ValidationErrors) {
 	errs = &errorhandling.ValidationErrors{}
 

@@ -20,17 +20,17 @@ type orchestratorContextKey string
 
 var contextKey orchestratorContextKey = "flowOrchestrator"
 
-// WithOrchestrator sets the given orchestrator in the context
+// WithOrchestrator sets the given orchestrator in the context.
 func WithOrchestrator(ctx context.Context, o *Orchestrator) context.Context {
 	return context.WithValue(ctx, contextKey, o)
 }
 
-// HasOrchestrator checks the given context if a flow orchestrator has been set
+// HasOrchestrator checks the given context if a flow orchestrator has been set.
 func HasOrchestrator(ctx context.Context) bool {
 	return ctx.Value(contextKey) != nil
 }
 
-// GetOrchestrator retrieves the flow orchestrator from the context
+// GetOrchestrator retrieves the flow orchestrator from the context.
 func GetOrchestrator(ctx context.Context) (*Orchestrator, error) {
 	v, ok := ctx.Value(contextKey).(*Orchestrator)
 	if !ok {
@@ -87,13 +87,13 @@ func (r *FunctionsResponsePayload) GetUIComponents() *FlowUIComponents {
 	return nil
 }
 
-// FlowUIComponents contains data returned from the functions runtime which is used for frontend rendering
+// FlowUIComponents contains data returned from the functions runtime which is used for frontend rendering.
 type FlowUIComponents struct {
 	Config JSON `json:"config"`
 	UI     JSON `json:"ui"`
 }
 
-// orchestrateRun will decide based on the db state if the flow should be ran or not
+// orchestrateRun will decide based on the db state if the flow should be ran or not.
 func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, inputs map[string]any, data map[string]any) (error, *FlowUIComponents) {
 	run, err := getRun(ctx, runID)
 	if err != nil {
@@ -212,7 +212,7 @@ func (o *Orchestrator) HandleEvent(ctx context.Context, event *EventWrapper) err
 }
 
 // SendEvent sends the given event to the flow runtime's queue or directly invokes the function depending on the
-// orchestrator's settings
+// orchestrator's settings.
 func (o *Orchestrator) SendEvent(ctx context.Context, payload *EventWrapper) error {
 	if payload == nil {
 		return fmt.Errorf("invalid event payload")
@@ -245,7 +245,7 @@ func (o *Orchestrator) SendEvent(ctx context.Context, payload *EventWrapper) err
 	return err
 }
 
-// CallFlow is a helper function to call the flows runtime and retrieve the Response Payload
+// CallFlow is a helper function to call the flows runtime and retrieve the Response Payload.
 func (o *Orchestrator) CallFlow(ctx context.Context, run *Run, inputs map[string]any, data map[string]any) (*FunctionsResponsePayload, error) {
 	ctx, span := tracer.Start(ctx, "CallFlow")
 	defer span.End()

@@ -63,7 +63,7 @@ linters:
     # - goconst
     # - gocritic
     # - gocyclo
-    # - godot
+    - godot
     # - godox
     - goheader
     - gomoddirectives

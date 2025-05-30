@@ -724,7 +724,7 @@ func StartWatcher(dir string, ch chan tea.Msg, filter []string) tea.Cmd {
 	}
 }
 
-// LoadSecrets lists secrets from the given file and returns a command
+// LoadSecrets lists secrets from the given file and returns a command.
 func LoadSecrets(path, environment string) (map[string]string, error) {
 	projectPath, err := filepath.Abs(path)
 	if err != nil {

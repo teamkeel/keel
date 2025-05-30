@@ -1205,7 +1205,7 @@ func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Mes
 	}
 }
 
-// Adds a set of proto.Messages to top level Messages registry for all inputs of an Action
+// Adds a set of proto.Messages to top level Messages registry for all inputs of an Action.
 func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *parser.ActionNode) {
 	switch action.Type.Value {
 	case parser.ActionTypeCreate:
@@ -1911,7 +1911,7 @@ func (scm *Builder) inferParserInputType(
 	}, target, targetsOptionalField
 }
 
-// parserType could be a built-in type or a user-defined model or enum
+// parserType could be a built-in type or a user-defined model or enum.
 func (scm *Builder) parserTypeToProtoType(parserType string) proto.Type {
 	switch {
 	case parserType == parser.FieldTypeText:

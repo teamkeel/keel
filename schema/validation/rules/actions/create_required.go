@@ -65,7 +65,7 @@ func checkField(
 // - relationship repeated fields
 // - fields which have a default
 // - built-in fields like CreatedAt, Id etc.
-// - computed fields
+// - computed fields.
 func isNotNeeded(asts []*parser.AST, model *parser.ModelNode, f *parser.FieldNode) bool {
 	switch {
 	case f.Optional,

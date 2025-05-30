@@ -77,7 +77,7 @@ func ParsePage(args map[string]any) (Page, error) {
 	return page, nil
 }
 
-// extractIntArg checks if the given map contains a int value at the key defined by the name param
+// extractIntArg checks if the given map contains a int value at the key defined by the name param.
 func extractIntArg(args map[string]any, name string) (int, bool) {
 	if arg, ok := args[name]; ok {
 		switch v := arg.(type) {
@@ -99,19 +99,19 @@ func extractIntArg(args map[string]any, name string) (int, bool) {
 	return 0, false
 }
 
-// OffsetPagination tells us if the page is to use offset pagination
+// OffsetPagination tells us if the page is to use offset pagination.
 func (p *Page) OffsetPagination() bool {
 	return p.Limit > 0
 }
 
-// IsBackwards tells us if the page is backwards paginated (e.g. we're requesting elements before a cursor)
+// IsBackwards tells us if the page is backwards paginated (e.g. we're requesting elements before a cursor).
 func (p *Page) IsBackwards() bool {
 	return p.Before != "" && p.Last > 0
 }
 
 // Cursor returns the cursor used in the pagination based on the direction of pagination:
 // - if backwards, it's `before`
-// - if forward pagination, it's `after`
+// - if forward pagination, it's `after`.
 func (p *Page) Cursor() string {
 	if p.IsBackwards() {
 		return p.Before
@@ -120,7 +120,7 @@ func (p *Page) Cursor() string {
 	return p.After
 }
 
-// GetLimit returns the page limit to be used in the SQL query
+// GetLimit returns the page limit to be used in the SQL query.
 func (p *Page) GetLimit() int {
 	if p.OffsetPagination() {
 		return p.Limit
@@ -132,7 +132,7 @@ func (p *Page) GetLimit() int {
 	return p.First
 }
 
-// PageNumber returns the number of the current; it is only applicable for OffsetPagination
+// PageNumber returns the number of the current; it is only applicable for OffsetPagination.
 func (p *Page) PageNumber() *int {
 	if p == nil || !p.OffsetPagination() {
 		return nil

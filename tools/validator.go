@@ -12,7 +12,7 @@ type Validator struct {
 	Tools  *toolsproto.Tools
 }
 
-// NewValidator creates a new tool validator for the given schema and tools
+// NewValidator creates a new tool validator for the given schema and tools.
 func NewValidator(schema *proto.Schema, tools *toolsproto.Tools) *Validator {
 	return &Validator{
 		Schema: schema,

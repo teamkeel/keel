@@ -8,14 +8,14 @@ import (
 
 // IsModelDbColumn returns true if the expression operand refers to a field value residing in the database.
 // For example, a where condition might filter on reading data,
-// such as: @where(post.author.isActive)
+// such as: @where(post.author.isActive).
 func IsModelDbColumn(model *proto.Model, fragments []string) bool {
 	return fragments[0] == strcase.ToLowerCamel(model.Name)
 }
 
 // IsContextDbColumn returns true if the expression refers to a value on the context
 // which will require database access (such as with identity backlinks),
-// such as: @permission(expression: ctx.identity.user.isActive)
+// such as: @permission(expression: ctx.identity.user.isActive).
 func IsContextDbColumn(fragments []string) bool {
 	return IsContextIdentity(fragments) && !IsContextIdentityId(fragments)
 }
@@ -91,7 +91,7 @@ func IsContext(fragments []string) bool {
 
 // IsImplicitInput returns true if the expression operand refers to an implicit input on an action.
 // For example, an input value provided in a create action might require validation,
-// such as: create createThing() with (name) @validation(name != "")
+// such as: create createThing() with (name) @validation(name != "").
 func IsImplicitInput(schema *proto.Schema, action *proto.Action, fragments []string) bool {
 	if len(fragments) <= 1 {
 		return false
@@ -121,7 +121,7 @@ func IsImplicitInput(schema *proto.Schema, action *proto.Action, fragments []str
 // For example, for a where condition might use an named input,
 // such as: list listThings(isActive: Boolean) @where(thing.isActive == isActive)
 // Or a model field input,
-// such as: list listThings(thing.isActive)
+// such as: list listThings(thing.isActive).
 func IsInput(schema *proto.Schema, action *proto.Action, fragments []string) bool {
 	foundExplicitWhereInput := false
 	foundExplicitValueInput := false

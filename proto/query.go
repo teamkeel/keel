@@ -25,7 +25,7 @@ func ApiModels(s *Schema, api *Api) []*Model {
 // ModelNames provides a (sorted) list of all the Model names used in the
 // given schema.
 //
-// Deprecated: Use Schema.ModelNames() instead
+// Deprecated: Use Schema.ModelNames() instead.
 func ModelNames(p *Schema) []string {
 	names := lo.Map(p.Models, func(x *Model, _ int) string {
 		return x.Name
@@ -37,7 +37,7 @@ func ModelNames(p *Schema) []string {
 // FieldNames provides a (sorted) list of the fields in the model of
 // the given name.
 //
-// Deprecated: Please use Model.FieldNames() instead
+// Deprecated: Please use Model.FieldNames() instead.
 func FieldNames(m *Model) []string {
 	names := lo.Map(m.Fields, func(x *Field, _ int) string {
 		return x.Name
@@ -48,7 +48,7 @@ func FieldNames(m *Model) []string {
 
 // IsTypeModel returns true of the field's type is Model.
 //
-// Deprecated: Please use Field.IsTypeModel() instead
+// Deprecated: Please use Field.IsTypeModel() instead.
 func IsTypeModel(field *Field) bool {
 	return field.Type.Type == Type_TYPE_MODEL
 }
@@ -56,7 +56,7 @@ func IsTypeModel(field *Field) bool {
 // IsTypeRepeated returns true if the field is specified as
 // being "repeated".
 //
-// Deprecated: Please use Field.IsRepeated() instead
+// Deprecated: Please use Field.IsRepeated() instead.
 func IsRepeated(field *Field) bool {
 	return field.Type.Repeated
 }
@@ -64,7 +64,7 @@ func IsRepeated(field *Field) bool {
 // PrimaryKeyFieldName returns the name of the field in the given model,
 // that is marked as being the model's primary key. (Or empty string).
 //
-// Deprecated: please use Model.PrimaryKeyFieldName() instead
+// Deprecated: please use Model.PrimaryKeyFieldName() instead.
 func PrimaryKeyFieldName(model *Model) string {
 	field, _ := lo.Find(model.Fields, func(f *Field) bool {
 		return f.PrimaryKey
@@ -77,7 +77,7 @@ func PrimaryKeyFieldName(model *Model) string {
 
 // AllFields provides a list of all the model fields specified in the schema.
 //
-// Deprecated: please use Schema.AllFields() instead
+// Deprecated: please use Schema.AllFields() instead.
 func AllFields(p *Schema) []*Field {
 	fields := []*Field{}
 	for _, model := range p.Models {
@@ -89,24 +89,24 @@ func AllFields(p *Schema) []*Field {
 // ForeignKeyFields returns all the fields in the given model which have their ForeignKeyInfo
 // populated.
 //
-// Deprecated: please use Model.ForeignKeyFields() instead
+// Deprecated: please use Model.ForeignKeyFields() instead.
 func ForeignKeyFields(model *Model) []*Field {
 	return lo.Filter(model.Fields, func(f *Field, _ int) bool {
 		return f.ForeignKeyInfo != nil
 	})
 }
 
-// Deprecated: please use Field.IsHasMany() instead
+// Deprecated: please use Field.IsHasMany() instead.
 func IsHasMany(field *Field) bool {
 	return field.Type.Type == Type_TYPE_MODEL && field.ForeignKeyFieldName == nil && field.Type.Repeated
 }
 
-// Deprecated: please use Field.IsHasOne() instead
+// Deprecated: please use Field.IsHasOne() instead.
 func IsHasOne(field *Field) bool {
 	return field.Type.Type == Type_TYPE_MODEL && field.ForeignKeyFieldName == nil && !field.Type.Repeated
 }
 
-// Deprecated: please use Field.IsBelongsTo() instead
+// Deprecated: please use Field.IsBelongsTo() instead.
 func IsBelongsTo(field *Field) bool {
 	return field.Type.Type == Type_TYPE_MODEL && field.ForeignKeyFieldName != nil && !field.Type.Repeated
 }
@@ -117,7 +117,7 @@ func IsBelongsTo(field *Field) bool {
 // The foreign key returned might exists on field's parent model, or on the model field
 // it is related to, so this function would normally be used in conjunction with
 // IsBelongsTo or it's counterparts to determine on which side the foreign
-// key lives
+// key lives.
 func GetForeignKeyFieldName(models []*Model, field *Field) string {
 	// The query is not meaningful if the field is not of type Model.
 	if field.Type.Type != Type_TYPE_MODEL {
@@ -166,7 +166,7 @@ func ModelExists(models []*Model, name string) bool {
 
 // FindModel locates the model of the given name.
 //
-// Deprecated: use Schema.FindModel() instead
+// Deprecated: use Schema.FindModel() instead.
 func FindModel(models []*Model, name string) *Model {
 	model, _ := lo.Find(models, func(m *Model) bool {
 		return m.Name == name
@@ -182,7 +182,7 @@ func FindEnum(enums []*Enum, name string) *Enum {
 	return enum
 }
 
-// Deprecated: Use Schema.FilterActions() instead
+// Deprecated: Use Schema.FilterActions() instead.
 func FilterActions(p *Schema, filter func(op *Action) bool) (ops []*Action) {
 	for _, model := range p.Models {
 		actions := model.Actions
@@ -197,7 +197,7 @@ func FilterActions(p *Schema, filter func(op *Action) bool) (ops []*Action) {
 	return ops
 }
 
-// Deprecated: Use Schema.FindAction() instead
+// Deprecated: Use Schema.FindAction() instead.
 func FindAction(schema *Schema, actionName string) *Action {
 	actions := schema.FilterActions(func(op *Action) bool {
 		return op.Name == actionName
@@ -208,17 +208,17 @@ func FindAction(schema *Schema, actionName string) *Action {
 	return actions[0]
 }
 
-// Deprecated: Use Action.IsFunction() instead
+// Deprecated: Use Action.IsFunction() instead.
 func ActionIsFunction(action *Action) bool {
 	return action.Implementation == ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
 }
 
-// Deprecated: Use Action.IsArbitraryFunction() instead
+// Deprecated: Use Action.IsArbitraryFunction() instead.
 func ActionIsArbitraryFunction(action *Action) bool {
 	return action.IsFunction() && (action.Type == ActionType_ACTION_TYPE_READ || action.Type == ActionType_ACTION_TYPE_WRITE)
 }
 
-// Deprecated: Use Action.IsWriteAction() instead
+// Deprecated: Use Action.IsWriteAction() instead.
 func IsWriteAction(action *Action) bool {
 	switch action.Type {
 	case ActionType_ACTION_TYPE_CREATE, ActionType_ACTION_TYPE_DELETE, ActionType_ACTION_TYPE_WRITE, ActionType_ACTION_TYPE_UPDATE:
@@ -228,7 +228,7 @@ func IsWriteAction(action *Action) bool {
 	}
 }
 
-// Deprecated: Use Action.IsReadAction() instead
+// Deprecated: Use Action.IsReadAction() instead.
 func IsReadAction(action *Action) bool {
 	switch action.Type {
 	case ActionType_ACTION_TYPE_GET, ActionType_ACTION_TYPE_LIST, ActionType_ACTION_TYPE_READ:
@@ -298,7 +298,7 @@ func FindRole(roleName string, schema *Schema) *Role {
 
 // FindJob locates the job of the given name.
 //
-// Deprecated: please use Schema.FindJob() instead
+// Deprecated: please use Schema.FindJob() instead.
 func FindJob(jobs []*Job, name string) *Job {
 	job, _ := lo.Find(jobs, func(m *Job) bool {
 		return m.Name == name
@@ -397,7 +397,7 @@ func PermissionsWithExpression(permissions []*PermissionRule) []*PermissionRule 
 // FindMessage("MyMessage") will return this node:
 // message MyMessage {}
 //
-// Deprecated: Please use Schema.FindMessage instead
+// Deprecated: Please use Schema.FindMessage instead.
 func FindMessage(messages []*Message, messageName string) *Message {
 	message, _ := lo.Find(messages, func(m *Message) bool {
 		return m.Name == messageName
@@ -405,7 +405,7 @@ func FindMessage(messages []*Message, messageName string) *Message {
 	return message
 }
 
-// Deprecated: Use Message.FindField() instead
+// Deprecated: Use Message.FindField() instead.
 func FindMessageField(message *Message, fieldName string) *MessageField {
 	for _, field := range message.Fields {
 		if field.Name == fieldName {
@@ -486,7 +486,7 @@ func FindEvent(subscribers []*Event, name string) *Event {
 
 // FindEventSubscriptions locates the subscriber of the given name.
 //
-// Deprecated: use Schema.FindEventSubscribers instead
+// Deprecated: use Schema.FindEventSubscribers instead.
 func FindEventSubscriptions(schema *Schema, event *Event) []*Subscriber {
 	subscribers := lo.Filter(schema.Subscribers, func(m *Subscriber, _ int) bool {
 		return lo.Contains(m.EventNames, event.Name)

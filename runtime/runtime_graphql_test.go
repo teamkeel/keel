@@ -291,7 +291,7 @@ const multiSchema string = `
 	}
 `
 
-// Schema with all field types
+// Schema with all field types.
 const fieldTypes string = `
 	model Thing {
 

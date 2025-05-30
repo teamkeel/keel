@@ -7,7 +7,7 @@ import (
 )
 
 // Storer represents the interface for a file storing service that is used by the Keel runtime
-// TODO: all these methods should take context as first arg
+// TODO: all these methods should take context as first arg.
 type Storer interface {
 	// Store will save the given file and return a FileInfo struct for it
 	//
@@ -25,7 +25,7 @@ type Storer interface {
 	GenerateFileResponse(fi *FileInfo) (FileResponse, error)
 }
 
-// FileInfo contains important data for the File type as stored in the database
+// FileInfo contains important data for the File type as stored in the database.
 type FileInfo struct {
 	Key         string `json:"key"`
 	Filename    string `json:"filename"`
@@ -42,7 +42,7 @@ func (t FileInfo) Value() (driver.Value, error) {
 	return string(json), nil
 }
 
-// FileResponse is what is returned from our APIs
+// FileResponse is what is returned from our APIs.
 type FileResponse struct {
 	Key         string `json:"key"`
 	Filename    string `json:"filename"`

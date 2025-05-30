@@ -9,7 +9,7 @@ import (
 )
 
 // OperandResolver is used to resolve expressions without database access if possible
-// i.e. early evaluation
+// i.e. early evaluation.
 type OperandResolver struct {
 	context context.Context
 	schema  *proto.Schema

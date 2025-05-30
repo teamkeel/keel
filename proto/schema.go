@@ -7,7 +7,7 @@ import (
 	"github.com/samber/lo"
 )
 
-// HasFiles checks if the given schema has any models or messages with fields that are files
+// HasFiles checks if the given schema has any models or messages with fields that are files.
 func (s *Schema) HasFiles() bool {
 	for _, model := range s.Models {
 		if model.HasFiles() {
@@ -82,7 +82,7 @@ func (s *Schema) IsActionResponseMessage(messageName string) bool {
 	return false
 }
 
-// hasMessage will check to see if a message has a field of type messageName recusively
+// hasMessage will check to see if a message has a field of type messageName recusively.
 func (m *Message) hasMessage(s *Schema, messageName string) bool {
 	for _, f := range m.Fields {
 		if f.Type.Type == Type_TYPE_MESSAGE {
@@ -142,7 +142,7 @@ func (s *Schema) FindAction(actionName string) *Action {
 	return actions[0]
 }
 
-// FindFlow finds the flow with the given name. Returns nil if a flow is not found. The matching is case insensitive
+// FindFlow finds the flow with the given name. Returns nil if a flow is not found. The matching is case insensitive.
 func (s *Schema) FindFlow(flowName string) *Flow {
 	for _, f := range s.Flows {
 		if strings.EqualFold(f.Name, flowName) {
@@ -199,7 +199,7 @@ func (s *Schema) FindApiNames(modelName, actionName string) []string {
 	return names
 }
 
-// FlowNames returns an array with the names of all flows defined in this schema
+// FlowNames returns an array with the names of all flows defined in this schema.
 func (s *Schema) FlowNames() []string {
 	names := []string{}
 	for _, f := range s.Flows {
@@ -209,7 +209,7 @@ func (s *Schema) FlowNames() []string {
 	return names
 }
 
-// HasFlows indicates if the schema has any flows defined
+// HasFlows indicates if the schema has any flows defined.
 func (s *Schema) HasFlows() bool {
 	return len(s.Flows) > 0
 }

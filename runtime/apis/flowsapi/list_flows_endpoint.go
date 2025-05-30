@@ -17,7 +17,7 @@ import (
 
 var tracer = otel.Tracer("github.com/teamkeel/keel/runtime/apis/flowsapi")
 
-// ListFlowsHandler handles a request to /flows/json and returns data about all flows defined in the schema
+// ListFlowsHandler handles a request to /flows/json and returns data about all flows defined in the schema.
 func ListFlowsHandler(p *proto.Schema) common.HandlerFunc {
 	return func(r *http.Request) common.Response {
 		ctx, span := tracer.Start(r.Context(), "FlowsAPI")

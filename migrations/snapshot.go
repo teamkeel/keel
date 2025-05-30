@@ -15,7 +15,7 @@ type TypeHandler interface {
 	ToSQL(value interface{}, field *proto.Field) (string, error)
 }
 
-// DefaultTypeHandler handles basic types using PostgreSQL's to_json
+// DefaultTypeHandler handles basic types using PostgreSQL's to_json.
 type DefaultTypeHandler struct{}
 
 func (h *DefaultTypeHandler) ToSQL(value interface{}, field *proto.Field) (string, error) {

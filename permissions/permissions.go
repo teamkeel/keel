@@ -366,7 +366,7 @@ func handleModel(s *proto.Schema, model *proto.Model, ident *parser.ExpressionId
 	return nil
 }
 
-// identifier converts s to snake cases and wraps it in double quotes
+// identifier converts s to snake cases and wraps it in double quotes.
 func identifier(s string) string {
 	return db.QuoteIdentifier(casing.ToSnake(s))
 }
@@ -379,7 +379,7 @@ type statement struct {
 
 // Map of Keel expression operators to SQL operators.
 // SQL operators can be provided as just a simple value
-// or as a pair of opening and closing values
+// or as a pair of opening and closing values.
 var operatorMap = map[string][]string{
 	"_==_": {" IS NOT DISTINCT FROM "},
 	"_!=_": {" IS DISTINCT FROM "},

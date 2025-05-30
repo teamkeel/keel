@@ -101,7 +101,7 @@ type PackageJson struct {
 
 // Bootstrap ensures that the target directory has a package.json file with the correct dependencies
 // required by the Keel Custom Functions runtime, and additionally it ensures that a tsconfig.json
-// file has been generated
+// file has been generated.
 func Bootstrap(dir string, opts ...BootstrapOption) error {
 	options := &bootstrapOptions{
 		packageManager: "npm",

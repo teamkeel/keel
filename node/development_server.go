@@ -90,7 +90,7 @@ type ServerOpts struct {
 	Watch   bool
 }
 
-// StartDevelopmentServer will start a new node runtime server serving/handling custom function requests
+// StartDevelopmentServer will start a new node runtime server serving/handling custom function requests.
 func StartDevelopmentServer(ctx context.Context, dir string, options *ServerOpts) (*DevelopmentServer, error) {
 	_, span := tracer.Start(ctx, "Start Development Server")
 	defer span.End()

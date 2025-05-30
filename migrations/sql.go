@@ -36,11 +36,11 @@ var PostgresFieldTypes map[proto.Type]string = map[proto.Type]string{
 	proto.Type_TYPE_DURATION:  "INTERVAL",
 }
 
-// Matches the type cast on a Postgrs value eg. on "'foo'::text" matches "::text"
+// Matches the type cast on a Postgrs value eg. on "'foo'::text" matches "::text".
 var typeCastRegex = regexp.MustCompile(`::([\w\s]+)(?:\[\])?$`)
 
 // For sequence fields we need an additional column to store the numerical sequence
-// This column is the field name with this suffix added
+// This column is the field name with this suffix added.
 var sequenceSuffix = "__sequence"
 
 // Identifier converts v into an identifier that can be used
@@ -195,7 +195,7 @@ func sequenceColumnDefinition(field *proto.Field) string {
 }
 
 // addForeignKeyConstraintStmt generates a string of this form:
-// ALTER TABLE "thisTable" ADD FOREIGN KEY ("thisColumn") REFERENCES "otherTable"("otherColumn") ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE;
+// ALTER TABLE "thisTable" ADD FOREIGN KEY ("thisColumn") REFERENCES "otherTable"("otherColumn") ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE;.
 func addForeignKeyConstraintStmt(thisTable string, thisColumn string, otherTable string, otherColumn string, onDelete string) string {
 	return fmt.Sprintf("ALTER TABLE %s ADD FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE %s DEFERRABLE INITIALLY IMMEDIATE;",
 		thisTable,
@@ -266,19 +266,19 @@ func hashOfExpression(expression string) string {
 	return fmt.Sprintf("%x", sha256.Sum256([]byte(expression)))[:8]
 }
 
-// computedFieldFuncName generates the name of the a computed field's function
+// computedFieldFuncName generates the name of the a computed field's function.
 func computedFieldFuncName(field *proto.Field) string {
 	// shortened alphanumeric hash from an expression
 	hash := hashOfExpression(field.ComputedExpression.Source)
 	return fmt.Sprintf("%s__%s__%s__comp", strcase.ToSnake(field.ModelName), strcase.ToSnake(field.Name), hash)
 }
 
-// computedExecFuncName generates the name for the table function which executed all computed functions
+// computedExecFuncName generates the name for the table function which executed all computed functions.
 func computedExecFuncName(model *proto.Model) string {
 	return fmt.Sprintf("%s__exec_comp_fns", strcase.ToSnake(model.Name))
 }
 
-// computedTriggerName generates the name for the trigger which runs the function which executes computed functions
+// computedTriggerName generates the name for the trigger which runs the function which executes computed functions.
 func computedTriggerName(model *proto.Model) string {
 	return fmt.Sprintf("%s__comp", strcase.ToSnake(model.Name))
 }
@@ -288,7 +288,7 @@ func computedDependencyFuncName(model *proto.Model, dependentModel *proto.Model,
 	return fmt.Sprintf("%s__to__%s__%s__comp_dep", strcase.ToSnake(dependentModel.Name), strcase.ToSnake(model.Name), hash)
 }
 
-// fieldFromComputedFnName determines the field from computed function name
+// fieldFromComputedFnName determines the field from computed function name.
 func fieldFromComputedFnName(schema *proto.Schema, fn string) *proto.Field {
 	parts := strings.Split(fn, "__")
 	model := schema.FindModel(strcase.ToCamel(parts[0]))
@@ -300,7 +300,7 @@ func fieldFromComputedFnName(schema *proto.Schema, fn string) *proto.Field {
 	return nil
 }
 
-// addComputedFieldFuncStmt generates the function for a computed field
+// addComputedFieldFuncStmt generates the function for a computed field.
 func addComputedFieldFuncStmt(schema *proto.Schema, model *proto.Model, field *proto.Field) (string, string, error) {
 	var sqlType string
 	switch field.Type.Type {
@@ -414,7 +414,7 @@ func getDefaultValue(field *proto.Field) (string, error) {
 	}
 }
 
-// Helper functions to break down the logic
+// Helper functions to break down the logic.
 func getZeroValue(field *proto.Field) (string, error) {
 	if field.Type.Repeated {
 		return "{}", nil
@@ -507,7 +507,7 @@ func getRepeatedDefault(field *proto.Field) (string, error) {
 	return fmt.Sprintf("ARRAY[%s]::%s", strings.Join(values, ","), cast), nil
 }
 
-// Generic helper for array values
+// Generic helper for array values.
 func getArrayValues[T any](field *proto.Field) ([]string, error) {
 	expression, err := parser.ParseExpression(field.DefaultValue.Expression.Source)
 	if err != nil {
@@ -595,7 +595,7 @@ func createUpdatedAtTriggerStmts(triggers []*TriggerRow, model *proto.Model) str
 	return strings.Join(statements, "\n")
 }
 
-// createIndexStmts generates index changes for input fields and faceted fields
+// createIndexStmts generates index changes for input fields and faceted fields.
 func createIndexStmts(schema *proto.Schema, existingIndexes []*IndexRow) []string {
 	indexedFields := []*proto.Field{}
 	for _, model := range schema.Models {

@@ -17,7 +17,7 @@ import (
 )
 
 // Constructs and adds an LEFT JOIN from a splice of fragments (representing an operand in an expression or implicit input).
-// The fragment slice must include the base model as the first item, for example: "post." in post.author.publisher.isActive
+// The fragment slice must include the base model as the first item, for example: "post." in post.author.publisher.isActive.
 func (query *QueryBuilder) AddJoinFromFragments(schema *proto.Schema, fragments []string) error {
 	if fragments[0] == "ctx" {
 		return nil
@@ -273,7 +273,7 @@ func NormalisedFragments(schema *proto.Schema, fragments []string) ([]string, er
 }
 
 // Constructs a QueryOperand from a splice of fragments, representing an expression operand or implicit input.
-// The fragment slice must include the base model as the first fragment, for example: post.author.publisher.isActive
+// The fragment slice must include the base model as the first fragment, for example: post.author.publisher.isActive.
 func operandFromFragments(schema *proto.Schema, fragments []string) (*QueryOperand, error) {
 	fragments, err := NormalisedFragments(schema, fragments)
 	if err != nil {

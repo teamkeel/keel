@@ -363,7 +363,7 @@ func newPortBindingAndVolumeMountConfig(hostPort string) *container.HostConfig {
 
 // generateDatabaseName generates a unique but deterministic database name using a
 // hash of the project's working directory
-// For example: keel_48f77af86bffe7cdbb44308a70d11f8b
+// For example: keel_48f77af86bffe7cdbb44308a70d11f8b.
 func generateDatabaseName(projectDirectory string) (string, error) {
 	if strings.HasPrefix(projectDirectory, "~/") {
 		home, _ := os.UserHomeDir()

@@ -10,9 +10,9 @@ import (
 )
 
 const (
-	// Number of lines of the source code to render before and after the line with the error
+	// Number of lines of the source code to render before and after the line with the error.
 	bufferLines = 3
-	// How much to indent the entire result e.g. every line is indented this much
+	// How much to indent the entire result e.g. every line is indented this much.
 	indent = 2
 )
 

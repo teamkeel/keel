@@ -55,7 +55,7 @@ func (c ToolConfig) MarshalJSON() ([]byte, error) {
 }
 
 // To maintain backwards compatibility with existing config files (before we added support for flows), the marshalling
-// and unmarshalling of tool configs is done by just marshalling the underlying configuration (i.e.flow config or action config)
+// and unmarshalling of tool configs is done by just marshalling the underlying configuration (i.e.flow config or action config).
 func (c *ToolConfig) UnmarshalJSON(data []byte) error {
 	// Unmarshal into a generic map to inspect its contents
 	var raw map[string]any
@@ -108,7 +108,7 @@ func (t *ToolConfig) hasChanges() bool {
 	return t.config().hasChanges()
 }
 
-// getOperationName returns the underlying action that powers this tool (either an action name or a flow name)
+// getOperationName returns the underlying action that powers this tool (either an action name or a flow name).
 func (t *ToolConfig) getOperationName() string {
 	switch t.Type {
 	case ToolTypeAction:
@@ -144,7 +144,7 @@ type configuration interface {
 	toToolConfig() *ToolConfig
 }
 
-// compile time check that config types implement the required interface
+// compile time check that config types implement the required interface.
 var _ configuration = &FlowToolConfig{}
 var _ configuration = &ActionToolConfig{}
 
@@ -651,7 +651,7 @@ func (cfg *LinkConfig) getDataMapping() []*toolsproto.DataMapping {
 	return dataMappings
 }
 
-// isDeleted tells us if the link has been ... deleted
+// isDeleted tells us if the link has been ... deleted.
 func (cfg *LinkConfig) isDeleted() bool {
 	if cfg != nil && cfg.Deleted != nil {
 		return *cfg.Deleted

@@ -13,17 +13,17 @@ import (
 	"github.com/teamkeel/keel/proto"
 )
 
-// Audit operations
+// Audit operations.
 const (
 	Insert = "insert"
 	Update = "update"
 	Delete = "delete"
 )
 
-// Audit table name
+// Audit table name.
 const TableName = "keel_audit"
 
-// Audit table column names
+// Audit table column names.
 const (
 	ColumnId               = "id"
 	ColumnTableName        = "table_name"
@@ -143,7 +143,7 @@ func ProcessEventsFromAuditTrail(ctx context.Context, schema *proto.Schema, trac
 	return auditLogs, nil
 }
 
-// fromRow parses an audit log table row as map[string]any to a AuditLog struct
+// fromRow parses an audit log table row as map[string]any to a AuditLog struct.
 func fromRow(row map[string]any) (*AuditLog, error) {
 	audit := typed.New(row)
 

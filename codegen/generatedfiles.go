@@ -16,7 +16,7 @@ type GeneratedFile struct {
 // files := GeneratedFiles{}
 // files = append(files, &GeneratedFile{...})
 // And then once you are ready to write these files to disk, you can call write:
-// files.Write(dir)
+// files.Write(dir).
 type GeneratedFiles []*GeneratedFile
 
 func (files GeneratedFiles) Write(dir string) error {

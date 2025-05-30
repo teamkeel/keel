@@ -4086,7 +4086,7 @@ func TestQueryBuilder(t *testing.T) {
 	}
 }
 
-// Generates a scope and query builder
+// Generates a scope and query builder.
 func generateQueryScope(ctx context.Context, schemaString string, actionName string) (*actions.Scope, *actions.QueryBuilder, *proto.Action, error) {
 	builder := &schema.Builder{}
 	schema, err := builder.MakeFromString(schemaString, config.Empty)
@@ -4106,7 +4106,7 @@ func generateQueryScope(ctx context.Context, schemaString string, actionName str
 	return scope, query, action, nil
 }
 
-// Trims and removes redundant spacing and other characters
+// Trims and removes redundant spacing and other characters.
 func clean(sql string) string {
 	sql = strings.ReplaceAll(sql, "\n", " ")
 	sql = strings.ReplaceAll(sql, "\t", " ")

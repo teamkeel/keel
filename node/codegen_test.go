@@ -2576,7 +2576,7 @@ func runWriterTest(t *testing.T, schemaString string, expected string, fn func(s
 }
 
 // diffPrettyText is a port of the same function from the diffmatchpatch
-// lib but with better handling of whitespace diffs (by using background colours)
+// lib but with better handling of whitespace diffs (by using background colours).
 func diffPrettyText(diffs []diffmatchpatch.Diff) string {
 	var buff strings.Builder
 

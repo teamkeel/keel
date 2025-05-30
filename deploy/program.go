@@ -803,7 +803,7 @@ func createEventBridgeSchedules(ctx *pulumi.Context, jobsLambda *lambda.Function
 	return nil
 }
 
-// extendStringMap creates a _new_ StringMap by combining `a` and `b`
+// extendStringMap creates a _new_ StringMap by combining `a` and `b`.
 func extendStringMap(a, b pulumi.StringMap) pulumi.StringMap {
 	r := pulumi.StringMap{}
 	for k, v := range a {

@@ -267,7 +267,7 @@ func GenerateJob(ctx context.Context, schema *proto.Schema, jobName string) Open
 	return spec
 }
 
-// GenerateFlows generates an openAPI schema for the Flows API for the given schema
+// GenerateFlows generates an openAPI schema for the Flows API for the given schema.
 func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 	var flowConfigSchema jsonschema.JSONSchema
 	_ = json.Unmarshal(flowConfigRaw, &flowConfigSchema)

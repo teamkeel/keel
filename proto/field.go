@@ -1,6 +1,6 @@
 package proto
 
-// IsFile tells us if the field is a file
+// IsFile tells us if the field is a file.
 func (f *Field) IsFile() bool {
 	if f.Type == nil {
 		return false

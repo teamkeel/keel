@@ -20,7 +20,7 @@ func APIs(asts []*parser.AST) (res []*parser.APINode) {
 	return res
 }
 
-// APIModelNodes returns all the models included in the given API
+// APIModelNodes returns all the models included in the given API.
 func APIModelNodes(api *parser.APINode) (res []*parser.APIModelNode) {
 	for _, section := range api.Sections {
 		res = append(res, section.Models...)
@@ -360,7 +360,7 @@ func FieldIsComputed(field *parser.FieldNode) bool {
 	return FieldHasAttribute(field, parser.AttributeComputed)
 }
 
-// CompositeUniqueFields returns the model's fields that make up a composite unique attribute
+// CompositeUniqueFields returns the model's fields that make up a composite unique attribute.
 func CompositeUniqueFields(model *parser.ModelNode, attribute *parser.AttributeNode) []*parser.FieldNode {
 	if attribute.Name.Value != parser.AttributeUnique {
 		return nil
@@ -385,7 +385,7 @@ func CompositeUniqueFields(model *parser.ModelNode, attribute *parser.AttributeN
 	return fields
 }
 
-// FieldIsInCompositeUnique returns true if a field is part of a composite unique attribute
+// FieldIsInCompositeUnique returns true if a field is part of a composite unique attribute.
 func FieldIsInCompositeUnique(model *parser.ModelNode, field *parser.FieldNode) bool {
 	for _, attribute := range ModelAttributes(model) {
 		if attribute.Name.Value == parser.AttributeUnique {
@@ -509,7 +509,7 @@ func ResolveInputType(asts []*parser.AST, input *parser.ActionInputNode, parentM
 	return ""
 }
 
-// ResolveInputField returns the field that the input's type references
+// ResolveInputField returns the field that the input's type references.
 func ResolveInputField(asts []*parser.AST, input *parser.ActionInputNode, parentModel *parser.ModelNode) (field *parser.FieldNode) {
 	// handle built-in type
 	if parser.IsBuiltInFieldType(input.Type.ToString()) {
@@ -793,7 +793,7 @@ func ValidUniqueOneToHasOne(hasOne *parser.FieldNode, belongsTo *parser.FieldNod
 	return belongsToAttribute == nil
 }
 
-// RelationAttributeValue attempts to retrieve the value of the @relation attribute
+// RelationAttributeValue attempts to retrieve the value of the @relation attribute.
 func RelationAttributeValue(attr *parser.AttributeNode) (field string, ok bool) {
 	if len(attr.Arguments) != 1 {
 		return "", false

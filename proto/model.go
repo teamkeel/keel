@@ -6,14 +6,14 @@ import (
 	"github.com/samber/lo"
 )
 
-// FileFields will return a slice of fields for the model that are of type file
+// FileFields will return a slice of fields for the model that are of type file.
 func (m *Model) FileFields() []*Field {
 	return lo.Filter(m.Fields, func(f *Field, _ int) bool {
 		return f.IsFile()
 	})
 }
 
-// HasFiles checks if the model has any fields that are files
+// HasFiles checks if the model has any fields that are files.
 func (m *Model) HasFiles() bool {
 	return len(m.FileFields()) > 0
 }

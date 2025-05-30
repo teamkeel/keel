@@ -21,7 +21,7 @@ var (
 )
 
 // validate only read+write can be used with returns
-// validate returns has to be specified with read+write
+// validate returns has to be specified with read+write.
 func ActionTypesRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	for _, model := range query.Models(asts) {
 		for _, function := range query.ModelActions(model, func(a *parser.ActionNode) bool {
@@ -207,7 +207,7 @@ func ActionModelInputsRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 }
 
 // CreateOperationNoReadInputsRule validates that create actions don't accept
-// any read-only inputs
+// any read-only inputs.
 func CreateOperationNoReadInputsRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	for _, model := range query.Models(asts) {
 		for _, action := range query.ModelActions(model) {
