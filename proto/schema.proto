@@ -147,6 +147,7 @@ message Action {
     repeated OrderByStatement order_by = 10;
 
     // The name of the input message type for this action.
+    // This can be an empty string if there are no inputs and therefore no input message.
     string input_message_name = 11;
 
     // The name of the response message type for this action when not a built-in action. This is because
@@ -293,7 +294,7 @@ message TypeInfo {
 
     // A union type describes a value that can be one of several types.
     // When TypeInfo's type property is set to UNION, then any one of the type names
-    // listed here can be used as input. Currently only support messages.
+    // listed here can be used as input. Currently only supports messages.
     repeated google.protobuf.StringValue union_names = 7;
 
     // For types which are in a union, it is optional to provide a value to discriminate on.

@@ -94,7 +94,7 @@ func Execute(scope *Scope, input any) (result any, meta *common.ResponseMetadata
 	// an array / number / string etc, which doesn't fit in with the traditional map[string]any definition of an inputs object
 	inputsAsMap, isMap := input.(map[string]any)
 
-	if isMap {
+	if isMap && scope.Action.InputMessageName != "" {
 		message := scope.Schema.FindMessage(scope.Action.InputMessageName)
 		isFunction := scope.Action.Implementation == proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
 

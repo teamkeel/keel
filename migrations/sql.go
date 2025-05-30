@@ -606,7 +606,7 @@ func createIndexStmts(schema *proto.Schema, existingIndexes []*IndexRow) []strin
 
 			message := proto.FindWhereInputMessage(schema, action.Name)
 			if message == nil {
-				continue
+				message = &proto.Message{}
 			}
 
 			// Find fields used as required inputs

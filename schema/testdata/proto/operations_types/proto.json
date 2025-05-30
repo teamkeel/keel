@@ -49,8 +49,7 @@
           "modelName": "Foo",
           "name": "opA",
           "type": "ACTION_TYPE_CREATE",
-          "implementation": "ACTION_IMPLEMENTATION_AUTO",
-          "inputMessageName": "OpAInput"
+          "implementation": "ACTION_IMPLEMENTATION_AUTO"
         },
         {
           "modelName": "Foo",
@@ -349,9 +348,6 @@
       "name": "ResetPasswordResponse"
     },
     {
-      "name": "OpAInput"
-    },
-    {
       "name": "OpBWhere",
       "fields": [
         {
@@ -419,20 +415,8 @@
       ]
     },
     {
-      "name": "OpDWhere"
-    },
-    {
       "name": "OpDInput",
       "fields": [
-        {
-          "messageName": "OpDInput",
-          "name": "where",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "OpDWhere"
-          },
-          "optional": true
-        },
         {
           "messageName": "OpDInput",
           "name": "first",

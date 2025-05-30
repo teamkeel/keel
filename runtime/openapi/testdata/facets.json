@@ -1,9 +1,6 @@
 {
   "openapi": "3.1.0",
-  "info": {
-    "title": "Api",
-    "version": "1"
-  },
+  "info": { "title": "Api", "version": "1" },
   "paths": {
     "/api/json/listOrders": {
       "post": {
@@ -15,27 +12,12 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "after": {
-                    "type": "string"
-                  },
-                  "before": {
-                    "type": "string"
-                  },
-                  "first": {
-                    "type": "number"
-                  },
-                  "last": {
-                    "type": "number"
-                  },
-                  "limit": {
-                    "type": "number"
-                  },
-                  "offset": {
-                    "type": "number"
-                  },
-                  "where": {
-                    "$ref": "#/components/schemas/ListOrdersWhere"
-                  }
+                  "after": { "type": "string" },
+                  "before": { "type": "string" },
+                  "first": { "type": "number" },
+                  "last": { "type": "number" },
+                  "limit": { "type": "number" },
+                  "offset": { "type": "number" }
                 },
                 "unevaluatedProperties": false
               }
@@ -51,24 +33,12 @@
                   "properties": {
                     "pageInfo": {
                       "properties": {
-                        "count": {
-                          "type": "number"
-                        },
-                        "endCursor": {
-                          "type": "string"
-                        },
-                        "hasNextPage": {
-                          "type": "boolean"
-                        },
-                        "pageNumber": {
-                          "type": "number"
-                        },
-                        "startCursor": {
-                          "type": "string"
-                        },
-                        "totalCount": {
-                          "type": "number"
-                        }
+                        "count": { "type": "number" },
+                        "endCursor": { "type": "string" },
+                        "hasNextPage": { "type": "boolean" },
+                        "pageNumber": { "type": "number" },
+                        "startCursor": { "type": "string" },
+                        "totalCount": { "type": "number" }
                       }
                     },
                     "resultInfo": {
@@ -78,75 +48,41 @@
                           "items": {
                             "type": "object",
                             "properties": {
-                              "count": {
-                                "type": "number"
-                              },
-                              "value": {
-                                "type": "string"
-                              }
+                              "count": { "type": "number" },
+                              "value": { "type": "string" }
                             }
                           }
                         },
                         "durationToPurchase": {
                           "properties": {
-                            "max": {
-                              "type": "string",
-                              "format": "duration"
-                            },
-                            "min": {
-                              "type": "string",
-                              "format": "duration"
-                            }
+                            "max": { "type": "string", "format": "duration" },
+                            "min": { "type": "string", "format": "duration" }
                           }
                         },
                         "orderDate": {
                           "properties": {
-                            "max": {
-                              "type": "string",
-                              "format": "date"
-                            },
-                            "min": {
-                              "type": "string",
-                              "format": "date"
-                            }
+                            "max": { "type": "string", "format": "date" },
+                            "min": { "type": "string", "format": "date" }
                           }
                         },
                         "orderTime": {
                           "properties": {
-                            "max": {
-                              "type": "string",
-                              "format": "date-time"
-                            },
-                            "min": {
-                              "type": "string",
-                              "format": "date-time"
-                            }
+                            "max": { "type": "string", "format": "date-time" },
+                            "min": { "type": "string", "format": "date-time" }
                           }
                         },
                         "price": {
                           "properties": {
-                            "avg": {
-                              "type": "number"
-                            },
-                            "max": {
-                              "type": "number"
-                            },
-                            "min": {
-                              "type": "number"
-                            }
+                            "avg": { "type": "number" },
+                            "max": { "type": "number" },
+                            "min": { "type": "number" }
                           }
                         },
                         "quantity": {
                           "properties": {
-                            "avg": {
-                              "type": "number"
-                            },
-                            "max": {
-                              "type": "number"
-                            },
-                            "min": {
-                              "type": "number"
-                            }
+                            "avg": { "type": "number" },
+                            "max": { "type": "number" },
+                            "min": { "type": "number" }
                           }
                         },
                         "status": {
@@ -154,12 +90,8 @@
                           "items": {
                             "type": "object",
                             "properties": {
-                              "count": {
-                                "type": "number"
-                              },
-                              "value": {
-                                "type": "string"
-                              }
+                              "count": { "type": "number" },
+                              "value": { "type": "string" }
                             }
                           }
                         }
@@ -167,9 +99,7 @@
                     },
                     "results": {
                       "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/Order"
-                      }
+                      "items": { "$ref": "#/components/schemas/Order" }
                     }
                   }
                 }
@@ -182,28 +112,20 @@
               "application/json": {
                 "schema": {
                   "properties": {
-                    "code": {
-                      "type": "string"
-                    },
+                    "code": { "type": "string" },
                     "data": {
                       "type": ["object", "null"],
                       "properties": {
                         "errors": {
                           "type": "array",
                           "properties": {
-                            "error": {
-                              "type": "string"
-                            },
-                            "field": {
-                              "type": "string"
-                            }
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
                           }
                         }
                       }
                     },
-                    "message": {
-                      "type": "string"
-                    }
+                    "message": { "type": "string" }
                   }
                 }
               }
@@ -222,12 +144,8 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "email": {
-                    "type": "string"
-                  },
-                  "redirectUrl": {
-                    "type": "string"
-                  }
+                  "email": { "type": "string" },
+                  "redirectUrl": { "type": "string" }
                 },
                 "unevaluatedProperties": false,
                 "required": ["email", "redirectUrl"]
@@ -240,10 +158,7 @@
             "description": "requestPasswordReset Response",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "unevaluatedProperties": false
-                }
+                "schema": { "type": "object", "unevaluatedProperties": false }
               }
             }
           },
@@ -253,28 +168,20 @@
               "application/json": {
                 "schema": {
                   "properties": {
-                    "code": {
-                      "type": "string"
-                    },
+                    "code": { "type": "string" },
                     "data": {
                       "type": ["object", "null"],
                       "properties": {
                         "errors": {
                           "type": "array",
                           "properties": {
-                            "error": {
-                              "type": "string"
-                            },
-                            "field": {
-                              "type": "string"
-                            }
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
                           }
                         }
                       }
                     },
-                    "message": {
-                      "type": "string"
-                    }
+                    "message": { "type": "string" }
                   }
                 }
               }
@@ -293,12 +200,8 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "password": {
-                    "type": "string"
-                  },
-                  "token": {
-                    "type": "string"
-                  }
+                  "password": { "type": "string" },
+                  "token": { "type": "string" }
                 },
                 "unevaluatedProperties": false,
                 "required": ["token", "password"]
@@ -311,10 +214,7 @@
             "description": "resetPassword Response",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "unevaluatedProperties": false
-                }
+                "schema": { "type": "object", "unevaluatedProperties": false }
               }
             }
           },
@@ -324,28 +224,20 @@
               "application/json": {
                 "schema": {
                   "properties": {
-                    "code": {
-                      "type": "string"
-                    },
+                    "code": { "type": "string" },
                     "data": {
                       "type": ["object", "null"],
                       "properties": {
                         "errors": {
                           "type": "array",
                           "properties": {
-                            "error": {
-                              "type": "string"
-                            },
-                            "field": {
-                              "type": "string"
-                            }
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
                           }
                         }
                       }
                     },
-                    "message": {
-                      "type": "string"
-                    }
+                    "message": { "type": "string" }
                   }
                 }
               }
@@ -357,48 +249,21 @@
   },
   "components": {
     "schemas": {
-      "ListOrdersWhere": {
-        "type": "object",
-        "unevaluatedProperties": false
-      },
       "Order": {
         "properties": {
-          "category": {
-            "type": "string"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
+          "category": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" },
           "durationToPurchase": {
             "type": ["string", "null"],
             "format": "duration"
           },
-          "id": {
-            "type": "string"
-          },
-          "orderDate": {
-            "type": ["string", "null"],
-            "format": "date"
-          },
-          "orderTime": {
-            "type": ["string", "null"],
-            "format": "date-time"
-          },
-          "price": {
-            "type": "number",
-            "format": "float"
-          },
-          "quantity": {
-            "type": "number"
-          },
-          "status": {
-            "enum": ["Complete", "InProgress", "Cancelled"]
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time"
-          }
+          "id": { "type": "string" },
+          "orderDate": { "type": ["string", "null"], "format": "date" },
+          "orderTime": { "type": ["string", "null"], "format": "date-time" },
+          "price": { "type": "number", "format": "float" },
+          "quantity": { "type": "number" },
+          "status": { "enum": ["Complete", "InProgress", "Cancelled"] },
+          "updatedAt": { "type": "string", "format": "date-time" }
         },
         "required": [
           "quantity",

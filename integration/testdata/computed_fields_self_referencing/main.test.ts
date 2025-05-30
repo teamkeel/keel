@@ -4,7 +4,7 @@ import { models, resetDatabase, actions } from "@teamkeel/testing";
 beforeEach(resetDatabase);
 
 test("computed fields - self referencing", async () => {
-  const car = await actions.createCar({});
+  const car = await actions.createCar();
 
   const mileage1 = await actions.createMileage({
     car: { id: car.id },

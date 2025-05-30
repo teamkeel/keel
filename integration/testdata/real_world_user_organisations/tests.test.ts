@@ -423,7 +423,7 @@ test("only list organisations which identity is associated with", async () => {
     userId: userAdam.id,
   });
 
-  const rows = await actions.withIdentity(identityDave).listOrganisations({});
+  const rows = await actions.withIdentity(identityDave).listOrganisations();
   expect(rows.results).toHaveLength(2);
   expect(rows.results[0].id).not.toEqual(organisationAdam.id);
   expect(rows.results[1].id).not.toEqual(organisationAdam.id);
@@ -475,7 +475,7 @@ test("list no organisations when there is no identity", async () => {
     userId: userAdam.id,
   });
 
-  const rows = await actions.listOrganisations({});
+  const rows = await actions.listOrganisations();
   expect(rows.results).toHaveLength(0);
 });
 

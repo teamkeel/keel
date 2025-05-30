@@ -6,9 +6,9 @@ beforeEach(resetDatabase);
 test("allows for two list actions on same model", async () => {
   await models.thing.create({ something: "123" });
 
-  const { results: one } = await actions.listOne({});
+  const { results: one } = await actions.listOne();
 
-  const { results: two } = await actions.listTwo({});
+  const { results: two } = await actions.listTwo();
 
   expect(one).toEqual(two);
 });

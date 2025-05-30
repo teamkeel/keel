@@ -738,9 +738,7 @@ api Test {
         Account
     }
 }`
-	expected := `
-export interface CreateAccountInput {
-}`
+	expected := ``
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		writeMessages(w, s, false, false)
@@ -769,7 +767,7 @@ api Test {
     }
 }`
 	expected := `
-createAccount(i?: CreateAccountInput): Promise<sdk.Account>;`
+createAccount(): Promise<sdk.Account>;`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		writeTestingTypes(w, s)
@@ -1752,11 +1750,21 @@ func TestWriteActionInputTypesNoInputs(t *testing.T) {
 	schema := `
 model Person {
 	actions {
-		read getPersonName() returns (Any) @function
+		
 	}
 }`
 	expected := `
-export interface GetPersonNameInput {
+export interface RequestPasswordResetInput {
+	email: string;
+	redirectUrl: string;
+}
+export interface RequestPasswordResetResponse {
+}
+export interface ResetPasswordInput {
+	token: string;
+	password: string;
+}
+export interface ResetPasswordResponse {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
@@ -1770,11 +1778,24 @@ func TestWriteActionInputTypesEmptyInputs(t *testing.T) {
 message In {}
 model Person {
 	actions {
-		read getPersonName(In) returns (Any) @function
+		read getPersonName() returns (Any) @function
+		read getPersonName2(In) returns (Any) @function
 	}
 }`
 	expected := `
 export interface In {
+}
+export interface RequestPasswordResetInput {
+	email: string;
+	redirectUrl: string;
+}
+export interface RequestPasswordResetResponse {
+}
+export interface ResetPasswordInput {
+	token: string;
+	password: string;
+}
+export interface ResetPasswordResponse {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
@@ -2001,22 +2022,7 @@ export interface ResetPasswordResponse {
 export interface GetPersonInput {
 	id: string;
 }
-export interface CreatePersonInput {
-}
-export interface UpdatePersonWhere {
-}
-export interface UpdatePersonValues {
-}
-export interface UpdatePersonInput {
-	where?: UpdatePersonWhere;
-	values?: UpdatePersonValues;
-}
-export interface DeletePersonInput {
-}
-export interface ListPeopleWhere {
-}
 export interface ListPeopleInput {
-	where?: ListPeopleWhere;
 	first?: number;
 	after?: string;
 	last?: number;
@@ -2029,9 +2035,9 @@ declare class ActionExecutor {
 	withAuthToken(token: string): ActionExecutor;
 	withTimezone(timezone: string): this;
 	getPerson(i: GetPersonInput): Promise<sdk.Person | null>;
-	createPerson(i?: CreatePersonInput): Promise<sdk.Person>;
-	updatePerson(i?: UpdatePersonInput): Promise<sdk.Person>;
-	deletePerson(i?: DeletePersonInput): Promise<string>;
+	createPerson(): Promise<sdk.Person>;
+	updatePerson(): Promise<sdk.Person>;
+	deletePerson(): Promise<string>;
 	listPeople(i?: ListPeopleInput): Promise<{results: sdk.Person[], pageInfo: runtime.PageInfo}>;
 	requestPasswordReset(i: RequestPasswordResetInput): Promise<RequestPasswordResetResponse>;
 	resetPassword(i: ResetPasswordInput): Promise<ResetPasswordResponse>;

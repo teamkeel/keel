@@ -102,8 +102,7 @@
             {
               "source": "userExtension.externalId = ctx.identity.externalId"
             }
-          ],
-          "inputMessageName": "CreateExtInput"
+          ]
         },
         {
           "modelName": "UserExtension",
@@ -408,9 +407,6 @@
       "name": "ResetPasswordResponse"
     },
     {
-      "name": "CreateExtInput"
-    },
-    {
       "name": "UpdateExtWhere",
       "fields": [
         {
@@ -426,9 +422,6 @@
       ]
     },
     {
-      "name": "UpdateExtValues"
-    },
-    {
       "name": "UpdateExtInput",
       "fields": [
         {
@@ -438,15 +431,6 @@
             "type": "TYPE_MESSAGE",
             "messageName": "UpdateExtWhere"
           }
-        },
-        {
-          "messageName": "UpdateExtInput",
-          "name": "values",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "UpdateExtValues"
-          },
-          "optional": true
         }
       ]
     }

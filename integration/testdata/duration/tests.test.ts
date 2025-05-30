@@ -48,7 +48,7 @@ test("duration - write custom function", async () => {
 });
 
 test("duration - create and store duration in hook", async () => {
-  await actions.createDurationInHook({});
+  await actions.createDurationInHook();
 
   const mydurs = await useDatabase()
     .selectFrom("my_duration")

@@ -65,8 +65,7 @@
             {
               "source": "foo.number = null"
             }
-          ],
-          "inputMessageName": "CreatePostInput"
+          ]
         }
       ]
     },
@@ -333,9 +332,6 @@
     },
     {
       "name": "ResetPasswordResponse"
-    },
-    {
-      "name": "CreatePostInput"
     }
   ]
 }

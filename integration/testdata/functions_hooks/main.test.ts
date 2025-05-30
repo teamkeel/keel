@@ -152,6 +152,35 @@ test("create - with nested create (has many)", async () => {
   expect(books[1].published).toBe(true);
 });
 
+test("hook functions with no inputs", async () => {
+  const createBook = await actions.createBookNoInputs();
+  expect(createBook.title).toEqual("The Farseer 2");
+
+  const insertedBook = await models.book.findOne({
+    id: createBook.id,
+  });
+  expect(insertedBook?.title).toEqual("The Farseer");
+
+  const getBook = await actions.getBookNoInputs();
+  expect(getBook?.title).toEqual("The Farseer 2");
+
+  const updateBook = await actions.updateBookNoInputs();
+  expect(updateBook.title).toEqual("The Farseer");
+
+  const updatedBook = await models.book.findOne({
+    id: updateBook.id,
+  });
+  expect(updatedBook?.title).toEqual("The Farseer 2");
+
+  const deleteBook = await actions.deleteBookNoInputs();
+  expect(deleteBook).toEqual(createBook.id);
+
+  const deletedBook = await models.book.findOne({
+    id: createBook.id,
+  });
+  expect(deletedBook).toBeNull();
+});
+
 test("get beforeQuery - return null", async () => {
   const book = await actions.getBookBeforeQueryFirstOrNull({
     title: "This book doesnt exist",

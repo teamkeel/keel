@@ -157,7 +157,7 @@ test("files - list action", async () => {
     file: InlineFile.fromDataURL(dataUrl2),
   });
 
-  const result = await actions.listFiles({});
+  const result = await actions.listFiles();
 
   expect(result.results[0].file?.contentType).toEqual("text/plain");
   expect(result.results[0].file?.filename).toEqual("my-file.txt");
@@ -206,7 +206,7 @@ test("files - list action empty hooks", async () => {
     file: InlineFile.fromDataURL(dataUrl),
   });
 
-  const result = await actions.listFilesEmptyHooks({});
+  const result = await actions.listFilesEmptyHooks();
 
   expect(result.results[0].file?.contentType).toEqual("text/plain");
   expect(result.results[0].file?.filename).toEqual("my-file.txt");
@@ -217,7 +217,7 @@ test("files - list action empty hooks", async () => {
 });
 
 test("files - create file in hook", async () => {
-  await actions.createFileInHook({});
+  await actions.createFileInHook();
 
   const myfiles = await models.myFile.findMany();
   expect(myfiles.length).toEqual(1);
@@ -227,7 +227,7 @@ test("files - create file in hook", async () => {
 });
 
 test("files - create and store file in hook", async () => {
-  await actions.createFileAndStoreInHook({});
+  await actions.createFileAndStoreInHook();
 
   const myfiles = await models.myFile.findMany();
   expect(myfiles.length).toEqual(1);
