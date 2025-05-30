@@ -25,7 +25,7 @@ import (
 	"github.com/teamkeel/keel/proto"
 )
 
-// WithTmpDir copies the contents of the src dir to a new temporary directory, returning the tmp dir path
+// WithTmpDir copies the contents of the src dir to a new temporary directory, returning the tmp dir path.
 func WithTmpDir(dir string) (string, error) {
 	base := filepath.Base(dir)
 

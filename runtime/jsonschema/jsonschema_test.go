@@ -903,7 +903,7 @@ func TestValidateRequest(t *testing.T) {
 	for _, group := range fixtures {
 		for _, f := range group.cases {
 			group := group
-			f := f
+
 			t.Run(group.name+"/"+f.name, func(t *testing.T) {
 				builder := schema.Builder{}
 				schema, err := builder.MakeFromString(group.schema, config.Empty)

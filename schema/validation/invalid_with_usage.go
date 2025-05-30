@@ -13,7 +13,7 @@ var (
 	ValidActionTypes = []string{parser.ActionTypeCreate, parser.ActionTypeUpdate}
 )
 
-// InvalidWithUsage checks that the 'with' keyword is only used for actions that receive write values
+// InvalidWithUsage checks that the 'with' keyword is only used for actions that receive write values.
 func InvalidWithUsage(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 	return Visitor{
 		EnterAction: func(action *parser.ActionNode) {

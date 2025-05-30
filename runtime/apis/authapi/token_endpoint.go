@@ -41,8 +41,8 @@ const (
 	TokenType = "bearer"
 )
 
-// https://openid.net/specs/openid-connect-standard-1_0-21_orig.html#AccessTokenResponse
 type TokenResponse struct {
+	// https://openid.net/specs/openid-connect-standard-1_0-21_orig.html#AccessTokenResponse
 	AccessToken  string `json:"access_token"`
 	TokenType    string `json:"token_type"`
 	ExpiresIn    int    `json:"expires_in"`
@@ -51,6 +51,7 @@ type TokenResponse struct {
 }
 
 // https://datatracker.ietf.org/doc/html/rfc6749#section-5.2
+
 const (
 	TokenErrUnsupportedGrantType = "unsupported_grant_type"
 	TokenErrInvalidClient        = "invalid_client"

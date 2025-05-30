@@ -4,7 +4,7 @@ import (
 	"github.com/teamkeel/keel/schema/parser"
 )
 
-// IdentOperands retrieves all the ident operands in an expression
+// IdentOperands retrieves all the ident operands in an expression.
 func IdentOperands(expression *parser.Expression) ([]*parser.ExpressionIdent, error) {
 	ident, err := RunCelVisitor(expression, operands())
 	if err != nil {

@@ -10,7 +10,7 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
-// ToValue expects and resolves to a specific type by evaluating the expression
+// ToValue expects and resolves to a specific type by evaluating the expression.
 func ToValue[T any](expression *parser.Expression) (T, bool, error) {
 	env, err := cel.NewEnv()
 	if err != nil {
@@ -43,7 +43,7 @@ func ToValue[T any](expression *parser.Expression) (T, bool, error) {
 	}
 }
 
-// ToValueArray expects and resolves to a specific array type by evaluating the expression
+// ToValueArray expects and resolves to a specific array type by evaluating the expression.
 func ToValueArray[T any](expression *parser.Expression) ([]T, error) {
 	env, err := cel.NewEnv()
 	if err != nil {

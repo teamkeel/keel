@@ -98,7 +98,7 @@ func (e *Expression) String() string {
 	return result.String()
 }
 
-// CleanString removes new lines and unnecessary whitespaces, preserving single spaces between tokens
+// CleanString removes new lines and unnecessary whitespaces, preserving single spaces between tokens.
 func (e *Expression) CleanString() string {
 	v := ""
 	for i, t := range e.Tokens {
@@ -143,7 +143,7 @@ func (ident ExpressionIdent) String() string {
 var ErrInvalidAssignmentExpression = errors.New("expression is not a valid assignment")
 
 // ToAssignmentExpression splits an assignment expression into two separate expressions.
-// E.g. the expression `post.age = 1 + 1` will become `post.age` and `1 + 1`
+// E.g. the expression `post.age = 1 + 1` will become `post.age` and `1 + 1`.
 func (expr *Expression) ToAssignmentExpression() (*Expression, *Expression, error) {
 	lhs := Expression{}
 	lhs.Pos = expr.Pos

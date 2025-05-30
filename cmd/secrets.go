@@ -11,7 +11,7 @@ import (
 	"github.com/teamkeel/keel/colors"
 )
 
-// secretsCmd represents the secrets command
+// secretsCmd represents the secrets command.
 var secretsCmd = &cobra.Command{
 	Use:   "secrets",
 	Short: "Interact with your Keel App's secrets",

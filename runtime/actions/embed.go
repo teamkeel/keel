@@ -16,7 +16,7 @@ func resolveEmbeddedData(ctx context.Context, schema *proto.Schema, sourceModel 
 	}
 	embedTargetField := fragments[0]
 
-	field := proto.FindField(schema.Models, sourceModel.GetName(), casing.ToLowerCamel(embedTargetField))
+	field := proto.FindField(schema.GetModels(), sourceModel.GetName(), casing.ToLowerCamel(embedTargetField))
 	if field == nil {
 		return nil, fmt.Errorf("embed target field (%s) does not exist in model %s", embedTargetField, sourceModel.GetName())
 	}
@@ -26,9 +26,9 @@ func resolveEmbeddedData(ctx context.Context, schema *proto.Schema, sourceModel 
 	}
 
 	// we will select from the relatedModel's table, joining the source model with an alias ("source"), where source.id = sourceModel.id
-	relatedModelName := field.Type.ModelName.Value
+	relatedModelName := field.GetType().GetModelName().GetValue()
 	relatedModel := schema.FindModel(relatedModelName)
-	foreignKeyField := proto.GetForeignKeyFieldName(schema.Models, field)
+	foreignKeyField := proto.GetForeignKeyFieldName(schema.GetModels(), field)
 	sourceTableAlias := "_source"
 
 	dbQuery := NewQuery(relatedModel)
@@ -44,7 +44,7 @@ func resolveEmbeddedData(ctx context.Context, schema *proto.Schema, sourceModel 
 	switch {
 	case field.IsBelongsTo():
 		dbQuery.Join(
-			sourceModel.Name,
+			sourceModel.GetName(),
 			&QueryOperand{
 				table:  sourceTableAlias,
 				column: casing.ToSnake(foreignKeyField),
@@ -85,7 +85,7 @@ func resolveEmbeddedData(ctx context.Context, schema *proto.Schema, sourceModel 
 		return result, nil
 	case field.IsHasMany():
 		dbQuery.Join(
-			sourceModel.Name,
+			sourceModel.GetName(),
 			&QueryOperand{
 				table:  sourceTableAlias,
 				column: casing.ToSnake(parser.FieldNameId),
@@ -132,7 +132,7 @@ func resolveEmbeddedData(ctx context.Context, schema *proto.Schema, sourceModel 
 		return result, nil
 	case field.IsHasOne():
 		dbQuery.Join(
-			sourceModel.Name,
+			sourceModel.GetName(),
 			&QueryOperand{
 				table:  sourceTableAlias,
 				column: casing.ToSnake(parser.FieldNameId),

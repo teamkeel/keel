@@ -6,7 +6,7 @@ import (
 	"github.com/teamkeel/keel/schema/parser"
 )
 
-// FieldLookups retrieves groups of ident lookups using equals comparison which could apply as a filter
+// FieldLookups retrieves groups of ident lookups using equals comparison which could apply as a filter.
 func FieldLookups(model *parser.ModelNode, expression *parser.Expression) ([][]*parser.ExpressionIdent, error) {
 	ident, err := RunCelVisitor(expression, fieldLookups(model))
 	if err != nil {

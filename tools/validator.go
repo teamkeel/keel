@@ -12,7 +12,7 @@ type Validator struct {
 	Tools  *toolsproto.Tools
 }
 
-// NewValidator creates a new tool validator for the given schema and tools
+// NewValidator creates a new tool validator for the given schema and tools.
 func NewValidator(schema *proto.Schema, tools *toolsproto.Tools) *Validator {
 	return &Validator{
 		Schema: schema,
@@ -21,11 +21,11 @@ func NewValidator(schema *proto.Schema, tools *toolsproto.Tools) *Validator {
 }
 
 func (v *Validator) validate() {
-	for _, t := range v.Tools.Configs {
-		if t.Type == toolsproto.Tool_ACTION {
-			v.validateActionConfig(t.ActionConfig)
+	for _, t := range v.Tools.GetConfigs() {
+		if t.GetType() == toolsproto.Tool_ACTION {
+			v.validateActionConfig(t.GetActionConfig())
 		} else {
-			v.validateFlowConfig(t.FlowConfig)
+			v.validateFlowConfig(t.GetFlowConfig())
 		}
 	}
 }
@@ -34,8 +34,8 @@ func (v *Validator) validateFlowConfig(t *toolsproto.FlowConfig) bool {
 	hasError := false
 	// first let's validate all top level action links
 	toolLinks := []*toolsproto.ToolLink{}
-	if t.CompletionRedirect != nil {
-		toolLinks = append(toolLinks, t.CompletionRedirect)
+	if t.GetCompletionRedirect() != nil {
+		toolLinks = append(toolLinks, t.GetCompletionRedirect())
 	}
 	for _, l := range toolLinks {
 		hasError = hasError || v.validateToolLink(l)
@@ -52,23 +52,23 @@ func (v *Validator) validateActionConfig(t *toolsproto.ActionConfig) bool {
 	hasError := false
 	// first let's validate all top level action links
 	toolLinks := []*toolsproto.ToolLink{}
-	if t.CreateEntryAction != nil {
-		toolLinks = append(toolLinks, t.CreateEntryAction)
+	if t.GetCreateEntryAction() != nil {
+		toolLinks = append(toolLinks, t.GetCreateEntryAction())
 	}
-	if t.GetEntryAction != nil {
-		toolLinks = append(toolLinks, t.GetEntryAction)
+	if t.GetGetEntryAction() != nil {
+		toolLinks = append(toolLinks, t.GetGetEntryAction())
 	}
-	toolLinks = append(toolLinks, t.RelatedActions...)
-	toolLinks = append(toolLinks, t.EntryActivityActions...)
+	toolLinks = append(toolLinks, t.GetRelatedActions()...)
+	toolLinks = append(toolLinks, t.GetEntryActivityActions()...)
 	for _, l := range toolLinks {
 		hasError = hasError || v.validateToolLink(l)
 	}
 
 	// now we validate inputs & response fields
-	for _, in := range t.Inputs {
+	for _, in := range t.GetInputs() {
 		hasError = hasError || v.validateInput(in)
 	}
-	for _, out := range t.Response {
+	for _, out := range t.GetResponse() {
 		hasError = hasError || v.validateResponse(out)
 	}
 
@@ -83,9 +83,9 @@ func (v *Validator) validateActionConfig(t *toolsproto.ActionConfig) bool {
 	}
 
 	// // validate that the underlying action exists
-	if v.Schema.FindAction(t.ActionName) == nil {
+	if v.Schema.FindAction(t.GetActionName()) == nil {
 		t.Errors = append(t.Errors, &toolsproto.ValidationError{
-			Error: fmt.Sprintf("Data source does not exist: %s", t.ActionName),
+			Error: fmt.Sprintf("Data source does not exist: %s", t.GetActionName()),
 			Field: "action_name",
 		})
 		hasError = true
@@ -130,11 +130,11 @@ func (v *Validator) validateToolGroup(tg *toolsproto.ToolGroup) bool {
 // Returns true if an error has been detected.
 func (v *Validator) validateInput(input *toolsproto.RequestFieldConfig) bool {
 	hasError := false
-	if input.LookupAction != nil {
-		hasError = hasError || v.validateToolLink(input.LookupAction)
+	if input.GetLookupAction() != nil {
+		hasError = hasError || v.validateToolLink(input.GetLookupAction())
 	}
-	if input.GetEntryAction != nil {
-		hasError = hasError || v.validateToolLink(input.GetEntryAction)
+	if input.GetGetEntryAction() != nil {
+		hasError = hasError || v.validateToolLink(input.GetGetEntryAction())
 	}
 	input.HasErrors = hasError
 
@@ -145,8 +145,8 @@ func (v *Validator) validateInput(input *toolsproto.RequestFieldConfig) bool {
 // Returns true if an error has been detected.
 func (v *Validator) validateResponse(out *toolsproto.ResponseFieldConfig) bool {
 	hasError := false
-	if out.Link != nil {
-		hasError = hasError || v.validateToolLink(out.Link)
+	if out.GetLink() != nil {
+		hasError = hasError || v.validateToolLink(out.GetLink())
 	}
 	out.HasErrors = hasError
 
@@ -162,11 +162,11 @@ func (v *Validator) validateToolLink(link *toolsproto.ToolLink) bool {
 	}
 
 	// validate that the target tool exists
-	if targetTool := v.Tools.FindByID(link.ToolId); targetTool == nil {
+	if targetTool := v.Tools.FindByID(link.GetToolId()); targetTool == nil {
 		// target tool doesn't exist
 		hasError = true
 		link.Errors = append(link.Errors, &toolsproto.ValidationError{
-			Error: fmt.Sprintf("Target tool does not exist: %s", link.ToolId),
+			Error: fmt.Sprintf("Target tool does not exist: %s", link.GetToolId()),
 			Field: "tool_id",
 		})
 	}

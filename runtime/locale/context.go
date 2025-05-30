@@ -17,7 +17,7 @@ const (
 	locationContextKey contextKey = "location"
 )
 
-// WithTimeLocation sets the given time location on the context
+// WithTimeLocation sets the given time location on the context.
 func WithTimeLocation(ctx context.Context, location time.Location) context.Context {
 	span := trace.SpanFromContext(ctx)
 	span.SetAttributes(attribute.String("timezone.location", location.String()))
@@ -25,7 +25,7 @@ func WithTimeLocation(ctx context.Context, location time.Location) context.Conte
 	return context.WithValue(ctx, locationContextKey, location)
 }
 
-// GetTimeLocation returns the time location set on the context, or error if none set
+// GetTimeLocation returns the time location set on the context, or error if none set.
 func GetTimeLocation(ctx context.Context) (time.Location, error) {
 	v, ok := ctx.Value(locationContextKey).(time.Location)
 	if !ok {
@@ -34,7 +34,7 @@ func GetTimeLocation(ctx context.Context) (time.Location, error) {
 	return v, nil
 }
 
-// HasTimeLocation returns true if the context has a Time Location set
+// HasTimeLocation returns true if the context has a Time Location set.
 func HasTimeLocation(ctx context.Context) bool {
 	_, err := GetTimeLocation(ctx)
 
@@ -43,7 +43,7 @@ func HasTimeLocation(ctx context.Context) bool {
 
 // HandleTimezoneHeader will extract the time location from the Time-Zone header and set it on the context.
 // The location will also be set as an attribute to the context's tracing span.
-// If no header set, the location will default to UTC
+// If no header set, the location will default to UTC.
 func HandleTimezoneHeader(ctx context.Context, headers http.Header) (time.Location, error) {
 	// if no header, a UTC location will be returned
 	location, err := time.LoadLocation(headers.Get("Time-Zone"))

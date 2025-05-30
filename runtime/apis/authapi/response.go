@@ -12,6 +12,7 @@ import (
 
 // https://openid.net/specs/openid-connect-standard-1_0-21_orig.html#AccessTokenErrorResponse
 // https://datatracker.ietf.org/doc/html/rfc7009#section-2.2
+
 type ErrorResponse struct {
 	Error            string `json:"error,omitempty"`
 	ErrorDescription string `json:"error_description,omitempty"`

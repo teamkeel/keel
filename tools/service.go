@@ -20,9 +20,9 @@ import (
 const toolsDir = "tools"
 
 const (
-	// Alphabet for unique nanoids to be used for tool ids
+	// Alphabet for unique nanoids to be used for tool ids.
 	nanoidABC = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	// Size of unique nanoids to be used for tool ids
+	// Size of unique nanoids to be used for tool ids.
 	nanoidSize = 5
 )
 
@@ -57,7 +57,7 @@ func WithConfig(cfg *config.ProjectConfig) ServiceOpt {
 	}
 }
 
-// WithFileStorage initialises the tools service with file-baased storage enabled in the given project folder
+// WithFileStorage initialises the tools service with file-baased storage enabled in the given project folder.
 func WithFileStorage(projectDir string) ServiceOpt {
 	return func(s *Service) {
 		s.ProjectDir = &projectDir
@@ -65,7 +65,7 @@ func WithFileStorage(projectDir string) ServiceOpt {
 }
 
 // WithToolsConfig initialises the tools service with in-memory tools storage and with the given user configuration. This
-// option will invalidate any filebased storage that may have been set with `WithFileStorage`
+// option will invalidate any filebased storage that may have been set with `WithFileStorage`.
 func WithToolsConfig(store map[string][]byte) ServiceOpt {
 	return func(s *Service) {
 		s.ToolsConfigStorage = store
@@ -73,7 +73,7 @@ func WithToolsConfig(store map[string][]byte) ServiceOpt {
 	}
 }
 
-// storageFolder return the path to the tools config storage folder
+// storageFolder return the path to the tools config storage folder.
 func (s *Service) storageFolder() string {
 	if s.ProjectDir == nil {
 		return ""
@@ -82,7 +82,7 @@ func (s *Service) storageFolder() string {
 	return filepath.Join(*s.ProjectDir, toolsDir)
 }
 
-// hasFileStorage tells us if this service has been initialised with file storage
+// hasFileStorage tells us if this service has been initialised with file storage.
 func (s *Service) hasFileStorage() bool {
 	return s.ProjectDir != nil
 }
@@ -101,7 +101,7 @@ func (s *Service) initStorageFolder() error {
 	return nil
 }
 
-// loadFromFileStorage will load configs from file storage
+// loadFromFileStorage will load configs from file storage.
 func (s *Service) loadFromFileStorage() (ToolConfigs, error) {
 	if !s.hasFileStorage() {
 		return nil, fmt.Errorf("service does not have file storage enabled")
@@ -295,7 +295,7 @@ func (s *Service) DuplicateTool(ctx context.Context, toolID string) (*toolsproto
 
 	if duplicate.IsActionBased() {
 		duplicate.ActionConfig.Name += " (copy)"
-		duplicate.ActionConfig.Id = duplicate.Id
+		duplicate.ActionConfig.Id = duplicate.GetId()
 	} else {
 		duplicate.FlowConfig.Name += " (copy)"
 	}
@@ -315,7 +315,7 @@ func (s *Service) DuplicateTool(ctx context.Context, toolID string) (*toolsproto
 }
 
 // GetTools generates tools based on the schema, reads the configured tools from the project and applies them to the
-// generated ones, returning a complete list of tool configs
+// generated ones, returning a complete list of tool configs.
 func (s *Service) GetTools(ctx context.Context) (*toolsproto.Tools, error) {
 	// if we don't have a schema, return nil
 	if s.Schema == nil {
@@ -369,7 +369,7 @@ func (s *Service) GetTools(ctx context.Context) (*toolsproto.Tools, error) {
 				}
 			}
 			gen.Id = cfg.ID
-			if gen.ActionConfig != nil {
+			if gen.GetActionConfig() != nil {
 				gen.ActionConfig.Id = cfg.ID
 			}
 
@@ -402,7 +402,7 @@ func (s *Service) ResetTools(ctx context.Context) (*toolsproto.Tools, error) {
 	return s.GetTools(ctx)
 }
 
-// ConfigureTool will take the given updated tool config and update the existing project config with it
+// ConfigureTool will take the given updated tool config and update the existing project config with it.
 func (s *Service) ConfigureTool(ctx context.Context, updated *toolsproto.Tool) (*toolsproto.Tool, error) {
 	// get the generated version for the given updated tool
 	gen, err := s.getGeneratedTool(ctx, updated.GetOperationName())
@@ -425,7 +425,7 @@ func (s *Service) ConfigureTool(ctx context.Context, updated *toolsproto.Tool) (
 		return nil, fmt.Errorf("retrieving tools: %w", err)
 	}
 
-	return tools.FindByID(updated.Id), nil
+	return tools.FindByID(updated.GetId()), nil
 }
 
 // getGeneratedTool will return the generated tool for the given action/flow name.

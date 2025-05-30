@@ -92,7 +92,7 @@ func visit(v reflect.Value, visitors []Visitor) {
 	}
 
 	if v.Kind() == reflect.Slice {
-		for i := 0; i < v.Len(); i++ {
+		for i := range v.Len() {
 			visit(v.Index(i), visitors)
 		}
 		return
@@ -105,7 +105,7 @@ func visit(v reflect.Value, visitors []Visitor) {
 	callVisitHook("Enter", v, visitors)
 	defer callVisitHook("Leave", v, visitors)
 
-	for i := 0; i < v.NumField(); i++ {
+	for i := range v.NumField() {
 		visit(v.FieldByIndex([]int{i}), visitors)
 	}
 }

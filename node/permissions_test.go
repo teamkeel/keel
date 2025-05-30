@@ -328,7 +328,6 @@ export const permissionFns = {
 	}
 
 	for _, fixture := range fixtures {
-		fixture := fixture
 		t.Run(fixture.name, func(t *testing.T) {
 			t.Parallel()
 			w := codegen.Writer{}

@@ -1069,7 +1069,7 @@ var unNamedBlocks = []string{
 
 // getTypeOfEnclosingBlock returns the keyword used to define
 // the closest parent block or an empty string if not inside
-// a block e.g. at the top-level of the schema
+// a block e.g. at the top-level of the schema.
 func getTypeOfEnclosingBlock(t *TokensAtPosition) string {
 	for {
 		t = t.StartOfBlock()
@@ -1097,7 +1097,7 @@ func getTypeOfEnclosingBlock(t *TokensAtPosition) string {
 
 // getParentModel name returns the user-defined name of the
 // model that `t` is within or an empty string if `t` is not
-// contained inside a model
+// contained inside a model.
 func getParentModelName(t *TokensAtPosition) string {
 	for {
 		t = t.StartOfBlock()
@@ -1119,7 +1119,7 @@ var identRegex = regexp.MustCompile("^[a-zA-Z]+$")
 
 // getPreviousIdents returns the idents that are part of the same
 // operand e.g. for "foo.bar.baz" if `tokens` was pointed at "baz"
-// then this function would return ["foo", "bar"]
+// then this function would return ["foo", "bar"].
 func getPreviousIdents(tokens *TokensAtPosition) []string {
 	idents := []string{}
 
@@ -1148,7 +1148,7 @@ func getPreviousIdents(tokens *TokensAtPosition) []string {
 // and true if `t` is within an attributes arguments
 // e.g. @set(person.<Cursor) <-- this would return "set", true
 // It returns an empty string and false in all other cases including
-// that `t` is pointing to the attribute name or the "@" token
+// that `t` is pointing to the attribute name or the "@" token.
 func getParentAttribute(t *TokensAtPosition) (string, bool) {
 	for {
 		if t.Value() == "(" && t.ValueAt(-2) == "@" {
@@ -1162,7 +1162,7 @@ func getParentAttribute(t *TokensAtPosition) (string, bool) {
 }
 
 // getUserDefinedTypeCompletions returns the names of user-defined
-// types defined with `keyword`
+// types defined with `keyword`.
 func getUserDefinedTypeCompletions(asts []*parser.AST, t *TokensAtPosition, keyword string) []*CompletionItem {
 	completions := []*CompletionItem{}
 
@@ -1231,7 +1231,7 @@ func getFieldNamesAtPath(asts []*parser.AST, model *parser.ModelNode, idents []s
 		return nil, false
 	}
 
-	for i := 0; i < len(idents); i++ {
+	for i := range idents {
 		ident := idents[i]
 		field := query.ModelField(model, ident)
 		if field == nil {
@@ -1260,7 +1260,7 @@ func getModelFieldCompletions(model *parser.ModelNode) []*CompletionItem {
 }
 
 // getAttributeCompletions returns CompletionItems for each attribute name
-// provided in `names`
+// provided in `names`.
 func getAttributeCompletions(token *TokensAtPosition, names []string) []*CompletionItem {
 	completions := []*CompletionItem{}
 	for _, v := range names {

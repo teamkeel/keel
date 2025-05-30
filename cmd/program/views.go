@@ -157,7 +157,7 @@ func renderRun(m *Model) string {
 	}
 
 	if m.Status == StatusRunning {
-		if len(m.Schema.Apis) == 0 {
+		if len(m.Schema.GetApis()) == 0 {
 			b.WriteString(colors.Yellow("\n - Your schema doesn't have any API's defined in it\n").String())
 		}
 
@@ -166,9 +166,9 @@ func renderRun(m *Model) string {
 		b.WriteString(colors.Blue("https://console.keel.so/local").Highlight().String())
 		b.WriteString("\n")
 
-		for _, api := range m.Schema.Apis {
+		for _, api := range m.Schema.GetApis() {
 			b.WriteString("\n")
-			b.WriteString(api.Name)
+			b.WriteString(api.GetName())
 			b.WriteString(colors.White(" endpoints:").String())
 
 			endpoints := [][]string{
@@ -181,9 +181,9 @@ func renderRun(m *Model) string {
 				b.WriteString("\n")
 				b.WriteString(" - ")
 				if m.CustomHostname == "" {
-					b.WriteString(colors.Blue(fmt.Sprintf("http://localhost:%s/%s/%s", m.Port, strings.ToLower(api.Name), values[0])).Highlight().String())
+					b.WriteString(colors.Blue(fmt.Sprintf("http://localhost:%s/%s/%s", m.Port, strings.ToLower(api.GetName()), values[0])).Highlight().String())
 				} else {
-					b.WriteString(colors.Blue(fmt.Sprintf("%s/%s/%s", m.CustomHostname, strings.ToLower(api.Name), values[0])).Highlight().String())
+					b.WriteString(colors.Blue(fmt.Sprintf("%s/%s/%s", m.CustomHostname, strings.ToLower(api.GetName()), values[0])).Highlight().String())
 				}
 				b.WriteString(colors.White(fmt.Sprintf(" (%s)", values[1])).String())
 			}

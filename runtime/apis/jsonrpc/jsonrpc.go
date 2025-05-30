@@ -22,7 +22,7 @@ import (
 var tracer = otel.Tracer("github.com/teamkeel/keel/runtime/apis/jsonrpc")
 
 const (
-	// JSON-RPC spec compliant error codes
+	// JSON-RPC spec compliant error codes.
 	JsonRpcParseErrorCode     = -32700
 	JsonRpcInvalidRequestCode = -32600
 	JsonRpcMethodNotFoundCode = -32601

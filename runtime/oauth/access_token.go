@@ -24,9 +24,8 @@ var (
 	ErrIdentityNotFound = common.NewAuthenticationFailedMessageErr("identity not found")
 )
 
-// https://pkg.go.dev/github.com/golang-jwt/jwt/v4#RegisteredClaims
 type AccessTokenClaims struct {
-	jwt.RegisteredClaims
+	jwt.RegisteredClaims // https://pkg.go.dev/github.com/golang-jwt/jwt/v4#RegisteredClaims
 }
 
 func GenerateAccessToken(ctx context.Context, identityId string) (string, time.Duration, error) {

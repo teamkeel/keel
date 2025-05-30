@@ -48,7 +48,7 @@ func ActionFunc(schema *proto.Schema, action *proto.Action) func(p graphql.Resol
 			}
 		}
 
-		if action.Type == proto.ActionType_ACTION_TYPE_LIST {
+		if action.GetType() == proto.ActionType_ACTION_TYPE_LIST {
 			// actions.Execute() returns any but a list action will return a map
 			m, _ := res.(map[string]any)
 			return connectionResponse(m)

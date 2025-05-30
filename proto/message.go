@@ -5,26 +5,26 @@ package proto
 // This will only be true for inputs that are built-in actions,
 // as functions never have this behaviour.
 func (f *MessageField) IsModelField() bool {
-	return len(f.Target) > 0
+	return len(f.GetTarget()) > 0
 }
 
-// IsFile tells us if the field is a file
+// IsFile tells us if the field is a file.
 func (f *MessageField) IsFile() bool {
-	if f.Type == nil {
+	if f.GetType() == nil {
 		return false
 	}
 
-	return f.Type.Type == Type_TYPE_FILE
+	return f.GetType().GetType() == Type_TYPE_FILE
 }
 
-// IsMessage checks if the field is a message itself
+// IsMessage checks if the field is a message itself.
 func (f *MessageField) IsMessage() bool {
-	return f.Type.Type == Type_TYPE_MESSAGE
+	return f.GetType().GetType() == Type_TYPE_MESSAGE
 }
 
 func (m *Message) FindField(fieldName string) *MessageField {
-	for _, field := range m.Fields {
-		if field.Name == fieldName {
+	for _, field := range m.GetFields() {
+		if field.GetName() == fieldName {
 			return field
 		}
 	}
@@ -32,10 +32,10 @@ func (m *Message) FindField(fieldName string) *MessageField {
 	return nil
 }
 
-// GetOrderByField returns the orderBy message field, if it has any; otherwise returns nil;
+// GetOrderByField returns the orderBy message field, if it has any; otherwise returns nil;.
 func (m *Message) GetOrderByField() *MessageField {
-	for _, field := range m.Fields {
-		if field.Name == "orderBy" && field.Type.Type == Type_TYPE_UNION {
+	for _, field := range m.GetFields() {
+		if field.GetName() == "orderBy" && field.GetType().GetType() == Type_TYPE_UNION {
 			return field
 		}
 	}
@@ -44,9 +44,9 @@ func (m *Message) GetOrderByField() *MessageField {
 }
 
 func messageHasFiles(s *Schema, f *Message) bool {
-	for _, field := range f.Fields {
-		if field.Type.MessageName != nil {
-			message := s.FindMessage(field.Type.MessageName.Value)
+	for _, field := range f.GetFields() {
+		if field.GetType().GetMessageName() != nil {
+			message := s.FindMessage(field.GetType().GetMessageName().GetValue())
 			return messageHasFiles(s, message)
 		} else if field.IsFile() {
 			return true

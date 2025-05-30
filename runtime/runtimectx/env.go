@@ -8,7 +8,7 @@ type KeelEnv string
 
 const (
 	// The Test environment denotes any Keel environment that isn't production or staging. So this includes the
-	// runtime inside of the Keel Test Framework runner, as well as the runtime locally (e.g 'keel run' in the CLI)
+	// runtime inside of the Keel Test Framework runner, as well as the runtime locally (e.g 'keel run' in the CLI).
 	KeelEnvTest       KeelEnv = "test"
 	KeelEnvProduction KeelEnv = "production"
 )

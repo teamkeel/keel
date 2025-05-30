@@ -31,13 +31,13 @@ func ToKebab(str string) string {
 }
 
 // ToSentenceCase will return a given string as "Sentence case"; splitting all components into words and capitalising
-// just the first char. e.g. `listOrder` becomes "List order"
+// just the first char. e.g. `listOrder` becomes "List order".
 func ToSentenceCase(str string) string {
 	s := strings.ReplaceAll(strcase.ToSnake(str), "_", " ")
 	return capitalizeWord(s)
 }
 
-// To Plural will return the plural word for the given singular word
+// To Plural will return the plural word for the given singular word.
 func ToPlural(word string) string {
 	return inflection.Plural(word)
 }

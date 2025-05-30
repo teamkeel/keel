@@ -281,9 +281,9 @@ func TestAuditDeleteAction(t *testing.T) {
 	wedding["created_at"] = wedding["created_at"].(time.Time).UTC().Format("2006-01-02T15:04:05.999999999-07:00")
 	wedding["updated_at"] = wedding["updated_at"].(time.Time).UTC().Format("2006-01-02T15:04:05.999999999-07:00")
 
-	delete := schema.FindAction("deleteWedding")
+	del := schema.FindAction("deleteWedding")
 	_, _, err = actions.Execute(
-		actions.NewScope(ctx, delete, schema),
+		actions.NewScope(ctx, del, schema),
 		map[string]any{"id": createResult.(map[string]any)["id"]},
 	)
 	require.NoError(t, err)

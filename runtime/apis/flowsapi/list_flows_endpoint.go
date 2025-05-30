@@ -17,7 +17,7 @@ import (
 
 var tracer = otel.Tracer("github.com/teamkeel/keel/runtime/apis/flowsapi")
 
-// ListFlowsHandler handles a request to /flows/json and returns data about all flows defined in the schema
+// ListFlowsHandler handles a request to /flows/json and returns data about all flows defined in the schema.
 func ListFlowsHandler(p *proto.Schema) common.HandlerFunc {
 	return func(r *http.Request) common.Response {
 		ctx, span := tracer.Start(r.Context(), "FlowsAPI")
@@ -53,16 +53,16 @@ func ListFlowsHandler(p *proto.Schema) common.HandlerFunc {
 		flowsData := []map[string]any{}
 		for _, f := range authorisedFlows {
 			inputFields := []map[string]any{}
-			if inputMsg := p.FindMessage(f.InputMessageName); inputMsg != nil {
-				for _, field := range inputMsg.Fields {
+			if inputMsg := p.FindMessage(f.GetInputMessageName()); inputMsg != nil {
+				for _, field := range inputMsg.GetFields() {
 					inputFields = append(inputFields, map[string]any{
-						"name": field.Name,
-						"type": field.Type.Type.String(),
+						"name": field.GetName(),
+						"type": field.GetType().GetType().String(),
 					})
 				}
 			}
 			flowsData = append(flowsData, map[string]any{
-				"name":   f.Name,
+				"name":   f.GetName(),
 				"inputs": inputFields,
 			})
 		}

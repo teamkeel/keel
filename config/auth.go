@@ -11,9 +11,9 @@ import (
 )
 
 const (
-	// 24 hours is the default access token expiry period
+	// 24 hours is the default access token expiry period.
 	DefaultAccessTokenExpiry time.Duration = time.Hour * 24
-	// 3 months is the default refresh token expiry period
+	// 3 months is the default refresh token expiry period.
 	DefaultRefreshTokenExpiry time.Duration = time.Hour * 24 * 90
 )
 
@@ -73,7 +73,7 @@ type IdentityClaim struct {
 	Unique bool   `yaml:"unique"`
 }
 
-// AccessTokenExpiry retrieves the configured or default access token expiry
+// AccessTokenExpiry retrieves the configured or default access token expiry.
 func (c *AuthConfig) AccessTokenExpiry() time.Duration {
 	if c.Tokens.AccessTokenExpiry != nil {
 		return time.Duration(*c.Tokens.AccessTokenExpiry) * time.Second
@@ -86,7 +86,7 @@ func (c *AuthConfig) EnabledHooks() []FunctionHook {
 	return c.Hooks
 }
 
-// RefreshTokenExpiry retrieves the configured or default refresh token expiry
+// RefreshTokenExpiry retrieves the configured or default refresh token expiry.
 func (c *AuthConfig) RefreshTokenExpiry() time.Duration {
 	if c.Tokens.RefreshTokenExpiry != nil {
 		return time.Duration(*c.Tokens.RefreshTokenExpiry) * time.Second
@@ -95,7 +95,7 @@ func (c *AuthConfig) RefreshTokenExpiry() time.Duration {
 	}
 }
 
-// RefreshTokenRotationEnabled retrieves the configured or default refresh token rotation
+// RefreshTokenRotationEnabled retrieves the configured or default refresh token rotation.
 func (c *AuthConfig) RefreshTokenRotationEnabled() bool {
 	if c.Tokens.RefreshTokenRotationEnabled != nil {
 		return *c.Tokens.RefreshTokenRotationEnabled
@@ -104,7 +104,7 @@ func (c *AuthConfig) RefreshTokenRotationEnabled() bool {
 	}
 }
 
-// AddOidcProvider adds an OpenID Connect provider to the list of supported authentication providers
+// AddOidcProvider adds an OpenID Connect provider to the list of supported authentication providers.
 func (c *AuthConfig) AddOidcProvider(name string, issuerUrl string, clientId string) error {
 	if name == "" {
 		return fmt.Errorf("name is required")
@@ -158,7 +158,7 @@ func (c *AuthConfig) AddOidcProvider(name string, issuerUrl string, clientId str
 	return nil
 }
 
-// GetOidcProviders returns all OpenID Connect compatible authentication providers
+// GetOidcProviders returns all OpenID Connect compatible authentication providers.
 func (c *AuthConfig) GetOidcProviders() []Provider {
 	oidcProviders := []Provider{}
 	for _, p := range c.Providers {
@@ -188,12 +188,12 @@ func (c *AuthConfig) GetOidcProvidersByIssuer(issuer string) ([]Provider, error)
 	return providers, nil
 }
 
-// GetClientSecret generates the name of the client secret
+// GetClientSecret generates the name of the client secret.
 func (p *Provider) GetClientSecretName() string {
 	return fmt.Sprintf("%s%s", ProviderSecretPrefix, strings.ToUpper(p.Name))
 }
 
-// GetAuthorizeUrl retrieves the authorize URL for this provider
+// GetAuthorizeUrl retrieves the authorize URL for this provider.
 func (p *Provider) GetAuthorizeUrl() (*url.URL, error) {
 	apiUrl, err := url.ParseRequestURI(os.Getenv("KEEL_API_URL"))
 	if err != nil {
@@ -203,7 +203,7 @@ func (p *Provider) GetAuthorizeUrl() (*url.URL, error) {
 	return apiUrl.JoinPath("/auth/authorize/" + strings.ToLower(p.Name)), nil
 }
 
-// GetCallbackUrl retrieves the callback URL for this provider
+// GetCallbackUrl retrieves the callback URL for this provider.
 func (p *Provider) GetCallbackUrl() (*url.URL, error) {
 	apiUrl, err := url.ParseRequestURI(os.Getenv("KEEL_API_URL"))
 	if err != nil {
@@ -212,7 +212,7 @@ func (p *Provider) GetCallbackUrl() (*url.URL, error) {
 	return apiUrl.JoinPath("/auth/callback/" + strings.ToLower(p.Name)), nil
 }
 
-// GetProvider retrieves the provider by its name (case insensitive)
+// GetProvider retrieves the provider by its name (case insensitive).
 func (c *AuthConfig) GetProvider(name string) *Provider {
 	for _, p := range c.Providers {
 		if strings.EqualFold(p.Name, name) {
@@ -222,7 +222,7 @@ func (c *AuthConfig) GetProvider(name string) *Provider {
 	return nil
 }
 
-// GetIssuerUrl retrieves the issuer URL for the provider
+// GetIssuerUrl retrieves the issuer URL for the provider.
 func (p *Provider) GetIssuerUrl() (string, bool) {
 	switch p.Type {
 	case GoogleProvider:

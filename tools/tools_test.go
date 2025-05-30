@@ -51,7 +51,7 @@ func TestGenerateTools(t *testing.T) {
 			actionTools := []*toolsproto.ActionConfig{}
 			for _, tool := range tools {
 				if tool.GetType() == toolsproto.Tool_ACTION {
-					actionTools = append(actionTools, tool.ActionConfig)
+					actionTools = append(actionTools, tool.GetActionConfig())
 				}
 			}
 			response := &rpc.ListToolsResponse{

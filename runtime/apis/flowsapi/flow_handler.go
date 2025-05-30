@@ -92,7 +92,7 @@ func FlowHandler(s *proto.Schema) common.HandlerFunc {
 			if err != nil {
 				return httpjson.NewErrorResponse(ctx, err, nil)
 			}
-			if run == nil || run.Name != flow.Name {
+			if run == nil || run.Name != flow.GetName() {
 				return httpjson.NewErrorResponse(ctx, common.NewNotFoundError("Not found"), nil)
 			}
 

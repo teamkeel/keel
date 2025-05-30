@@ -55,7 +55,7 @@ func (c ToolConfig) MarshalJSON() ([]byte, error) {
 }
 
 // To maintain backwards compatibility with existing config files (before we added support for flows), the marshalling
-// and unmarshalling of tool configs is done by just marshalling the underlying configuration (i.e.flow config or action config)
+// and unmarshalling of tool configs is done by just marshalling the underlying configuration (i.e.flow config or action config).
 func (c *ToolConfig) UnmarshalJSON(data []byte) error {
 	// Unmarshal into a generic map to inspect its contents
 	var raw map[string]any
@@ -108,7 +108,7 @@ func (t *ToolConfig) hasChanges() bool {
 	return t.config().hasChanges()
 }
 
-// getOperationName returns the underlying action that powers this tool (either an action name or a flow name)
+// getOperationName returns the underlying action that powers this tool (either an action name or a flow name).
 func (t *ToolConfig) getOperationName() string {
 	switch t.Type {
 	case ToolTypeAction:
@@ -132,9 +132,9 @@ func (t *ToolConfig) setID(id string) {
 func (t *ToolConfig) applyOn(tool *toolsproto.Tool) {
 	switch t.Type {
 	case ToolTypeAction:
-		t.ActionConfig.applyOn(tool.ActionConfig)
+		t.ActionConfig.applyOn(tool.GetActionConfig())
 	case ToolTypeFlow:
-		t.FlowConfig.applyOn(tool.FlowConfig)
+		t.FlowConfig.applyOn(tool.GetFlowConfig())
 	}
 }
 
@@ -144,7 +144,7 @@ type configuration interface {
 	toToolConfig() *ToolConfig
 }
 
-// compile time check that config types implement the required interface
+// compile time check that config types implement the required interface.
 var _ configuration = &FlowToolConfig{}
 var _ configuration = &ActionToolConfig{}
 
@@ -185,7 +185,7 @@ func (cfg *FlowToolConfig) applyOn(tool *toolsproto.FlowConfig) {
 		tool.HelpText = makeStringTemplate(cfg.HelpText)
 	}
 	if cfg.CompletionRedirect != nil {
-		tool.CompletionRedirect = cfg.CompletionRedirect.applyOn(tool.CompletionRedirect)
+		tool.CompletionRedirect = cfg.CompletionRedirect.applyOn(tool.GetCompletionRedirect())
 	}
 
 	for path, inputCfg := range cfg.Inputs {
@@ -287,7 +287,7 @@ func (cfg *ActionToolConfig) applyOn(tool *toolsproto.ActionConfig) {
 		}
 	}
 	if cfg.Pagination != nil && cfg.Pagination.PageSize != nil && cfg.Pagination.PageSize.DefaultValue != nil {
-		tool.Pagination = cfg.Pagination.applyOn(tool.Pagination)
+		tool.Pagination = cfg.Pagination.applyOn(tool.GetPagination())
 	}
 	for _, el := range cfg.ExternalLinks {
 		tool.ExternalLinks = append(tool.ExternalLinks, &toolsproto.ExternalLink{
@@ -309,22 +309,22 @@ func (cfg *ActionToolConfig) applyOn(tool *toolsproto.ActionConfig) {
 		})
 	}
 	if cfg.CreateEntryAction != nil {
-		tool.CreateEntryAction = cfg.CreateEntryAction.applyOn(tool.CreateEntryAction)
+		tool.CreateEntryAction = cfg.CreateEntryAction.applyOn(tool.GetCreateEntryAction())
 	}
 	if cfg.GetEntryAction != nil {
-		tool.GetEntryAction = cfg.GetEntryAction.applyOn(tool.GetEntryAction)
+		tool.GetEntryAction = cfg.GetEntryAction.applyOn(tool.GetGetEntryAction())
 	}
 	if len(cfg.EntryActivityActions) > 0 {
-		tool.EntryActivityActions = cfg.EntryActivityActions.applyOn(tool.EntryActivityActions)
+		tool.EntryActivityActions = cfg.EntryActivityActions.applyOn(tool.GetEntryActivityActions())
 	}
 	if len(cfg.RelatedActions) > 0 {
-		tool.RelatedActions = cfg.RelatedActions.applyOn(tool.RelatedActions)
+		tool.RelatedActions = cfg.RelatedActions.applyOn(tool.GetRelatedActions())
 	}
 	if cfg.DisplayLayout != nil {
 		tool.DisplayLayout = cfg.DisplayLayout.toProto()
 	}
 	if len(cfg.EmbeddedTools) > 0 {
-		tool.EmbeddedTools = cfg.EmbeddedTools.applyOn(tool.EmbeddedTools)
+		tool.EmbeddedTools = cfg.EmbeddedTools.applyOn(tool.GetEmbeddedTools())
 	}
 	if cfg.FilterConfig != nil {
 		tool.FilterConfig = &toolsproto.FilterConfig{
@@ -412,10 +412,10 @@ func (cfg *InputConfig) applyOn(input *toolsproto.RequestFieldConfig) {
 		input.DefaultValue = cfg.DefaultValue.toProto()
 	}
 	if cfg.LookupAction != nil {
-		input.LookupAction = cfg.LookupAction.applyOn(input.LookupAction)
+		input.LookupAction = cfg.LookupAction.applyOn(input.GetLookupAction())
 	}
 	if cfg.GetEntryAction != nil {
-		input.GetEntryAction = cfg.GetEntryAction.applyOn(input.GetEntryAction)
+		input.GetEntryAction = cfg.GetEntryAction.applyOn(input.GetGetEntryAction())
 	}
 }
 
@@ -503,7 +503,7 @@ func (cfg ResponseConfig) applyOn(response *toolsproto.ResponseFieldConfig) {
 		response.SectionName = cfg.SectionName
 	}
 	if cfg.Link != nil {
-		response.Link = cfg.Link.applyOn(response.Link)
+		response.Link = cfg.Link.applyOn(response.GetLink())
 	}
 }
 
@@ -651,7 +651,7 @@ func (cfg *LinkConfig) getDataMapping() []*toolsproto.DataMapping {
 	return dataMappings
 }
 
-// isDeleted tells us if the link has been ... deleted
+// isDeleted tells us if the link has been ... deleted.
 func (cfg *LinkConfig) isDeleted() bool {
 	if cfg != nil && cfg.Deleted != nil {
 		return *cfg.Deleted
@@ -672,7 +672,7 @@ func (cfgs LinkConfigs) applyOn(links []*toolsproto.ToolLink) []*toolsproto.Tool
 
 	// carry over links that haven't been configured/deleted
 	for _, l := range links {
-		if cfg := cfgs.find(l.ToolId); cfg == nil {
+		if cfg := cfgs.find(l.GetToolId()); cfg == nil {
 			newLinks = append(newLinks, l)
 		}
 	}
@@ -783,7 +783,7 @@ func (cfgs ToolGroupConfigs) applyOn(groups []*toolsproto.ToolGroup) []*toolspro
 
 	// carry over groups that haven't been configured/deleted
 	for _, g := range groups {
-		if cfg := cfgs.find(g.Id); cfg == nil {
+		if cfg := cfgs.find(g.GetId()); cfg == nil {
 			newTools = append(newTools, g)
 		}
 	}
@@ -836,7 +836,7 @@ func (cfg *ToolGroupConfig) applyOn(group *toolsproto.ToolGroup) *toolsproto.Too
 	}
 
 	if len(cfg.Tools) > 0 {
-		group.Tools = cfg.Tools.applyOn(group.Tools)
+		group.Tools = cfg.Tools.applyOn(group.GetTools())
 	}
 
 	return group
@@ -878,7 +878,7 @@ func (cfgs ToolGroupLinkConfigs) applyOn(links []*toolsproto.ToolGroup_GroupActi
 
 	// carry over links that haven't been configured/deleted
 	for _, l := range links {
-		if cfg := cfgs.find(l.ActionLink.ToolId); cfg == nil {
+		if cfg := cfgs.find(l.GetActionLink().GetToolId()); cfg == nil {
 			newTools = append(newTools, l)
 		}
 	}
@@ -932,7 +932,7 @@ func (cfg *ToolGroupLinkConfig) applyOn(link *toolsproto.ToolGroup_GroupActionLi
 	}
 
 	// we've updated a tool group link
-	link.ActionLink = cfg.ActionLink.applyOn(link.ActionLink)
+	link.ActionLink = cfg.ActionLink.applyOn(link.GetActionLink())
 	link.ResponseOverrides = cfg.getResponseOverrides()
 
 	return link

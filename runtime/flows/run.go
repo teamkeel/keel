@@ -11,7 +11,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-// StartFlow will start a new run for the given flow with the given input
+// StartFlow will start a new run for the given flow with the given input.
 func StartFlow(ctx context.Context, flow *proto.Flow, inputs map[string]any) (run *Run, err error) {
 	ctx, span := tracer.Start(ctx, "StartFlow")
 	defer span.End()
@@ -37,7 +37,7 @@ func StartFlow(ctx context.Context, flow *proto.Flow, inputs map[string]any) (ru
 	}
 
 	span.SetAttributes(
-		attribute.String("flow", flow.Name),
+		attribute.String("flow", flow.GetName()),
 		attribute.String("flowRun.id", run.ID),
 	)
 
@@ -78,7 +78,7 @@ func ListFlowRuns(ctx context.Context, flow *proto.Flow, inputs map[string]any) 
 }
 
 // GetFlowRunState retrieves the state of the given flow run. If the run has a pending UI step, the UI component will be
-// injected into the step before returning it
+// injected into the step before returning it.
 func GetFlowRunState(ctx context.Context, runID string) (run *Run, err error) {
 	ctx, span := tracer.Start(ctx, "GetFlowRunState")
 	defer span.End()
@@ -131,7 +131,7 @@ func GetFlowRunState(ctx context.Context, runID string) (run *Run, err error) {
 	return
 }
 
-// CancelFlowRun cancels the run with the given ID
+// CancelFlowRun cancels the run with the given ID.
 func CancelFlowRun(ctx context.Context, runID string) (run *Run, err error) {
 	ctx, span := tracer.Start(ctx, "CancelFlowRun")
 	defer span.End()
@@ -175,7 +175,7 @@ func CancelFlowRun(ctx context.Context, runID string) (run *Run, err error) {
 }
 
 // UpdateStep sets the given input on the given pending UI step, updating it's status to COMPLETED. It then returs the
-// updated run state
+// updated run state.
 func UpdateStep(ctx context.Context, runID string, stepID string, data map[string]any) (run *Run, err error) {
 	ctx, span := tracer.Start(ctx, "UpdateStep")
 	defer span.End()

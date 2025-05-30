@@ -77,7 +77,7 @@ func RouteFunctions(asts []*parser.AST, errs *errorhandling.ValidationErrors) Vi
 	}
 }
 
-// Regex to match any invalid character in a URL path
+// Regex to match any invalid character in a URL path.
 var invalidURLPathCharRegex = regexp.MustCompile(`[^A-Za-z0-9\-._~:/?#\[\]@!$&'()*+,;=]`)
 
 func validateURLPath(path string) (string, bool) {

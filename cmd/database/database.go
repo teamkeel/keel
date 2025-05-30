@@ -287,7 +287,7 @@ func findImage(dockerClient *client.Client) (*image.Summary, error) {
 }
 
 // findContainer obtains a reference to the Postgres container we make, if one exists.
-// If it cannot find it it returns container as nil.
+// If it cannot find it, it then returns container as nil.
 func findContainer(dockerClient *client.Client) (container *types.Container, err error) {
 	containers, err := dockerClient.ContainerList(context.Background(), dockerContainer.ListOptions{
 		All: true,
@@ -363,7 +363,7 @@ func newPortBindingAndVolumeMountConfig(hostPort string) *container.HostConfig {
 
 // generateDatabaseName generates a unique but deterministic database name using a
 // hash of the project's working directory
-// For example: keel_48f77af86bffe7cdbb44308a70d11f8b
+// For example: keel_48f77af86bffe7cdbb44308a70d11f8b.
 func generateDatabaseName(projectDirectory string) (string, error) {
 	if strings.HasPrefix(projectDirectory, "~/") {
 		home, _ := os.UserHomeDir()
@@ -440,7 +440,7 @@ func connectAndWaitForDbServer(serverConnectionInfo *db.ConnectionInfo) (server 
 
 	// ping() the database until it is available.
 	var pingError error
-	for i := 0; i < 20; i++ {
+	for range 20 {
 		if pingError = server.Ping(); pingError == nil {
 			break
 		}

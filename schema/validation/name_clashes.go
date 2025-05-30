@@ -13,7 +13,7 @@ import (
 )
 
 // NameClashes checks that the names of entities defined in a schema do not clash with
-// built-in types or reserved keywords
+// built-in types or reserved keywords.
 func NameClashesRule(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 	return Visitor{
 		EnterModel: func(m *parser.ModelNode) {

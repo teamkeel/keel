@@ -16,7 +16,7 @@ import (
 
 // anyType represents a flexible scalar type that can be literally anything that is valid in JSON
 // e.g string, number, boolean, list of objects, list of numbers, list of strings etc
-// Primarily used for arbitrary functions when an input/response is defined with the type 'Any'
+// Primarily used for arbitrary functions when an input/response is defined with the type 'Any'.
 var anyType = graphql.NewScalar(graphql.ScalarConfig{
 	Name: parser.MessageFieldTypeAny,
 	ParseValue: func(value interface{}) interface{} {
@@ -53,7 +53,7 @@ const (
 
 // the iso8601 input scalar type will take a iso8601 compliant string as an input
 // and will automatically convert it to a time.Time instance in p.Args at the resolver level
-// this saves us doing any special parsing logic there for time.Time's
+// this saves us doing any special parsing logic there for time.Time's.
 var iso8601Type = graphql.NewScalar(graphql.ScalarConfig{
 	Name: "ISO8601",
 	ParseValue: func(value interface{}) interface{} {
@@ -97,7 +97,7 @@ var iso8601Type = graphql.NewScalar(graphql.ScalarConfig{
 })
 
 // The built-in RFC3333 time layout in Go is too restrictive to support any ISO8601 date-time.
-// In reality, ISO8601 has a couple of different variants that include with timepart / without timepart / different ways of specifying the timezone
+// In reality, ISO8601 has a couple of different variants that include with timepart / without timepart / different ways of specifying the timezone.
 func tryParseISO8601String(input string) (*time.Time, error) {
 	t, err := iso8601.ParseString(input)
 
@@ -108,7 +108,7 @@ func tryParseISO8601String(input string) (*time.Time, error) {
 	return &t, nil
 }
 
-// parseASTValue attempts to parse the contents of the graphql value AST which represents many types of values (strings, bools, lists etc)
+// parseASTValue attempts to parse the contents of the graphql value AST which represents many types of values (strings, bools, lists etc).
 func parseASTValue(v ast.Value) interface{} {
 	// todo: inspect the type switch here to ensure we covered all of the standard types
 	switch underlying := v.(type) {
@@ -454,7 +454,7 @@ var protoTypeToGraphQLInput = map[proto.Type]graphql.Input{
 // for fields where the underlying source is a date/datetime
 // the actual underlying field value may either be a time.Time
 // or an ISO8601 string. So this method handles differing inputs for the
-// source value, and returns a time.Time
+// source value, and returns a time.Time.
 func sourceToTime(source interface{}) (*time.Time, error) {
 	switch v := source.(type) {
 	case time.Time:

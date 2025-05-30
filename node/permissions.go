@@ -20,20 +20,20 @@ func writePermissions(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("export const permissionFns = {")
 	w.Indent()
 
-	for _, model := range schema.Models {
-		for _, action := range model.Actions {
-			if action.Implementation != proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM {
+	for _, model := range schema.GetModels() {
+		for _, action := range model.GetActions() {
+			if action.GetImplementation() != proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM {
 				continue
 			}
 
 			// TODO: think about how to handle error's here
 			sql, values, _ := permissions.ToSQL(schema, model, action)
 			if sql == "" {
-				w.Writef("%s: [],\n", action.Name)
+				w.Writef("%s: [],\n", action.GetName())
 				continue
 			}
 
-			w.Writef("%s: [\n", action.Name)
+			w.Writef("%s: [\n", action.GetName())
 			w.Indent()
 
 			w.Writeln("async (records, ctx, db) => {")

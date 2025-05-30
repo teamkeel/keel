@@ -78,7 +78,7 @@ func ResetRequestPassword(scope *Scope, input map[string]any) error {
 	return err
 }
 
-// Deprecated: we will be deprecating the authenticate action and password flow in favour of the new auth endpoints
+// Deprecated: we will be deprecating the authenticate action and password flow in favour of the new auth endpoints.
 func ResetPassword(scope *Scope, input map[string]any) error {
 	typedInput := typed.New(input)
 

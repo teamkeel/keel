@@ -11,7 +11,7 @@ import (
 )
 
 // attributeLocationsRule checks that attributes are used in valid places
-// For example it's invalid to use a @where attribute inside a model definition
+// For example it's invalid to use a @where attribute inside a model definition.
 func AttributeLocationsRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	for _, model := range query.Models(asts) {
 		for _, section := range model.Sections {

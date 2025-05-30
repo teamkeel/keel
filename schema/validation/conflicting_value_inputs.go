@@ -14,7 +14,7 @@ import (
 // In this case one usage would cancel out the other,
 // so it doesn't make sense to have both.
 //
-// For example, createPost() with (title) { @set(post.title = title) }
+// For example, createPost() with (title) { @set(post.title = title) }.
 func ConflictingValueInputsRule(_ []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 	isAction := false
 	var action *parser.ActionNode

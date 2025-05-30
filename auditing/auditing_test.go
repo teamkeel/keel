@@ -293,7 +293,7 @@ func TestProcessEventSqlWithMultipleModels(t *testing.T) {
 	require.Equal(t, "update", args[12])
 }
 
-// Trims and removes redundant spacing
+// Trims and removes redundant spacing.
 func clean(sql string) string {
 	return strings.Join(strings.Fields(strings.TrimSpace(sql)), " ")
 }

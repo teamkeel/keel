@@ -10,9 +10,9 @@ import (
 )
 
 const (
-	// Number of lines of the source code to render before and after the line with the error
+	// Number of lines of the source code to render before and after the line with the error.
 	bufferLines = 3
-	// How much to indent the entire result e.g. every line is indented this much
+	// How much to indent the entire result e.g. every line is indented this much.
 	indent = 2
 )
 
@@ -143,7 +143,7 @@ func renderError(sources []*reader.SchemaFile, err *ValidationError, warning boo
 		result += colors.Gray(fmt.Sprintf(gutterFmt, "")).String()
 		result += strings.Repeat(" ", err.Pos.Column-1)
 		tokenLength := err.EndPos.Column - err.Pos.Column
-		for i := 0; i < tokenLength; i++ {
+		for i := range tokenLength {
 			if i == tokenLength/2 {
 				result += colors.Yellow("\u252C").Highlight().String()
 			} else {

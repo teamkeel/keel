@@ -12,7 +12,7 @@ import (
 )
 
 func (query *QueryBuilder) applyImplicitFiltersForList(scope *Scope, args map[string]any) error {
-	message := proto.FindWhereInputMessage(scope.Schema, scope.Action.Name)
+	message := proto.FindWhereInputMessage(scope.Schema, scope.Action.GetName())
 	if message == nil {
 		return nil
 	}
@@ -21,23 +21,23 @@ func (query *QueryBuilder) applyImplicitFiltersForList(scope *Scope, args map[st
 }
 
 func (query *QueryBuilder) applyImplicitFiltersFromMessage(scope *Scope, message *proto.Message, model *proto.Model, args map[string]any) error {
-	for _, input := range message.Fields {
-		field := proto.FindField(scope.Schema.Models, model.Name, input.Name)
+	for _, input := range message.GetFields() {
+		field := proto.FindField(scope.Schema.GetModels(), model.GetName(), input.GetName())
 
 		// If the input is not targeting a model field, then it is either a:
 		//  - Message, with nested fields which we must recurse into, or an
 		//  - Explicit input, which is handled elsewhere.
 		if !input.IsModelField() {
-			if input.Type.Type == proto.Type_TYPE_MESSAGE {
-				messageModel := scope.Schema.FindModel(field.Type.ModelName.Value)
-				nestedMessage := scope.Schema.FindMessage(input.Type.MessageName.Value)
+			if input.GetType().GetType() == proto.Type_TYPE_MESSAGE {
+				messageModel := scope.Schema.FindModel(field.GetType().GetModelName().GetValue())
+				nestedMessage := scope.Schema.FindMessage(input.GetType().GetMessageName().GetValue())
 
-				argsSectioned, ok := args[input.Name].(map[string]any)
+				argsSectioned, ok := args[input.GetName()].(map[string]any)
 				if !ok {
-					if input.Optional {
+					if input.GetOptional() {
 						continue
 					}
-					return fmt.Errorf("cannot convert args to map[string]any for key: %s", input.Name)
+					return fmt.Errorf("cannot convert args to map[string]any for key: %s", input.GetName())
 				}
 
 				err := query.applyImplicitFiltersFromMessage(scope, nestedMessage, messageModel, argsSectioned)
@@ -48,19 +48,19 @@ func (query *QueryBuilder) applyImplicitFiltersFromMessage(scope *Scope, message
 			continue
 		}
 
-		value, ok := args[input.Name]
+		value, ok := args[input.GetName()]
 
 		// Not found in arguments
 		if !ok {
-			if input.Optional {
+			if input.GetOptional() {
 				continue
 			}
-			return fmt.Errorf("did not find required '%s' input in where clause", input.Name)
+			return fmt.Errorf("did not find required '%s' input in where clause", input.GetName())
 		}
 
 		valueMap, ok := value.(map[string]any)
 		if !ok {
-			return fmt.Errorf("'%s' input value %v is not in correct format", input.Name, value)
+			return fmt.Errorf("'%s' input value %v is not in correct format", input.GetName(), value)
 		}
 
 		for operatorStr, operand := range valueMap {
@@ -87,7 +87,7 @@ func (query *QueryBuilder) applyImplicitFiltersFromMessage(scope *Scope, message
 					}
 
 					// Resolve the database statement for this expression
-					err = query.whereByImplicitFilter(scope, input.Target, operator, arrayOperand)
+					err = query.whereByImplicitFilter(scope, input.GetTarget(), operator, arrayOperand)
 					if err != nil {
 						return err
 					}
@@ -103,7 +103,7 @@ func (query *QueryBuilder) applyImplicitFiltersFromMessage(scope *Scope, message
 				}
 
 				// Resolve the database statement for this expression
-				err = query.whereByImplicitFilter(scope, input.Target, operator, operand)
+				err = query.whereByImplicitFilter(scope, input.GetTarget(), operator, operand)
 				if err != nil {
 					return err
 				}
@@ -119,13 +119,13 @@ func (query *QueryBuilder) applyImplicitFiltersFromMessage(scope *Scope, message
 
 // Applies schema-defined @orderBy ordering to the query.
 func (query *QueryBuilder) applySchemaOrdering(scope *Scope) error {
-	for _, orderBy := range scope.Action.OrderBy {
-		direction, err := toSql(orderBy.Direction)
+	for _, orderBy := range scope.Action.GetOrderBy() {
+		direction, err := toSql(orderBy.GetDirection())
 		if err != nil {
 			return err
 		}
 
-		query.AppendOrderBy(Field(orderBy.FieldName), direction)
+		query.AppendOrderBy(Field(orderBy.GetFieldName()), direction)
 	}
 
 	return nil
@@ -190,8 +190,8 @@ func List(scope *Scope, input map[string]any) (map[string]any, error) {
 	}
 
 	// if we have embedded data, let's resolve it
-	if len(scope.Action.ResponseEmbeds) > 0 {
-		for _, embed := range scope.Action.ResponseEmbeds {
+	if len(scope.Action.GetResponseEmbeds()) > 0 {
+		for _, embed := range scope.Action.GetResponseEmbeds() {
 			fragments := strings.Split(embed, ".")
 
 			for _, res := range results {

@@ -16,7 +16,7 @@ import (
 )
 
 // Defines which types are compatible with each other for each comparison operator
-// This is used to generate all the necessary combinations of operator overloads
+// This is used to generate all the necessary combinations of operator overloads.
 var typeCompatibilityMapping = map[string][][]*types.Type{
 	operators.Equals: {
 		{types.StringType, typing.Text, typing.ID, typing.Markdown},
@@ -73,7 +73,7 @@ var typeCompatibilityMapping = map[string][][]*types.Type{
 	},
 }
 
-// WithSchemaTypes declares schema models, enums and roles as types in the CEL environment
+// WithSchemaTypes declares schema models, enums and roles as types in the CEL environment.
 func WithSchemaTypes(schema []*parser.AST) expressions.Option {
 	return func(p *expressions.Parser) error {
 		p.Provider.Schema = schema
@@ -119,7 +119,7 @@ func WithSchemaTypes(schema []*parser.AST) expressions.Option {
 	}
 }
 
-// WithVariable declares a new variable in the CEL environment
+// WithVariable declares a new variable in the CEL environment.
 func WithVariable(identifier string, typeName string, isRepeated bool) expressions.Option {
 	return func(p *expressions.Parser) error {
 		t, err := typing.MapType(p.Provider.Schema, typeName, isRepeated)
@@ -138,7 +138,7 @@ func WithVariable(identifier string, typeName string, isRepeated bool) expressio
 	}
 }
 
-// WithConstant declares a new constant in the CEL environment
+// WithConstant declares a new constant in the CEL environment.
 func WithConstant(identifier string, typeName string) expressions.Option {
 	return func(p *expressions.Parser) error {
 		t, err := typing.MapType(p.Provider.Schema, typeName, false)
@@ -155,7 +155,7 @@ func WithConstant(identifier string, typeName string) expressions.Option {
 	}
 }
 
-// WithCtx defines the ctx variable in the CEL environment
+// WithCtx defines the ctx variable in the CEL environment.
 func WithCtx() expressions.Option {
 	return func(p *expressions.Parser) error {
 		p.Provider.Objects["_Context"] = map[string]*types.Type{
@@ -189,7 +189,7 @@ func WithCtx() expressions.Option {
 	}
 }
 
-// WithActionInputs declares variables in the CEL environment for each action input
+// WithActionInputs declares variables in the CEL environment for each action input.
 func WithActionInputs(schema []*parser.AST, action *parser.ActionNode) expressions.Option {
 	return func(p *expressions.Parser) error {
 		model := query.ActionModel(schema, action.Name.Value)
@@ -248,7 +248,7 @@ func WithActionInputs(schema []*parser.AST, action *parser.ActionNode) expressio
 	}
 }
 
-// WithLogicalOperators enables support for the equals '==' and not equals '!=' operators for all types
+// WithLogicalOperators enables support for the equals '==' and not equals '!=' operators for all types.
 func WithLogicalOperators() expressions.Option {
 	return func(p *expressions.Parser) error {
 		var err error
@@ -268,7 +268,7 @@ func WithLogicalOperators() expressions.Option {
 	}
 }
 
-// WithComparisonOperators enables support for comparison operators for all types
+// WithComparisonOperators enables support for comparison operators for all types.
 func WithComparisonOperators() expressions.Option {
 	return func(p *expressions.Parser) error {
 		mapping := map[string][][]*types.Type{}
@@ -422,7 +422,7 @@ func WithComparisonOperators() expressions.Option {
 	}
 }
 
-// WithArithmeticOperators enables support for arithmetic operators
+// WithArithmeticOperators enables support for arithmetic operators.
 func WithArithmeticOperators() expressions.Option {
 	return func(p *expressions.Parser) error {
 		// Add operator overloads for each compatible type combination
@@ -475,7 +475,7 @@ func WithFunctions() expressions.Option {
 	}
 }
 
-// WithReturnTypeAssertion will check that the expression evaluates to a specific type
+// WithReturnTypeAssertion will check that the expression evaluates to a specific type.
 func WithReturnTypeAssertion(returnType string, asArray bool) expressions.Option {
 	return func(p *expressions.Parser) error {
 		var err error

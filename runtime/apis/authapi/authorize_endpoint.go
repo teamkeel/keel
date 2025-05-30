@@ -43,7 +43,7 @@ const (
 	AuthorizationErrServerError = "server_error"
 )
 
-// AuthorizeHandler is a redirection endpoint that will redirect to the provider's sign-in/auth page
+// AuthorizeHandler is a redirection endpoint that will redirect to the provider's sign-in/auth page.
 func AuthorizeHandler(schema *proto.Schema) common.HandlerFunc {
 	return func(r *http.Request) common.Response {
 		ctx, span := tracer.Start(r.Context(), "Authorize Endpoint")

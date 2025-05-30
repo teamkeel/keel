@@ -305,15 +305,15 @@ func parseUnixCron(tokens *Tokens) (*CronExpression, error) {
 				if !cfg.stepValues {
 					return nil, Error{Message: fmt.Sprintf("step values are not allowed in %s field", cfg.label), Token: token}
 				}
-				min := cfg.min
-				if min == 0 {
-					min = 1
+				minimum := cfg.min
+				if minimum == 0 {
+					minimum = 1
 				}
 				trimmed := strings.TrimPrefix(token.Value, "*/")
 				n, err := strconv.Atoi(trimmed)
-				if err != nil || n < min || n > cfg.max {
+				if err != nil || n < minimum || n > cfg.max {
 					return nil, Error{
-						Message: fmt.Sprintf("invalid step value '%s' for %s field - must be integer between %d and %d", trimmed, cfg.label, min, cfg.max),
+						Message: fmt.Sprintf("invalid step value '%s' for %s field - must be integer between %d and %d", trimmed, cfg.label, minimum, cfg.max),
 						Token:   token,
 					}
 				}
@@ -460,7 +460,7 @@ type Tokens struct {
 	currIndex int
 }
 
-// Peek returns the next token or nil but does not advance the current token
+// Peek returns the next token or nil but does not advance the current token.
 func (t *Tokens) Peek() *Token {
 	i := t.currIndex
 	i++
@@ -470,7 +470,7 @@ func (t *Tokens) Peek() *Token {
 	return t.tokens[i]
 }
 
-// Next returns the next token or nil and advances the current token
+// Next returns the next token or nil and advances the current token.
 func (t *Tokens) Next() *Token {
 	t.currIndex++
 	if t.currIndex > len(t.tokens)-1 {
@@ -480,7 +480,7 @@ func (t *Tokens) Next() *Token {
 }
 
 // MatchOrNil is like Next() but checks that the next token (if it exists)
-// matches one of the expected values
+// matches one of the expected values.
 func (t *Tokens) MatchOrNil(expected ...string) (*Token, error) {
 	tok := t.Next()
 	if tok == nil {
@@ -503,7 +503,7 @@ func (t *Tokens) MatchOrNil(expected ...string) (*Token, error) {
 	return tok, nil
 }
 
-// Match is like like MatchOrNil but will return an error if the returned token is nil
+// Match is like MatchOrNil but will return an error if the returned token is nil.
 func (t *Tokens) Match(expected ...string) (*Token, error) {
 	tok, err := t.MatchOrNil(expected...)
 	if err != nil {

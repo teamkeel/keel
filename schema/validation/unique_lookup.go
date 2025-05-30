@@ -20,7 +20,7 @@ var (
 )
 
 // UniqueLookup checks that the filters will guarantee that one or zero record returned
-// for get, update and delete actions
+// for get, update and delete actions.
 func UniqueLookup(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 	var model *parser.ModelNode
 	var action *parser.ActionNode

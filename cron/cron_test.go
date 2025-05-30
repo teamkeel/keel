@@ -103,7 +103,6 @@ func TestParseCron(t *testing.T) {
 	}
 
 	for _, fixture := range fixtures {
-		fixture := fixture
 		t.Run(fixture.input, func(t *testing.T) {
 			t.Parallel()
 			s, err := cron.Parse(fixture.input)
@@ -239,7 +238,6 @@ func TestParseCronError(t *testing.T) {
 	}
 
 	for _, fixture := range fixtures {
-		fixture := fixture
 		t.Run(fixture.input, func(t *testing.T) {
 			t.Parallel()
 			s, err := cron.Parse(fixture.input)

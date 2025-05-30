@@ -10,7 +10,7 @@ import (
 )
 
 // UpdateActionNestedInputsRule checks that the action inputs for update aren't referencing any relationship fields
-// apart from the foreign key
+// apart from the foreign key.
 func UpdateActionNestedInputsRule(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 	var action *parser.ActionNode
 	var currentModel *parser.ModelNode

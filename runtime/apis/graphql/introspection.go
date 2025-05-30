@@ -49,7 +49,7 @@ type introspectionField struct {
 	Type introsepctionTypeRef `json:"type"`
 }
 
-// Represents the result of executing github.com/teamkeel/graphql/testutil.IntrospectionQuery
+// IntrospectionQueryResult represents the result of executing github.com/teamkeel/graphql/testutil.IntrospectionQuery.
 type IntrospectionQueryResult struct {
 	Schema struct {
 		MutationType struct {
@@ -85,7 +85,7 @@ var (
 // ToGraphQLSchemaLanguage converts the result of an introspection query
 // into a GraphQL schema string
 // Note: this implementation is not complete and only covers cases
-// that are relevant to us, for example directives are not handled
+// that are relevant to us, for example directives are not handled.
 func ToGraphQLSchemaLanguage(response common.Response) string {
 	// First we have the marshal the response bytes back into
 	// a graphql.Result
@@ -116,7 +116,7 @@ func ToGraphQLSchemaLanguage(response common.Response) string {
 			return aIndex > bIndex
 		}
 
-		// Then order by input types, types, and enums
+		// Then order by input types, and enums
 		kindOrder := []string{"ENUM", "OBJECT", "INPUT_OBJECT"}
 		aIndex = lo.IndexOf(kindOrder, aType.Kind)
 		bIndex = lo.IndexOf(kindOrder, bType.Kind)

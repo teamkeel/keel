@@ -291,7 +291,7 @@ const multiSchema string = `
 	}
 `
 
-// Schema with all field types
+// Schema with all field types.
 const fieldTypes string = `
 	model Thing {
 
@@ -884,7 +884,7 @@ var testCases = []testCase{
 		keelSchema: basicSchema,
 		databaseSetup: func(t *testing.T, db *gorm.DB) {
 			for _, nameStub := range []string{"Fred", "Sue"} {
-				for i := 0; i < 100; i++ {
+				for i := range 100 {
 					name := fmt.Sprintf("%s_%d", nameStub, i)
 					id := fmt.Sprintf("%s_%04d_id", nameStub, i)
 					row := initRow(map[string]any{

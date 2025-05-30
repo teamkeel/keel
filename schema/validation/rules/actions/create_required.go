@@ -65,7 +65,7 @@ func checkField(
 // - relationship repeated fields
 // - fields which have a default
 // - built-in fields like CreatedAt, Id etc.
-// - computed fields
+// - computed fields.
 func isNotNeeded(asts []*parser.AST, model *parser.ModelNode, f *parser.FieldNode) bool {
 	switch {
 	case f.Optional,
@@ -204,7 +204,7 @@ func setExpressions(action *parser.ActionNode) []*parser.Expression {
 }
 
 // requiredFieldInWithInputs returns true if the given requiredField is
-// present the the given action's "With" inputs and the input is required.
+// present the given action's "With" inputs and the input is required.
 func requiredFieldInWithInputs(requiredField string, action *parser.ActionNode) bool {
 	for _, input := range action.With {
 		if input.Label == nil && input.Type.ToString() == requiredField && !input.Optional {

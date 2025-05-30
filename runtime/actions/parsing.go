@@ -25,13 +25,13 @@ func TransformInputs(schema *proto.Schema, message *proto.Message, input map[str
 func transform(schema *proto.Schema, message *proto.Message, input map[string]any, forFunctions bool) (map[string]any, error) {
 	var err error
 
-	for _, f := range message.Fields {
-		if v, has := input[f.Name]; has {
-			switch f.Type.Type {
+	for _, f := range message.GetFields() {
+		if v, has := input[f.GetName()]; has {
+			switch f.GetType().GetType() {
 			case proto.Type_TYPE_MESSAGE:
-				nested := schema.FindMessage(f.Type.MessageName.Value)
+				nested := schema.FindMessage(f.GetType().GetMessageName().GetValue())
 
-				if f.Type.Repeated {
+				if f.GetType().GetRepeated() {
 					arr := v.([]any)
 					for i, el := range arr {
 						arr[i], err = transform(schema, nested, el.(map[string]any), forFunctions)
@@ -39,12 +39,12 @@ func transform(schema *proto.Schema, message *proto.Message, input map[string]an
 							return nil, err
 						}
 					}
-					input[f.Name] = arr
+					input[f.GetName()] = arr
 				} else {
 					if v == nil {
-						input[f.Name] = nil
+						input[f.GetName()] = nil
 					} else {
-						input[f.Name], err = transform(schema, nested, v.(map[string]any), forFunctions)
+						input[f.GetName()], err = transform(schema, nested, v.(map[string]any), forFunctions)
 						if err != nil {
 							return nil, err
 						}
@@ -52,33 +52,33 @@ func transform(schema *proto.Schema, message *proto.Message, input map[string]an
 				}
 
 			case proto.Type_TYPE_INT:
-				input[f.Name], err = parseItem(v, f.Type.Repeated, toInt)
+				input[f.GetName()], err = parseItem(v, f.GetType().GetRepeated(), toInt)
 			case proto.Type_TYPE_DECIMAL:
-				input[f.Name], err = parseItem(v, f.Type.Repeated, toFloat)
+				input[f.GetName()], err = parseItem(v, f.GetType().GetRepeated(), toFloat)
 			case proto.Type_TYPE_BOOL:
-				input[f.Name], err = parseItem(v, f.Type.Repeated, toBool)
+				input[f.GetName()], err = parseItem(v, f.GetType().GetRepeated(), toBool)
 			case proto.Type_TYPE_DATE:
-				input[f.Name], err = parseItem(v, f.Type.Repeated, toDate)
+				input[f.GetName()], err = parseItem(v, f.GetType().GetRepeated(), toDate)
 			case proto.Type_TYPE_TIMESTAMP, proto.Type_TYPE_DATETIME:
-				input[f.Name], err = parseItem(v, f.Type.Repeated, toTimestamp)
+				input[f.GetName()], err = parseItem(v, f.GetType().GetRepeated(), toTimestamp)
 			case proto.Type_TYPE_VECTOR:
-				input[f.Name], err = parseItem(v, true, toFloat)
+				input[f.GetName()], err = parseItem(v, true, toFloat)
 			case proto.Type_TYPE_UNION, proto.Type_TYPE_ANY, proto.Type_TYPE_MODEL, proto.Type_TYPE_OBJECT:
 				return input, nil
 			case proto.Type_TYPE_FILE:
 				if forFunctions {
-					input[f.Name], err = parseItem(v, f.Type.Repeated, toInlineFileForFunctions)
+					input[f.GetName()], err = parseItem(v, f.GetType().GetRepeated(), toInlineFileForFunctions)
 				} else {
-					input[f.Name], err = parseItem(v, f.Type.Repeated, toString)
+					input[f.GetName()], err = parseItem(v, f.GetType().GetRepeated(), toString)
 				}
 			case proto.Type_TYPE_DURATION:
 				if forFunctions {
-					input[f.Name], err = parseItem(v, f.Type.Repeated, toDurationForFunctions)
+					input[f.GetName()], err = parseItem(v, f.GetType().GetRepeated(), toDurationForFunctions)
 				} else {
-					input[f.Name], err = parseItem(v, f.Type.Repeated, toDuration)
+					input[f.GetName()], err = parseItem(v, f.GetType().GetRepeated(), toDuration)
 				}
 			default:
-				input[f.Name], err = parseItem(v, f.Type.Repeated, toString)
+				input[f.GetName()], err = parseItem(v, f.GetType().GetRepeated(), toString)
 			}
 
 			if err != nil {

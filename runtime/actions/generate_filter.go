@@ -12,7 +12,7 @@ import (
 	"github.com/teamkeel/keel/schema/parser"
 )
 
-// GenerateFilterQuery visits the expression and adds filter conditions to the provided query builder
+// GenerateFilterQuery visits the expression and adds filter conditions to the provided query builder.
 func GenerateFilterQuery(ctx context.Context, query *QueryBuilder, schema *proto.Schema, model *proto.Model, action *proto.Action, inputs map[string]any) resolve.Visitor[*QueryBuilder] {
 	return &whereQueryGen{
 		ctx:       ctx,

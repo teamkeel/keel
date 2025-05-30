@@ -23,7 +23,7 @@ const (
 
 func Scaffold(dir string, schema *proto.Schema, cfg *config.ProjectConfig) (codegen.GeneratedFiles, error) {
 	functions := schema.FilterActions(func(op *proto.Action) bool {
-		return op.Implementation == proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
+		return op.GetImplementation() == proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
 	})
 
 	type Dir struct {
@@ -42,19 +42,19 @@ func Scaffold(dir string, schema *proto.Schema, cfg *config.ProjectConfig) (code
 		},
 		{
 			path:     JobsDir,
-			required: len(schema.Jobs) > 0,
+			required: len(schema.GetJobs()) > 0,
 		},
 		{
 			path:     FlowsDir,
-			required: len(schema.Flows) > 0,
+			required: len(schema.GetFlows()) > 0,
 		},
 		{
 			path:     SubscribersDir,
-			required: len(schema.Subscribers) > 0,
+			required: len(schema.GetSubscribers()) > 0,
 		},
 		{
 			path:     RoutesDir,
-			required: len(schema.Routes) > 0,
+			required: len(schema.GetRoutes()) > 0,
 		},
 	}
 
@@ -100,7 +100,7 @@ export default AfterIdentityCreated(async (ctx) => {
 	}
 
 	for _, fn := range functions {
-		path := filepath.Join(FunctionsDir, fmt.Sprintf("%s.ts", fn.Name))
+		path := filepath.Join(FunctionsDir, fmt.Sprintf("%s.ts", fn.GetName()))
 		_, err := os.Stat(filepath.Join(dir, path))
 		if os.IsNotExist(err) {
 			generatedFiles = append(generatedFiles, &codegen.GeneratedFile{
@@ -110,8 +110,8 @@ export default AfterIdentityCreated(async (ctx) => {
 		}
 	}
 
-	for _, job := range schema.Jobs {
-		path := filepath.Join(JobsDir, fmt.Sprintf("%s.ts", casing.ToLowerCamel(job.Name)))
+	for _, job := range schema.GetJobs() {
+		path := filepath.Join(JobsDir, fmt.Sprintf("%s.ts", casing.ToLowerCamel(job.GetName())))
 		_, err := os.Stat(filepath.Join(dir, path))
 		if os.IsNotExist(err) {
 			generatedFiles = append(generatedFiles, &codegen.GeneratedFile{
@@ -121,8 +121,8 @@ export default AfterIdentityCreated(async (ctx) => {
 		}
 	}
 
-	for _, flow := range schema.Flows {
-		path := filepath.Join(FlowsDir, fmt.Sprintf("%s.ts", casing.ToLowerCamel(flow.Name)))
+	for _, flow := range schema.GetFlows() {
+		path := filepath.Join(FlowsDir, fmt.Sprintf("%s.ts", casing.ToLowerCamel(flow.GetName())))
 		_, err := os.Stat(filepath.Join(dir, path))
 		if os.IsNotExist(err) {
 			generatedFiles = append(generatedFiles, &codegen.GeneratedFile{
@@ -132,8 +132,8 @@ export default AfterIdentityCreated(async (ctx) => {
 		}
 	}
 
-	for _, subscriber := range schema.Subscribers {
-		path := filepath.Join(SubscribersDir, fmt.Sprintf("%s.ts", subscriber.Name))
+	for _, subscriber := range schema.GetSubscribers() {
+		path := filepath.Join(SubscribersDir, fmt.Sprintf("%s.ts", subscriber.GetName()))
 		_, err := os.Stat(filepath.Join(dir, path))
 		if os.IsNotExist(err) {
 			generatedFiles = append(generatedFiles, &codegen.GeneratedFile{
@@ -143,8 +143,8 @@ export default AfterIdentityCreated(async (ctx) => {
 		}
 	}
 
-	for _, route := range schema.Routes {
-		path := filepath.Join(RoutesDir, fmt.Sprintf("%s.ts", route.Handler))
+	for _, route := range schema.GetRoutes() {
+		path := filepath.Join(RoutesDir, fmt.Sprintf("%s.ts", route.GetHandler()))
 		_, err := os.Stat(filepath.Join(dir, path))
 		if os.IsNotExist(err) {
 			generatedFiles = append(generatedFiles, &codegen.GeneratedFile{
@@ -177,7 +177,7 @@ func ensureDir(dirName string) error {
 }
 
 func writeFunctionWrapper(function *proto.Action) string {
-	functionName := casing.ToCamel(function.Name)
+	functionName := casing.ToCamel(function.GetName())
 
 	if function.IsArbitraryFunction() {
 		return fmt.Sprintf(`import { %s } from '@teamkeel/sdk';
@@ -188,7 +188,7 @@ export default %s(async (ctx, inputs) => {
 });`, functionName, functionName)
 	}
 
-	hookType := fmt.Sprintf("%sHooks", casing.ToCamel(function.Name))
+	hookType := fmt.Sprintf("%sHooks", casing.ToCamel(function.GetName()))
 
 	return fmt.Sprintf(`import { %s, %s } from '@teamkeel/sdk';
 
@@ -203,13 +203,13 @@ func writeJobWrapper(job *proto.Job) string {
 	// The "inputs" argument for the function signature is only
 	// wanted there are some.
 	switch {
-	case job.InputMessageName == "":
+	case job.GetInputMessageName() == "":
 		return fmt.Sprintf(`import { %s } from '@teamkeel/sdk';
 
 // To learn more about jobs, visit https://docs.keel.so/jobs
 export default %s(async (ctx) => {
 
-});`, job.Name, job.Name)
+});`, job.GetName(), job.GetName())
 
 	default:
 		return fmt.Sprintf(`import { %s } from '@teamkeel/sdk';
@@ -217,7 +217,7 @@ export default %s(async (ctx) => {
 // To learn more about jobs, visit https://docs.keel.so/jobs
 export default %s(async (ctx, inputs) => {
 
-});`, job.Name, job.Name)
+});`, job.GetName(), job.GetName())
 	}
 }
 
@@ -225,7 +225,7 @@ func writeFlowWrapper(flow *proto.Flow) string {
 	// The "inputs" argument for the function signature is only
 	// wanted when there are some.
 	switch {
-	case flow.InputMessageName == "":
+	case flow.GetInputMessageName() == "":
 		return fmt.Sprintf(`import { %s, FlowConfig } from '@teamkeel/sdk';
 
 const config: FlowConfig = {
@@ -235,7 +235,7 @@ const config: FlowConfig = {
 // To learn more about flows, visit https://docs.keel.so/flows
 export default %s(config, async (ctx) => {
 
-});`, flow.Name, flow.Name)
+});`, flow.GetName(), flow.GetName())
 
 	default:
 		return fmt.Sprintf(`import { %s, FlowConfig } from '@teamkeel/sdk';
@@ -247,7 +247,7 @@ const config: FlowConfig = {
 // To learn more about flows, visit https://docs.keel.so/flows
 export default %s(config, async (ctx, inputs) => {
 
-});`, flow.Name, flow.Name)
+});`, flow.GetName(), flow.GetName())
 	}
 }
 
@@ -257,5 +257,5 @@ func writeSubscriberWrapper(subscriber *proto.Subscriber) string {
 // To learn more about events and subscribers, visit https://docs.keel.so/events
 export default %s(async (ctx, event) => {
 
-});`, strcase.ToCamel(subscriber.Name), strcase.ToCamel(subscriber.Name))
+});`, strcase.ToCamel(subscriber.GetName()), strcase.ToCamel(subscriber.GetName()))
 }

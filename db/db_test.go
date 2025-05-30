@@ -46,7 +46,7 @@ func TestDbTransactionConcurrency(t *testing.T) {
 	wg := sync.WaitGroup{}
 	expectedRows := 0
 
-	for i := 0; i < 20; i++ {
+	for i := range 20 {
 		wg.Add(1)
 
 		rollback := i%2 == 0

@@ -84,7 +84,7 @@ func NewTiming() *Timing {
 	return &Timing{t: time.Now()}
 }
 
-// Since returns a gray string containing the duration since it was last called or the Timing struct was created
+// Since returns a gray string containing the duration since it was last called or the Timing struct was created.
 func (t *Timing) Since() string {
 	since := time.Since(t.t)
 	since = since - (since % time.Millisecond)

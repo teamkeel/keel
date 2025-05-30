@@ -4034,7 +4034,6 @@ var testCases = []testCase{
 func TestQueryBuilder(t *testing.T) {
 	t.Parallel()
 	for _, testCase := range testCases {
-		testCase := testCase
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 			ctx := context.Background()
@@ -4049,7 +4048,7 @@ func TestQueryBuilder(t *testing.T) {
 			}
 
 			var statement *actions.Statement
-			switch action.Type {
+			switch action.GetType() {
 			case proto.ActionType_ACTION_TYPE_GET:
 				statement, err = actions.GenerateGetStatement(query, scope, testCase.input)
 			case proto.ActionType_ACTION_TYPE_LIST:
@@ -4061,7 +4060,7 @@ func TestQueryBuilder(t *testing.T) {
 			case proto.ActionType_ACTION_TYPE_DELETE:
 				statement, err = actions.GenerateDeleteStatement(query, scope, testCase.input)
 			default:
-				require.NoError(t, fmt.Errorf("unhandled action type %s in sql generation", action.Type.String()))
+				require.NoError(t, fmt.Errorf("unhandled action type %s in sql generation", action.GetType().String()))
 			}
 
 			if err != nil {
@@ -4074,7 +4073,7 @@ func TestQueryBuilder(t *testing.T) {
 				if len(testCase.expectedArgs) != len(statement.SqlArgs()) {
 					assert.Failf(t, "Argument count not matching", "Expected: %v, Actual: %v", len(testCase.expectedArgs), len(statement.SqlArgs()))
 				} else {
-					for i := 0; i < len(testCase.expectedArgs); i++ {
+					for i := range len(testCase.expectedArgs) {
 						if testCase.expectedArgs[i] != statement.SqlArgs()[i] {
 							assert.Failf(t, "Arguments not matching", "SQL argument at index %d not matching. Expected: %v, Actual: %v", i, testCase.expectedArgs[i], statement.SqlArgs()[i])
 							break
@@ -4086,7 +4085,7 @@ func TestQueryBuilder(t *testing.T) {
 	}
 }
 
-// Generates a scope and query builder
+// Generates a scope and query builder.
 func generateQueryScope(ctx context.Context, schemaString string, actionName string) (*actions.Scope, *actions.QueryBuilder, *proto.Action, error) {
 	builder := &schema.Builder{}
 	schema, err := builder.MakeFromString(schemaString, config.Empty)
@@ -4099,14 +4098,14 @@ func generateQueryScope(ctx context.Context, schemaString string, actionName str
 		return nil, nil, nil, fmt.Errorf("action not found in schema: %s", actionName)
 	}
 
-	model := schema.FindModel(action.ModelName)
+	model := schema.FindModel(action.GetModelName())
 	query := actions.NewQuery(model)
 	scope := actions.NewScope(ctx, action, schema)
 
 	return scope, query, action, nil
 }
 
-// Trims and removes redundant spacing and other characters
+// Trims and removes redundant spacing and other characters.
 func clean(sql string) string {
 	sql = strings.ReplaceAll(sql, "\n", " ")
 	sql = strings.ReplaceAll(sql, "\t", " ")

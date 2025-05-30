@@ -8,7 +8,7 @@ import (
 )
 
 type EmailClient interface {
-	Send(context.Context, *SendEmailRequest) error
+	Send(ctx context.Context, req *SendEmailRequest) error
 }
 
 type SendEmailRequest struct {

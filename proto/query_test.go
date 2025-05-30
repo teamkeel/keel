@@ -9,27 +9,27 @@ import (
 
 func TestFindModel(t *testing.T) {
 	t.Parallel()
-	require.Equal(t, "ModelA", FindModel(referenceSchema.Models, "ModelA").Name)
+	require.Equal(t, "ModelA", FindModel(referenceSchema.GetModels(), "ModelA").GetName())
 }
 
 func TestFindModels(t *testing.T) {
 	t.Parallel()
-	modelsFound := FindModels(referenceSchema.Models, []string{"ModelA", "ModelC"})
+	modelsFound := FindModels(referenceSchema.GetModels(), []string{"ModelA", "ModelC"})
 	namesOfFoundModels := lo.Map(modelsFound, func(m *Model, _ int) string {
-		return m.Name
+		return m.GetName()
 	})
 	require.Equal(t, []string{"ModelA", "ModelC"}, namesOfFoundModels)
 }
 
 func TestFindField(t *testing.T) {
 	t.Parallel()
-	require.Equal(t, "Field2", FindField(referenceSchema.Models, "ModelA", "Field2").Name)
+	require.Equal(t, "Field2", FindField(referenceSchema.GetModels(), "ModelA", "Field2").GetName())
 }
 
 func TestModelExists(t *testing.T) {
 	t.Parallel()
-	require.True(t, ModelExists(referenceSchema.Models, "ModelA"))
-	require.False(t, ModelExists(referenceSchema.Models, "ModelZ"))
+	require.True(t, ModelExists(referenceSchema.GetModels(), "ModelA"))
+	require.False(t, ModelExists(referenceSchema.GetModels(), "ModelZ"))
 }
 
 var referenceSchema *Schema = &Schema{

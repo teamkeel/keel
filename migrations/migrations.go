@@ -81,13 +81,13 @@ type Migrations struct {
 	SQL string
 }
 
-// HasModelFieldChanges returns true if the migrations contain model field changes to be applied
+// HasModelFieldChanges returns true if the migrations contain model field changes to be applied.
 func (m *Migrations) HasModelFieldChanges() bool {
 	return m.SQL != ""
 }
 
 // Apply executes the migrations against the database
-// If dryRun is true, then the changes are rolled back
+// If dryRun is true, then the changes are rolled back.
 func (m *Migrations) Apply(ctx context.Context, dryRun bool) error {
 	ctx, span := tracer.Start(ctx, "Apply Migrations")
 	defer span.End()
@@ -170,7 +170,7 @@ func (m *Migrations) Apply(ctx context.Context, dryRun bool) error {
 
 // New creates a new Migrations instance for the given schema and database.
 // Introspection is performed on the database to work out what schema changes
-// need to be applied to result in the database schema matching the Keel schema
+// need to be applied to result in the database schema matching the Keel schema.
 func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migrations, error) {
 	_, span := tracer.Start(ctx, "Generate Migrations")
 	defer span.End()
@@ -215,7 +215,7 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 	for _, modelName := range modelNames {
 		model := schema.FindModel(modelName)
 		_, exists := lo.Find(columns, func(c *ColumnRow) bool {
-			return c.TableName == casing.ToSnake(model.Name)
+			return c.TableName == casing.ToSnake(model.GetName())
 		})
 		if !exists {
 			stmt, err := createTableStmt(schema, model)
@@ -224,7 +224,7 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 			}
 			statements = append(statements, stmt)
 			changes = append(changes, &DatabaseChange{
-				Model: model.Name,
+				Model: model.GetName(),
 				Type:  ChangeTypeAdded,
 			})
 			modelsAdded = append(modelsAdded, model)
@@ -260,8 +260,8 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 	}
 
 	// Add audit log triggers all model tables excluding the audit table itself.
-	for _, model := range schema.Models {
-		if model.Name != strcase.ToCamel(auditing.TableName) {
+	for _, model := range schema.GetModels() {
+		if model.GetName() != strcase.ToCamel(auditing.TableName) {
 			stmt := createAuditTriggerStmts(existingTriggers, model)
 			if stmt != "" {
 				statements = append(statements, stmt)
@@ -276,35 +276,35 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 
 	// Updating columns for tables that already exist
 	for _, model := range existingModels {
-		tableName := casing.ToSnake(model.Name)
+		tableName := casing.ToSnake(model.GetName())
 
 		tableColumns := lo.Filter(columns, func(c *ColumnRow, _ int) bool {
 			return c.TableName == tableName
 		})
 
-		for _, field := range model.Fields {
-			if field.Type.Type == proto.Type_TYPE_MODEL {
+		for _, field := range model.GetFields() {
+			if field.GetType().GetType() == proto.Type_TYPE_MODEL {
 				continue
 			}
 
 			column, _ := lo.Find(tableColumns, func(c *ColumnRow) bool {
-				return c.ColumnName == casing.ToSnake(field.Name)
+				return c.ColumnName == casing.ToSnake(field.GetName())
 			})
 			if column == nil {
 				// Add new column
-				stmt, err := addColumnStmt(schema, model.Name, field)
+				stmt, err := addColumnStmt(schema, model.GetName(), field)
 				if err != nil {
 					return nil, err
 				}
 				statements = append(statements, stmt)
 				changes = append(changes, &DatabaseChange{
-					Model: model.Name,
-					Field: field.Name,
+					Model: model.GetName(),
+					Field: field.GetName(),
 					Type:  ChangeTypeAdded,
 				})
 
 				// When the field added is a foreign key field, we add a corresponding foreign key constraint.
-				if field.ForeignKeyInfo != nil {
+				if field.GetForeignKeyInfo() != nil {
 					statements = append(statements, fkConstraint(field, model))
 				}
 				continue
@@ -313,7 +313,7 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 			// Column already exists - see if any changes need to be applied
 			hasChanged := false
 
-			alterSQL, err := alterColumnStmt(model.Name, field, column)
+			alterSQL, err := alterColumnStmt(model.GetName(), field, column)
 			if err != nil {
 				return nil, err
 			}
@@ -326,8 +326,8 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 				return c.TableName == tableName && c.ConstraintType == "u" && len(c.ConstrainedColumns) == 1 && c.ConstrainedColumns[0] == int64(column.ColumnNum)
 			})
 
-			if field.Unique && !field.PrimaryKey && !hasUniqueConstraint {
-				uniqueStmt, err := addUniqueConstraintStmt(schema, model.Name, []string{field.Name})
+			if field.GetUnique() && !field.GetPrimaryKey() && !hasUniqueConstraint {
+				uniqueStmt, err := addUniqueConstraintStmt(schema, model.GetName(), []string{field.GetName()})
 				if err != nil {
 					return nil, err
 				}
@@ -335,15 +335,15 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 				statements = append(statements, uniqueStmt)
 				hasChanged = true
 			}
-			if !field.Unique && hasUniqueConstraint {
+			if !field.GetUnique() && hasUniqueConstraint {
 				statements = append(statements, dropConstraintStmt(uniqueConstraint.TableName, uniqueConstraint.ConstraintName))
 				hasChanged = true
 			}
 
 			if hasChanged {
 				changes = append(changes, &DatabaseChange{
-					Model: model.Name,
-					Field: field.Name,
+					Model: model.GetName(),
+					Field: field.GetName(),
 					Type:  ChangeTypeModified,
 				})
 			}
@@ -360,15 +360,15 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 				continue
 			}
 
-			field := proto.FindField(schema.Models, model.Name, casing.ToLowerCamel(column.ColumnName))
+			field := proto.FindField(schema.GetModels(), model.GetName(), casing.ToLowerCamel(column.ColumnName))
 			if field == nil {
-				statements = append(statements, dropColumnStmt(model.Name, column.ColumnName))
+				statements = append(statements, dropColumnStmt(model.GetName(), column.ColumnName))
 
 				// Remove __sequence suffix if present
 				colName := strings.TrimSuffix(column.ColumnName, sequenceSuffix)
 
 				changes = append(changes, &DatabaseChange{
-					Model: model.Name,
+					Model: model.GetName(),
 					Field: casing.ToLowerCamel(colName),
 					Type:  ChangeTypeRemoved,
 				})
@@ -383,7 +383,7 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 		if len(stmts) > 0 {
 			statements = append(statements, stmts...)
 			changes = append(changes, &DatabaseChange{
-				Model: model.Name,
+				Model: model.GetName(),
 				Type:  ChangeTypeModified,
 			})
 		}
@@ -434,36 +434,36 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 	// to the end of the migration because we may have needed to populate existing rows first.
 	for _, modelName := range modelNames {
 		model := schema.FindModel(modelName)
-		for _, field := range model.Fields {
+		for _, field := range model.GetFields() {
 			column, has := lo.Find(columns, func(c *ColumnRow) bool {
-				return c.TableName == casing.ToSnake(model.Name) && c.ColumnName == casing.ToSnake(field.Name)
+				return c.TableName == casing.ToSnake(model.GetName()) && c.ColumnName == casing.ToSnake(field.GetName())
 			})
 
-			if field.ComputedExpression == nil || field.Optional {
+			if field.GetComputedExpression() == nil || field.GetOptional() {
 				continue
 			}
 
-			col := field.Name
-			if field.ForeignKeyFieldName != nil {
-				col = field.ForeignKeyFieldName.Value
+			col := field.GetName()
+			if field.GetForeignKeyFieldName() != nil {
+				col = field.GetForeignKeyFieldName().GetValue()
 			}
 
 			if !has {
-				statements = append(statements, fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s SET NOT NULL;", Identifier(model.Name), Identifier(col)))
+				statements = append(statements, fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s SET NOT NULL;", Identifier(model.GetName()), Identifier(col)))
 				continue
 			}
 
-			if field.Optional == column.NotNull && !field.Optional && field.ComputedExpression != nil {
-				statements = append(statements, fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s SET NOT NULL;", Identifier(model.Name), Identifier(col)))
+			if field.GetOptional() == column.NotNull && !field.GetOptional() && field.GetComputedExpression() != nil {
+				statements = append(statements, fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s SET NOT NULL;", Identifier(model.GetName()), Identifier(col)))
 
 				if lo.ContainsBy(changes, func(c *DatabaseChange) bool {
-					return c.Model == model.Name && c.Field == field.Name && c.Type == ChangeTypeModified
+					return c.Model == model.GetName() && c.Field == field.GetName() && c.Type == ChangeTypeModified
 				}) {
 					continue
 				}
 				changes = append(changes, &DatabaseChange{
-					Model: model.Name,
-					Field: field.Name,
+					Model: model.GetName(),
+					Field: field.GetName(),
 					Type:  ChangeTypeModified,
 				})
 			}
@@ -483,13 +483,13 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 
 // compositeUniqueConstraintsForModel finds all composite unique constraints in model and
 // returns a map where the keys are constraint names and the keys are the field names in
-// that constraint
+// that constraint.
 func compositeUniqueConstraintsForModel(model *proto.Model) map[string][]string {
 	uniqueConstraints := map[string][]string{}
-	for _, field := range model.Fields {
-		if len(field.UniqueWith) > 0 {
-			fieldNames := append([]string{field.Name}, field.UniqueWith...)
-			constraintName := UniqueConstraintName(model.Name, fieldNames)
+	for _, field := range model.GetFields() {
+		if len(field.GetUniqueWith()) > 0 {
+			fieldNames := append([]string{field.GetName()}, field.GetUniqueWith()...)
+			constraintName := UniqueConstraintName(model.GetName(), fieldNames)
 			uniqueConstraints[constraintName] = fieldNames
 		}
 	}
@@ -497,12 +497,12 @@ func compositeUniqueConstraintsForModel(model *proto.Model) map[string][]string 
 }
 
 // compositeUniqueConstraints generates SQL statements for dropping or creating composite
-// unique constraints for model
+// unique constraints for model.
 func compositeUniqueConstraints(schema *proto.Schema, model *proto.Model, constraints []*ConstraintRow) (statements []string, err error) {
 	uniqueConstraints := compositeUniqueConstraintsForModel(model)
 
 	for _, c := range constraints {
-		if c.TableName != casing.ToSnake(model.Name) || c.ConstraintType != "u" || len(c.ConstrainedColumns) == 1 {
+		if c.TableName != casing.ToSnake(model.GetName()) || c.ConstraintType != "u" || len(c.ConstrainedColumns) == 1 {
 			continue
 		}
 
@@ -516,7 +516,7 @@ func compositeUniqueConstraints(schema *proto.Schema, model *proto.Model, constr
 	}
 
 	for _, fieldNames := range uniqueConstraints {
-		stmt, err := addUniqueConstraintStmt(schema, model.Name, fieldNames)
+		stmt, err := addUniqueConstraintStmt(schema, model.GetName(), fieldNames)
 		if err != nil {
 			return nil, err
 		}
@@ -531,17 +531,17 @@ type depPair struct {
 	ident *parser.ExpressionIdent
 }
 
-// computedFieldDependencies returns a map of computed fields and every field it depends on
+// computedFieldDependencies returns a map of computed fields and every field it depends on.
 func computedFieldDependencies(schema *proto.Schema) (map[*proto.Field][]*depPair, error) {
 	dependencies := map[*proto.Field][]*depPair{}
 
-	for _, model := range schema.Models {
-		for _, field := range model.Fields {
-			if field.ComputedExpression == nil {
+	for _, model := range schema.GetModels() {
+		for _, field := range model.GetFields() {
+			if field.GetComputedExpression() == nil {
 				continue
 			}
 
-			expr, err := parser.ParseExpression(field.ComputedExpression.Source)
+			expr, err := parser.ParseExpression(field.GetComputedExpression().GetSource())
 			if err != nil {
 				return nil, err
 			}
@@ -562,7 +562,7 @@ func computedFieldDependencies(schema *proto.Schema) (map[*proto.Field][]*depPai
 					currField := currModel.FindField(f)
 
 					if i < len(ident.Fragments)-2 {
-						currModel = schema.FindModel(currField.Type.ModelName.Value)
+						currModel = schema.FindModel(currField.GetType().GetModelName().GetValue())
 						continue
 					}
 
@@ -572,7 +572,7 @@ func computedFieldDependencies(schema *proto.Schema) (map[*proto.Field][]*depPai
 					}
 
 					hasDep := lo.ContainsBy(dependencies[field], func(d *depPair) bool {
-						return d.field.Name == currField.Name && d.ident.String() == ident.String()
+						return d.field.GetName() == currField.GetName() && d.ident.String() == ident.String()
 					})
 
 					if !hasDep {
@@ -586,7 +586,7 @@ func computedFieldDependencies(schema *proto.Schema) (map[*proto.Field][]*depPai
 	return dependencies, nil
 }
 
-// computedFieldsStmts generates SQL statements for dropping or creating functions and triggers for computed fields
+// computedFieldsStmts generates SQL statements for dropping or creating functions and triggers for computed fields.
 func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRow) (changes []*DatabaseChange, statements []string, err error) {
 	existingComputedFnNames := lo.Map(existingComputedFns, func(f *FunctionRow, _ int) string {
 		return f.RoutineName
@@ -598,7 +598,7 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 	recompute := []*proto.Model{}
 
 	// Adding computed field triggers and functions
-	for _, model := range schema.Models {
+	for _, model := range schema.GetModels() {
 		modelFns := map[string]string{}
 
 		for _, field := range model.GetComputedFields() {
@@ -614,7 +614,7 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 
 		// Get all the preexisting computed functions for computed fields on this model
 		existingComputedFnNamesForModel := lo.Filter(existingComputedFnNames, func(f string, _ int) bool {
-			return strings.HasPrefix(f, fmt.Sprintf("%s__", strcase.ToSnake(model.Name))) &&
+			return strings.HasPrefix(f, fmt.Sprintf("%s__", strcase.ToSnake(model.GetName()))) &&
 				strings.HasSuffix(f, "__comp")
 		})
 
@@ -628,8 +628,8 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 
 			f := fieldFromComputedFnName(schema, fn)
 			changes = append(changes, &DatabaseChange{
-				Model: f.ModelName,
-				Field: f.Name,
+				Model: f.GetModelName(),
+				Field: f.GetName(),
 				Type:  ChangeTypeModified,
 			})
 			changedFields[f] = true
@@ -646,8 +646,8 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 			f := fieldFromComputedFnName(schema, fn)
 			if f != nil {
 				change := &DatabaseChange{
-					Model: f.ModelName,
-					Field: f.Name,
+					Model: f.GetModelName(),
+					Field: f.GetName(),
 					Type:  ChangeTypeModified,
 				}
 				if !lo.ContainsBy(changes, func(c *DatabaseChange) bool {
@@ -678,10 +678,10 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 
 	// For each model, we need to create a function which calls all the computed functions for fields on this model
 	// Order is important because computed fields can depend on each other - this is catered for
-	for _, model := range schema.Models {
+	for _, model := range schema.GetModels() {
 		modelhasChanged := false
 		for k, v := range changedFields {
-			if k.ModelName == model.Name && v {
+			if k.GetModelName() == model.GetName() && v {
 				modelhasChanged = true
 			}
 		}
@@ -699,14 +699,14 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 		visited := map[*proto.Field]bool{}
 		var visit func(*proto.Field)
 		visit = func(field *proto.Field) {
-			if visited[field] || field.ComputedExpression == nil {
+			if visited[field] || field.GetComputedExpression() == nil {
 				return
 			}
 			visited[field] = true
 
 			// Process dependencies first
 			for _, dep := range dependencies[field] {
-				if dep.field.ModelName == field.ModelName {
+				if dep.field.GetModelName() == field.GetModelName() {
 					visit(dep.field)
 				}
 			}
@@ -721,9 +721,9 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 		// Generate SQL statements in dependency order
 		stmts := []string{}
 		for _, field := range sorted {
-			col := field.Name
-			if field.ForeignKeyFieldName != nil {
-				col = field.ForeignKeyFieldName.Value
+			col := field.GetName()
+			if field.GetForeignKeyFieldName() != nil {
+				col = field.GetForeignKeyFieldName().GetValue()
 			}
 
 			s := fmt.Sprintf("NEW.%s := %s(NEW);\n\t", Identifier(col), fieldsFns[field])
@@ -737,7 +737,7 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 		// Generate the table trigger which executed the trigger function.
 		// This must be a BEFORE trigger because we want to return the row with its computed fields being computed.
 		triggerName := computedTriggerName(model)
-		trigger := fmt.Sprintf("CREATE OR REPLACE TRIGGER \"%s\" BEFORE INSERT OR UPDATE ON %s FOR EACH ROW EXECUTE PROCEDURE \"%s\"();", triggerName, Identifier(model.Name), execFnName)
+		trigger := fmt.Sprintf("CREATE OR REPLACE TRIGGER \"%s\" BEFORE INSERT OR UPDATE ON %s FOR EACH ROW EXECUTE PROCEDURE \"%s\"();", triggerName, Identifier(model.GetName()), execFnName)
 
 		statements = append(statements, sql)
 		statements = append(statements, trigger)
@@ -750,7 +750,7 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 	for field, deps := range dependencies {
 		for _, dep := range deps {
 			// Skip this because the triggers call on the exec functions themselves
-			if field.ModelName == dep.field.ModelName {
+			if field.GetModelName() == dep.field.GetModelName() {
 				continue
 			}
 
@@ -775,11 +775,11 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 				}
 
 				// We know that the current fragment is a related model because it's not the last fragment
-				relatedModelField := proto.FindField(schema.Models, currentModel, fragments[i])
-				foreignKeyField := proto.GetForeignKeyFieldName(schema.Models, relatedModelField)
+				relatedModelField := proto.FindField(schema.GetModels(), currentModel, fragments[i])
+				foreignKeyField := proto.GetForeignKeyFieldName(schema.GetModels(), relatedModelField)
 
 				previousModel := currentModel
-				currentModel = relatedModelField.Type.ModelName.Value
+				currentModel = relatedModelField.GetType().GetModelName().GetValue()
 				stmt := ""
 
 				// If the relationship is a belongs to or has many, we need to update the id field on the previous model
@@ -839,7 +839,7 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 	// If a computed field has been added or modified, we need to recompute all existing data.
 	// This is done by fake updating each row on the table which will cause the triggers to run.
 	for _, model := range recompute {
-		sql := fmt.Sprintf("UPDATE %s SET id = id;", Identifier(model.Name))
+		sql := fmt.Sprintf("UPDATE %s SET id = id;", Identifier(model.GetName()))
 		statements = append(statements, sql)
 	}
 
@@ -906,13 +906,13 @@ func fkConstraintsForModel(model *proto.Model) (fkStatements []string) {
 
 // fkConstraint generates a foreign key constraint statement for the given foreign key field.
 func fkConstraint(field *proto.Field, thisModel *proto.Model) (fkStatement string) {
-	fki := field.ForeignKeyInfo
-	onDelete := lo.Ternary(field.Optional, "SET NULL", "CASCADE")
+	fki := field.GetForeignKeyInfo()
+	onDelete := lo.Ternary(field.GetOptional(), "SET NULL", "CASCADE")
 	stmt := addForeignKeyConstraintStmt(
-		Identifier(thisModel.Name),
-		Identifier(field.Name),
-		Identifier(fki.RelatedModelName),
-		Identifier(fki.RelatedModelField),
+		Identifier(thisModel.GetName()),
+		Identifier(field.GetName()),
+		Identifier(fki.GetRelatedModelName()),
+		Identifier(fki.GetRelatedModelField()),
 		onDelete,
 	)
 	return stmt

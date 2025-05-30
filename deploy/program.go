@@ -328,7 +328,7 @@ func createProgram(args *NewProgramArgs) pulumi.RunFunc {
 		// We avoid creating resources we don't need by only creating the subscribers Lambda
 		// if there are event subscriptions defined in the schema
 		var subscriber *lambda.Function
-		hasSubscribers := len(args.Schema.Subscribers) > 0
+		hasSubscribers := len(args.Schema.GetSubscribers()) > 0
 		if hasSubscribers {
 			subscriber, err = lambda.NewFunction(ctx, "subscriber", &lambda.FunctionArgs{
 				Runtime:    lambda.RuntimeCustomAL2023,
@@ -408,7 +408,7 @@ func createProgram(args *NewProgramArgs) pulumi.RunFunc {
 		// We avoid creating resources we don't need by only creating the jobs lambda
 		// if there are jobs defined in the schema
 		var jobs *lambda.Function
-		hasJobs := len(args.Schema.Jobs) > 0
+		hasJobs := len(args.Schema.GetJobs()) > 0
 		if hasJobs {
 			jobs, err = lambda.NewFunction(ctx, "jobs", &lambda.FunctionArgs{
 				Runtime:    lambda.RuntimeCustomAL2023,
@@ -434,7 +434,7 @@ func createProgram(args *NewProgramArgs) pulumi.RunFunc {
 				return fmt.Errorf("error creating jobs lambda: %v", err)
 			}
 
-			err = createEventBridgeSchedules(ctx, jobs, args.Schema.Jobs, baseTags)
+			err = createEventBridgeSchedules(ctx, jobs, args.Schema.GetJobs(), baseTags)
 			if err != nil {
 				return err
 			}
@@ -713,7 +713,7 @@ func createLambdaRole(ctx *pulumi.Context, prefix string, statements iam.GetPoli
 func createEventBridgeSchedules(ctx *pulumi.Context, jobsLambda *lambda.Function, protoJobs []*proto.Job, tags pulumi.StringMap) error {
 	scheduledJobs := []*proto.Job{}
 	for _, job := range protoJobs {
-		if job.Schedule != nil {
+		if job.GetSchedule() != nil {
 			scheduledJobs = append(scheduledJobs, job)
 		}
 	}
@@ -772,16 +772,16 @@ func createEventBridgeSchedules(ctx *pulumi.Context, jobsLambda *lambda.Function
 	}
 
 	for _, job := range scheduledJobs {
-		expression := fmt.Sprintf("cron(%s)", strings.ReplaceAll(job.Schedule.Expression, "\"", ""))
+		expression := fmt.Sprintf("cron(%s)", strings.ReplaceAll(job.GetSchedule().GetExpression(), "\"", ""))
 
 		jobJson, err := json.Marshal(map[string]any{
-			"name": job.Name,
+			"name": job.GetName(),
 		})
 		if err != nil {
 			return err
 		}
 
-		_, err = scheduler.NewSchedule(ctx, fmt.Sprintf("scheduled-job-%s", job.Name), &scheduler.ScheduleArgs{
+		_, err = scheduler.NewSchedule(ctx, fmt.Sprintf("scheduled-job-%s", job.GetName()), &scheduler.ScheduleArgs{
 			ScheduleExpression: pulumi.String(expression),
 			FlexibleTimeWindow: scheduler.ScheduleFlexibleTimeWindowArgs{
 				Mode: pulumi.String("OFF"),
@@ -803,7 +803,7 @@ func createEventBridgeSchedules(ctx *pulumi.Context, jobsLambda *lambda.Function
 	return nil
 }
 
-// extendStringMap creates a _new_ StringMap by combining `a` and `b`
+// extendStringMap creates a _new_ StringMap by combining `a` and `b`.
 func extendStringMap(a, b pulumi.StringMap) pulumi.StringMap {
 	r := pulumi.StringMap{}
 	for k, v := range a {

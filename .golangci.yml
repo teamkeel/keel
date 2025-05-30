@@ -1,24 +1,137 @@
-linters:
+version: "2"
+linters: 
+  settings:
+    tagalign:
+      align: true
+      sort: false
+      strict: false
+    govet:
+      disable:
+        - structtag
+    staticcheck:
+      checks: ["all", "-ST1000", "-ST1003", "-ST1016", "-ST1020", "-ST1022", "-SA1019", "-QF1001", "-QF1008", "-QF1002", "-ST1008", "-ST1019", "-ST1005", "-QF1012"]
+    errcheck:
+      exclude-functions:
+        - os.RemoveAll
+        - (*os.File).Close
+        - (io.Closer).Close
+        - (io.Reader).Close
+        - (*net.TCPListener).Close
+        - (*database/sql.DB).Close
+        - (*database/sql.Rows).Close
+        - (*compress/gzip.Reader).Close
+        - os.Setenv
+        - os.Unsetenv
+        - (*go.opentelemetry.io/otel/sdk/trace.TracerProvider).ForceFlush
+        - (github.com/teamkeel/keel/db.Database).Close
+        
   enable:
+    - asasalint
+    - asciicheck
+    - bidichk
+    # - bodyclose
+    - canonicalheader
+    # - containedctx
+    # - contextcheck
+    - copyloopvar
+    # - cyclop
+    - decorder
+    # - depguard
+    - dogsled
+    # - dupl
+    - dupword
+    - durationcheck
+    # - err113
     - errcheck
+    # - errchkjson
+    # - errname
+    # - errorlint
+    # - exhaustive
+    # - exhaustruct
+    - exptostd
+    # - fatcontext
+    # - forbidigo
+    # - forcetypeassert
+    # - funcorder
+    # - funlen
+    - ginkgolinter
+    - gocheckcompilerdirectives
+    # - gochecknoglobals
+    # - gochecknoinits
+    - gochecksumtype
+    # - gocognit
+    # - goconst
+    # - gocritic
+    # - gocyclo
+    - godot
+    # - godox
+    - goheader
+    - gomoddirectives
+    - gomodguard
+    - goprintffuncname
+    # - gosec
+    # - gosmopolitan
+    - govet
+    - grouper
+    - iface
+    - importas
+    - inamedparam
+    - ineffassign
+    # - interfacebloat
+    - intrange
+    # - ireturn
+    # - lll
+    - loggercheck
+    # - maintidx
+    - makezero
+    - mirror
     - misspell
+    # - mnd
+    # - musttag
+    # - nakedret
+    # - nestif
+    # - nilerr
+    - nilnesserr
+    # - nilnil
+    # - nlreturn
+    # - noctx
+    # - nolintlint
+    # - nonamedreturns
+    # - nosprintfhostport
+    # - paralleltest
+    # - perfsprint
+    # - prealloc
+    - predeclared
+    - promlinter
+    - protogetter
+    - reassign
+    # - recvcheck
+    # - revive
+    - rowserrcheck
+    - sloglint
+    - spancheck
+    - sqlclosecheck
     - staticcheck
+    - tagalign
+    # - tagliatelle
+    - testableexamples
+    # - testifylint
+    # - testpackage
+    # - thelper
+    - tparallel
     - unconvert
     - unparam
     - unused
     - usestdlibvars
+    - usetesting
+    # - varnamelen
     - wastedassign
     - whitespace
-  disable:
-    - govet
-
-issues:
-  exclude-rules:
-    - path: tools/
-      linters:
-        - staticcheck
-      text: "SA1019: .* is deprecated"
-    - path: rpc/rpcApi/
-      linters:
-        - staticcheck
-      text: "SA1019: .* is deprecated"
+    # - wsl
+    - zerologlint
+  
+  exclusions:
+    rules:
+      - path: schema/parser/parser.go
+        linters:
+          - tagalign

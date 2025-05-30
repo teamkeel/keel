@@ -4,9 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"slices"
 	"strings"
-
-	"golang.org/x/exp/slices"
 
 	"github.com/iancoleman/strcase"
 	"github.com/segmentio/ksuid"
@@ -23,8 +22,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-// Custom error codes returned from custom
-// function runtime
+// FunctionErrorCode represents custom error codes returned from custom function runtime
 // See packages/functions-runtime for original definition and more info.
 type FunctionErrorCode int
 
@@ -317,7 +315,7 @@ func CallJob(ctx context.Context, job *proto.Job, inputs map[string]any, permiss
 
 	req := &FunctionsRuntimeRequest{
 		ID:     ksuid.New().String(),
-		Method: strcase.ToLowerCamel(job.Name),
+		Method: strcase.ToLowerCamel(job.GetName()),
 		Type:   JobFunction,
 		Params: inputs,
 		Meta:   meta,
@@ -325,7 +323,7 @@ func CallJob(ctx context.Context, job *proto.Job, inputs map[string]any, permiss
 
 	span.SetAttributes(
 		attribute.String("job.id", req.ID),
-		attribute.String("job.name", job.Name),
+		attribute.String("job.name", job.GetName()),
 	)
 
 	resp, err := transport(ctx, req)
@@ -365,7 +363,7 @@ func CallSubscriber(ctx context.Context, subscriber *proto.Subscriber, event *ev
 
 	req := &FunctionsRuntimeRequest{
 		ID:     ksuid.New().String(),
-		Method: subscriber.Name,
+		Method: subscriber.GetName(),
 		Type:   SubscriberFunction,
 		Params: event,
 		Meta:   meta,
@@ -373,7 +371,7 @@ func CallSubscriber(ctx context.Context, subscriber *proto.Subscriber, event *ev
 
 	span.SetAttributes(
 		attribute.String("subscriber.id", req.ID),
-		attribute.String("subscriber.name", subscriber.Name),
+		attribute.String("subscriber.name", subscriber.GetName()),
 		attribute.String("event.name", event.EventName),
 		attribute.String("event.target_id", event.Target.Id),
 	)
@@ -418,7 +416,7 @@ func CallFlow(ctx context.Context, flow *proto.Flow, runId string, inputs map[st
 
 	req := &FunctionsRuntimeRequest{
 		ID:     ksuid.New().String(),
-		Method: strcase.ToLowerCamel(flow.Name),
+		Method: strcase.ToLowerCamel(flow.GetName()),
 		Type:   FlowFunction,
 		Meta:   meta,
 	}
@@ -426,7 +424,7 @@ func CallFlow(ctx context.Context, flow *proto.Flow, runId string, inputs map[st
 	span.SetAttributes(
 		attribute.String("request.id", req.ID),
 		attribute.String("run.id", runId),
-		attribute.String("flow.name", flow.Name),
+		attribute.String("flow.name", flow.GetName()),
 	)
 
 	resp, err := transport(ctx, req)

@@ -8,9 +8,8 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
-
-	"golang.org/x/exp/slices"
 
 	"github.com/goccy/go-yaml"
 	"github.com/goccy/go-yaml/parser"
@@ -30,7 +29,7 @@ type ConfigFile struct {
 	Errors   *ConfigErrors
 }
 
-// ProjectConfig is the configuration for a keel project
+// ProjectConfig is the configuration for a keel project.
 type ProjectConfig struct {
 	Environment   []EnvironmentVariable `yaml:"environment"`
 	UseDefaultApi *bool                 `yaml:"useDefaultApi,omitempty"`
@@ -51,7 +50,7 @@ func (p *ProjectConfig) GetEnvVars() map[string]string {
 }
 
 // AllEnvironmentVariables returns a slice of all of the unique environment variable key names
-// defined across all environments
+// defined across all environments.
 func (c *ProjectConfig) AllEnvironmentVariables() []string {
 	var environmentVariables []string
 
@@ -73,7 +72,7 @@ func (c *ProjectConfig) AllSecrets() []string {
 }
 
 // DefaultApi provides the value of useDefaultApi from the config or a default value of true
-// if no value is specified in the config
+// if no value is specified in the config.
 func (c *ProjectConfig) DefaultApi() bool {
 	if c.UseDefaultApi == nil {
 		return true
@@ -86,7 +85,7 @@ func (c *ProjectConfig) UsesAuthHook(hook FunctionHook) bool {
 	return slices.Contains(c.Auth.Hooks, hook)
 }
 
-// EnvironmentVariable is the configuration for a keel environment variable or secret
+// EnvironmentVariable is the configuration for a keel environment variable or secret.
 type EnvironmentVariable struct {
 	Name  string `yaml:"name"`
 	Value string `yaml:"value,omitempty"`

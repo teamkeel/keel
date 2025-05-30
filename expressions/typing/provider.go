@@ -10,7 +10,7 @@ import (
 	expr "google.golang.org/genproto/googleapis/api/expr/v1alpha1"
 )
 
-// TypeProvider supplies the CEL context with the relevant Keel types and identifiers
+// TypeProvider supplies the CEL context with the relevant Keel types and identifiers.
 type TypeProvider struct {
 	Schema []*parser.AST
 	// Objects keeps track of complex object types and their fields as defined in the CEL environment, in particular: ctx, headers, secrets.

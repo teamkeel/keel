@@ -17,7 +17,7 @@ import (
 )
 
 // Constructs and adds an LEFT JOIN from a splice of fragments (representing an operand in an expression or implicit input).
-// The fragment slice must include the base model as the first item, for example: "post." in post.author.publisher.isActive
+// The fragment slice must include the base model as the first item, for example: "post." in post.author.publisher.isActive.
 func (query *QueryBuilder) AddJoinFromFragments(schema *proto.Schema, fragments []string) error {
 	if fragments[0] == "ctx" {
 		return nil
@@ -39,9 +39,9 @@ func (query *QueryBuilder) AddJoinFromFragments(schema *proto.Schema, fragments 
 		}
 
 		// We know that the current fragment is a related model because it's not the last fragment
-		relatedModelField := proto.FindField(schema.Models, model, currentFragment)
-		relatedModel := relatedModelField.Type.ModelName.Value
-		foreignKeyField := proto.GetForeignKeyFieldName(schema.Models, relatedModelField)
+		relatedModelField := proto.FindField(schema.GetModels(), model, currentFragment)
+		relatedModel := relatedModelField.GetType().GetModelName().GetValue()
+		foreignKeyField := proto.GetForeignKeyFieldName(schema.GetModels(), relatedModelField)
 		primaryKey := "id"
 
 		var leftOperand *QueryOperand
@@ -60,7 +60,7 @@ func (query *QueryBuilder) AddJoinFromFragments(schema *proto.Schema, fragments 
 
 		query.Join(relatedModel, leftOperand, rightOperand)
 
-		model = relatedModelField.Type.ModelName.Value
+		model = relatedModelField.GetType().GetModelName().GetValue()
 	}
 
 	return nil
@@ -74,7 +74,7 @@ func generateOperand(ctx context.Context, schema *proto.Schema, model *proto.Mod
 
 	var queryOperand *QueryOperand
 	switch {
-	case len(ident) == 2 && proto.EnumExists(schema.Enums, ident[0]):
+	case len(ident) == 2 && proto.EnumExists(schema.GetEnums(), ident[0]):
 		return Value(ident[1]), nil
 	case model != nil && expressions.IsModelDbColumn(model, ident):
 		var err error
@@ -214,18 +214,18 @@ func NormalisedFragments(schema *proto.Schema, fragments []string) ([]string, er
 
 	var fieldTarget *proto.Field
 	for i := 1; i < len(fragments); i++ {
-		fieldTarget = proto.FindField(schema.Models, modelTarget.Name, fragments[i])
-		if fieldTarget.Type.Type == proto.Type_TYPE_MODEL {
-			modelTarget = schema.FindModel(fieldTarget.Type.ModelName.Value)
+		fieldTarget = proto.FindField(schema.GetModels(), modelTarget.GetName(), fragments[i])
+		if fieldTarget.GetType().GetType() == proto.Type_TYPE_MODEL {
+			modelTarget = schema.FindModel(fieldTarget.GetType().GetModelName().GetValue())
 			if modelTarget == nil {
-				return nil, fmt.Errorf("model '%s' does not exist in schema", fieldTarget.Type.ModelName.Value)
+				return nil, fmt.Errorf("model '%s' does not exist in schema", fieldTarget.GetType().GetModelName().GetValue())
 			}
 		}
 	}
 
 	// If no field is provided, for example: @where(account in ...)
 	// Or if the target field is a MODEL, for example:
-	if fieldTarget == nil || fieldTarget.Type.Type == proto.Type_TYPE_MODEL {
+	if fieldTarget == nil || fieldTarget.GetType().GetType() == proto.Type_TYPE_MODEL {
 		isModelField = true
 	}
 
@@ -247,11 +247,11 @@ func NormalisedFragments(schema *proto.Schema, fragments []string) ([]string, er
 
 		var fieldTarget *proto.Field
 		for i := i + 1; i < len(fragments); i++ {
-			fieldTarget = proto.FindField(schema.Models, modelTarget.Name, fragments[i])
-			if fieldTarget.Type.Type == proto.Type_TYPE_MODEL {
-				modelTarget = schema.FindModel(fieldTarget.Type.ModelName.Value)
+			fieldTarget = proto.FindField(schema.GetModels(), modelTarget.GetName(), fragments[i])
+			if fieldTarget.GetType().GetType() == proto.Type_TYPE_MODEL {
+				modelTarget = schema.FindModel(fieldTarget.GetType().GetModelName().GetValue())
 				if modelTarget == nil {
-					return nil, fmt.Errorf("model '%s' does not exist in schema", fieldTarget.Type.ModelName.Value)
+					return nil, fmt.Errorf("model '%s' does not exist in schema", fieldTarget.GetType().GetModelName().GetValue())
 				}
 			}
 		}
@@ -273,7 +273,7 @@ func NormalisedFragments(schema *proto.Schema, fragments []string) ([]string, er
 }
 
 // Constructs a QueryOperand from a splice of fragments, representing an expression operand or implicit input.
-// The fragment slice must include the base model as the first fragment, for example: post.author.publisher.isActive
+// The fragment slice must include the base model as the first fragment, for example: post.author.publisher.isActive.
 func operandFromFragments(schema *proto.Schema, fragments []string) (*QueryOperand, error) {
 	fragments, err := NormalisedFragments(schema, fragments)
 	if err != nil {
@@ -294,12 +294,12 @@ func operandFromFragments(schema *proto.Schema, fragments []string) (*QueryOpera
 
 		if i < fragmentCount-1 {
 			// We know that the current fragment is a model because it's not the last fragment
-			relatedModelField := proto.FindField(schema.Models, model, currentFragment)
-			model = relatedModelField.Type.ModelName.Value
+			relatedModelField := proto.FindField(schema.GetModels(), model, currentFragment)
+			model = relatedModelField.GetType().GetModelName().GetValue()
 		} else {
 			// The last fragment is referencing the field
 			field = currentFragment
-			isArray = proto.FindField(schema.Models, model, currentFragment).Type.Repeated
+			isArray = proto.FindField(schema.GetModels(), model, currentFragment).GetType().GetRepeated()
 		}
 	}
 
