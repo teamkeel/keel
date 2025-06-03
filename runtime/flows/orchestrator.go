@@ -200,7 +200,7 @@ func (o *Orchestrator) HandleEvent(ctx context.Context, event *EventWrapper) err
 		}
 
 		traceID := util.ParseTraceparent(event.Traceparent).TraceID().String()
-		run, err := createRun(ctx, flow, ev.Inputs, traceID)
+		run, err := createRun(ctx, flow, ev.Inputs, traceID, nil)
 		if err != nil {
 			return err
 		}

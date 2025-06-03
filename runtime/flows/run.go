@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/auth"
+	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/util"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -30,7 +32,16 @@ func StartFlow(ctx context.Context, flow *proto.Flow, inputs map[string]any) (ru
 		return
 	}
 
-	run, err = createRun(ctx, flow, inputs, util.GetTraceparent(span.SpanContext()))
+	var identityID *string
+
+	if identity, err := auth.GetIdentity(ctx); err == nil {
+		idenID := identity[parser.FieldNameId].(string)
+		if idenID != "" {
+			identityID = &idenID
+		}
+	}
+
+	run, err = createRun(ctx, flow, inputs, util.GetTraceparent(span.SpanContext()), identityID)
 	if err != nil {
 		err = fmt.Errorf("creating flow run: %w", err)
 		return

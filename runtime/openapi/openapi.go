@@ -300,6 +300,7 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 			"steps":     {Type: "array", Items: &jsonschema.JSONSchema{Ref: "#/components/schemas/Step"}},
 			"config":    flowConfigSchema,
 			"input":     {Type: []string{"object", "null"}, AdditionalProperties: BoolPointer(true)},
+			"startedBy": {Type: []string{"string", "null"}},
 		},
 		Required: []string{"id", "status", "name", "traceId", "createdAt", "updatedAt", "steps", "config", "input"},
 	}

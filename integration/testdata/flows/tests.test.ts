@@ -46,6 +46,7 @@ test("flows - scalar step", async () => {
     status: "COMPLETED",
     name: "ScalarStep",
     input: {},
+    startedBy: expect.any(String),
     steps: [
       {
         id: expect.any(String),
@@ -87,6 +88,7 @@ test("flows - only functions with config", async () => {
     traceId: expect.any(String),
     status: "RUNNING",
     name: "OnlyFunctions",
+    startedBy: expect.any(String),
     input: {
       name: "My Thing",
       age: 25,
@@ -139,6 +141,7 @@ test("flows - only functions with config", async () => {
     traceId: expect.any(String),
     status: "COMPLETED",
     name: "OnlyFunctions",
+    startedBy: expect.any(String),
     input: {
       name: "My Thing",
       age: 25,
@@ -198,6 +201,7 @@ test("flows - only pages", async () => {
     traceId: expect.any(String),
     status: "AWAITING_INPUT",
     name: "OnlyPages",
+    startedBy: expect.any(String),
     input: {},
     steps: [
       {
@@ -243,6 +247,7 @@ test("flows - only pages", async () => {
     traceId: expect.any(String),
     status: "AWAITING_INPUT",
     name: "OnlyPages",
+    startedBy: expect.any(String),
     input: {},
     steps: [
       {
@@ -309,6 +314,7 @@ test("flows - only pages", async () => {
     traceId: expect.any(String),
     status: "COMPLETED",
     name: "OnlyPages",
+    startedBy: expect.any(String),
     input: {},
     steps: [
       {
@@ -371,6 +377,7 @@ test("flows - stepless flow", async () => {
     id: body.id,
     input: {},
     name: "Stepless",
+    startedBy: expect.any(String),
     status: "COMPLETED",
     steps: [],
     config: null,
@@ -399,6 +406,7 @@ test("flows - first step is a function", async () => {
     id: expect.any(String),
     input: {},
     name: "SingleStep",
+    startedBy: expect.any(String),
     status: "RUNNING",
     steps: [
       {
@@ -437,6 +445,7 @@ test("flows - first step is a function", async () => {
     id: body.id,
     input: {},
     name: "SingleStep",
+    startedBy: expect.any(String),
     status: "COMPLETED",
     steps: [
       {
@@ -485,6 +494,7 @@ test("flows - alternating step types", async () => {
       age: 23,
     },
     name: "MixedStepTypes",
+    startedBy: expect.any(String),
     status: "RUNNING",
     steps: [
       {
@@ -524,6 +534,7 @@ test("flows - alternating step types", async () => {
   expect(body).toEqual({
     id: runId,
     name: "MixedStepTypes",
+    startedBy: expect.any(String),
     status: "AWAITING_INPUT", // Flow is now awaiting input
     input: {
       name: "Keelson",
@@ -623,6 +634,7 @@ test("flows - alternating step types", async () => {
   expect(body).toEqual({
     id: runId,
     name: "MixedStepTypes",
+    startedBy: expect.any(String),
     status: "RUNNING",
     input: {
       name: "Keelson",
@@ -861,6 +873,7 @@ test("flows - all inputs", async () => {
       markdown: "**Hello**",
     },
     name: "AllInputs",
+    startedBy: expect.any(String),
     status: "FAILED",
     steps: [],
     traceId: expect.any(String),
@@ -876,6 +889,7 @@ test("flows - error in step with retries", async () => {
     id: expect.any(String),
     traceId: expect.any(String),
     status: "RUNNING",
+    startedBy: expect.any(String),
     name: "ErrorInStep",
     input: {},
     steps: [
@@ -914,6 +928,7 @@ test("flows - error in step with retries", async () => {
     traceId: res.body.traceId,
     status: "FAILED",
     name: "ErrorInStep",
+    startedBy: expect.any(String),
     input: {},
     steps: [
       {
@@ -977,6 +992,7 @@ test("flows - error in flow", async () => {
     traceId: expect.any(String),
     status: "FAILED",
     name: "ErrorInFlow",
+    startedBy: expect.any(String),
     input: {},
     steps: [],
     createdAt: expect.any(String),
@@ -996,6 +1012,7 @@ test("flows - timeout step", async () => {
     traceId: expect.any(String),
     status: "RUNNING",
     name: "TimeoutStep",
+    startedBy: expect.any(String),
     input: {},
     steps: [
       {
@@ -1033,6 +1050,7 @@ test("flows - timeout step", async () => {
     traceId: res.body.traceId,
     status: "FAILED",
     name: "TimeoutStep",
+    startedBy: expect.any(String),
     input: {},
     steps: [
       {

@@ -476,6 +476,7 @@
           "id": { "type": "string" },
           "input": { "type": ["object", "null"], "additionalProperties": true },
           "name": { "type": "string" },
+          "startedBy": { "type": ["string", "null"] },
           "status": {
             "type": "string",
             "enum": [

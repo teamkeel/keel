@@ -52,6 +52,7 @@ type Run struct {
 	CreatedAt   time.Time `json:"createdAt"`
 	UpdatedAt   time.Time `json:"updatedAt"`
 	Config      JSON      `json:"config"    gorm:"-"` // Stages config component, omitted from db operations
+	StartedBy   *string   `json:"startedBy"`
 }
 
 func (Run) TableName() string {
@@ -214,8 +215,8 @@ func updateRun(ctx context.Context, runID string, status Status) (*Run, error) {
 	return &run, result.Error
 }
 
-// createRun will create a new flow run with the given input.
-func createRun(ctx context.Context, flow *proto.Flow, inputs any, traceparent string) (*Run, error) {
+// createRun will create a new flow run with the given input
+func createRun(ctx context.Context, flow *proto.Flow, inputs any, traceparent string, identityID *string) (*Run, error) {
 	if flow == nil {
 		return nil, fmt.Errorf("invalid flow")
 	}
@@ -226,6 +227,7 @@ func createRun(ctx context.Context, flow *proto.Flow, inputs any, traceparent st
 		Name:        flow.GetName(),
 		Traceparent: traceparent,
 		TraceID:     util.ParseTraceparent(traceparent).TraceID().String(),
+		StartedBy:   identityID,
 	}
 
 	database, err := db.GetDatabase(ctx)
