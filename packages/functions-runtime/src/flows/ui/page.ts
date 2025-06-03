@@ -29,19 +29,18 @@ export type UiPage<C extends FlowConfig> = <
   ? ExtractFormData<T>
   : { data: ExtractFormData<T>; action: ActionValue<A[number]> };
 
-type PageActions =
-  | string
-  | {
-      label: string;
-      value: string;
-      mode?: "primary" | "secondary" | "destructive";
-    };
+type PageActions = string | PageActionConfig;
+type PageActionConfig = {
+  label: string;
+  value: string;
+  mode?: "primary" | "secondary" | "destructive";
+};
 
 export interface UiPageApiResponse extends BaseUiDisplayResponse<"ui.page"> {
   stage?: string;
   title?: string;
   description?: string;
-  actions?: PageActions[];
+  actions?: PageActionConfig[];
   content: UiElementApiResponses;
 }
 
@@ -89,7 +88,12 @@ export async function page<
       title: options.title,
       description: options.description,
       content: contentUiConfig,
-      actions: options.actions,
+      actions: options.actions?.map((a) => {
+        if (typeof a === "string") {
+          return { label: a, value: a };
+        }
+        return a;
+      }),
     },
     hasValidationErrors,
   };

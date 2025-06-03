@@ -559,7 +559,21 @@
           "actions": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/UiConfig/$defs/PageActions"
+              "additionalProperties": false,
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "mode": {
+                  "enum": ["destructive", "primary", "secondary"],
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": ["label", "value"],
+              "type": "object"
             }
           },
           "content": {
@@ -623,24 +637,6 @@
             "anyOf": [
               { "type": "string", "format": "date-time" },
               { "type": ["string", "number", "boolean"] }
-            ]
-          },
-          "PageActions": {
-            "anyOf": [
-              {
-                "type": "object",
-                "properties": {
-                  "label": { "type": "string" },
-                  "mode": {
-                    "type": "string",
-                    "enum": ["destructive", "primary", "secondary"]
-                  },
-                  "value": { "type": "string" }
-                },
-                "additionalProperties": false,
-                "required": ["label", "value"]
-              },
-              { "type": "string" }
             ]
           },
           "UiElementBannerApiResponse": {
