@@ -150,6 +150,26 @@ func (p *paginationFields) Parse(inputs map[string]any) {
 	}
 }
 
+type filterFields struct {
+	FlowName  *string
+	StartedBy *string
+	Status    *Status
+}
+
+// Parse will set the values for the filter fields from the given map; the only applicable field is `Status`
+func (ff *filterFields) Parse(inputs map[string]any) {
+	for f, v := range inputs {
+		switch f {
+		case "status":
+			switch val := v.(type) {
+			case string:
+				status := Status(val)
+				ff.Status = &status
+			}
+		}
+	}
+}
+
 // GetLimit returns a limit of items to be returned. If no limit set in the pagination fields, a default of 10 will be used.
 func (p *paginationFields) GetLimit() int {
 	// default to 10
@@ -243,11 +263,8 @@ func createRun(ctx context.Context, flow *proto.Flow, inputs any, traceparent st
 	return &run, nil
 }
 
-// listRuns will list the flow runs for the given flow using cursor pagination. It defaults to.
-func listRuns(ctx context.Context, flow *proto.Flow, page *paginationFields) ([]*Run, error) {
-	if flow == nil {
-		return nil, fmt.Errorf("invalid flow")
-	}
+// listRuns will list the flow runs for the given flow using cursor pagination. It defaults to
+func listRuns(ctx context.Context, filters *filterFields, page *paginationFields) ([]*Run, error) {
 	database, err := db.GetDatabase(ctx)
 	if err != nil {
 		return nil, err
@@ -255,7 +272,19 @@ func listRuns(ctx context.Context, flow *proto.Flow, page *paginationFields) ([]
 
 	var runs []*Run
 
-	q := database.GetDB().Where("name = ?", flow.GetName()).Limit(page.GetLimit())
+	q := database.GetDB().Limit(page.GetLimit())
+
+	if filters != nil {
+		if filters.FlowName != nil {
+			q = q.Where("name = ?", filters.FlowName)
+		}
+		if filters.StartedBy != nil {
+			q = q.Where("started_by = ?", filters.StartedBy)
+		}
+		if filters.Status != nil {
+			q = q.Where("status = ?", filters.Status)
+		}
+	}
 
 	if page != nil {
 		if page.IsBackwards() {
