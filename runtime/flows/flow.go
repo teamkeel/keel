@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"slices"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/teamkeel/keel/db"
@@ -153,7 +154,7 @@ func (p *paginationFields) Parse(inputs map[string]any) {
 type filterFields struct {
 	FlowName  *string
 	StartedBy *string
-	Status    *Status
+	Statuses  []Status
 }
 
 // Parse will set the values for the filter fields from the given map; the only applicable field is `Status`
@@ -163,8 +164,14 @@ func (ff *filterFields) Parse(inputs map[string]any) {
 		case "status":
 			switch val := v.(type) {
 			case string:
-				status := Status(val)
-				ff.Status = &status
+				sts := strings.Split(val, ",")
+				for _, s := range sts {
+					ff.Statuses = append(ff.Statuses, Status(s))
+				}
+			case []string:
+				for _, s := range val {
+					ff.Statuses = append(ff.Statuses, Status(s))
+				}
 			}
 		}
 	}
@@ -281,8 +288,8 @@ func listRuns(ctx context.Context, filters *filterFields, page *paginationFields
 		if filters.StartedBy != nil {
 			q = q.Where("started_by = ?", filters.StartedBy)
 		}
-		if filters.Status != nil {
-			q = q.Where("status = ?", filters.Status)
+		if len(filters.Statuses) > 0 {
+			q = q.Where("status IN ?", filters.Statuses)
 		}
 	}
 

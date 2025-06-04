@@ -246,7 +246,11 @@ func ParseQueryParams(r *http.Request) map[string]any {
 	q := r.URL.Query()
 	inputs := map[string]any{}
 	for k := range q {
-		inputs[k] = q.Get(k)
+		if len(q[k]) > 1 {
+			inputs[k] = q[k]
+		} else {
+			inputs[k] = q.Get(k)
+		}
 	}
 	return inputs
 }
