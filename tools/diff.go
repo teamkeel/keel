@@ -261,10 +261,6 @@ func extractPaginationConfig(generated, updated *toolsproto.CursorPaginationConf
 		return nil
 	}
 
-	if generated != nil && updated != nil {
-		return nil
-	}
-
 	if generated == nil && updated != nil {
 		if updated.PageSize == nil {
 			return nil
