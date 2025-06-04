@@ -1275,7 +1275,6 @@ func writeFunctionWrapperType(w *codegen.Writer, schema *proto.Schema, model *pr
 	w.Writef("export declare const %s: runtime.FuncWithConfig<{", casing.ToCamel(action.Name))
 
 	if action.IsArbitraryFunction() {
-
 		switch action.InputMessageName {
 		case parser.MessageFieldTypeAny:
 			w.Write("(fn: (ctx: ContextAPI, inputs: any) => ")
