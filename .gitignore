@@ -40,3 +40,5 @@ wasm/*.wasm
 bin
 
 dist
+
+.build
