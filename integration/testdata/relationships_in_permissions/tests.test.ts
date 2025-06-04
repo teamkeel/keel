@@ -64,7 +64,7 @@ test("permission expression in M:1 relationship - all related models satisfy con
     isActive: true,
   });
 
-  const { results: posts } = await actions.listPosts({});
+  const { results: posts } = await actions.listPosts();
   expect(posts.length).toEqual(3);
 
   const getPost1 = await actions.getPost({ id: post1.id });
@@ -247,7 +247,7 @@ test("permission expression in M:1 relationship with ORs - all related models sa
     isActive: true,
   });
 
-  const { results: posts } = await actions.listPostsORed({});
+  const { results: posts } = await actions.listPostsORed();
   expect(posts.length).toEqual(3);
 
   const getPost1 = await actions.getPostORed({ id: post1.id });
@@ -285,7 +285,7 @@ test("permission expression in M:1 relationship with ORs - Weaveton author not a
     isActive: true,
   });
 
-  const { results: posts } = await actions.listPostsORed({});
+  const { results: posts } = await actions.listPostsORed();
   expect(posts.length).toEqual(3);
 
   const getPost1 = await actions.getPostORed({ id: post1.id });
@@ -323,7 +323,7 @@ test("permission expression in M:1 relationship with ORs - posts not active - au
     isActive: false,
   });
 
-  const { results: posts } = await actions.listPostsORed({});
+  const { results: posts } = await actions.listPostsORed();
   expect(posts.length).toEqual(3);
 
   const getPost1 = await actions.getPostORed({ id: post1.id });
@@ -401,7 +401,7 @@ test("permission expression in 1:M relationship - all related models satisfy con
     isActive: true,
   });
 
-  const { results: authors } = await actions.listAuthors({});
+  const { results: authors } = await actions.listAuthors();
   expect(authors.length).toEqual(2);
 
   const getAuthor1 = await actions.getAuthor({ id: author1.id });
@@ -471,7 +471,7 @@ test("permission expression in 1:M relationship - one Keelson post not active - 
     isActive: true,
   });
 
-  const { results: authors } = await actions.listAuthors({});
+  const { results: authors } = await actions.listAuthors();
   expect(authors.length).toEqual(2);
 
   const getAuthor1 = await actions.getAuthor({ id: author1.id });
@@ -543,7 +543,7 @@ test("permission expression in 1:M relationship with ORs - all related models sa
     isActive: true,
   });
 
-  const { results: authors } = await actions.listAuthorsORed({});
+  const { results: authors } = await actions.listAuthorsORed();
   expect(authors.length).toEqual(2);
 
   const getAuthor1 = await actions.getAuthorORed({ id: author1.id });
@@ -578,7 +578,7 @@ test("permission expression in 1:M relationship with ORs - Weaveton post not act
     isActive: false,
   });
 
-  const { results: authors } = await actions.listAuthorsORed({});
+  const { results: authors } = await actions.listAuthorsORed();
   expect(authors.length).toEqual(2);
 
   const getAuthor1 = await actions.getAuthorORed({ id: author1.id });
@@ -613,7 +613,7 @@ test("permission expression in 1:M relationship with ORs - one Keelson post not 
     isActive: true,
   });
 
-  const { results: authors } = await actions.listAuthorsORed({});
+  const { results: authors } = await actions.listAuthorsORed();
   expect(authors.length).toEqual(2);
 
   const getAuthor1 = await actions.getAuthorORed({ id: author1.id });
@@ -648,7 +648,7 @@ test("permission expression in 1:M relationship with ORs - all post not active -
     isActive: false,
   });
 
-  const { results: authors } = await actions.listAuthorsORed({});
+  const { results: authors } = await actions.listAuthorsORed();
   expect(authors.length).toEqual(2);
 
   const getAuthor1 = await actions.getAuthorORed({ id: author1.id });
@@ -708,7 +708,7 @@ test("permission expression in 1:M relationship with ORs - no Keelson posts, eve
     isActive: true,
   });
 
-  const { results: authors } = await actions.listAuthorsORed({});
+  const { results: authors } = await actions.listAuthorsORed();
   expect(authors.length).toEqual(2);
 
   const getAuthor1 = await actions.getAuthorORed({ id: author1.id });

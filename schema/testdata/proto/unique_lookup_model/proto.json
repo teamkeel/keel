@@ -69,8 +69,7 @@
             {
               "source": "bankAccount == ctx.identity.account"
             }
-          ],
-          "inputMessageName": "GetBankAccountInput"
+          ]
         }
       ]
     },
@@ -347,9 +346,6 @@
     },
     {
       "name": "ResetPasswordResponse"
-    },
-    {
-      "name": "GetBankAccountInput"
     }
   ]
 }

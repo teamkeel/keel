@@ -42,7 +42,6 @@
           "name": "noInput",
           "type": "ACTION_TYPE_READ",
           "implementation": "ACTION_IMPLEMENTATION_CUSTOM",
-          "inputMessageName": "NoInputInput",
           "responseMessageName": "Out"
         },
         {
@@ -58,7 +57,6 @@
           "name": "noInputWrite",
           "type": "ACTION_TYPE_WRITE",
           "implementation": "ACTION_IMPLEMENTATION_CUSTOM",
-          "inputMessageName": "NoInputWriteInput",
           "responseMessageName": "Out"
         },
         {
@@ -358,12 +356,6 @@
     },
     {
       "name": "ResetPasswordResponse"
-    },
-    {
-      "name": "NoInputInput"
-    },
-    {
-      "name": "NoInputWriteInput"
     }
   ]
 }

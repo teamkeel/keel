@@ -129,11 +129,11 @@ test("event previous data bulk", async () => {
     views: 4,
   });
 
-  await actions.updateTrackers({});
-  await actions.updateTrackers({});
-  await actions.updateTrackers({});
-  await actions.updateTrackers({});
-  await actions.updateTrackers({});
+  await actions.updateTrackers();
+  await actions.updateTrackers();
+  await actions.updateTrackers();
+  await actions.updateTrackers();
+  await actions.updateTrackers();
 
   const trackers = await models.tracker.findMany();
 

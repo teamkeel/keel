@@ -321,20 +321,8 @@
       "name": "ResetPasswordResponse"
     },
     {
-      "name": "OperationAWhere"
-    },
-    {
       "name": "OperationAInput",
       "fields": [
-        {
-          "messageName": "OperationAInput",
-          "name": "where",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "OperationAWhere"
-          },
-          "optional": true
-        },
         {
           "messageName": "OperationAInput",
           "name": "first",
@@ -386,20 +374,8 @@
       ]
     },
     {
-      "name": "OperationBWhere"
-    },
-    {
       "name": "OperationBInput",
       "fields": [
-        {
-          "messageName": "OperationBInput",
-          "name": "where",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "OperationBWhere"
-          },
-          "optional": true
-        },
         {
           "messageName": "OperationBInput",
           "name": "first",

@@ -9,17 +9,17 @@ beforeEach(resetDatabase);
 */
 
 test("text set attribute on optional field - set to goodbye - is goodbye", async () => {
-  const thing = await actions.createTextOnOptional({});
+  const thing = await actions.createTextOnOptional();
   expect(thing.optionalText).toEqual("goodbye");
 });
 
 test("text set attribute on optional field - set to null - is null", async () => {
-  const thing = await actions.createNullTextOnOptional({});
+  const thing = await actions.createNullTextOnOptional();
   expect(thing.optionalText).toEqual(null);
 });
 
 test("text set attribute on required field - set to goodbye - is goodbye", async () => {
-  const thing = await actions.createTextOnRequired({});
+  const thing = await actions.createTextOnRequired();
   expect(thing.requiredText).toEqual("goodbye");
 });
 
@@ -43,17 +43,17 @@ test("text set attribute from implicit input - set to goodbye - is goodbye", asy
 */
 
 test("number set attribute on optional field - set to 5 - is 5", async () => {
-  const thing = await actions.createNumberOnOptional({});
+  const thing = await actions.createNumberOnOptional();
   expect(thing.optionalNumber).toEqual(5);
 });
 
 test("number set attribute on optional field - set to 1 - is null", async () => {
-  const thing = await actions.createNullNumberOnOptional({});
+  const thing = await actions.createNullNumberOnOptional();
   expect(thing.optionalNumber).toEqual(null);
 });
 
 test("number set attribute on required field - set to 5 - is 5", async () => {
-  const thing = await actions.createNumberOnRequired({});
+  const thing = await actions.createNumberOnRequired();
   expect(thing.requiredNumber).toEqual(5);
 });
 
@@ -77,17 +77,17 @@ test("number set attribute from implicit input - set to 5 - is 5", async () => {
 */
 
 test("decimal set attribute on optional field - set to 1.5 - is 1.5", async () => {
-  const thing = await actions.createDecimalOnOptional({});
+  const thing = await actions.createDecimalOnOptional();
   expect(thing.optionalDecimal).toEqual(1.5);
 });
 
 test("decimal set attribute on optional field - set to 1.5 - is null", async () => {
-  const thing = await actions.createNullDecimalOnOptional({});
+  const thing = await actions.createNullDecimalOnOptional();
   expect(thing.optionalDecimal).toEqual(null);
 });
 
 test("decimal set attribute on required field - set to 1.5 - is 1.5", async () => {
-  const thing = await actions.createDecimalOnRequired({});
+  const thing = await actions.createDecimalOnRequired();
   expect(thing.requiredDecimal).toEqual(1.5);
 });
 
@@ -111,17 +111,17 @@ test("decimal set attribute from implicit input - set to 2.5 - is 2.5", async ()
 */
 
 test("boolean set attribute on optional field - set to true - is true", async () => {
-  const thing = await actions.createBooleanOnOptional({});
+  const thing = await actions.createBooleanOnOptional();
   expect(thing.optionalBoolean).toEqual(true);
 });
 
 test("boolean set attribute on optional field - set to null - is null", async () => {
-  const thing = await actions.createNullBooleanOnOptional({});
+  const thing = await actions.createNullBooleanOnOptional();
   expect(thing.optionalBoolean).toEqual(null);
 });
 
 test("boolean set attribute on required field - set to true - is true", async () => {
-  const thing = await actions.createBooleanOnRequired({});
+  const thing = await actions.createBooleanOnRequired();
   expect(thing.requiredBoolean).toEqual(true);
 });
 
@@ -144,17 +144,17 @@ test("boolean set attribute from implicit input - set to true - is true", async 
   Duration Type 
 */
 test("duration set attribute on optional field - set to P1D - is P1D", async () => {
-  const thing = await actions.createDurationOnOptional({});
+  const thing = await actions.createDurationOnOptional();
   expect(thing.optionalDuration).toEqual("P1D");
 });
 
 test("duration set attribute on optional field - set to null - is null", async () => {
-  const thing = await actions.createNullDurationOnOptional({});
+  const thing = await actions.createNullDurationOnOptional();
   expect(thing.optionalDuration).toEqual(null);
 });
 
 test("duration set attribute on required field - set to P1D - is P1D", async () => {
-  const thing = await actions.createDurationOnRequired({});
+  const thing = await actions.createDurationOnRequired();
   expect(thing.requiredDuration).toEqual("P1D");
 });
 
@@ -179,17 +179,17 @@ test("duration set attribute from implicit input - set to P2D - is P2D", async (
 */
 
 test("enum set attribute on optional field - set to TypeTwo - is TypeTwo", async () => {
-  const thing = await actions.createEnumOnOptional({});
+  const thing = await actions.createEnumOnOptional();
   expect(thing.optionalEnum).toEqual(ThingType.TypeTwo);
 });
 
 test("enum set attribute on optional field - set to null - is null", async () => {
-  const thing = await actions.createNullEnumOnOptional({});
+  const thing = await actions.createNullEnumOnOptional();
   expect(thing.optionalEnum).toEqual(null);
 });
 
 test("enum set attribute on required field - set to TypeTwo - is TypeTwo", async () => {
-  const thing = await actions.createEnumOnRequired({});
+  const thing = await actions.createEnumOnRequired();
   expect(thing.requiredEnum).toEqual(ThingType.TypeTwo);
 });
 
@@ -224,11 +224,11 @@ test("model set attribute from explicit input - set to parent - has parent", asy
 });
 
 test("model set attribute on optional foreign key ID field - set to null - is null", async () => {
-  const thing = await actions.createNullParentId({});
+  const thing = await actions.createNullParentId();
   expect(thing.optionalParentId).toEqual(null);
 });
 
 test("model set attribute on optional field - set to null - is null", async () => {
-  const thing = await actions.createNullParent({});
+  const thing = await actions.createNullParent();
   expect(thing.optionalParentId).toEqual(null);
 });

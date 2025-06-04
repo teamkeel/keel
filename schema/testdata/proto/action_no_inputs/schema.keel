@@ -1,0 +1,28 @@
+model Account {
+    fields {
+        email Text
+    }
+
+    actions {
+        create createAccount() {
+            @set(account.email = ctx.identity.email)
+        }
+        update updateAccount() {
+            @where(account.id == "123")
+            @set(account.email = ctx.identity.email)
+        }
+        list listAccounts()
+        get getAccount() {
+            @where(account.id == "123")
+        }
+        delete deleteAccount() {
+            @where(account.id == "123")
+        }
+    }
+}
+
+api Test {
+    models {
+        Account
+    }
+}

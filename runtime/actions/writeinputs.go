@@ -72,6 +72,7 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 					}
 				}
 			}
+
 			currRows = nextRows
 		}
 
@@ -90,12 +91,19 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 
 // Updates the query with all write inputs defined on the action.
 func (query *QueryBuilder) captureWriteValues(scope *Scope, args map[string]any) error {
+	target := []string{casing.ToLowerCamel(scope.Model.Name)}
+
 	message := proto.FindValuesInputMessage(scope.Schema, scope.Action.Name)
 	if message == nil {
+		query.writeValues = &Row{
+			model:        scope.Model,
+			target:       target,
+			values:       map[string]*QueryOperand{},
+			referencedBy: []*Relationship{},
+			references:   []*Relationship{},
+		}
 		return nil
 	}
-
-	target := []string{casing.ToLowerCamel(scope.Model.Name)}
 
 	foreignKeys, row, err := query.captureWriteValuesFromMessage(scope, message, scope.Model, target, args)
 
@@ -325,10 +333,15 @@ func targetAssociating(scope *Scope, target []string) bool {
 		return false
 	}
 
+	if scope.Action.InputMessageName == "" {
+		return true
+	}
+
 	message := scope.Schema.FindMessage(scope.Action.InputMessageName)
 	model := scope.Schema.FindModel(strcase.ToCamel(target[0]))
 	for _, t := range target[1 : len(target)-1] {
 		found := false
+
 		for _, f := range message.Fields {
 			if f.Name == t {
 				if f.Type.Type == proto.Type_TYPE_MESSAGE {

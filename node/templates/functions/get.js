@@ -8,30 +8,38 @@ function getFunction({ model, whereInputs }) {
         }
       }
 
-      let data = model.where(wheres);
+      let query = model.where(wheres);
 
       if (hooks.beforeQuery) {
-        data = await runtime.tracing.withSpan("beforeQuery", () => {
-          return hooks.beforeQuery(ctx, inputs, data);
+        query = await runtime.tracing.withSpan("beforeQuery", () => {
+          if (!inputs || Object.keys(inputs).length === 0) {
+            return hooks.beforeQuery(ctx, query);
+          } else {
+            return hooks.beforeQuery(ctx, inputs, query);
+          }
         });
       }
 
-      const constructor = data?.constructor?.name;
+      const constructor = query?.constructor?.name;
       if (constructor === "QueryBuilder") {
-        data = await data.findOne();
+        query = await query.findOne();
       }
 
-      if (data === null) {
+      if (query === null) {
         return null;
       }
 
       if (hooks.afterQuery) {
-        data = await runtime.tracing.withSpan("afterQuery", () => {
-          return hooks.afterQuery(ctx, inputs, data);
+        query = await runtime.tracing.withSpan("afterQuery", () => {
+          if (!inputs || Object.keys(inputs).length === 0) {
+            return hooks.afterQuery(ctx, query);
+          } else {
+            return hooks.afterQuery(ctx, inputs, query);
+          }
         });
       }
 
-      return data;
+      return query;
     };
   };
 }

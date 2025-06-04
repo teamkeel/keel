@@ -355,7 +355,7 @@ test("identity permission - correct identity in context - is authorized", async 
     issuer: "https://keel.so",
   });
 
-  await actions.withIdentity(identity1).createWithIdentity({});
+  await actions.withIdentity(identity1).createWithIdentity();
 
   await expect(
     actions
@@ -375,8 +375,8 @@ test("identity permission - incorrect identity in context - is not authorized", 
     issuer: "https://keel.so",
   });
 
-  await actions.withIdentity(identity1).createWithIdentity({});
-  await actions.withIdentity(identity2).createWithIdentity({});
+  await actions.withIdentity(identity1).createWithIdentity();
+  await actions.withIdentity(identity2).createWithIdentity();
 
   await expect(
     actions.withIdentity(identity2).listWithIdentityPermission({
@@ -393,7 +393,7 @@ test("identity permission - no identity in context - is not authorized", async (
     issuer: "https://keel.so",
   });
 
-  await actions.withIdentity(identity).createWithIdentity({});
+  await actions.withIdentity(identity).createWithIdentity();
   await actions.createWithIdentity({ isActive: false });
 
   await expect(

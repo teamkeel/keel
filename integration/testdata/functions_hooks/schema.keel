@@ -30,6 +30,10 @@ model Book {
         delete deleteBookBeforeQueryReturnRecord(id) @function
         delete deleteBookBeforeWrite(id, allowPublished: Boolean) @function
         delete deleteBookAfterWrite(id, reason: Text) @function
+        create createBookNoInputs() @function
+        update updateBookNoInputs() @function
+        get getBookNoInputs() @function
+        delete deleteBookNoInputs() @function
     }
 
     @permission(

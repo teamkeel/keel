@@ -1193,29 +1193,31 @@ func writeFunctionHookTypes(w *codegen.Writer) {
 }
 
 func writeFunctionImplementation(w *codegen.Writer, schema *proto.Schema, action *proto.Action) {
-	msg := schema.FindMessage(action.InputMessageName)
-
 	var whereMsg *proto.Message
 	var valuesMsg *proto.Message
 
 	wheres := []string{}
 	values := []string{}
 
-	switch action.Type {
-	case proto.ActionType_ACTION_TYPE_UPDATE, proto.ActionType_ACTION_TYPE_LIST:
-		for _, f := range msg.Fields {
-			if f.Name == "where" {
-				whereMsg = schema.FindMessage(f.Type.MessageName.Value)
+	if action.InputMessageName != "" {
+		msg := schema.FindMessage(action.InputMessageName)
+
+		switch action.Type {
+		case proto.ActionType_ACTION_TYPE_UPDATE, proto.ActionType_ACTION_TYPE_LIST:
+			for _, f := range msg.Fields {
+				if f.Name == "where" {
+					whereMsg = schema.FindMessage(f.Type.MessageName.Value)
+				}
+				if f.Name == "values" {
+					valuesMsg = schema.FindMessage(f.Type.MessageName.Value)
+				}
 			}
-			if f.Name == "values" {
-				valuesMsg = schema.FindMessage(f.Type.MessageName.Value)
-			}
+		case proto.ActionType_ACTION_TYPE_CREATE:
+			whereMsg = nil
+			valuesMsg = msg
+		default:
+			whereMsg = msg
 		}
-	case proto.ActionType_ACTION_TYPE_CREATE:
-		whereMsg = nil
-		valuesMsg = msg
-	default:
-		whereMsg = msg
 	}
 
 	// Using getter method for Fields here as it is safe even if the variables are nil
@@ -1273,12 +1275,15 @@ func writeFunctionWrapperType(w *codegen.Writer, schema *proto.Schema, model *pr
 	w.Writef("export declare const %s: runtime.FuncWithConfig<{", casing.ToCamel(action.Name))
 
 	if action.IsArbitraryFunction() {
-		inputType := action.InputMessageName
-		if inputType == parser.MessageFieldTypeAny {
-			inputType = "any"
+		switch action.InputMessageName {
+		case parser.MessageFieldTypeAny:
+			w.Write("(fn: (ctx: ContextAPI, inputs: any) => ")
+		case "":
+			w.Write("(fn: (ctx: ContextAPI) => ")
+		default:
+			w.Writef("(fn: (ctx: ContextAPI, inputs: %s) => ", action.InputMessageName)
 		}
 
-		w.Writef("(fn: (ctx: ContextAPI, inputs: %s) => ", inputType)
 		w.Write(toCustomFunctionReturnType(model, action, false))
 		w.Write("): ")
 		w.Write(toCustomFunctionReturnType(model, action, false))
@@ -1295,38 +1300,55 @@ func writeFunctionWrapperType(w *codegen.Writer, schema *proto.Schema, model *pr
 
 	modelName := action.ModelName
 	queryBuilder := modelName + "QueryBuilder"
-	inputs := action.InputMessageName
 
 	switch action.Type {
 	case proto.ActionType_ACTION_TYPE_GET:
-		w.Writef("GetFunctionHooks<%s, %s, %s>", modelName, queryBuilder, inputs)
+		if action.InputMessageName == "" {
+			w.Writef("GetFunctionHooksNoInputs<%s, %s>", modelName, queryBuilder)
+		} else {
+			w.Writef("GetFunctionHooks<%s, %s, %s>", modelName, queryBuilder, action.InputMessageName)
+		}
 	case proto.ActionType_ACTION_TYPE_LIST:
-		w.Writef("ListFunctionHooks<%s, %s, %s>", modelName, queryBuilder, inputs)
+		w.Writef("ListFunctionHooks<%s, %s, %s>", modelName, queryBuilder, action.InputMessageName)
 	case proto.ActionType_ACTION_TYPE_CREATE:
-		msg := schema.FindMessage(action.InputMessageName)
-		pickKeys := lo.FilterMap(msg.Fields, func(f *proto.MessageField, _ int) (string, bool) {
-			return fmt.Sprintf("'%s'", f.Name), isModelInput(schema, f)
-		})
 
-		var beforeWriteValues string
-		switch len(pickKeys) {
-		case len(msg.Fields):
-			// All inputs target model fields, this means the beforeWriteValues are exactly the same as the inputs
-			beforeWriteValues = inputs
-		case 0:
-			// No inputs target model fields - need the "empty object" type
-			// https://www.totaltypescript.com/the-empty-object-type-in-typescript
-			beforeWriteValues = "Record<string, never>"
-		default:
-			// Some inputs target model fields - so create a new type by picking from inputs
-			beforeWriteValues = fmt.Sprintf("Pick<%s, %s>", inputs, strings.Join(pickKeys, " | "))
+		if action.InputMessageName == "" {
+			w.Writef("CreateFunctionHooksNoInputs<%s, %s, %sCreateValues>", modelName, queryBuilder, modelName)
+		} else {
+			msg := schema.FindMessage(action.InputMessageName)
+			pickKeys := lo.FilterMap(msg.Fields, func(f *proto.MessageField, _ int) (string, bool) {
+				return fmt.Sprintf("'%s'", f.Name), isModelInput(schema, f)
+			})
+
+			var beforeWriteValues string
+			switch len(pickKeys) {
+			case len(msg.Fields):
+				// All inputs target model fields, this means the beforeWriteValues are exactly the same as the inputs
+				beforeWriteValues = action.InputMessageName
+			case 0:
+				// No inputs target model fields - need the "empty object" type
+				// https://www.totaltypescript.com/the-empty-object-type-in-typescript
+				beforeWriteValues = "Record<string, never>"
+			default:
+				// Some inputs target model fields - so create a new type by picking from inputs
+				beforeWriteValues = fmt.Sprintf("Pick<%s, %s>", action.InputMessageName, strings.Join(pickKeys, " | "))
+			}
+
+			w.Writef("CreateFunctionHooks<%s, %s, %s, %s, %sCreateValues>", modelName, queryBuilder, action.InputMessageName, beforeWriteValues, modelName)
 		}
 
-		w.Writef("CreateFunctionHooks<%s, %s, %s, %s, %sCreateValues>", modelName, queryBuilder, inputs, beforeWriteValues, modelName)
 	case proto.ActionType_ACTION_TYPE_UPDATE:
-		w.Writef("UpdateFunctionHooks<%s, %s, %s, %sValues>", modelName, queryBuilder, inputs, casing.ToCamel(action.Name))
+		if action.InputMessageName == "" {
+			w.Writef("UpdateFunctionHooksNoInputs<%s, %s, %sValues>", modelName, queryBuilder, casing.ToCamel(action.Name))
+		} else {
+			w.Writef("UpdateFunctionHooks<%s, %s, %s, %sValues>", modelName, queryBuilder, action.InputMessageName, casing.ToCamel(action.Name))
+		}
 	case proto.ActionType_ACTION_TYPE_DELETE:
-		w.Writef("DeleteFunctionHooks<%s, %s, %s>", modelName, queryBuilder, inputs)
+		if action.InputMessageName == "" {
+			w.Writef("DeleteFunctionHooksNoInputs<%s, %s>", modelName, queryBuilder)
+		} else {
+			w.Writef("DeleteFunctionHooks<%s, %s, %s>", modelName, queryBuilder, action.InputMessageName)
+		}
 	}
 
 	w.Writeln(";")
@@ -1547,29 +1569,34 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("withTimezone(timezone: string): this;")
 	for _, model := range schema.Models {
 		for _, action := range model.Actions {
-			msg := schema.FindMessage(action.InputMessageName)
+			args := ""
+			if action.InputMessageName != "" {
+				msg := schema.FindMessage(action.InputMessageName)
 
-			w.Writef("%s(i", action.Name)
+				args = "i"
 
-			// Check that all of the top level fields in the matching message are optional
-			// If so, then we can make it so you don't even need to specify the key
-			// example, this allows for:
-			// await actions.listActivePublishersWithActivePosts();
-			// instead of:
-			// const { results: publishers } =
-			// await actions.listActivePublishersWithActivePosts({ where: {} });
-			if lo.EveryBy(msg.Fields, func(f *proto.MessageField) bool {
-				return f.Optional
-			}) {
-				w.Write("?")
+				// Check that all of the top level fields in the matching message are optional
+				// If so, then we can make it so you don't even need to specify the key
+				// example, this allows for:
+				// await actions.listActivePublishersWithActivePosts();
+				// instead of:
+				// const { results: publishers } =
+				// await actions.listActivePublishersWithActivePosts({ where: {} });
+				if lo.EveryBy(msg.Fields, func(f *proto.MessageField) bool {
+					return f.Optional
+				}) {
+					args += "?"
+				}
+
+				argType := action.InputMessageName
+				if argType == parser.MessageFieldTypeAny {
+					argType = "any"
+				}
+
+				args += fmt.Sprintf(": %s", argType)
 			}
 
-			argType := action.InputMessageName
-			if argType == parser.MessageFieldTypeAny {
-				argType = "any"
-			}
-
-			w.Writef(`: %s): %s`, argType, toActionReturnType(model, action))
+			w.Writef("%s(%s): %s", action.Name, args, toActionReturnType(model, action))
 			w.Writeln(";")
 		}
 	}

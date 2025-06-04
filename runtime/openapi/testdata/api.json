@@ -230,8 +230,7 @@
                   "first": { "type": "number" },
                   "last": { "type": "number" },
                   "limit": { "type": "number" },
-                  "offset": { "type": "number" },
-                  "where": { "$ref": "#/components/schemas/SearchBooksWhere" }
+                  "offset": { "type": "number" }
                 },
                 "unevaluatedProperties": false
               }
@@ -310,8 +309,7 @@
           "updatedAt": { "type": "string", "format": "date-time" }
         },
         "required": ["id", "createdAt", "updatedAt"]
-      },
-      "SearchBooksWhere": { "type": "object", "unevaluatedProperties": false }
+      }
     }
   }
 }
