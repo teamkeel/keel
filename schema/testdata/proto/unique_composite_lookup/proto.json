@@ -266,8 +266,7 @@
             {
               "source": "product.stock.barcode == \"1234\""
             }
-          ],
-          "inputMessageName": "GetByBarcodeInput"
+          ]
         }
       ]
     },
@@ -356,8 +355,7 @@
             {
               "source": "\"ABC\" == stock.product.sku"
             }
-          ],
-          "inputMessageName": "GetByAbcSkuInput"
+          ]
         }
       ]
     },
@@ -882,9 +880,6 @@
       ]
     },
     {
-      "name": "GetByBarcodeInput"
-    },
-    {
       "name": "GetBySupplierSkuAndCodeInput",
       "fields": [
         {
@@ -923,9 +918,6 @@
           "target": ["product", "sku"]
         }
       ]
-    },
-    {
-      "name": "GetByAbcSkuInput"
     },
     {
       "name": "GetBySupplierCodeInput",

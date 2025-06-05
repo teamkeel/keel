@@ -54,8 +54,7 @@
             {
               "source": "author.name == \"Bob\""
             }
-          ],
-          "inputMessageName": "GetAuthorInput"
+          ]
         }
       ]
     },
@@ -322,9 +321,6 @@
     },
     {
       "name": "ResetPasswordResponse"
-    },
-    {
-      "name": "GetAuthorInput"
     }
   ]
 }

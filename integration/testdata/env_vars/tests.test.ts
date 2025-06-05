@@ -4,13 +4,13 @@ import { beforeEach, expect, test } from "vitest";
 beforeEach(resetDatabase);
 
 test("set with env var", async () => {
-  const person = await actions.createPerson({});
+  const person = await actions.createPerson();
 
   expect(person.name).toEqual("Pedro");
 });
 
 test("permissions with env var", async () => {
-  const person = await actions.createPerson({});
+  const person = await actions.createPerson();
 
   await expect(
     actions.getPedro({ id: person.id })

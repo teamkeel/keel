@@ -14,8 +14,8 @@ import (
 
 // Updates the query with all set attributes defined on the action.
 func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) error {
-	for _, setExpression := range scope.Action.GetSetExpressions() {
-		expression, err := parser.ParseExpression(setExpression.GetSource())
+	for _, setExpression := range scope.Action.SetExpressions {
+		expression, err := parser.ParseExpression(setExpression.Source)
 		if err != nil {
 			return err
 		}
@@ -55,7 +55,7 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 
 			if len(currRows) == 0 {
 				// We cannot set order.customer.name if the input is order.customer.id (implying an association).
-				return fmt.Errorf("set expression operand out of range of inputs: %s. we currently only support setting fields within the input data and cannot set associated model fields", setExpression.GetSource())
+				return fmt.Errorf("set expression operand out of range of inputs: %s. we currently only support setting fields within the input data and cannot set associated model fields", setExpression.Source)
 			}
 
 			for _, row := range currRows {
@@ -72,6 +72,7 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 					}
 				}
 			}
+
 			currRows = nextRows
 		}
 
@@ -90,12 +91,19 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 
 // Updates the query with all write inputs defined on the action.
 func (query *QueryBuilder) captureWriteValues(scope *Scope, args map[string]any) error {
-	message := proto.FindValuesInputMessage(scope.Schema, scope.Action.GetName())
+	target := []string{casing.ToLowerCamel(scope.Model.Name)}
+
+	message := proto.FindValuesInputMessage(scope.Schema, scope.Action.Name)
 	if message == nil {
+		query.writeValues = &Row{
+			model:        scope.Model,
+			target:       target,
+			values:       map[string]*QueryOperand{},
+			referencedBy: []*Relationship{},
+			references:   []*Relationship{},
+		}
 		return nil
 	}
-
-	target := []string{casing.ToLowerCamel(scope.Model.GetName())}
 
 	foreignKeys, row, err := query.captureWriteValuesFromMessage(scope, message, scope.Model, target, args)
 
@@ -125,17 +133,17 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 	//   - add its value to the current row where an input has been provided, OR
 	//   - create a new row and relate it to the current row (either referencedBy or references), OR
 	//   - determine that it is a primary key reference, do not create a row, and return the FK to the referencing row.
-	for _, input := range message.GetFields() {
-		field := proto.FindField(scope.Schema.GetModels(), model.GetName(), input.GetName())
+	for _, input := range message.Fields {
+		field := proto.FindField(scope.Schema.Models, model.Name, input.Name)
 
 		// If the input is not targeting a model field, then it is either a:
 		//  - Message, with nested fields which we must recurse into, or an
 		//  - Explicit input, which is handled elsewhere.
 		if !input.IsModelField() {
-			if input.GetType().GetType() == proto.Type_TYPE_MESSAGE {
-				target := append(newRow.target, casing.ToLowerCamel(input.GetName()))
-				messageModel := scope.Schema.FindModel(field.GetType().GetModelName().GetValue())
-				nestedMessage := scope.Schema.FindMessage(input.GetType().GetMessageName().GetValue())
+			if input.Type.Type == proto.Type_TYPE_MESSAGE {
+				target := append(newRow.target, casing.ToLowerCamel(input.Name))
+				messageModel := scope.Schema.FindModel(field.Type.ModelName.Value)
+				nestedMessage := scope.Schema.FindMessage(input.Type.MessageName.Value)
 
 				var foreignKeys map[string]any
 				var err error
@@ -144,10 +152,10 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 					// if field.IsHasMany() then we have a 1:M relationship and the FK is on this model.
 					// if field.IsHasOne() then we have a 1:1 relationship with the FK on this model.
 
-					arg, hasArg := args[input.GetName()]
-					if !hasArg && !input.GetOptional() {
-						return nil, nil, fmt.Errorf("input argument is missing for required field %s", input.GetName())
-					} else if !hasArg && input.GetOptional() {
+					arg, hasArg := args[input.Name]
+					if !hasArg && !input.Optional {
+						return nil, nil, fmt.Errorf("input argument is missing for required field %s", input.Name)
+					} else if !hasArg && input.Optional {
 						continue
 					}
 
@@ -158,7 +166,7 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 						var ok bool
 						argsArraySectioned, ok = arg.([]any)
 						if !ok {
-							return nil, nil, fmt.Errorf("cannot convert args to []any for key %s", input.GetName())
+							return nil, nil, fmt.Errorf("cannot convert args to []any for key %s", input.Name)
 						}
 					}
 
@@ -174,15 +182,15 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 						// Retrieve the foreign key model field on the related model.
 						// If there are multiple relationships to the same model, then field.InverseFieldName will be
 						// populated and will provide the disambiguation as to which foreign key field to use.
-						foriegnKeyModelField := lo.Filter(messageModel.GetFields(), func(f *proto.Field, i int) bool {
-							return f.GetType().GetType() == proto.Type_TYPE_MODEL &&
-								f.GetType().GetModelName().GetValue() == model.GetName() &&
+						foriegnKeyModelField := lo.Filter(messageModel.Fields, func(f *proto.Field, i int) bool {
+							return f.Type.Type == proto.Type_TYPE_MODEL &&
+								f.Type.ModelName.Value == model.Name &&
 								field != f && // For self-referencing models
-								(field.GetInverseFieldName() == nil || f.GetForeignKeyFieldName().GetValue() == fmt.Sprintf("%sId", field.GetInverseFieldName().GetValue()))
+								(field.InverseFieldName == nil || f.ForeignKeyFieldName.Value == fmt.Sprintf("%sId", field.InverseFieldName.Value))
 						})
 
 						if len(foriegnKeyModelField) != 1 {
-							return nil, nil, fmt.Errorf("there needs to be exactly one foreign key field for %s", input.GetName())
+							return nil, nil, fmt.Errorf("there needs to be exactly one foreign key field for %s", input.Name)
 						}
 
 						for _, r := range rows {
@@ -195,24 +203,24 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 							}
 						}
 					} else if len(foreignKeys) > 0 {
-						return nil, nil, fmt.Errorf("it is not possible to specify just the id for %s as the foreign key does not sit on %s", input.GetName(), messageModel.GetName())
+						return nil, nil, fmt.Errorf("it is not possible to specify just the id for %s as the foreign key does not sit on %s", input.Name, messageModel.Name)
 					}
 				} else {
 					// A not-repeating field means that we have a M:1 or 1:1 relationship with the FK on the other model. Therefore:
 					//  - we will have a single of model to parse,
 					//  - this model will have the primary ID that needs to be referenced from the current model.
 
-					argValue, hasArg := args[input.GetName()]
+					argValue, hasArg := args[input.Name]
 					if !hasArg {
-						if !input.GetOptional() {
-							return nil, nil, fmt.Errorf("input argument is missing for required field %s", input.GetName())
+						if !input.Optional {
+							return nil, nil, fmt.Errorf("input argument is missing for required field %s", input.Name)
 						}
 
 						continue
 					}
 
-					if argValue == nil && !input.GetNullable() {
-						return nil, nil, fmt.Errorf("input argument is null for non-nullable field %s", input.GetName())
+					if argValue == nil && !input.Nullable {
+						return nil, nil, fmt.Errorf("input argument is null for non-nullable field %s", input.Name)
 					}
 
 					if argValue == nil {
@@ -224,7 +232,7 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 					} else {
 						argsSectioned, ok := argValue.(map[string]any)
 						if !ok {
-							return nil, nil, fmt.Errorf("cannot convert args to map[string]any for key %s", input.GetName())
+							return nil, nil, fmt.Errorf("cannot convert args to map[string]any for key %s", input.Name)
 						}
 
 						// Create (or associate with) the model which this model references.
@@ -237,14 +245,14 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 						// row will be nil if we are associating to an existing model.
 						if row != nil {
 							// Retrieve the foreign key model field on the this model.
-							foriegnKeyModelField := lo.Filter(model.GetFields(), func(f *proto.Field, _ int) bool {
-								return f.GetType().GetType() == proto.Type_TYPE_MODEL &&
-									f.GetType().GetModelName().GetValue() == messageModel.GetName() &&
-									f.GetName() == input.GetName()
+							foriegnKeyModelField := lo.Filter(model.Fields, func(f *proto.Field, _ int) bool {
+								return f.Type.Type == proto.Type_TYPE_MODEL &&
+									f.Type.ModelName.Value == messageModel.Name &&
+									f.Name == input.Name
 							})
 
 							if len(foriegnKeyModelField) != 1 {
-								return nil, nil, fmt.Errorf("there needs to be exactly one foreign key field for %s", input.GetName())
+								return nil, nil, fmt.Errorf("there needs to be exactly one foreign key field for %s", input.Name)
 							}
 
 							// Add foreign key to current model from the newly referenced models.
@@ -269,17 +277,17 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 
 		if messageAssociating(scope, message, model) && len(currentTarget) > 1 {
 			// We know this needs to be a FK on the referencing row.
-			fieldName := fmt.Sprintf("%sId", input.GetTarget()[len(input.GetTarget())-2])
+			fieldName := fmt.Sprintf("%sId", input.Target[len(input.Target)-2])
 
 			// Do not create a new row, and rather return this FK to add to the referencing row.
 			return map[string]any{
-				fieldName: args[input.GetName()],
+				fieldName: args[input.Name],
 			}, nil, nil
 		} else {
-			value, ok := args[input.GetName()]
+			value, ok := args[input.Name]
 			// Only add the arg value if it was provided as an input.
 			if ok {
-				newRow.values[input.GetName()] = Value(value)
+				newRow.values[input.Name] = Value(value)
 			}
 		}
 	}
@@ -325,16 +333,21 @@ func targetAssociating(scope *Scope, target []string) bool {
 		return false
 	}
 
-	message := scope.Schema.FindMessage(scope.Action.GetInputMessageName())
+	if scope.Action.InputMessageName == "" {
+		return true
+	}
+
+	message := scope.Schema.FindMessage(scope.Action.InputMessageName)
 	model := scope.Schema.FindModel(strcase.ToCamel(target[0]))
 	for _, t := range target[1 : len(target)-1] {
 		found := false
-		for _, f := range message.GetFields() {
-			if f.GetName() == t {
-				if f.GetType().GetType() == proto.Type_TYPE_MESSAGE {
-					message = scope.Schema.FindMessage(f.GetType().GetMessageName().GetValue())
-					field := proto.FindField(scope.Schema.GetModels(), model.GetName(), t)
-					model = scope.Schema.FindModel(field.GetType().GetModelName().GetValue())
+
+		for _, f := range message.Fields {
+			if f.Name == t {
+				if f.Type.Type == proto.Type_TYPE_MESSAGE {
+					message = scope.Schema.FindMessage(f.Type.MessageName.Value)
+					field := proto.FindField(scope.Schema.Models, model.Name, t)
+					model = scope.Schema.FindModel(field.Type.ModelName.Value)
 				}
 				found = true
 				break
@@ -351,17 +364,17 @@ func targetAssociating(scope *Scope, target []string) bool {
 // If this (nested) message going to be used to establish a related association, or
 // are we creating the related data?
 func messageAssociating(scope *Scope, message *proto.Message, model *proto.Model) bool {
-	for _, input := range message.GetFields() {
+	for _, input := range message.Fields {
 		// Skip named/non-model inputs
 		if input.Target == nil {
 			continue
 		}
 
-		field := proto.FindField(scope.Schema.GetModels(), model.GetName(), input.GetName())
+		field := proto.FindField(scope.Schema.Models, model.Name, input.Name)
 
 		// If any non-id field is being set, then we are not associating.
 		// This indicates that we are creating.
-		if !field.GetPrimaryKey() {
+		if !field.PrimaryKey {
 			return false
 		}
 	}

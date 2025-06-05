@@ -121,8 +121,7 @@
           "modelName": "Thing",
           "name": "createThing",
           "type": "ACTION_TYPE_CREATE",
-          "implementation": "ACTION_IMPLEMENTATION_AUTO",
-          "inputMessageName": "CreateThingInput"
+          "implementation": "ACTION_IMPLEMENTATION_AUTO"
         }
       ]
     },
@@ -402,9 +401,6 @@
     },
     {
       "name": "ResetPasswordResponse"
-    },
-    {
-      "name": "CreateThingInput"
     }
   ]
 }

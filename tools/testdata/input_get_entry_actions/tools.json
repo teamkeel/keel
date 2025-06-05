@@ -534,20 +534,10 @@
       "inputs": [
         {
           "fieldLocation": {
-            "path": "$.where"
-          },
-          "fieldType": "TYPE_MESSAGE",
-          "displayName": "Where",
-          "visible": true,
-          "scope": "FILTERS"
-        },
-        {
-          "fieldLocation": {
             "path": "$.first"
           },
           "fieldType": "TYPE_INT",
           "displayName": "First",
-          "displayOrder": 1,
           "visible": true,
           "scope": "PAGINATION"
         },
@@ -557,7 +547,7 @@
           },
           "fieldType": "TYPE_STRING",
           "displayName": "After",
-          "displayOrder": 2,
+          "displayOrder": 1,
           "visible": true,
           "scope": "PAGINATION"
         },
@@ -567,7 +557,7 @@
           },
           "fieldType": "TYPE_INT",
           "displayName": "Last",
-          "displayOrder": 3,
+          "displayOrder": 2,
           "visible": true,
           "scope": "PAGINATION"
         },
@@ -577,7 +567,7 @@
           },
           "fieldType": "TYPE_STRING",
           "displayName": "Before",
-          "displayOrder": 4,
+          "displayOrder": 3,
           "visible": true,
           "scope": "PAGINATION"
         },
@@ -587,7 +577,7 @@
           },
           "fieldType": "TYPE_INT",
           "displayName": "Limit",
-          "displayOrder": 5,
+          "displayOrder": 4,
           "visible": true,
           "scope": "PAGINATION"
         },
@@ -597,7 +587,7 @@
           },
           "fieldType": "TYPE_INT",
           "displayName": "Offset",
-          "displayOrder": 6,
+          "displayOrder": 5,
           "visible": true,
           "scope": "PAGINATION"
         }
@@ -981,15 +971,6 @@
           "modelName": "Product",
           "fieldName": "id",
           "scope": "FILTERS"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.values"
-          },
-          "fieldType": "TYPE_MESSAGE",
-          "displayName": "Values",
-          "displayOrder": 1,
-          "visible": true
         }
       ],
       "response": [

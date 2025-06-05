@@ -14,12 +14,12 @@ import (
 )
 
 func GenerateClient(ctx context.Context, schema *proto.Schema, makePackage bool, apiName string) (codegen.GeneratedFiles, error) {
-	api := schema.GetApis()[0]
+	api := schema.Apis[0]
 
 	if apiName != "" {
 		match := false
-		for _, a := range schema.GetApis() {
-			if strings.EqualFold(a.GetName(), apiName) {
+		for _, a := range schema.Apis {
+			if strings.EqualFold(a.Name, apiName) {
 				match = true
 				api = a
 			}
@@ -158,7 +158,7 @@ func writeClientApiInterface(w *codegen.Writer, schema *proto.Schema, api *proto
 
 	for _, a := range proto.GetActionNamesForApi(schema, api) {
 		action := schema.FindAction(a)
-		if action.GetType() == proto.ActionType_ACTION_TYPE_GET || action.GetType() == proto.ActionType_ACTION_TYPE_LIST || action.GetType() == proto.ActionType_ACTION_TYPE_READ {
+		if action.Type == proto.ActionType_ACTION_TYPE_GET || action.Type == proto.ActionType_ACTION_TYPE_LIST || action.Type == proto.ActionType_ACTION_TYPE_READ {
 			queries = append(queries, action)
 		} else {
 			mutations = append(mutations, action)
@@ -193,25 +193,29 @@ func writeClientApiInterface(w *codegen.Writer, schema *proto.Schema, api *proto
 }
 
 func writeClientActionType(w *codegen.Writer, schema *proto.Schema, action *proto.Action) {
-	msg := schema.FindMessage(action.GetInputMessageName())
+	msg := schema.FindMessage(action.InputMessageName)
 
-	w.Writef("%s: (i", action.GetName())
+	if action.InputMessageName != "" {
+		w.Writef("%s: (i", action.Name)
 
-	// Check that all of the top level fields in the matching message are optional
-	if lo.EveryBy(msg.GetFields(), func(f *proto.MessageField) bool {
-		return f.GetOptional()
-	}) {
-		w.Write("?")
+		// Check that all of the top level fields in the matching message are optional
+		if lo.EveryBy(msg.Fields, func(f *proto.MessageField) bool {
+			return f.Optional
+		}) {
+			w.Write("?")
+		}
+
+		inputType := action.InputMessageName
+		if inputType == parser.MessageFieldTypeAny {
+			inputType = "any"
+		}
+
+		w.Writef(`: %s) => `, inputType)
+	} else {
+		w.Writef("%s: () => ", action.Name)
 	}
 
-	inputType := action.GetInputMessageName()
-	if inputType == parser.MessageFieldTypeAny {
-		inputType = "any"
-	}
-
-	w.Writef(`: %s) => `, inputType)
-
-	model := schema.FindModel(action.GetModelName())
+	model := schema.FindModel(action.ModelName)
 	w.Writef(`Promise<APIResult<%s>>`, toClientActionReturnType(model, action))
 
 	w.Writeln(";")
@@ -223,7 +227,7 @@ func writeClientTypes(w *codegen.Writer, schema *proto.Schema, api *proto.Api) {
 
 	writeMessages(w, schema, false, true)
 
-	for _, enum := range schema.GetEnums() {
+	for _, enum := range schema.Enums {
 		writeEnum(w, enum)
 		writeEnumWhereCondition(w, enum)
 	}
@@ -246,32 +250,32 @@ func writeClientTypes(w *codegen.Writer, schema *proto.Schema, api *proto.Api) {
 		if len(embeds) == 0 {
 			continue
 		}
-		model := schema.FindModel(action.GetModelName())
-		writeEmbeddedModelInterface(w, schema, model, toResponseType(action.GetName()), embeds)
+		model := schema.FindModel(action.ModelName)
+		writeEmbeddedModelInterface(w, schema, model, toResponseType(action.Name), embeds)
 	}
 
 	w.Writeln("")
 }
 
 func toClientActionReturnType(model *proto.Model, action *proto.Action) string {
-	switch action.GetType() {
+	switch action.Type {
 	case proto.ActionType_ACTION_TYPE_CREATE:
-		return model.GetName()
+		return model.Name
 	case proto.ActionType_ACTION_TYPE_UPDATE:
-		return model.GetName()
+		return model.Name
 	case proto.ActionType_ACTION_TYPE_GET:
 		if len(action.GetResponseEmbeds()) > 0 {
-			return toResponseType(action.GetName()) + " | null"
+			return toResponseType(action.Name) + " | null"
 		}
-		return model.GetName() + " | null"
+		return model.Name + " | null"
 	case proto.ActionType_ACTION_TYPE_LIST:
-		respName := model.GetName()
+		respName := model.Name
 		if len(action.GetResponseEmbeds()) > 0 {
-			respName = toResponseType(action.GetName())
+			respName = toResponseType(action.Name)
 		}
 
-		if len(action.GetFacets()) > 0 {
-			resultInfo := fmt.Sprintf("%sResultInfo", strcase.ToCamel(action.GetName()))
+		if len(action.Facets) > 0 {
+			resultInfo := fmt.Sprintf("%sResultInfo", strcase.ToCamel(action.Name))
 			return "{ results: " + respName + "[], resultInfo: " + resultInfo + ", pageInfo: PageInfo }"
 		} else {
 			return "{ results: " + respName + "[], pageInfo: PageInfo }"
@@ -279,12 +283,12 @@ func toClientActionReturnType(model *proto.Model, action *proto.Action) string {
 	case proto.ActionType_ACTION_TYPE_DELETE:
 		return "string"
 	case proto.ActionType_ACTION_TYPE_READ, proto.ActionType_ACTION_TYPE_WRITE:
-		if action.GetResponseMessageName() == parser.MessageFieldTypeAny {
+		if action.ResponseMessageName == parser.MessageFieldTypeAny {
 			return "any"
 		}
 
-		return action.GetResponseMessageName()
+		return action.ResponseMessageName
 	default:
-		panic(fmt.Sprintf("unexpected action type: %s", action.GetType().String()))
+		panic(fmt.Sprintf("unexpected action type: %s", action.Type.String()))
 	}
 }

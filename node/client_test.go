@@ -258,9 +258,6 @@ interface KeelAPI {
 	})
 }
 
-// TODO: Fix this.  It should be:
-//
-//	createPerson: () => ...
 func TestClientActionNoInputs(t *testing.T) {
 	t.Parallel()
 	schema := `
@@ -277,7 +274,7 @@ interface KeelAPI {
 		listPeople: (i?: ListPeopleInput) => Promise<APIResult<{ results: Person[], pageInfo: PageInfo }>>;
 	},
 	mutations: {
-		createPerson: (i?: CreatePersonInput) => Promise<APIResult<Person>>;
+		createPerson: () => Promise<APIResult<Person>>;
 		requestPasswordReset: (i: RequestPasswordResetInput) => Promise<APIResult<RequestPasswordResetResponse>>;
 		resetPassword: (i: ResetPasswordInput) => Promise<APIResult<ResetPasswordResponse>>;
 	}

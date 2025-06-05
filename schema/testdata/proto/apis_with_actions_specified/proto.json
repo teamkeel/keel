@@ -425,20 +425,8 @@
       ]
     },
     {
-      "name": "SearchBooksWhere"
-    },
-    {
       "name": "SearchBooksInput",
       "fields": [
-        {
-          "messageName": "SearchBooksInput",
-          "name": "where",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "SearchBooksWhere"
-          },
-          "optional": true
-        },
         {
           "messageName": "SearchBooksInput",
           "name": "first",

@@ -48,14 +48,14 @@ wasm:
 	node ./packages/wasm/encodeWasm.js
 
 prettier:
-	npx prettier@3.0.0 --write './integration/**/*.{ts,json,yaml}'
-	npx prettier@3.0.0 --write './packages/**/*.{ts,js,mjs,tsx}'
-	npx prettier@3.0.0 --write './node/templates/**/*.{ts,js,mjs}'
-	npx prettier@3.0.0 --write './packages/**/package.json'
-	npx prettier@3.0.0 --write './schema/testdata/proto/**/*.json'
-	npx prettier@3.0.0 --write './runtime/jsonschema/testdata/**/*.json'
-	npx prettier@3.0.0 --write './runtime/openapi/testdata/**/*.json'
-	npx prettier@3.0.0 --write './tools/testdata/**/*.json'
+	npx prettier@3.0.0 --write './integration/**/*.{ts,json,yaml}' --ignore-path .gitignore
+	npx prettier@3.0.0 --write './packages/**/*.{ts,js,mjs,tsx}' --ignore-path .gitignore
+	npx prettier@3.0.0 --write './node/templates/**/*.{ts,js,mjs}' --ignore-path .gitignore
+	npx prettier@3.0.0 --write './packages/**/package.json' --ignore-path .gitignore
+	npx prettier@3.0.0 --write './schema/testdata/proto/**/*.json' --ignore-path .gitignore
+	npx prettier@3.0.0 --write './runtime/jsonschema/testdata/**/*.json' --ignore-path .gitignore
+	npx prettier@3.0.0 --write './runtime/openapi/testdata/**/*.json' --ignore-path .gitignore
+	npx prettier@3.0.0 --write './tools/testdata/**/*.json' --ignore-path .gitignore
 
 install:
 	go mod download

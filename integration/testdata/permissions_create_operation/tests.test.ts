@@ -155,7 +155,7 @@ test("identity permission - correct identity in context - is authorized", async 
   });
 
   await expect(
-    actions.withIdentity(identity).createWithIdentityRequiresSameIdentity({})
+    actions.withIdentity(identity).createWithIdentityRequiresSameIdentity()
   ).resolves.toMatchObject({ id: expect.any(String) });
 });
 

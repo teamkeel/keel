@@ -49,7 +49,7 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 	writePermissions(sdk, schema)
 	writeMessages(sdkTypes, schema, false, false)
 
-	for _, enum := range schema.GetEnums() {
+	for _, enum := range schema.Enums {
 		writeEnum(sdkTypes, enum)
 		writeEnumWhereCondition(sdkTypes, enum)
 		writeEnumObject(sdk, enum)
@@ -59,12 +59,12 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 	writeFunctionHookTypes(sdkTypes)
 	writeRouteFunctionTypes(sdkTypes)
 
-	writeTableConfig(sdk, schema.GetModels())
+	writeTableConfig(sdk, schema.Models)
 	writeAPIFactory(sdk, schema)
 
 	sdk.Writeln("export { useDatabase, ErrorPresets as errors, File, InlineFile, Duration } from '@teamkeel/functions-runtime';")
 
-	for _, model := range schema.GetModels() {
+	for _, model := range schema.Models {
 		writeTableInterface(sdkTypes, model)
 		writeModelInterface(sdkTypes, model, false)
 		writeCreateValuesType(sdkTypes, schema, model)
@@ -75,15 +75,15 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 		writeModelAPIDeclaration(sdkTypes, model)
 		writeModelQueryBuilderDeclaration(sdkTypes, model)
 
-		for _, action := range model.GetActions() {
+		for _, action := range model.Actions {
 			// if we have an auto action with embedded data, we need to write the custom response type
-			if action.GetImplementation() == proto.ActionImplementation_ACTION_IMPLEMENTATION_AUTO && len(action.GetResponseEmbeds()) > 0 {
-				writeEmbeddedModelInterface(sdkTypes, schema, model, toResponseType(action.GetName()), action.GetResponseEmbeds())
+			if action.Implementation == proto.ActionImplementation_ACTION_IMPLEMENTATION_AUTO && len(action.GetResponseEmbeds()) > 0 {
+				writeEmbeddedModelInterface(sdkTypes, schema, model, toResponseType(action.Name), action.GetResponseEmbeds())
 				continue
 			}
 
 			// We now only care about custom functions for the SDK
-			if action.GetImplementation() != proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM {
+			if action.Implementation != proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM {
 				continue
 			}
 
@@ -94,7 +94,7 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 			// if the action type is read or write, then the signature of the exported method just takes the function
 			// defined by the user
 			if action.IsArbitraryFunction() {
-				sdk.Writef("export const %s = (fn) => fn;", casing.ToCamel(action.GetName()))
+				sdk.Writef("export const %s = (fn) => fn;", casing.ToCamel(action.Name))
 				sdk.Writeln("")
 			} else {
 				// writes the default implementation of a function. the user can specify hooks which can
@@ -107,21 +107,21 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 	sdkTypes.Writeln("export declare function AfterAuthentication(fn: (ctx: ContextAPI) => Promise<void>): Promise<void>;")
 	sdkTypes.Writeln("export declare function AfterIdentityCreated(fn: (ctx: ContextAPI) => Promise<void>): Promise<void>;")
 
-	for _, job := range schema.GetJobs() {
+	for _, job := range schema.Jobs {
 		writeJobFunctionWrapperType(sdkTypes, job)
-		sdk.Writef("export const %s = (fn) => fn;", job.GetName())
+		sdk.Writef("export const %s = (fn) => fn;", job.Name)
 		sdk.Writeln("")
 	}
 
-	for _, subscriber := range schema.GetSubscribers() {
+	for _, subscriber := range schema.Subscribers {
 		writeSubscriberFunctionWrapperType(sdkTypes, subscriber)
-		sdk.Writef("export const %s = (fn) => fn;", strcase.ToCamel(subscriber.GetName()))
+		sdk.Writef("export const %s = (fn) => fn;", strcase.ToCamel(subscriber.Name))
 		sdk.Writeln("")
 	}
 
-	for _, flow := range schema.GetFlows() {
+	for _, flow := range schema.Flows {
 		writeFlowFunctionWrapperType(sdkTypes, flow)
-		sdk.Writef("export const %s = (config, fn) => { return { config, fn }; };", strcase.ToCamel(flow.GetName()))
+		sdk.Writef("export const %s = (config, fn) => { return { config, fn }; };", strcase.ToCamel(flow.Name))
 		sdk.Writeln("")
 	}
 
@@ -180,22 +180,22 @@ func writeResultInfoInterface(w *codegen.Writer, schema *proto.Schema, action *p
 		return
 	}
 
-	w.Writef("export interface %sResultInfo {\n", strcase.ToCamel(action.GetName()))
+	w.Writef("export interface %sResultInfo {\n", strcase.ToCamel(action.Name))
 	w.Indent()
 
 	for _, field := range facetFields {
-		switch field.GetType().GetType() {
+		switch field.Type.Type {
 		case proto.Type_TYPE_DECIMAL, proto.Type_TYPE_INT:
-			w.Writef("%s: { min: number, max: number, avg: number };\n", field.GetName())
+			w.Writef("%s: { min: number, max: number, avg: number };\n", field.Name)
 		case proto.Type_TYPE_ID, proto.Type_TYPE_ENUM, proto.Type_TYPE_STRING:
-			w.Writef("%s: [ { value: string, count: number } ];\n", field.GetName())
+			w.Writef("%s: [ { value: string, count: number } ];\n", field.Name)
 		case proto.Type_TYPE_TIMESTAMP, proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME:
-			w.Writef("%s: { min: Date, max: Date };\n", field.GetName())
+			w.Writef("%s: { min: Date, max: Date };\n", field.Name)
 		case proto.Type_TYPE_DURATION:
 			if isClientPackage {
-				w.Writef("%s: { min: DurationString, max: DurationString, avg: DurationString };\n", field.GetName())
+				w.Writef("%s: { min: DurationString, max: DurationString, avg: DurationString };\n", field.Name)
 			} else {
-				w.Writef("%s: { min: runtime.Duration, max: runtime.Duration, avg: runtime.Duration };\n", field.GetName())
+				w.Writef("%s: { min: runtime.Duration, max: runtime.Duration, avg: runtime.Duration };\n", field.Name)
 			}
 		}
 	}
@@ -206,28 +206,28 @@ func writeResultInfoInterface(w *codegen.Writer, schema *proto.Schema, action *p
 }
 
 func writeTableInterface(w *codegen.Writer, model *proto.Model) {
-	w.Writef("export interface %sTable {\n", model.GetName())
+	w.Writef("export interface %sTable {\n", model.Name)
 	w.Indent()
-	for _, field := range model.GetFields() {
-		if field.GetType().GetType() == proto.Type_TYPE_MODEL {
+	for _, field := range model.Fields {
+		if field.Type.Type == proto.Type_TYPE_MODEL {
 			continue
 		}
 
-		w.Write(casing.ToLowerCamel(field.GetName()))
+		w.Write(casing.ToLowerCamel(field.Name))
 		w.Write(": ")
-		t := toDbTableType(field.GetType(), false)
+		t := toDbTableType(field.Type, false)
 
-		if field.GetType().GetRepeated() {
+		if field.Type.Repeated {
 			t = fmt.Sprintf("%s[]", t)
 		}
 
-		if field.GetDefaultValue() != nil || field.GetSequence() != nil {
+		if field.DefaultValue != nil || field.Sequence != nil {
 			t = fmt.Sprintf("Generated<%s>", t)
 		}
 
 		w.Write(t)
 
-		if field.GetOptional() {
+		if field.Optional {
 			w.Write(" | null")
 		}
 		w.Writeln("")
@@ -237,24 +237,24 @@ func writeTableInterface(w *codegen.Writer, model *proto.Model) {
 }
 
 func writeModelInterface(w *codegen.Writer, model *proto.Model, isClientPackage bool) {
-	w.Writef("export interface %s {\n", model.GetName())
+	w.Writef("export interface %s {\n", model.Name)
 	w.Indent()
-	for _, field := range model.GetFields() {
-		if field.GetType().GetType() == proto.Type_TYPE_MODEL {
+	for _, field := range model.Fields {
+		if field.Type.Type == proto.Type_TYPE_MODEL {
 			continue
 		}
 
-		w.Write(field.GetName())
+		w.Write(field.Name)
 		w.Write(": ")
-		t := toTypeScriptType(field.GetType(), false, false, isClientPackage)
+		t := toTypeScriptType(field.Type, false, false, isClientPackage)
 
-		if field.GetType().GetRepeated() {
+		if field.Type.Repeated {
 			t = fmt.Sprintf("%s[]", t)
 		}
 
 		w.Write(t)
 
-		if field.GetOptional() {
+		if field.Optional {
 			w.Write(" | null")
 		}
 
@@ -265,28 +265,28 @@ func writeModelInterface(w *codegen.Writer, model *proto.Model, isClientPackage 
 }
 
 func writeUpdateValuesType(w *codegen.Writer, model *proto.Model) {
-	w.Writef("export type %sUpdateValues = {\n", model.GetName())
+	w.Writef("export type %sUpdateValues = {\n", model.Name)
 	w.Indent()
-	for _, field := range model.GetFields() {
-		if field.GetType().GetType() == proto.Type_TYPE_MODEL {
+	for _, field := range model.Fields {
+		if field.Type.Type == proto.Type_TYPE_MODEL {
 			continue
 		}
 
-		if field.GetComputedExpression() != nil || field.GetSequence() != nil {
+		if field.ComputedExpression != nil || field.Sequence != nil {
 			continue
 		}
 
-		w.Write(field.GetName())
+		w.Write(field.Name)
 		w.Write(": ")
-		t := toTypeScriptType(field.GetType(), true, false, false)
+		t := toTypeScriptType(field.Type, true, false, false)
 
-		if field.GetType().GetRepeated() {
+		if field.Type.Repeated {
 			t = fmt.Sprintf("%s[]", t)
 		}
 
 		w.Write(t)
 
-		if field.GetOptional() {
+		if field.Optional {
 			w.Write(" | null")
 		}
 
@@ -305,10 +305,10 @@ func writeEmbeddedModelInterface(w *codegen.Writer, schema *proto.Schema, model 
 func writeEmbeddedModelFields(w *codegen.Writer, schema *proto.Schema, model *proto.Model, embeddings []string) {
 	w.Write("{\n")
 	w.Indent()
-	for _, field := range model.GetFields() {
+	for _, field := range model.Fields {
 		// if the field is of ID type, and the related model is embedded, we do not want to include it in the schema
-		if field.GetType().GetType() == proto.Type_TYPE_ID && field.GetForeignKeyInfo() != nil {
-			relatedModel := strings.TrimSuffix(field.GetName(), "Id")
+		if field.Type.Type == proto.Type_TYPE_ID && field.ForeignKeyInfo != nil {
+			relatedModel := strings.TrimSuffix(field.Name, "Id")
 			skip := false
 			for _, embed := range embeddings {
 				frags := strings.Split(embed, ".")
@@ -323,12 +323,12 @@ func writeEmbeddedModelFields(w *codegen.Writer, schema *proto.Schema, model *pr
 		}
 
 		fieldEmbeddings := []string{}
-		if field.GetType().GetType() == proto.Type_TYPE_MODEL {
+		if field.Type.Type == proto.Type_TYPE_MODEL {
 			found := false
 
 			for _, embed := range embeddings {
 				frags := strings.Split(embed, ".")
-				if frags[0] == field.GetName() {
+				if frags[0] == field.Name {
 					found = true
 					// if we have to embed a child model for this field, we need to pass them through the field schema
 					// with the first segment removed
@@ -342,20 +342,20 @@ func writeEmbeddedModelFields(w *codegen.Writer, schema *proto.Schema, model *pr
 			}
 		}
 
-		w.Write(field.GetName())
+		w.Write(field.Name)
 		w.Write(": ")
 
 		if len(fieldEmbeddings) == 0 {
-			w.Write(toTypeScriptType(field.GetType(), false, false, false))
+			w.Write(toTypeScriptType(field.Type, false, false, false))
 		} else {
-			fieldModel := schema.FindModel(field.GetType().GetModelName().GetValue())
+			fieldModel := schema.FindModel(field.Type.ModelName.Value)
 			writeEmbeddedModelFields(w, schema, fieldModel, fieldEmbeddings)
 		}
 
-		if field.GetType().GetRepeated() {
+		if field.Type.Repeated {
 			w.Write("[]")
 		}
-		if field.GetOptional() {
+		if field.Optional {
 			w.Write(" | null")
 		}
 
@@ -366,40 +366,40 @@ func writeEmbeddedModelFields(w *codegen.Writer, schema *proto.Schema, model *pr
 }
 
 func writeCreateValuesType(w *codegen.Writer, schema *proto.Schema, model *proto.Model) {
-	w.Writef("export type %sCreateValues = {\n", model.GetName())
+	w.Writef("export type %sCreateValues = {\n", model.Name)
 	w.Indent()
 
-	for _, field := range model.GetFields() {
+	for _, field := range model.Fields {
 		// For required relationship fields we don't include them in the main type but instead
 		// add them after using a union.
-		if (field.GetForeignKeyFieldName() != nil || field.GetForeignKeyInfo() != nil) && !field.GetOptional() {
+		if (field.ForeignKeyFieldName != nil || field.ForeignKeyInfo != nil) && !field.Optional {
 			continue
 		}
 
-		if field.GetComputedExpression() != nil || field.GetSequence() != nil {
+		if field.ComputedExpression != nil || field.Sequence != nil {
 			continue
 		}
 
-		if field.GetForeignKeyFieldName() != nil {
-			w.Writef("// if providing a value for this field do not also set %s\n", field.GetForeignKeyFieldName().GetValue())
+		if field.ForeignKeyFieldName != nil {
+			w.Writef("// if providing a value for this field do not also set %s\n", field.ForeignKeyFieldName.Value)
 		}
-		if field.GetForeignKeyInfo() != nil {
-			w.Writef("// if providing a value for this field do not also set %s\n", strings.TrimSuffix(field.GetName(), "Id"))
+		if field.ForeignKeyInfo != nil {
+			w.Writef("// if providing a value for this field do not also set %s\n", strings.TrimSuffix(field.Name, "Id"))
 		}
 
-		w.Write(field.GetName())
-		if field.GetOptional() || field.GetDefaultValue() != nil || field.IsHasMany() || field.GetComputedExpression() != nil {
+		w.Write(field.Name)
+		if field.Optional || field.DefaultValue != nil || field.IsHasMany() || field.ComputedExpression != nil {
 			w.Write("?")
 		}
 
 		w.Write(": ")
 
-		if field.GetType().GetType() == proto.Type_TYPE_MODEL {
+		if field.Type.Type == proto.Type_TYPE_MODEL {
 			if field.IsHasMany() {
 				w.Write("Array<")
 			}
 
-			relation := schema.FindModel(field.GetType().GetModelName().GetValue())
+			relation := schema.FindModel(field.Type.ModelName.Value)
 
 			// For a has-many we need to omit the fields that relate to _this_ model.
 			// For example if we're making the create values type for author, and this
@@ -407,10 +407,10 @@ func writeCreateValuesType(w *codegen.Writer, schema *proto.Schema, model *proto
 			// to expect you to provide "author" or "authorId" - as that field will be filled
 			// in when the author record is created
 			if field.IsHasMany() {
-				inverseField := proto.FindField(schema.GetModels(), relation.GetName(), field.GetInverseFieldName().GetValue())
-				w.Writef("Omit<%sCreateValues, '%s' | '%s'>", relation.GetName(), inverseField.GetName(), inverseField.GetForeignKeyFieldName().GetValue())
+				inverseField := proto.FindField(schema.Models, relation.Name, field.InverseFieldName.Value)
+				w.Writef("Omit<%sCreateValues, '%s' | '%s'>", relation.Name, inverseField.Name, inverseField.ForeignKeyFieldName.Value)
 			} else {
-				w.Writef("%sCreateValues", relation.GetName())
+				w.Writef("%sCreateValues", relation.Name)
 			}
 
 			// ...or just an id. This API might not be ideal because by allowing just
@@ -421,15 +421,15 @@ func writeCreateValuesType(w *codegen.Writer, schema *proto.Schema, model *proto
 				w.Write(">")
 			}
 		} else {
-			t := toTypeScriptType(field.GetType(), true, false, false)
-			if field.GetType().GetRepeated() {
+			t := toTypeScriptType(field.Type, true, false, false)
+			if field.Type.Repeated {
 				t = fmt.Sprintf("%s[]", t)
 			}
 
 			w.Write(t)
 		}
 
-		if field.GetOptional() {
+		if field.Optional {
 			w.Write(" | null")
 		}
 		w.Writeln("")
@@ -440,26 +440,26 @@ func writeCreateValuesType(w *codegen.Writer, schema *proto.Schema, model *proto
 
 	// For each required belongs-to relationship add a union that lets you either set
 	// the generated foreign key field or the actual model field, but not both.
-	for _, field := range model.GetFields() {
-		if field.GetForeignKeyFieldName() == nil || field.GetOptional() {
+	for _, field := range model.Fields {
+		if field.ForeignKeyFieldName == nil || field.Optional {
 			continue
 		}
 
-		if field.GetComputedExpression() != nil {
+		if field.ComputedExpression != nil {
 			continue
 		}
 
 		w.Writeln(" & (")
 		w.Indent()
 
-		fkName := field.GetForeignKeyFieldName().GetValue()
+		fkName := field.ForeignKeyFieldName.Value
 
-		relation := schema.FindModel(field.GetType().GetModelName().GetValue())
+		relation := schema.FindModel(field.Type.ModelName.Value)
 		relationPk := relation.PrimaryKeyFieldName()
 
-		w.Writef("// Either %s or %s can be provided but not both\n", field.GetName(), fkName)
-		w.Writef("| {%s: %sCreateValues | {%s: string}, %s?: undefined}\n", field.GetName(), field.GetType().GetModelName().GetValue(), relationPk, fkName)
-		w.Writef("| {%s: string, %s?: undefined}\n", fkName, field.GetName())
+		w.Writef("// Either %s or %s can be provided but not both\n", field.Name, fkName)
+		w.Writef("| {%s: %sCreateValues | {%s: string}, %s?: undefined}\n", field.Name, field.Type.ModelName.Value, relationPk, fkName)
+		w.Writef("| {%s: string, %s?: undefined}\n", fkName, field.Name)
 
 		w.Dedent()
 		w.Write(")")
@@ -470,15 +470,15 @@ func writeCreateValuesType(w *codegen.Writer, schema *proto.Schema, model *proto
 }
 
 func writeFindManyParamsInterface(w *codegen.Writer, model *proto.Model) {
-	w.Writef("export type %sOrderBy = {\n", model.GetName())
+	w.Writef("export type %sOrderBy = {\n", model.Name)
 	w.Indent()
 
-	relevantFields := lo.Filter(model.GetFields(), func(f *proto.Field, _ int) bool {
-		if f.GetType().GetRepeated() {
+	relevantFields := lo.Filter(model.Fields, func(f *proto.Field, _ int) bool {
+		if f.Type.Repeated {
 			return false
 		}
 
-		switch f.GetType().GetType() {
+		switch f.Type.Type {
 		// scalar types are only permitted to sort by
 		case proto.Type_TYPE_BOOL, proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME, proto.Type_TYPE_INT, proto.Type_TYPE_STRING, proto.Type_TYPE_ENUM, proto.Type_TYPE_TIMESTAMP, proto.Type_TYPE_ID, proto.Type_TYPE_DECIMAL:
 			return true
@@ -489,7 +489,7 @@ func writeFindManyParamsInterface(w *codegen.Writer, model *proto.Model) {
 	})
 
 	for i, f := range relevantFields {
-		w.Writef("%s?: runtime.SortDirection", f.GetName())
+		w.Writef("%s?: runtime.SortDirection", f.Name)
 
 		if i < len(relevantFields)-1 {
 			w.Write(",")
@@ -501,34 +501,34 @@ func writeFindManyParamsInterface(w *codegen.Writer, model *proto.Model) {
 	w.Write("}")
 
 	w.Writeln("\n")
-	w.Writef("export interface %sFindManyParams {\n", model.GetName())
+	w.Writef("export interface %sFindManyParams {\n", model.Name)
 	w.Indent()
-	w.Writef("where?: %sWhereConditions;\n", model.GetName())
+	w.Writef("where?: %sWhereConditions;\n", model.Name)
 	w.Writef("limit?: number;\n")
 	w.Writef("offset?: number;\n")
-	w.Writef("orderBy?: %sOrderBy;\n", model.GetName())
+	w.Writef("orderBy?: %sOrderBy;\n", model.Name)
 	w.Dedent()
 	w.Writeln("}")
 }
 
 func writeWhereConditionsInterface(w *codegen.Writer, model *proto.Model) {
-	w.Writef("export interface %sWhereConditions {\n", model.GetName())
+	w.Writef("export interface %sWhereConditions {\n", model.Name)
 	w.Indent()
-	for _, field := range model.GetFields() {
-		if field.GetType().GetType() == proto.Type_TYPE_FILE {
+	for _, field := range model.Fields {
+		if field.Type.Type == proto.Type_TYPE_FILE {
 			continue
 		}
 
-		w.Write(field.GetName())
+		w.Write(field.Name)
 		w.Write("?")
 		w.Write(": ")
-		if field.GetType().GetType() == proto.Type_TYPE_MODEL {
+		if field.Type.Type == proto.Type_TYPE_MODEL {
 			// Embed related models where conditions
-			w.Writef("%sWhereConditions", field.GetType().GetModelName().GetValue())
+			w.Writef("%sWhereConditions", field.Type.ModelName.Value)
 		} else {
-			w.Write(toTypeScriptType(field.GetType(), false, false, false))
+			w.Write(toTypeScriptType(field.Type, false, false, false))
 
-			if field.GetType().GetRepeated() {
+			if field.Type.Repeated {
 				w.Write("[]")
 			}
 
@@ -536,7 +536,7 @@ func writeWhereConditionsInterface(w *codegen.Writer, model *proto.Model) {
 			w.Write(toWhereConditionType(field))
 		}
 
-		if field.GetOptional() {
+		if field.Optional {
 			w.Write(" | null")
 		}
 		w.Write(";")
@@ -548,12 +548,12 @@ func writeWhereConditionsInterface(w *codegen.Writer, model *proto.Model) {
 }
 
 func writeMessages(w *codegen.Writer, schema *proto.Schema, isTestingPackage bool, isClientPackage bool) {
-	for _, msg := range schema.GetMessages() {
-		if msg.GetName() == parser.MessageFieldTypeAny {
+	for _, msg := range schema.Messages {
+		if msg.Name == parser.MessageFieldTypeAny {
 			continue
 		}
 
-		if schema.IsActionResponseMessage(msg.GetName()) {
+		if schema.IsActionResponseMessage(msg.Name) {
 			writeResponseMessage(w, msg, isTestingPackage, isClientPackage)
 		} else {
 			writeInputMessage(w, msg, isTestingPackage, isClientPackage)
@@ -562,32 +562,32 @@ func writeMessages(w *codegen.Writer, schema *proto.Schema, isTestingPackage boo
 }
 
 func writeInputMessage(w *codegen.Writer, message *proto.Message, isTestingPackage bool, isClientPackage bool) {
-	if message.GetType() != nil {
-		w.Writef("export type %s = ", message.GetName())
-		w.Write(toInputTypescriptType(message.GetType(), isTestingPackage, isClientPackage))
+	if message.Type != nil {
+		w.Writef("export type %s = ", message.Name)
+		w.Write(toInputTypescriptType(message.Type, isTestingPackage, isClientPackage))
 		w.Writeln(";")
 		return
 	}
 
-	w.Writef("export interface %s {\n", message.GetName())
+	w.Writef("export interface %s {\n", message.Name)
 	w.Indent()
 
-	for _, field := range message.GetFields() {
-		w.Write(field.GetName())
+	for _, field := range message.Fields {
+		w.Write(field.Name)
 
-		if field.GetOptional() {
+		if field.Optional {
 			w.Write("?")
 		}
 
 		w.Write(": ")
 
-		w.Write(toInputTypescriptType(field.GetType(), isTestingPackage, isClientPackage))
+		w.Write(toInputTypescriptType(field.Type, isTestingPackage, isClientPackage))
 
-		if field.GetType().GetRepeated() {
+		if field.Type.Repeated {
 			w.Write("[]")
 		}
 
-		if field.GetNullable() {
+		if field.Nullable {
 			w.Write(" | null")
 		}
 
@@ -599,32 +599,32 @@ func writeInputMessage(w *codegen.Writer, message *proto.Message, isTestingPacka
 }
 
 func writeResponseMessage(w *codegen.Writer, message *proto.Message, isTestingPackage bool, isClientPackage bool) {
-	if message.GetType() != nil {
-		w.Writef("export type %s = ", message.GetName())
-		w.Write(toResponseTypescriptType(message.GetType(), isTestingPackage, isClientPackage))
+	if message.Type != nil {
+		w.Writef("export type %s = ", message.Name)
+		w.Write(toResponseTypescriptType(message.Type, isTestingPackage, isClientPackage))
 		w.Writeln(";")
 		return
 	}
 
-	w.Writef("export interface %s {\n", message.GetName())
+	w.Writef("export interface %s {\n", message.Name)
 	w.Indent()
 
-	for _, field := range message.GetFields() {
-		w.Write(field.GetName())
+	for _, field := range message.Fields {
+		w.Write(field.Name)
 
-		if field.GetOptional() {
+		if field.Optional {
 			w.Write("?")
 		}
 
 		w.Write(": ")
 
-		w.Write(toResponseTypescriptType(field.GetType(), isTestingPackage, isClientPackage))
+		w.Write(toResponseTypescriptType(field.Type, isTestingPackage, isClientPackage))
 
-		if field.GetType().GetRepeated() {
+		if field.Type.Repeated {
 			w.Write("[]")
 		}
 
-		if field.GetNullable() {
+		if field.Nullable {
 			w.Write(" | null")
 		}
 
@@ -636,7 +636,7 @@ func writeResponseMessage(w *codegen.Writer, message *proto.Message, isTestingPa
 }
 
 func writeUniqueConditionsInterface(w *codegen.Writer, model *proto.Model) {
-	w.Writef("export type %sUniqueConditions = ", model.GetName())
+	w.Writef("export type %sUniqueConditions = ", model.Name)
 	w.Indent()
 
 	type F struct {
@@ -646,20 +646,20 @@ func writeUniqueConditionsInterface(w *codegen.Writer, model *proto.Model) {
 
 	seenCompountUnique := map[string]bool{}
 
-	for _, f := range model.GetFields() {
+	for _, f := range model.Fields {
 		entries := []*F{}
 
 		switch {
-		case f.GetUnique() || f.GetPrimaryKey() || len(f.GetUniqueWith()) > 0:
+		case f.Unique || f.PrimaryKey || len(f.UniqueWith) > 0:
 			// Collect unique fields
 			fields := []*proto.Field{f}
-			fieldNames := []string{f.GetName()}
-			for _, v := range f.GetUniqueWith() {
-				u, _ := lo.Find(model.GetFields(), func(f *proto.Field) bool {
-					return f.GetName() == v
+			fieldNames := []string{f.Name}
+			for _, v := range f.UniqueWith {
+				u, _ := lo.Find(model.Fields, func(f *proto.Field) bool {
+					return f.Name == v
 				})
 				fields = append(fields, u)
-				fieldNames = append(fieldNames, u.GetName())
+				fieldNames = append(fieldNames, u.Name)
 			}
 
 			// De-dupe compound unqique constrains
@@ -671,24 +671,24 @@ func writeUniqueConditionsInterface(w *codegen.Writer, model *proto.Model) {
 			seenCompountUnique[k] = true
 
 			for _, f := range fields {
-				if f.GetType().GetType() == proto.Type_TYPE_MODEL {
-					if f.GetForeignKeyFieldName() == nil {
+				if f.Type.Type == proto.Type_TYPE_MODEL {
+					if f.ForeignKeyFieldName == nil {
 						// I'm not sure this can happen, but rather than have a cryptic nil-pointer error we'll
 						// panic with a hopefully more helpful error
 						panic(fmt.Sprintf(
 							"%s.%s is a relation field and part of a unique constraint but does not have a foreign key - this is unsupported",
-							model.GetName(), f.GetName(),
+							model.Name, f.Name,
 						))
 					}
 
 					entries = append(entries, &F{
-						key:   f.GetForeignKeyFieldName().GetValue(),
+						key:   f.ForeignKeyFieldName.Value,
 						value: "string",
 					})
 				} else {
 					entries = append(entries, &F{
-						key:   f.GetName(),
-						value: toTypeScriptType(f.GetType(), false, false, false),
+						key:   f.Name,
+						value: toTypeScriptType(f.Type, false, false, false),
 					})
 				}
 			}
@@ -698,8 +698,8 @@ func writeUniqueConditionsInterface(w *codegen.Writer, model *proto.Model) {
 			// Example: an author has many books, but a book has one author, which
 			// means given a book id you can find a single author
 			entries = append(entries, &F{
-				key:   f.GetName(),
-				value: fmt.Sprintf("%sUniqueConditions", f.GetType().GetModelName().GetValue()),
+				key:   f.Name,
+				value: fmt.Sprintf("%sUniqueConditions", f.Type.ModelName.Value),
 			})
 		}
 
@@ -723,28 +723,28 @@ func writeUniqueConditionsInterface(w *codegen.Writer, model *proto.Model) {
 }
 
 func writeModelAPIDeclaration(w *codegen.Writer, model *proto.Model) {
-	w.Writef("export type %sAPI = {\n", model.GetName())
+	w.Writef("export type %sAPI = {\n", model.Name)
 	w.Indent()
 
-	nonOptionalFields := lo.Filter(model.GetFields(), func(f *proto.Field, _ int) bool {
-		return !f.GetOptional() && f.GetDefaultValue() == nil && f.GetComputedExpression() == nil
+	nonOptionalFields := lo.Filter(model.Fields, func(f *proto.Field, _ int) bool {
+		return !f.Optional && f.DefaultValue == nil && f.ComputedExpression == nil
 	})
 
 	tsDocComment(w, func(w *codegen.Writer) {
-		w.Writef("* Create a %s record\n", model.GetName())
+		w.Writef("* Create a %s record\n", model.Name)
 		w.Writeln("* @example")
 		w.Writeln("```typescript")
-		w.Writef("const record = await models.%s.create({\n", casing.ToLowerCamel(model.GetName()))
+		w.Writef("const record = await models.%s.create({\n", casing.ToLowerCamel(model.Name))
 		w.Indent()
 
 		for i, f := range nonOptionalFields {
-			w.Writef("%s: ", casing.ToLowerCamel(f.GetName()))
+			w.Writef("%s: ", casing.ToLowerCamel(f.Name))
 
-			if f.GetType().GetRepeated() {
+			if f.Type.Repeated {
 				w.Write("[")
 			}
 
-			switch f.GetType().GetType() {
+			switch f.Type.Type {
 			case proto.Type_TYPE_STRING, proto.Type_TYPE_MARKDOWN:
 				w.Write("''")
 			case proto.Type_TYPE_BOOL:
@@ -759,7 +759,7 @@ func writeModelAPIDeclaration(w *codegen.Writer, model *proto.Model) {
 				w.Write("undefined")
 			}
 
-			if f.GetType().GetRepeated() {
+			if f.Type.Repeated {
 				w.Write("]")
 			}
 
@@ -773,82 +773,82 @@ func writeModelAPIDeclaration(w *codegen.Writer, model *proto.Model) {
 		w.Writeln("});")
 		w.Writeln("```")
 	})
-	w.Writef("create(values: %sCreateValues): Promise<%s>;\n", model.GetName(), model.GetName())
+	w.Writef("create(values: %sCreateValues): Promise<%s>;\n", model.Name, model.Name)
 
 	tsDocComment(w, func(w *codegen.Writer) {
-		w.Writef("* Update a %s record\n", model.GetName())
+		w.Writef("* Update a %s record\n", model.Name)
 		w.Writeln("* @example")
 		w.Writeln("```typescript")
-		w.Writef("const %s = await models.%s.update(", casing.ToLowerCamel(model.GetName()), casing.ToLowerCamel(model.GetName()))
+		w.Writef("const %s = await models.%s.update(", casing.ToLowerCamel(model.Name), casing.ToLowerCamel(model.Name))
 		w.Writef("{ id: \"abc\" },")
 		if len(nonOptionalFields) > 0 {
-			w.Writef(" { %s: XXX }", casing.ToLowerCamel(nonOptionalFields[0].GetName()))
+			w.Writef(" { %s: XXX }", casing.ToLowerCamel(nonOptionalFields[0].Name))
 		} else {
 			w.Write("  {}")
 		}
 		w.Writeln("});")
 		w.Writeln("```")
 	})
-	w.Writef("update(where: %sUniqueConditions, values: Partial<%sUpdateValues>): Promise<%s>;\n", model.GetName(), model.GetName(), model.GetName())
+	w.Writef("update(where: %sUniqueConditions, values: Partial<%sUpdateValues>): Promise<%s>;\n", model.Name, model.Name, model.Name)
 
 	tsDocComment(w, func(w *codegen.Writer) {
-		w.Writef("* Deletes a %s record\n", model.GetName())
+		w.Writef("* Deletes a %s record\n", model.Name)
 		w.Writeln("* @example")
 		w.Writeln("```typescript")
-		w.Writef("const deletedId = await models.%s.delete({ id: 'xxx' });\n", casing.ToLowerCamel(model.GetName()))
+		w.Writef("const deletedId = await models.%s.delete({ id: 'xxx' });\n", casing.ToLowerCamel(model.Name))
 		w.Writeln("```")
 	})
-	w.Writef("delete(where: %sUniqueConditions): Promise<string>;\n", model.GetName())
+	w.Writef("delete(where: %sUniqueConditions): Promise<string>;\n", model.Name)
 
 	tsDocComment(w, func(w *codegen.Writer) {
-		w.Writef("* Finds a single %s record\n", model.GetName())
+		w.Writef("* Finds a single %s record\n", model.Name)
 		w.Writeln("* @example")
 		w.Writeln("```typescript")
-		w.Writef("const %s = await models.%s.findOne({ id: 'xxx' });\n", casing.ToLowerCamel(model.GetName()), casing.ToLowerCamel(model.GetName()))
+		w.Writef("const %s = await models.%s.findOne({ id: 'xxx' });\n", casing.ToLowerCamel(model.Name), casing.ToLowerCamel(model.Name))
 		w.Writeln("```")
 	})
-	w.Writef("findOne(where: %sUniqueConditions): Promise<%s | null>;\n", model.GetName(), model.GetName())
+	w.Writef("findOne(where: %sUniqueConditions): Promise<%s | null>;\n", model.Name, model.Name)
 	tsDocComment(w, func(w *codegen.Writer) {
-		w.Writef("* Finds multiple %s records\n", model.GetName())
+		w.Writef("* Finds multiple %s records\n", model.Name)
 		w.Writeln("* @example")
 		w.Writeln("```typescript")
 
 		// cant seem to get markdown in vscode method signature popover to render indentation
 		// so we have to get it all on one line for the meantime
-		w.Writef(`const %ss = await models.%s.findMany({ where: { createdAt: { after: new Date(2022, 1, 1) } }, orderBy: { id: 'asc' }, limit: 1000, offset: 50 });`, casing.ToLowerCamel(model.GetName()), casing.ToLowerCamel(model.GetName()))
+		w.Writef(`const %ss = await models.%s.findMany({ where: { createdAt: { after: new Date(2022, 1, 1) } }, orderBy: { id: 'asc' }, limit: 1000, offset: 50 });`, casing.ToLowerCamel(model.Name), casing.ToLowerCamel(model.Name))
 		w.Writeln("")
 		w.Writeln("```")
 	})
-	w.Writef("findMany(params?: %sFindManyParams | undefined): Promise<%s[]>;\n", model.GetName(), model.GetName())
+	w.Writef("findMany(params?: %sFindManyParams | undefined): Promise<%s[]>;\n", model.Name, model.Name)
 
 	tsDocComment(w, func(w *codegen.Writer) {
 		w.Writeln("* Creates a new query builder with the given conditions applied")
 		w.Writeln("* @example")
 		w.Writeln("```typescript")
-		w.Writef("const records = await models.%s.where({ createdAt: { after: new Date(2020, 1, 1) } }).findMany();\n", casing.ToLowerCamel(model.GetName()))
+		w.Writef("const records = await models.%s.where({ createdAt: { after: new Date(2020, 1, 1) } }).findMany();\n", casing.ToLowerCamel(model.Name))
 		w.Writeln("```")
 	})
-	w.Writef("where(where: %sWhereConditions): %sQueryBuilder;\n", model.GetName(), model.GetName())
+	w.Writef("where(where: %sWhereConditions): %sQueryBuilder;\n", model.Name, model.Name)
 	w.Dedent()
 	w.Writeln("}")
 }
 
 func writeModelQueryBuilderDeclaration(w *codegen.Writer, model *proto.Model) {
-	w.Writef("export type %sQueryBuilderParams = {\n", model.GetName())
+	w.Writef("export type %sQueryBuilderParams = {\n", model.Name)
 	w.Indent()
 	w.Writef("limit?: number;\n")
 	w.Writef("offset?: number;\n")
-	w.Writef("orderBy?: %sOrderBy;\n", model.GetName())
+	w.Writef("orderBy?: %sOrderBy;\n", model.Name)
 	w.Dedent()
 	w.Writeln("}")
 
 	// the following types are for the chained version of the model api
 	// e.g await models.foo.where({ bar: 'bazz' }).update({ bar: 'boo' })
-	w.Writef("export type %sQueryBuilder = {\n", model.GetName())
+	w.Writef("export type %sQueryBuilder = {\n", model.Name)
 	w.Indent()
-	w.Writef("where(where: %sWhereConditions): %sQueryBuilder;\n", model.GetName(), model.GetName())
-	w.Writef("findMany(params?: %sQueryBuilderParams): Promise<%s[]>;\n", model.GetName(), model.GetName())
-	w.Writef("findOne(params?: %sQueryBuilderParams): Promise<%s>;\n", model.GetName(), model.GetName())
+	w.Writef("where(where: %sWhereConditions): %sQueryBuilder;\n", model.Name, model.Name)
+	w.Writef("findMany(params?: %sQueryBuilderParams): Promise<%s[]>;\n", model.Name, model.Name)
+	w.Writef("findOne(params?: %sQueryBuilderParams): Promise<%s>;\n", model.Name, model.Name)
 
 	// todo: support these.
 	// w.Writef("limit(limit: number) : %sQueryBuilder;\n", model.Name)
@@ -856,18 +856,18 @@ func writeModelQueryBuilderDeclaration(w *codegen.Writer, model *proto.Model) {
 	// w.Writef("orderBy(conditions: %sOrderBy) : %sQueryBuilder;\n", model.Name, model.Name)
 
 	w.Writef("delete() : Promise<string>;\n")
-	w.Writef("update(values: Partial<%s>) : Promise<%s>;\n", model.GetName(), model.GetName())
+	w.Writef("update(values: Partial<%s>) : Promise<%s>;\n", model.Name, model.Name)
 	w.Dedent()
 	w.Writeln("}")
 }
 
 func writeEnumObject(w *codegen.Writer, enum *proto.Enum) {
-	w.Writef("export const %s = {\n", enum.GetName())
+	w.Writef("export const %s = {\n", enum.Name)
 	w.Indent()
-	for _, v := range enum.GetValues() {
-		w.Write(v.GetName())
+	for _, v := range enum.Values {
+		w.Write(v.Name)
 		w.Write(": ")
-		w.Writef(`"%s"`, v.GetName())
+		w.Writef(`"%s"`, v.Name)
 		w.Writeln(",")
 	}
 	w.Dedent()
@@ -875,12 +875,12 @@ func writeEnumObject(w *codegen.Writer, enum *proto.Enum) {
 }
 
 func writeEnum(w *codegen.Writer, enum *proto.Enum) {
-	w.Writef("export enum %s {\n", enum.GetName())
+	w.Writef("export enum %s {\n", enum.Name)
 	w.Indent()
-	for _, v := range enum.GetValues() {
-		w.Write(v.GetName())
+	for _, v := range enum.Values {
+		w.Write(v.Name)
 		w.Write(" = ")
-		w.Writef(`"%s"`, v.GetName())
+		w.Writef(`"%s"`, v.Name)
 		w.Writeln(",")
 	}
 	w.Dedent()
@@ -888,44 +888,44 @@ func writeEnum(w *codegen.Writer, enum *proto.Enum) {
 }
 
 func writeEnumWhereCondition(w *codegen.Writer, enum *proto.Enum) {
-	w.Writef("export interface %sWhereCondition {\n", enum.GetName())
+	w.Writef("export interface %sWhereCondition {\n", enum.Name)
 	w.Indent()
 	w.Write("equals?: ")
-	w.Write(enum.GetName())
+	w.Write(enum.Name)
 	w.Writeln(" | null;")
 	w.Write("oneOf?: ")
-	w.Write(enum.GetName())
+	w.Write(enum.Name)
 	w.Write("[]")
 	w.Writeln(" | null;")
 	w.Dedent()
 	w.Writeln("}")
 
-	w.Writef("export interface %sArrayWhereCondition {\n", enum.GetName())
+	w.Writef("export interface %sArrayWhereCondition {\n", enum.Name)
 	w.Indent()
 	w.Write("equals?: ")
-	w.Write(enum.GetName())
+	w.Write(enum.Name)
 	w.Writeln("[] | null;")
 	w.Write("notEquals?: ")
-	w.Write(enum.GetName())
+	w.Write(enum.Name)
 	w.Writeln("[] | null;")
 	w.Write("any?: ")
-	w.Write(enum.GetName())
+	w.Write(enum.Name)
 	w.Write("ArrayQueryWhereCondition")
 	w.Writeln(" | null;")
 	w.Write("all?: ")
-	w.Write(enum.GetName())
+	w.Write(enum.Name)
 	w.Write("ArrayQueryWhereCondition")
 	w.Writeln(" | null;")
 	w.Dedent()
 	w.Writeln("}")
 
-	w.Writef("export interface %sArrayQueryWhereCondition {\n", enum.GetName())
+	w.Writef("export interface %sArrayQueryWhereCondition {\n", enum.Name)
 	w.Indent()
 	w.Write("equals?: ")
-	w.Write(enum.GetName())
+	w.Write(enum.Name)
 	w.Writeln(" | null;")
 	w.Write("notEquals?: ")
-	w.Write(enum.GetName())
+	w.Write(enum.Name)
 	w.Writeln(" | null;")
 	w.Dedent()
 	w.Writeln("}")
@@ -934,8 +934,8 @@ func writeEnumWhereCondition(w *codegen.Writer, enum *proto.Enum) {
 func writeDatabaseInterface(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("interface database {")
 	w.Indent()
-	for _, model := range schema.GetModels() {
-		w.Writef("%s: %sTable;", casing.ToSnake(model.GetName()), model.GetName())
+	for _, model := range schema.Models {
+		w.Writef("%s: %sTable;", casing.ToSnake(model.Name), model.Name)
 		w.Writeln("")
 	}
 	w.Dedent()
@@ -946,10 +946,10 @@ func writeDatabaseInterface(w *codegen.Writer, schema *proto.Schema) {
 func writeAPIDeclarations(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("export type ModelsAPI = {")
 	w.Indent()
-	for _, model := range schema.GetModels() {
-		w.Write(casing.ToLowerCamel(model.GetName()))
+	for _, model := range schema.Models {
+		w.Write(casing.ToLowerCamel(model.Name))
 		w.Write(": ")
-		w.Writef(`%sAPI`, model.GetName())
+		w.Writef(`%sAPI`, model.Name)
 		w.Writeln(";")
 	}
 	w.Dedent()
@@ -963,8 +963,8 @@ func writeAPIDeclarations(w *codegen.Writer, schema *proto.Schema) {
 
 	w.Indent()
 
-	for _, variable := range schema.GetEnvironmentVariables() {
-		w.Writef("%s: string;\n", variable.GetName())
+	for _, variable := range schema.EnvironmentVariables {
+		w.Writef("%s: string;\n", variable.Name)
 	}
 
 	w.Dedent()
@@ -973,8 +973,8 @@ func writeAPIDeclarations(w *codegen.Writer, schema *proto.Schema) {
 
 	w.Indent()
 
-	for _, secret := range schema.GetSecrets() {
-		w.Writef("%s: string;\n", secret.GetName())
+	for _, secret := range schema.Secrets {
+		w.Writef("%s: string;\n", secret.Name)
 	}
 
 	w.Dedent()
@@ -1019,10 +1019,10 @@ func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("const env = {")
 	w.Indent()
 
-	for _, variable := range schema.GetEnvironmentVariables() {
+	for _, variable := range schema.EnvironmentVariables {
 		// fetch the value of the env var from the process.env (will pull the value based on the current environment)
 		// outputs "key: process.env["key"] || []"
-		w.Writef("%s: process.env[\"%s\"] || \"\",\n", variable.GetName(), variable.GetName())
+		w.Writef("%s: process.env[\"%s\"] || \"\",\n", variable.Name, variable.Name)
 	}
 
 	w.Dedent()
@@ -1030,8 +1030,8 @@ func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("const secrets = {")
 	w.Indent()
 
-	for _, secret := range schema.GetSecrets() {
-		w.Writef("%s: meta.secrets.%s || \"\",\n", secret.GetName(), secret.GetName())
+	for _, secret := range schema.Secrets {
+		w.Writef("%s: meta.secrets.%s || \"\",\n", secret.Name, secret.Name)
 	}
 
 	w.Dedent()
@@ -1048,10 +1048,10 @@ func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("const env = {")
 	w.Indent()
 
-	for _, variable := range schema.GetEnvironmentVariables() {
+	for _, variable := range schema.EnvironmentVariables {
 		// fetch the value of the env var from the process.env (will pull the value based on the current environment)
 		// outputs "key: process.env["key"] || []"
-		w.Writef("%s: process.env[\"%s\"] || \"\",\n", variable.GetName(), variable.GetName())
+		w.Writef("%s: process.env[\"%s\"] || \"\",\n", variable.Name, variable.Name)
 	}
 
 	w.Dedent()
@@ -1059,8 +1059,8 @@ func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("const secrets = {")
 	w.Indent()
 
-	for _, secret := range schema.GetSecrets() {
-		w.Writef("%s: meta.secrets.%s || \"\",\n", secret.GetName(), secret.GetName())
+	for _, secret := range schema.Secrets {
+		w.Writef("%s: meta.secrets.%s || \"\",\n", secret.Name, secret.Name)
 	}
 
 	w.Dedent()
@@ -1075,10 +1075,10 @@ func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("const env = {")
 	w.Indent()
 
-	for _, variable := range schema.GetEnvironmentVariables() {
+	for _, variable := range schema.EnvironmentVariables {
 		// fetch the value of the env var from the process.env (will pull the value based on the current environment)
 		// outputs "key: process.env["key"] || []"
-		w.Writef("%s: process.env[\"%s\"] || \"\",\n", variable.GetName(), variable.GetName())
+		w.Writef("%s: process.env[\"%s\"] || \"\",\n", variable.Name, variable.Name)
 	}
 
 	w.Dedent()
@@ -1086,8 +1086,8 @@ func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("const secrets = {")
 	w.Indent()
 
-	for _, secret := range schema.GetSecrets() {
-		w.Writef("%s: meta.secrets.%s || \"\",\n", secret.GetName(), secret.GetName())
+	for _, secret := range schema.Secrets {
+		w.Writef("%s: meta.secrets.%s || \"\",\n", secret.Name, secret.Name)
 	}
 
 	w.Dedent()
@@ -1100,15 +1100,15 @@ func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
 	w.Indent()
 	w.Writeln("return {")
 	w.Indent()
-	for _, model := range schema.GetModels() {
-		w.Write(casing.ToLowerCamel(model.GetName()))
+	for _, model := range schema.Models {
+		w.Write(casing.ToLowerCamel(model.Name))
 		w.Write(": ")
 
 		// The second positional argument to the model API used to be a default values function but
 		// default values are now set in the database so this is no longer needed.
 		// Passing a no-op function here for backwards compatibility with older versions of the
 		// functions-runtime package.
-		w.Writef(`new runtime.ModelAPI("%s", () => ({}), tableConfigMap)`, casing.ToSnake(model.GetName()))
+		w.Writef(`new runtime.ModelAPI("%s", () => ({}), tableConfigMap)`, casing.ToSnake(model.Name))
 
 		w.Writeln(",")
 	}
@@ -1137,13 +1137,13 @@ func writeTableConfig(w *codegen.Writer, models []*proto.Model) {
 	tableConfigMap := map[string]map[string]map[string]string{}
 
 	for _, model := range models {
-		for _, field := range model.GetFields() {
-			if field.GetType().GetType() != proto.Type_TYPE_MODEL {
+		for _, field := range model.Fields {
+			if field.Type.Type != proto.Type_TYPE_MODEL {
 				continue
 			}
 
 			relationshipConfig := map[string]string{
-				"referencesTable": casing.ToSnake(field.GetType().GetModelName().GetValue()),
+				"referencesTable": casing.ToSnake(field.Type.ModelName.Value),
 				"foreignKey":      casing.ToSnake(proto.GetForeignKeyFieldName(models, field)),
 			}
 
@@ -1156,13 +1156,13 @@ func writeTableConfig(w *codegen.Writer, models []*proto.Model) {
 				relationshipConfig["relationshipType"] = "belongsTo"
 			}
 
-			tableConfig, ok := tableConfigMap[casing.ToSnake(model.GetName())]
+			tableConfig, ok := tableConfigMap[casing.ToSnake(model.Name)]
 			if !ok {
 				tableConfig = map[string]map[string]string{}
-				tableConfigMap[casing.ToSnake(model.GetName())] = tableConfig
+				tableConfigMap[casing.ToSnake(model.Name)] = tableConfig
 			}
 
-			tableConfig[casing.ToSnake(field.GetName())] = relationshipConfig
+			tableConfig[casing.ToSnake(field.Name)] = relationshipConfig
 		}
 	}
 
@@ -1193,40 +1193,42 @@ func writeFunctionHookTypes(w *codegen.Writer) {
 }
 
 func writeFunctionImplementation(w *codegen.Writer, schema *proto.Schema, action *proto.Action) {
-	msg := schema.FindMessage(action.GetInputMessageName())
-
 	var whereMsg *proto.Message
 	var valuesMsg *proto.Message
 
 	wheres := []string{}
 	values := []string{}
 
-	switch action.GetType() {
-	case proto.ActionType_ACTION_TYPE_UPDATE, proto.ActionType_ACTION_TYPE_LIST:
-		for _, f := range msg.GetFields() {
-			if f.GetName() == "where" {
-				whereMsg = schema.FindMessage(f.GetType().GetMessageName().GetValue())
+	if action.InputMessageName != "" {
+		msg := schema.FindMessage(action.InputMessageName)
+
+		switch action.Type {
+		case proto.ActionType_ACTION_TYPE_UPDATE, proto.ActionType_ACTION_TYPE_LIST:
+			for _, f := range msg.Fields {
+				if f.Name == "where" {
+					whereMsg = schema.FindMessage(f.Type.MessageName.Value)
+				}
+				if f.Name == "values" {
+					valuesMsg = schema.FindMessage(f.Type.MessageName.Value)
+				}
 			}
-			if f.GetName() == "values" {
-				valuesMsg = schema.FindMessage(f.GetType().GetMessageName().GetValue())
-			}
+		case proto.ActionType_ACTION_TYPE_CREATE:
+			whereMsg = nil
+			valuesMsg = msg
+		default:
+			whereMsg = msg
 		}
-	case proto.ActionType_ACTION_TYPE_CREATE:
-		whereMsg = nil
-		valuesMsg = msg
-	default:
-		whereMsg = msg
 	}
 
 	// Using getter method for Fields here as it is safe even if the variables are nil
 	for _, f := range whereMsg.GetFields() {
 		if isModelInput(schema, f) {
-			wheres = append(wheres, fmt.Sprintf(`"%s"`, f.GetName()))
+			wheres = append(wheres, fmt.Sprintf(`"%s"`, f.Name))
 		}
 	}
 	for _, f := range valuesMsg.GetFields() {
 		if isModelInput(schema, f) {
-			values = append(values, fmt.Sprintf(`"%s"`, f.GetName()))
+			values = append(values, fmt.Sprintf(`"%s"`, f.Name))
 		}
 	}
 
@@ -1236,29 +1238,29 @@ func writeFunctionImplementation(w *codegen.Writer, schema *proto.Schema, action
 		proto.ActionType_ACTION_TYPE_CREATE: "createFunction",
 		proto.ActionType_ACTION_TYPE_LIST:   "listFunction",
 		proto.ActionType_ACTION_TYPE_DELETE: "deleteFunction",
-	}[action.GetType()]
+	}[action.Type]
 
 	w.Writeln(fmt.Sprintf(
 		"export const %s = %s({model: models.%s, whereInputs: [%s], valueInputs: [%s]})",
-		casing.ToCamel(action.GetName()),
+		casing.ToCamel(action.Name),
 		functionName,
-		casing.ToLowerCamel(action.GetModelName()),
+		casing.ToLowerCamel(action.ModelName),
 		strings.Join(wheres, ", "),
 		strings.Join(values, ", "),
 	))
 }
 
 // isModelInput returs true if `field` targets a model field, either directly
-// or via a child field).
+// or via a child field)
 func isModelInput(schema *proto.Schema, field *proto.MessageField) bool {
-	if len(field.GetTarget()) > 0 {
+	if len(field.Target) > 0 {
 		return true
 	}
-	if field.GetType().GetMessageName() == nil {
+	if field.Type.MessageName == nil {
 		return false
 	}
-	msg := schema.FindMessage(field.GetType().GetMessageName().GetValue())
-	for _, f := range msg.GetFields() {
+	msg := schema.FindMessage(field.Type.MessageName.Value)
+	for _, f := range msg.Fields {
 		if isModelInput(schema, f) {
 			return true
 		}
@@ -1270,15 +1272,18 @@ func writeFunctionWrapperType(w *codegen.Writer, schema *proto.Schema, model *pr
 	// we use the 'declare' keyword to indicate to the typescript compiler that the function
 	// has already been declared in the underlying vanilla javascript and therefore we are just
 	// decorating existing js code with types.
-	w.Writef("export declare const %s: runtime.FuncWithConfig<{", casing.ToCamel(action.GetName()))
+	w.Writef("export declare const %s: runtime.FuncWithConfig<{", casing.ToCamel(action.Name))
 
 	if action.IsArbitraryFunction() {
-		inputType := action.GetInputMessageName()
-		if inputType == parser.MessageFieldTypeAny {
-			inputType = "any"
+		switch action.InputMessageName {
+		case parser.MessageFieldTypeAny:
+			w.Write("(fn: (ctx: ContextAPI, inputs: any) => ")
+		case "":
+			w.Write("(fn: (ctx: ContextAPI) => ")
+		default:
+			w.Writef("(fn: (ctx: ContextAPI, inputs: %s) => ", action.InputMessageName)
 		}
 
-		w.Writef("(fn: (ctx: ContextAPI, inputs: %s) => ", inputType)
 		w.Write(toCustomFunctionReturnType(model, action, false))
 		w.Write("): ")
 		w.Write(toCustomFunctionReturnType(model, action, false))
@@ -1286,47 +1291,64 @@ func writeFunctionWrapperType(w *codegen.Writer, schema *proto.Schema, model *pr
 		return
 	}
 
-	hooksType := fmt.Sprintf("%sHooks", casing.ToCamel(action.GetName()))
+	hooksType := fmt.Sprintf("%sHooks", casing.ToCamel(action.Name))
 
 	// TODO: void return type here is wrong. It should be the type of the function e.g. (ctx, inputs) => ReturnType
 	w.Writef("(hooks?: %s): void}>\n", hooksType)
 
 	w.Writef("export type %s = ", hooksType)
 
-	modelName := action.GetModelName()
+	modelName := action.ModelName
 	queryBuilder := modelName + "QueryBuilder"
-	inputs := action.GetInputMessageName()
 
-	switch action.GetType() {
+	switch action.Type {
 	case proto.ActionType_ACTION_TYPE_GET:
-		w.Writef("GetFunctionHooks<%s, %s, %s>", modelName, queryBuilder, inputs)
+		if action.InputMessageName == "" {
+			w.Writef("GetFunctionHooksNoInputs<%s, %s>", modelName, queryBuilder)
+		} else {
+			w.Writef("GetFunctionHooks<%s, %s, %s>", modelName, queryBuilder, action.InputMessageName)
+		}
 	case proto.ActionType_ACTION_TYPE_LIST:
-		w.Writef("ListFunctionHooks<%s, %s, %s>", modelName, queryBuilder, inputs)
+		w.Writef("ListFunctionHooks<%s, %s, %s>", modelName, queryBuilder, action.InputMessageName)
 	case proto.ActionType_ACTION_TYPE_CREATE:
-		msg := schema.FindMessage(action.GetInputMessageName())
-		pickKeys := lo.FilterMap(msg.GetFields(), func(f *proto.MessageField, _ int) (string, bool) {
-			return fmt.Sprintf("'%s'", f.GetName()), isModelInput(schema, f)
-		})
 
-		var beforeWriteValues string
-		switch len(pickKeys) {
-		case len(msg.GetFields()):
-			// All inputs target model fields, this means the beforeWriteValues are exactly the same as the inputs
-			beforeWriteValues = inputs
-		case 0:
-			// No inputs target model fields - need the "empty object" type
-			// https://www.totaltypescript.com/the-empty-object-type-in-typescript
-			beforeWriteValues = "Record<string, never>"
-		default:
-			// Some inputs target model fields - so create a new type by picking from inputs
-			beforeWriteValues = fmt.Sprintf("Pick<%s, %s>", inputs, strings.Join(pickKeys, " | "))
+		if action.InputMessageName == "" {
+			w.Writef("CreateFunctionHooksNoInputs<%s, %s, %sCreateValues>", modelName, queryBuilder, modelName)
+		} else {
+			msg := schema.FindMessage(action.InputMessageName)
+			pickKeys := lo.FilterMap(msg.Fields, func(f *proto.MessageField, _ int) (string, bool) {
+				return fmt.Sprintf("'%s'", f.Name), isModelInput(schema, f)
+			})
+
+			var beforeWriteValues string
+			switch len(pickKeys) {
+			case len(msg.Fields):
+				// All inputs target model fields, this means the beforeWriteValues are exactly the same as the inputs
+				beforeWriteValues = action.InputMessageName
+			case 0:
+				// No inputs target model fields - need the "empty object" type
+				// https://www.totaltypescript.com/the-empty-object-type-in-typescript
+				beforeWriteValues = "Record<string, never>"
+			default:
+				// Some inputs target model fields - so create a new type by picking from inputs
+				beforeWriteValues = fmt.Sprintf("Pick<%s, %s>", action.InputMessageName, strings.Join(pickKeys, " | "))
+			}
+
+			w.Writef("CreateFunctionHooks<%s, %s, %s, %s, %sCreateValues>", modelName, queryBuilder, action.InputMessageName, beforeWriteValues, modelName)
 		}
 
-		w.Writef("CreateFunctionHooks<%s, %s, %s, %s, %sCreateValues>", modelName, queryBuilder, inputs, beforeWriteValues, modelName)
 	case proto.ActionType_ACTION_TYPE_UPDATE:
-		w.Writef("UpdateFunctionHooks<%s, %s, %s, %sValues>", modelName, queryBuilder, inputs, casing.ToCamel(action.GetName()))
+		if action.InputMessageName == "" {
+			w.Writef("UpdateFunctionHooksNoInputs<%s, %s, %sValues>", modelName, queryBuilder, casing.ToCamel(action.Name))
+		} else {
+			w.Writef("UpdateFunctionHooks<%s, %s, %s, %sValues>", modelName, queryBuilder, action.InputMessageName, casing.ToCamel(action.Name))
+		}
 	case proto.ActionType_ACTION_TYPE_DELETE:
-		w.Writef("DeleteFunctionHooks<%s, %s, %s>", modelName, queryBuilder, inputs)
+		if action.InputMessageName == "" {
+			w.Writef("DeleteFunctionHooksNoInputs<%s, %s>", modelName, queryBuilder)
+		} else {
+			w.Writef("DeleteFunctionHooks<%s, %s, %s>", modelName, queryBuilder, action.InputMessageName)
+		}
 	}
 
 	w.Writeln(";")
@@ -1339,24 +1361,24 @@ func toCustomFunctionReturnType(model *proto.Model, op *proto.Action, isTestingP
 	if isTestingPackage {
 		sdkPrefix = "sdk."
 	}
-	switch op.GetType() {
+	switch op.Type {
 	case proto.ActionType_ACTION_TYPE_CREATE:
-		returnType += sdkPrefix + model.GetName()
+		returnType += sdkPrefix + model.Name
 	case proto.ActionType_ACTION_TYPE_UPDATE:
-		returnType += sdkPrefix + model.GetName()
+		returnType += sdkPrefix + model.Name
 	case proto.ActionType_ACTION_TYPE_GET:
-		returnType += sdkPrefix + model.GetName() + " | null"
+		returnType += sdkPrefix + model.Name + " | null"
 	case proto.ActionType_ACTION_TYPE_LIST:
-		returnType += sdkPrefix + model.GetName() + "[]"
+		returnType += sdkPrefix + model.Name + "[]"
 	case proto.ActionType_ACTION_TYPE_DELETE:
 		returnType += "string"
 	case proto.ActionType_ACTION_TYPE_READ, proto.ActionType_ACTION_TYPE_WRITE:
-		isAny := op.GetResponseMessageName() == parser.MessageFieldTypeAny
+		isAny := op.ResponseMessageName == parser.MessageFieldTypeAny
 
 		if isAny {
 			returnType += "any"
 		} else {
-			returnType += op.GetResponseMessageName()
+			returnType += op.ResponseMessageName
 		}
 	}
 	returnType += "| Error>"
@@ -1364,9 +1386,9 @@ func toCustomFunctionReturnType(model *proto.Model, op *proto.Action, isTestingP
 }
 
 func writeJobFunctionWrapperType(w *codegen.Writer, job *proto.Job) {
-	w.Writef("export declare const %s: runtime.FuncWithConfig<{", casing.ToCamel(job.GetName()))
+	w.Writef("export declare const %s: runtime.FuncWithConfig<{", casing.ToCamel(job.Name))
 
-	inputType := job.GetInputMessageName()
+	inputType := job.InputMessageName
 
 	if inputType == "" {
 		w.Write("(fn: (ctx: JobContextAPI) => Promise<void>): Promise<void>")
@@ -1378,16 +1400,16 @@ func writeJobFunctionWrapperType(w *codegen.Writer, job *proto.Job) {
 }
 
 func writeSubscriberFunctionWrapperType(w *codegen.Writer, subscriber *proto.Subscriber) {
-	w.Writef("export declare const %s: runtime.FuncWithConfig<{", casing.ToCamel(subscriber.GetName()))
-	w.Writef("(fn: (ctx: SubscriberContextAPI, event: %s) => Promise<void>): Promise<void>", subscriber.GetInputMessageName())
+	w.Writef("export declare const %s: runtime.FuncWithConfig<{", casing.ToCamel(subscriber.Name))
+	w.Writef("(fn: (ctx: SubscriberContextAPI, event: %s) => Promise<void>): Promise<void>", subscriber.InputMessageName)
 	w.Writeln("}>;")
 }
 
 func writeFlowFunctionWrapperType(w *codegen.Writer, flow *proto.Flow) {
-	if flow.GetInputMessageName() == "" {
-		w.Writef("export declare const %s: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C>) };", flow.GetName())
+	if flow.InputMessageName == "" {
+		w.Writef("export declare const %s: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C>) };", flow.Name)
 	} else {
-		w.Writef("export declare const %s: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C, %s>) };", flow.GetName(), flow.GetInputMessageName())
+		w.Writef("export declare const %s: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C, %s>) };", flow.Name, flow.InputMessageName)
 	}
 
 	w.Writeln("")
@@ -1397,25 +1419,25 @@ func toActionReturnType(model *proto.Model, action *proto.Action) string {
 	returnType := "Promise<"
 	sdkPrefix := "sdk."
 
-	switch action.GetType() {
+	switch action.Type {
 	case proto.ActionType_ACTION_TYPE_CREATE:
-		returnType += sdkPrefix + model.GetName()
+		returnType += sdkPrefix + model.Name
 	case proto.ActionType_ACTION_TYPE_UPDATE:
-		returnType += sdkPrefix + model.GetName()
+		returnType += sdkPrefix + model.Name
 	case proto.ActionType_ACTION_TYPE_GET:
-		className := model.GetName()
+		className := model.Name
 		if len(action.GetResponseEmbeds()) > 0 {
-			className = toResponseType(action.GetName())
+			className = toResponseType(action.Name)
 		}
 		returnType += sdkPrefix + className + " | null"
 	case proto.ActionType_ACTION_TYPE_LIST:
-		className := model.GetName()
+		className := model.Name
 		if len(action.GetResponseEmbeds()) > 0 {
-			className = toResponseType(action.GetName())
+			className = toResponseType(action.Name)
 		}
 
-		if len(action.GetFacets()) > 0 {
-			returnType += "{results: " + sdkPrefix + className + "[], resultInfo: " + strcase.ToCamel(action.GetName()) + "ResultInfo, pageInfo: runtime.PageInfo}"
+		if len(action.Facets) > 0 {
+			returnType += "{results: " + sdkPrefix + className + "[], resultInfo: " + strcase.ToCamel(action.Name) + "ResultInfo, pageInfo: runtime.PageInfo}"
 		} else {
 			returnType += "{results: " + sdkPrefix + className + "[], pageInfo: runtime.PageInfo}"
 		}
@@ -1423,10 +1445,10 @@ func toActionReturnType(model *proto.Model, action *proto.Action) string {
 		// todo: create ID type
 		returnType += "string"
 	case proto.ActionType_ACTION_TYPE_READ, proto.ActionType_ACTION_TYPE_WRITE:
-		if action.GetResponseMessageName() == parser.MessageFieldTypeAny {
+		if action.ResponseMessageName == parser.MessageFieldTypeAny {
 			returnType += "any"
 		} else {
-			returnType += action.GetResponseMessageName()
+			returnType += action.ResponseMessageName
 		}
 	}
 
@@ -1452,8 +1474,8 @@ func generateTestingPackage(schema *proto.Schema) codegen.GeneratedFiles {
 	js.Writeln("const db = useDatabase();")
 	js.Write("await sql`TRUNCATE TABLE ")
 	tableNames := []string{"keel_audit", "keel_storage"}
-	for _, model := range schema.GetModels() {
-		tableNames = append(tableNames, fmt.Sprintf("\"%s\"", casing.ToSnake(model.GetName())))
+	for _, model := range schema.Models {
+		tableNames = append(tableNames, fmt.Sprintf("\"%s\"", casing.ToSnake(model.Name)))
 	}
 	js.Writef("%s CASCADE", strings.Join(tableNames, ","))
 	js.Writeln("`.execute(db);")
@@ -1545,31 +1567,36 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("withIdentity(identity: sdk.Identity): ActionExecutor;")
 	w.Writeln("withAuthToken(token: string): ActionExecutor;")
 	w.Writeln("withTimezone(timezone: string): this;")
-	for _, model := range schema.GetModels() {
-		for _, action := range model.GetActions() {
-			msg := schema.FindMessage(action.GetInputMessageName())
+	for _, model := range schema.Models {
+		for _, action := range model.Actions {
+			args := ""
+			if action.InputMessageName != "" {
+				msg := schema.FindMessage(action.InputMessageName)
 
-			w.Writef("%s(i", action.GetName())
+				args = "i"
 
-			// Check that all of the top level fields in the matching message are optional
-			// If so, then we can make it so you don't even need to specify the key
-			// example, this allows for:
-			// await actions.listActivePublishersWithActivePosts();
-			// instead of:
-			// const { results: publishers } =
-			// await actions.listActivePublishersWithActivePosts({ where: {} });
-			if lo.EveryBy(msg.GetFields(), func(f *proto.MessageField) bool {
-				return f.GetOptional()
-			}) {
-				w.Write("?")
+				// Check that all of the top level fields in the matching message are optional
+				// If so, then we can make it so you don't even need to specify the key
+				// example, this allows for:
+				// await actions.listActivePublishersWithActivePosts();
+				// instead of:
+				// const { results: publishers } =
+				// await actions.listActivePublishersWithActivePosts({ where: {} });
+				if lo.EveryBy(msg.Fields, func(f *proto.MessageField) bool {
+					return f.Optional
+				}) {
+					args += "?"
+				}
+
+				argType := action.InputMessageName
+				if argType == parser.MessageFieldTypeAny {
+					argType = "any"
+				}
+
+				args += fmt.Sprintf(": %s", argType)
 			}
 
-			argType := action.GetInputMessageName()
-			if argType == parser.MessageFieldTypeAny {
-				argType = "any"
-			}
-
-			w.Writef(`: %s): %s`, argType, toActionReturnType(model, action))
+			w.Writef("%s(%s): %s", action.Name, args, toActionReturnType(model, action))
 			w.Writeln(";")
 		}
 	}
@@ -1577,29 +1604,29 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 	w.Dedent()
 	w.Writeln("}")
 
-	if len(schema.GetJobs()) > 0 {
+	if len(schema.Jobs) > 0 {
 		w.Writeln("type JobOptions = { scheduled?: boolean } | null")
 		w.Writeln("declare class JobExecutor {")
 		w.Indent()
 		w.Writeln("withIdentity(identity: sdk.Identity): JobExecutor;")
 		w.Writeln("withAuthToken(token: string): JobExecutor;")
-		for _, job := range schema.GetJobs() {
-			msg := schema.FindMessage(job.GetInputMessageName())
+		for _, job := range schema.Jobs {
+			msg := schema.FindMessage(job.InputMessageName)
 
 			// Jobs can be without inputs
 			if msg != nil {
-				w.Writef("%s(i", strcase.ToLowerCamel(job.GetName()))
+				w.Writef("%s(i", strcase.ToLowerCamel(job.Name))
 
-				if lo.EveryBy(msg.GetFields(), func(f *proto.MessageField) bool {
-					return f.GetOptional()
+				if lo.EveryBy(msg.Fields, func(f *proto.MessageField) bool {
+					return f.Optional
 				}) {
 					w.Write("?")
 				}
 
-				w.Writef(`: %s, o?: JobOptions): %s`, job.GetInputMessageName(), "Promise<void>")
+				w.Writef(`: %s, o?: JobOptions): %s`, job.InputMessageName, "Promise<void>")
 				w.Writeln(";")
 			} else {
-				w.Writef("%s(o?: JobOptions): Promise<void>", strcase.ToLowerCamel(job.GetName()))
+				w.Writef("%s(o?: JobOptions): Promise<void>", strcase.ToLowerCamel(job.Name))
 				w.Writeln(";")
 			}
 		}
@@ -1608,21 +1635,21 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 		w.Writeln("export declare const jobs: JobExecutor;")
 	}
 
-	if len(schema.GetSubscribers()) > 0 {
+	if len(schema.Subscribers) > 0 {
 		w.Writeln("declare class SubscriberExecutor {")
 		w.Indent()
-		for _, subscriber := range schema.GetSubscribers() {
-			msg := schema.FindMessage(subscriber.GetInputMessageName())
+		for _, subscriber := range schema.Subscribers {
+			msg := schema.FindMessage(subscriber.InputMessageName)
 
-			w.Writef("%s(e", subscriber.GetName())
+			w.Writef("%s(e", subscriber.Name)
 
-			if msg.GetType().GetType() != proto.Type_TYPE_UNION && lo.EveryBy(msg.GetFields(), func(f *proto.MessageField) bool {
-				return f.GetOptional()
+			if msg.Type.Type != proto.Type_TYPE_UNION && lo.EveryBy(msg.Fields, func(f *proto.MessageField) bool {
+				return f.Optional
 			}) {
 				w.Write("?")
 			}
 
-			w.Writef(`: %s): %s`, subscriber.GetInputMessageName(), "Promise<void>")
+			w.Writef(`: %s): %s`, subscriber.InputMessageName, "Promise<void>")
 			w.Writeln(";")
 		}
 		w.Dedent()
@@ -1630,9 +1657,9 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 		w.Writeln("export declare const subscribers: SubscriberExecutor;")
 	}
 
-	for _, model := range schema.GetModels() {
-		for _, action := range model.GetActions() {
-			if action.GetType() == proto.ActionType_ACTION_TYPE_LIST {
+	for _, model := range schema.Models {
+		for _, action := range model.Actions {
+			if action.Type == proto.ActionType_ACTION_TYPE_LIST {
 				writeResultInfoInterface(w, schema, action, false)
 			}
 		}
@@ -1644,7 +1671,7 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 }
 
 func toDbTableType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
-	switch t.GetType() {
+	switch t.Type {
 	case proto.Type_TYPE_FILE:
 		return "runtime.FileDbRecord"
 	default:
@@ -1653,7 +1680,7 @@ func toDbTableType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
 }
 
 func toInputTypescriptType(t *proto.TypeInfo, isTestingPackage bool, isClientPackage bool) (ret string) {
-	switch t.GetType() {
+	switch t.Type {
 	case proto.Type_TYPE_DURATION:
 		if isClientPackage {
 			return "DurationString"
@@ -1678,7 +1705,7 @@ func toInputTypescriptType(t *proto.TypeInfo, isTestingPackage bool, isClientPac
 }
 
 func toResponseTypescriptType(t *proto.TypeInfo, isTestingPackage bool, isClientPackage bool) (ret string) {
-	switch t.GetType() {
+	switch t.Type {
 	case proto.Type_TYPE_RELATIVE_PERIOD:
 		return "RelativeDateString"
 	case proto.Type_TYPE_FILE:
@@ -1693,7 +1720,7 @@ func toResponseTypescriptType(t *proto.TypeInfo, isTestingPackage bool, isClient
 }
 
 func toTypeScriptType(t *proto.TypeInfo, includeCompatibleTypes bool, isTestingPackage bool, isClientPackage bool) (ret string) {
-	switch t.GetType() {
+	switch t.Type {
 	case proto.Type_TYPE_ID:
 		ret = "string"
 	case proto.Type_TYPE_STRING, proto.Type_TYPE_MARKDOWN:
@@ -1713,15 +1740,15 @@ func toTypeScriptType(t *proto.TypeInfo, includeCompatibleTypes bool, isTestingP
 			ret = "runtime.Duration"
 		}
 	case proto.Type_TYPE_ENUM:
-		ret = t.GetEnumName().GetValue()
+		ret = t.EnumName.Value
 	case proto.Type_TYPE_MESSAGE:
-		ret = t.GetMessageName().GetValue()
+		ret = t.MessageName.Value
 	case proto.Type_TYPE_MODEL:
 		// models are imported from the sdk
 		if isTestingPackage {
-			ret = fmt.Sprintf("sdk.%s", t.GetModelName().GetValue())
+			ret = fmt.Sprintf("sdk.%s", t.ModelName.Value)
 		} else {
-			ret = t.GetModelName().GetValue()
+			ret = t.ModelName.Value
 		}
 	case proto.Type_TYPE_SORT_DIRECTION:
 		if isClientPackage {
@@ -1731,13 +1758,13 @@ func toTypeScriptType(t *proto.TypeInfo, includeCompatibleTypes bool, isTestingP
 		}
 	case proto.Type_TYPE_UNION:
 		// Retrieve all the types that can satisfy this union field.
-		messageNames := lo.Map(t.GetUnionNames(), func(s *wrapperspb.StringValue, _ int) string {
-			return s.GetValue()
+		messageNames := lo.Map(t.UnionNames, func(s *wrapperspb.StringValue, _ int) string {
+			return s.Value
 		})
 		ret = fmt.Sprintf("(%s)", strings.Join(messageNames, " | "))
 	case proto.Type_TYPE_STRING_LITERAL:
 		// Use string literal type for discriminating.
-		ret = fmt.Sprintf(`"%s"`, t.GetStringLiteralValue().GetValue())
+		ret = fmt.Sprintf(`"%s"`, t.StringLiteralValue.Value)
 
 	case proto.Type_TYPE_FILE:
 		if isClientPackage {
@@ -1757,8 +1784,8 @@ func toTypeScriptType(t *proto.TypeInfo, includeCompatibleTypes bool, isTestingP
 }
 
 func toWhereConditionType(f *proto.Field) string {
-	if f.GetType().GetRepeated() {
-		switch f.GetType().GetType() {
+	if f.Type.Repeated {
+		switch f.Type.Type {
 		case proto.Type_TYPE_ID, proto.Type_TYPE_STRING, proto.Type_TYPE_MARKDOWN:
 			return "runtime.StringArrayWhereCondition"
 		case proto.Type_TYPE_BOOL:
@@ -1768,11 +1795,11 @@ func toWhereConditionType(f *proto.Field) string {
 		case proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
 			return "runtime.DateArrayWhereCondition"
 		case proto.Type_TYPE_ENUM:
-			return fmt.Sprintf("%sArrayWhereCondition", f.GetType().GetEnumName().GetValue())
+			return fmt.Sprintf("%sArrayWhereCondition", f.Type.EnumName.Value)
 		}
 	}
 
-	switch f.GetType().GetType() {
+	switch f.Type.Type {
 	case proto.Type_TYPE_ID:
 		return "runtime.IDWhereCondition"
 	case proto.Type_TYPE_STRING, proto.Type_TYPE_MARKDOWN:
@@ -1786,7 +1813,7 @@ func toWhereConditionType(f *proto.Field) string {
 	case proto.Type_TYPE_DURATION:
 		return "runtime.DurationWhereCondition"
 	case proto.Type_TYPE_ENUM:
-		return fmt.Sprintf("%sWhereCondition", f.GetType().GetEnumName().GetValue())
+		return fmt.Sprintf("%sWhereCondition", f.Type.EnumName.Value)
 	default:
 		return "any"
 	}
@@ -1799,7 +1826,7 @@ func tsDocComment(w *codegen.Writer, f func(w *codegen.Writer)) {
 }
 
 // toResponseType generates a response type name for the given action name. This is to be used for actions that contain
-// embedded data.
+// embedded data
 func toResponseType(actionName string) string {
 	return casing.ToCamel(actionName) + "Response"
 }

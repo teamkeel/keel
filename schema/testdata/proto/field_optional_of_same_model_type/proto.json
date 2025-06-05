@@ -74,8 +74,7 @@
           "modelName": "Person",
           "name": "createPerson",
           "type": "ACTION_TYPE_CREATE",
-          "implementation": "ACTION_IMPLEMENTATION_AUTO",
-          "inputMessageName": "CreatePersonInput"
+          "implementation": "ACTION_IMPLEMENTATION_AUTO"
         }
       ]
     },
@@ -342,9 +341,6 @@
     },
     {
       "name": "ResetPasswordResponse"
-    },
-    {
-      "name": "CreatePersonInput"
     }
   ]
 }

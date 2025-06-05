@@ -71,8 +71,7 @@
             {
               "source": "account.identity = ctx.identity"
             }
-          ],
-          "inputMessageName": "CreateAccountInput"
+          ]
         }
       ],
       "permissions": [
@@ -358,9 +357,6 @@
     },
     {
       "name": "ResetPasswordResponse"
-    },
-    {
-      "name": "CreateAccountInput"
     }
   ]
 }

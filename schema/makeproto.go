@@ -1205,97 +1205,120 @@ func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Mes
 	}
 }
 
-// Adds a set of proto.Messages to top level Messages registry for all inputs of an Action.
-func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *parser.ActionNode) {
+// Adds a set of proto.Messages to top level Messages registry for all inputs of an Action
+func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *parser.ActionNode) string {
 	switch action.Type.Value {
 	case parser.ActionTypeCreate:
-		rootMessage := &proto.Message{
-			Name:   makeInputMessageName(action.Name.Value),
-			Fields: []*proto.MessageField{},
-		}
-		scm.proto.Messages = append(scm.proto.Messages, rootMessage)
-
-		for _, input := range action.With {
-			if input.Label == nil {
-				// If its an implicit input, then create a nested object input structure.
-				scm.makeMessageHierarchyFromImplicitInput(rootMessage, input, model, action)
-			} else {
-				// This is an explicit input, so the first and only fragment will reference the type used.
-				typeInfo := scm.explicitInputToTypeInfo(input)
-
-				rootMessage.Fields = append(rootMessage.Fields, &proto.MessageField{
-					Name:        input.Label.Value,
-					Type:        typeInfo,
-					Optional:    input.Optional,
-					Nullable:    false, // TODO: can explicit inputs use the null value?
-					MessageName: rootMessage.GetName(),
-				})
+		if len(action.With) > 0 {
+			rootMessage := &proto.Message{
+				Name:   makeInputMessageName(action.Name.Value),
+				Fields: []*proto.MessageField{},
 			}
+			scm.proto.Messages = append(scm.proto.Messages, rootMessage)
+
+			for _, input := range action.With {
+				if input.Label == nil {
+					// If its an implicit input, then create a nested object input structure.
+					scm.makeMessageHierarchyFromImplicitInput(rootMessage, input, model, action)
+				} else {
+					// This is an explicit input, so the first and only fragment will reference the type used.
+					typeInfo := scm.explicitInputToTypeInfo(input)
+
+					rootMessage.Fields = append(rootMessage.Fields, &proto.MessageField{
+						Name:        input.Label.Value,
+						Type:        typeInfo,
+						Optional:    input.Optional,
+						Nullable:    false, // TODO: can explicit inputs use the null value?
+						MessageName: rootMessage.Name,
+					})
+				}
+			}
+
+			return rootMessage.Name
 		}
 	case parser.ActionTypeGet, parser.ActionTypeDelete, parser.ActionTypeRead, parser.ActionTypeWrite:
-		// Create message and add it to the proto schema
-		messageName := makeInputMessageName(action.Name.Value)
-		message := scm.makeMessageFromActionInputNodes(messageName, action.Inputs, model)
-		scm.proto.Messages = append(scm.proto.Messages, message)
+		if len(action.Inputs) > 0 {
+			// Create message and add it to the proto schema
+			messageName := makeInputMessageName(action.Name.Value)
+			message := scm.makeMessageFromActionInputNodes(messageName, action.Inputs, model)
+			scm.proto.Messages = append(scm.proto.Messages, message)
+
+			return messageName
+		}
 	case parser.ActionTypeUpdate:
-		// Create where message and add it to the proto schema
-		whereMessageName := makeWhereMessageName(action.Name.Value)
-		whereMessage := scm.makeMessageFromActionInputNodes(whereMessageName, action.Inputs, model)
-		scm.proto.Messages = append(scm.proto.Messages, whereMessage)
+		fields := []*proto.MessageField{}
 
-		// Create values message and add it to the proto schema
-		valuesMessage := &proto.Message{
-			Name:   makeValuesMessageName(action.Name.Value),
-			Fields: []*proto.MessageField{},
+		if len(action.Inputs) > 0 {
+			// Create where message and add it to the proto schema
+			whereMessageName := makeWhereMessageName(action.Name.Value)
+			whereMessage := scm.makeMessageFromActionInputNodes(whereMessageName, action.Inputs, model)
+
+			scm.proto.Messages = append(scm.proto.Messages, whereMessage)
+
+			fields = append(fields, &proto.MessageField{
+				Name: "where",
+				Optional: lo.EveryBy(whereMessage.Fields, func(f *proto.MessageField) bool {
+					return f.Optional
+				}),
+				MessageName: makeInputMessageName(action.Name.Value),
+				Type: &proto.TypeInfo{
+					Type:        proto.Type_TYPE_MESSAGE,
+					MessageName: wrapperspb.String(makeWhereMessageName(action.Name.Value)),
+				},
+			})
 		}
-		scm.proto.Messages = append(scm.proto.Messages, valuesMessage)
-		for _, input := range action.With {
-			if input.Label == nil {
-				// If its an implicit input, then create a nested object input structure.
-				scm.makeMessageHierarchyFromImplicitInput(valuesMessage, input, model, action)
-			} else {
-				// This is an explicit input, so the first and only fragment will reference the type used.
-				typeInfo := scm.explicitInputToTypeInfo(input)
 
-				valuesMessage.Fields = append(valuesMessage.Fields, &proto.MessageField{
-					Name:        input.Label.Value,
-					Type:        typeInfo,
-					Optional:    input.Optional,
-					Nullable:    false, // TODO: can explicit inputs use the null value?
-					MessageName: valuesMessage.GetName(),
-				})
+		if len(action.With) > 0 {
+			// Create values message and add it to the proto schema
+			valuesMessage := &proto.Message{
+				Name:   makeValuesMessageName(action.Name.Value),
+				Fields: []*proto.MessageField{},
 			}
+
+			for _, input := range action.With {
+				if input.Label == nil {
+					// If its an implicit input, then create a nested object input structure.
+					scm.makeMessageHierarchyFromImplicitInput(valuesMessage, input, model, action)
+				} else {
+					// This is an explicit input, so the first and only fragment will reference the type used.
+					typeInfo := scm.explicitInputToTypeInfo(input)
+
+					valuesMessage.Fields = append(valuesMessage.Fields, &proto.MessageField{
+						Name:        input.Label.Value,
+						Type:        typeInfo,
+						Optional:    input.Optional,
+						Nullable:    false, // TODO: can explicit inputs use the null value?
+						MessageName: valuesMessage.Name,
+					})
+				}
+			}
+
+			scm.proto.Messages = append(scm.proto.Messages, valuesMessage)
+
+			fields = append(fields, &proto.MessageField{
+				Name: "values",
+				Optional: lo.EveryBy(valuesMessage.Fields, func(f *proto.MessageField) bool {
+					return f.Optional
+				}),
+				MessageName: makeInputMessageName(action.Name.Value),
+				Type: &proto.TypeInfo{
+					Type:        proto.Type_TYPE_MESSAGE,
+					MessageName: wrapperspb.String(makeValuesMessageName(action.Name.Value)),
+				},
+			})
 		}
 
-		// Create root action message with "where" and "values" fields.
-		scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
-			Name: makeInputMessageName(action.Name.Value),
-			Fields: []*proto.MessageField{
-				{
-					Name: "where",
-					Optional: len(whereMessage.GetFields()) == 0 || lo.EveryBy(whereMessage.GetFields(), func(f *proto.MessageField) bool {
-						return f.GetOptional()
-					}),
-					MessageName: makeInputMessageName(action.Name.Value),
-					Type: &proto.TypeInfo{
-						Type:        proto.Type_TYPE_MESSAGE,
-						MessageName: wrapperspb.String(makeWhereMessageName(action.Name.Value)),
-					},
-				},
-				{
-					Name: "values",
-					Optional: len(valuesMessage.GetFields()) == 0 || lo.EveryBy(valuesMessage.GetFields(), func(f *proto.MessageField) bool {
-						return f.GetOptional()
-					}),
-					MessageName: makeInputMessageName(action.Name.Value),
-					Type: &proto.TypeInfo{
-						Type:        proto.Type_TYPE_MESSAGE,
-						MessageName: wrapperspb.String(makeValuesMessageName(action.Name.Value)),
-					},
-				},
-			},
-		})
+		if len(fields) > 0 {
+			// Create root action message with "where" and "values" fields.
+			scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
+				Name:   makeInputMessageName(action.Name.Value),
+				Fields: fields,
+			})
+
+			return makeInputMessageName(action.Name.Value)
+		}
 	case parser.ActionTypeList:
+
 		whereMessage := &proto.Message{
 			Name:   makeWhereMessageName(action.Name.Value),
 			Fields: []*proto.MessageField{},
@@ -1316,78 +1339,77 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 			}
 		}
 
-		scm.proto.Messages = append(scm.proto.Messages, whereMessage)
-
 		sortableFields, err := query.ActionSortableFieldNames(action)
 		if err != nil {
 			panic(err)
 		}
 
 		inputMessage := &proto.Message{
-			Name: makeInputMessageName(action.Name.Value),
-			Fields: []*proto.MessageField{
-				{
-					Name: "where",
-					Optional: len(whereMessage.GetFields()) == 0 || lo.EveryBy(whereMessage.GetFields(), func(f *proto.MessageField) bool {
-						return f.GetOptional()
-					}),
-					MessageName: makeInputMessageName(action.Name.Value),
-					Type: &proto.TypeInfo{
-						Type:        proto.Type_TYPE_MESSAGE,
-						MessageName: wrapperspb.String(makeWhereMessageName(action.Name.Value)),
-					},
-				},
-				// Include pagination fields
-				{
-					Name:        "first",
-					MessageName: makeInputMessageName(action.Name.Value),
-					Optional:    true,
-					Type: &proto.TypeInfo{
-						Type: proto.Type_TYPE_INT,
-					},
-				},
-				{
-					Name:        "after",
-					MessageName: makeInputMessageName(action.Name.Value),
-					Optional:    true,
-					Type: &proto.TypeInfo{
-						Type: proto.Type_TYPE_STRING,
-					},
-				},
-				{
-					Name:        "last",
-					MessageName: makeInputMessageName(action.Name.Value),
-					Optional:    true,
-					Type: &proto.TypeInfo{
-						Type: proto.Type_TYPE_INT,
-					},
-				},
-				{
-					Name:        "before",
-					MessageName: makeInputMessageName(action.Name.Value),
-					Optional:    true,
-					Type: &proto.TypeInfo{
-						Type: proto.Type_TYPE_STRING,
-					},
-				},
-				{
-					Name:        "limit",
-					MessageName: makeInputMessageName(action.Name.Value),
-					Optional:    true,
-					Type: &proto.TypeInfo{
-						Type: proto.Type_TYPE_INT,
-					},
-				},
-				{
-					Name:        "offset",
-					MessageName: makeInputMessageName(action.Name.Value),
-					Optional:    true,
-					Type: &proto.TypeInfo{
-						Type: proto.Type_TYPE_INT,
-					},
-				},
-			},
+			Name:   makeInputMessageName(action.Name.Value),
+			Fields: []*proto.MessageField{},
 		}
+
+		// Only add where field if there are inputs
+		if len(action.Inputs) > 0 {
+			scm.proto.Messages = append(scm.proto.Messages, whereMessage)
+
+			inputMessage.Fields = append(inputMessage.Fields, &proto.MessageField{
+				Name: "where",
+				Optional: lo.EveryBy(whereMessage.Fields, func(f *proto.MessageField) bool {
+					return f.Optional
+				}),
+				MessageName: makeInputMessageName(action.Name.Value),
+				Type: &proto.TypeInfo{
+					Type:        proto.Type_TYPE_MESSAGE,
+					MessageName: wrapperspb.String(whereMessage.Name),
+				},
+			})
+		}
+
+		// Include pagination fields
+		inputMessage.Fields = append(inputMessage.Fields, &proto.MessageField{
+			Name:        "first",
+			MessageName: makeInputMessageName(action.Name.Value),
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_INT,
+			},
+		}, &proto.MessageField{
+			Name:        "after",
+			MessageName: makeInputMessageName(action.Name.Value),
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_STRING,
+			},
+		}, &proto.MessageField{
+			Name:        "last",
+			MessageName: makeInputMessageName(action.Name.Value),
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_INT,
+			},
+		}, &proto.MessageField{
+			Name:        "before",
+			MessageName: makeInputMessageName(action.Name.Value),
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_STRING,
+			},
+		}, &proto.MessageField{
+			Name:        "limit",
+			MessageName: makeInputMessageName(action.Name.Value),
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_INT,
+			},
+		}, &proto.MessageField{
+			Name:        "offset",
+			MessageName: makeInputMessageName(action.Name.Value),
+			Optional:    true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_INT,
+			},
+		})
 
 		orderByMessages := makeListOrderByMessages(action.Name.Value, sortableFields)
 		if len(orderByMessages) > 0 {
@@ -1407,9 +1429,13 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 		}
 
 		scm.proto.Messages = append(scm.proto.Messages, inputMessage)
+
+		return inputMessage.Name
 	default:
 		panic("unhandled action type when creating input message types")
 	}
+
+	return ""
 }
 
 func (scm *Builder) makeModel(decl *parser.DeclarationNode) {
@@ -1792,11 +1818,10 @@ func (scm *Builder) makeAction(action *parser.ActionNode, modelName string, buil
 	}
 
 	protoAction := &proto.Action{
-		ModelName:        modelName,
-		InputMessageName: makeInputMessageName(action.Name.Value),
-		Name:             action.Name.Value,
-		Implementation:   implementation,
-		Type:             scm.mapToActionType(action.Type.Value),
+		ModelName:      modelName,
+		Name:           action.Name.Value,
+		Implementation: implementation,
+		Type:           scm.mapToActionType(action.Type.Value),
 	}
 
 	model := query.Model(scm.asts, modelName)
@@ -1821,20 +1846,16 @@ func (scm *Builder) makeAction(action *parser.ActionNode, modelName string, buil
 			case usesAny:
 				protoAction.InputMessageName = action.Inputs[0].Type.ToString()
 			case usingInlineInputs:
-				scm.makeActionInputMessages(model, action)
+				protoAction.InputMessageName = scm.makeActionInputMessages(model, action)
 			default:
 				protoAction.InputMessageName = action.Inputs[0].Type.ToString()
 			}
-		} else {
-			// Create an empty message if there is no input defined.
-			message := &proto.Message{Name: protoAction.GetInputMessageName()}
-			scm.proto.Messages = append(scm.proto.Messages, message)
 		}
 
 		protoAction.ResponseMessageName = action.Returns[0].Type.ToString()
 	} else {
 		// we need to generate the messages representing the inputs to the scm.Messages
-		scm.makeActionInputMessages(model, action)
+		protoAction.InputMessageName = scm.makeActionInputMessages(model, action)
 	}
 
 	scm.applyActionAttributes(action, protoAction, modelName)

@@ -306,7 +306,7 @@ test("list action where expressions with M:1 relations - all models active - all
     isActive: true,
   });
 
-  const { results: posts } = await actions.listActivePosts({});
+  const { results: posts } = await actions.listActivePosts();
 
   expect(posts.length).toEqual(3);
 });
@@ -346,7 +346,7 @@ test("list action where expressions with M:1 relations - Keel org not active - W
     isActive: true,
   });
 
-  const { results: posts } = await actions.listActivePosts({});
+  const { results: posts } = await actions.listActivePosts();
 
   expect(posts.length).toEqual(1);
 });
@@ -386,7 +386,7 @@ test("list action where expressions with M:1 relations - Keelson author not acti
     isActive: true,
   });
 
-  const { results: posts } = await actions.listActivePosts({});
+  const { results: posts } = await actions.listActivePosts();
 
   expect(posts.length).toEqual(1);
 });
@@ -426,7 +426,7 @@ test("list action where expressions with M:1 relations - one Keelson post not ac
     isActive: true,
   });
 
-  const { results: posts } = await actions.listActivePosts({});
+  const { results: posts } = await actions.listActivePosts();
 
   expect(posts.length).toEqual(2);
 });
@@ -467,7 +467,7 @@ test("list action where expressions with 1:M relations - all models active - all
   });
 
   const { results: publishers } =
-    await actions.listActivePublishersWithActivePosts({});
+    await actions.listActivePublishersWithActivePosts();
 
   expect(publishers.length).toEqual(2);
 });
@@ -508,7 +508,7 @@ test("list action where expressions with 1:M relations - Keel org not active - o
   });
 
   const { results: publishers } =
-    await actions.listActivePublishersWithActivePosts({});
+    await actions.listActivePublishersWithActivePosts();
 
   expect(publishers.length).toEqual(1);
 });
@@ -549,7 +549,7 @@ test("list action where expressions with 1:M relations - Keel author not active 
   });
 
   const { results: publishers } =
-    await actions.listActivePublishersWithActivePosts({});
+    await actions.listActivePublishersWithActivePosts();
 
   expect(publishers.length).toEqual(1);
 });
@@ -590,7 +590,7 @@ test("list action where expressions with 1:M relations - one Keel post not activ
   });
 
   const { results: publishers } =
-    await actions.listActivePublishersWithActivePosts({});
+    await actions.listActivePublishersWithActivePosts();
 
   expect(publishers.length).toEqual(2);
 });
@@ -631,7 +631,7 @@ test("list action where expressions with 1:M relations - all Keel posts not acti
   });
 
   const { results: publishers } =
-    await actions.listActivePublishersWithActivePosts({});
+    await actions.listActivePublishersWithActivePosts();
 
   expect(publishers.length).toEqual(1);
 });
@@ -983,7 +983,7 @@ test("list action where expressions with M:1 relations with RHS field operand - 
     isActive: true,
   });
 
-  const { results: posts } = await actions.listActivePostsWithRhsField({});
+  const { results: posts } = await actions.listActivePostsWithRhsField();
 
   expect(posts.length).toEqual(3);
 });
@@ -1025,7 +1025,7 @@ test("list action where expressions with M:1 relations with RHS field operand - 
     isActive: false,
   });
 
-  const { results: posts } = await actions.listActivePostsWithRhsField({});
+  const { results: posts } = await actions.listActivePostsWithRhsField();
 
   expect(posts.length).toEqual(3);
 });
@@ -1067,7 +1067,7 @@ test("list action where expressions with M:1 relations with RHS field operand - 
     isActive: true,
   });
 
-  const { results: posts } = await actions.listActivePostsWithRhsField({});
+  const { results: posts } = await actions.listActivePostsWithRhsField();
 
   expect(posts.length).toEqual(2);
 });
@@ -1109,7 +1109,7 @@ test("list action where expressions with M:1 relations with RHS field operand - 
     isActive: true,
   });
 
-  const { results: posts } = await actions.listActivePostsWithRhsField({});
+  const { results: posts } = await actions.listActivePostsWithRhsField();
 
   expect(posts.length).toEqual(1);
 });
@@ -1152,7 +1152,7 @@ test("list action where expressions with 1:M relations with RHS field operand - 
   });
 
   const { results: publishers } =
-    await actions.listActivePublishersWithActivePostsWithRhsField({});
+    await actions.listActivePublishersWithActivePostsWithRhsField();
 
   expect(publishers.length).toEqual(2);
 });
@@ -1195,7 +1195,7 @@ test("list action where expressions with 1:M relations with RHS field operand - 
   });
 
   const { results: publishers } =
-    await actions.listActivePublishersWithActivePostsWithRhsField({});
+    await actions.listActivePublishersWithActivePostsWithRhsField();
 
   expect(publishers.length).toEqual(1);
 });
@@ -1238,7 +1238,7 @@ test("list action where expressions with 1:M relations with RHS field operand - 
   });
 
   const { results: publishers } =
-    await actions.listActivePublishersWithActivePostsWithRhsField({});
+    await actions.listActivePublishersWithActivePostsWithRhsField();
 
   expect(publishers.length).toEqual(2);
 });
@@ -1281,7 +1281,7 @@ test("list action where expressions with 1:M relations with RHS field operand - 
   });
 
   const { results: publishers } =
-    await actions.listActivePublishersWithActivePostsWithRhsField({});
+    await actions.listActivePublishersWithActivePostsWithRhsField();
 
   expect(publishers.length).toEqual(0);
 });

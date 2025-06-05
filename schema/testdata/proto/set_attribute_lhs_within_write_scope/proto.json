@@ -202,8 +202,7 @@
             {
               "source": "post.publisher.id = ctx.identity.publisher.id"
             }
-          ],
-          "inputMessageName": "NestedData9Input"
+          ]
         },
         {
           "modelName": "Post",
@@ -214,8 +213,7 @@
             {
               "source": "post.publisher = ctx.identity.publisher"
             }
-          ],
-          "inputMessageName": "NestedData10Input"
+          ]
         }
       ]
     },
@@ -1327,12 +1325,6 @@
           "target": ["publisher", "departments", "number"]
         }
       ]
-    },
-    {
-      "name": "NestedData9Input"
-    },
-    {
-      "name": "NestedData10Input"
     }
   ]
 }
