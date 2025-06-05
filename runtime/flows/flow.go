@@ -157,7 +157,7 @@ type filterFields struct {
 	Statuses  []Status
 }
 
-// Parse will set the values for the filter fields from the given map; the only applicable field is `Status`
+// Parse will set the values for the filter fields from the given map; the only applicable field is `Status`.
 func (ff *filterFields) Parse(inputs map[string]any) {
 	for f, v := range inputs {
 		switch f {
@@ -242,7 +242,7 @@ func updateRun(ctx context.Context, runID string, status Status) (*Run, error) {
 	return &run, result.Error
 }
 
-// createRun will create a new flow run with the given input
+// createRun will create a new flow run with the given input.
 func createRun(ctx context.Context, flow *proto.Flow, inputs any, traceparent string, identityID *string) (*Run, error) {
 	if flow == nil {
 		return nil, fmt.Errorf("invalid flow")
@@ -270,7 +270,7 @@ func createRun(ctx context.Context, flow *proto.Flow, inputs any, traceparent st
 	return &run, nil
 }
 
-// listRuns will list the flow runs for the given flow using cursor pagination. It defaults to
+// listRuns will list the flow runs for the given flow using cursor pagination. It defaults to.
 func listRuns(ctx context.Context, filters *filterFields, page *paginationFields) ([]*Run, error) {
 	database, err := db.GetDatabase(ctx)
 	if err != nil {

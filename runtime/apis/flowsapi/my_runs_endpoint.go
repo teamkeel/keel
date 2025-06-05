@@ -14,7 +14,7 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 )
 
-// MyRunsHandler handles a request to /flows/json/myRuns and returns data about all flow runs ran by the current logged in user
+// MyRunsHandler handles a request to /flows/json/myRuns and returns data about all flow runs ran by the current logged in user.
 func MyRunsHandler(p *proto.Schema) common.HandlerFunc {
 	return func(r *http.Request) common.Response {
 		ctx, span := tracer.Start(r.Context(), "FlowsAPI")

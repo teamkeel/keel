@@ -70,7 +70,7 @@ func StartFlow(ctx context.Context, flow *proto.Flow, inputs map[string]any) (ru
 	return run, nil
 }
 
-// ListFlowRuns will return the runs for the given flow; with pagination
+// ListFlowRuns will return the runs for the given flow; with pagination.
 func ListFlowRuns(ctx context.Context, flow *proto.Flow, pageInputs map[string]any) (runs []*Run, err error) {
 	ctx, span := tracer.Start(ctx, "ListFlowRuns")
 	defer span.End()
@@ -89,7 +89,7 @@ func ListFlowRuns(ctx context.Context, flow *proto.Flow, pageInputs map[string]a
 	return
 }
 
-// ListUserFlowRuns will return the runs initiated by the given identity ID
+// ListUserFlowRuns will return the runs initiated by the given identity ID.
 func ListUserFlowRuns(ctx context.Context, identityID string, inputs map[string]any) (runs []*Run, err error) {
 	ctx, span := tracer.Start(ctx, "ListUserFlowRuns")
 	defer span.End()
