@@ -117,7 +117,7 @@ func Generate(ctx context.Context, schema *proto.Schema, api *proto.Api) OpenAPI
 	spec := OpenAPI{
 		OpenAPI: OpenApiSpecificationVersion,
 		Info: InfoObject{
-			Title:   api.Name,
+			Title:   api.GetName(),
 			Version: "1",
 		},
 		Paths: map[string]PathItemObject{},
@@ -131,7 +131,7 @@ func Generate(ctx context.Context, schema *proto.Schema, api *proto.Api) OpenAPI
 		action := schema.FindAction(actionName)
 
 		var requestBody *RequestBodyObject
-		if action.InputMessageName != "" {
+		if action.GetInputMessageName() != "" {
 			inputSchema := jsonschema.JSONSchemaForActionInput(ctx, schema, action)
 
 			// Merge components from this request schema into OpenAPI components
@@ -143,7 +143,7 @@ func Generate(ctx context.Context, schema *proto.Schema, api *proto.Api) OpenAPI
 			}
 
 			requestBody = &RequestBodyObject{
-				Description: action.Name + " Request",
+				Description: action.GetName() + " Request",
 				Content: map[string]MediaTypeObject{
 					"application/json": {
 						Schema: inputSchema,
@@ -162,7 +162,7 @@ func Generate(ctx context.Context, schema *proto.Schema, api *proto.Api) OpenAPI
 			responseSchema.Components = nil
 		}
 
-		endpoint := fmt.Sprintf("/%s/json/%s", strings.ToLower(api.Name), action.Name)
+		endpoint := fmt.Sprintf("/%s/json/%s", strings.ToLower(api.GetName()), action.GetName())
 
 		spec.Paths[endpoint] = PathItemObject{
 			Post: &OperationObject{
@@ -170,7 +170,7 @@ func Generate(ctx context.Context, schema *proto.Schema, api *proto.Api) OpenAPI
 				RequestBody: requestBody,
 				Responses: map[string]ResponseObject{
 					"200": {
-						Description: action.Name + " Response",
+						Description: action.GetName() + " Response",
 						Content: map[string]MediaTypeObject{
 							"application/json": {
 								Schema: responseSchema,
@@ -178,7 +178,7 @@ func Generate(ctx context.Context, schema *proto.Schema, api *proto.Api) OpenAPI
 						},
 					},
 					"400": {
-						Description: action.Name + " Response Errors",
+						Description: action.GetName() + " Response Errors",
 						Content: map[string]MediaTypeObject{
 							"application/json": {
 								Schema: responseErrorSchema,
@@ -209,9 +209,9 @@ func GenerateJob(ctx context.Context, schema *proto.Schema, jobName string) Open
 		Paths: map[string]PathItemObject{},
 	}
 
-	for _, job := range schema.Jobs {
-		if job.Name == jobName {
-			msg := schema.FindMessage(job.InputMessageName)
+	for _, job := range schema.GetJobs() {
+		if job.GetName() == jobName {
+			msg := schema.FindMessage(job.GetInputMessageName())
 			if msg == nil {
 				continue
 			}
@@ -240,7 +240,7 @@ func GenerateJob(ctx context.Context, schema *proto.Schema, jobName string) Open
 				Post: &OperationObject{
 					OperationID: &job.Name,
 					RequestBody: &RequestBodyObject{
-						Description: job.Name + " Request",
+						Description: job.GetName() + " Request",
 						Content: map[string]MediaTypeObject{
 							"application/json": {
 								Schema: inputSchema,
@@ -249,7 +249,7 @@ func GenerateJob(ctx context.Context, schema *proto.Schema, jobName string) Open
 					},
 					Responses: map[string]ResponseObject{
 						"200": {
-							Description: job.Name + " Response",
+							Description: job.GetName() + " Response",
 							Content: map[string]MediaTypeObject{
 								"application/json": {
 									Schema: responseSchema,
@@ -257,7 +257,7 @@ func GenerateJob(ctx context.Context, schema *proto.Schema, jobName string) Open
 							},
 						},
 						"400": {
-							Description: job.Name + " Response Errors",
+							Description: job.GetName() + " Response Errors",
 							Content: map[string]MediaTypeObject{
 								"application/json": {
 									Schema: responseErrorSchema,
@@ -273,7 +273,7 @@ func GenerateJob(ctx context.Context, schema *proto.Schema, jobName string) Open
 	return spec
 }
 
-// GenerateFlows generates an openAPI schema for the Flows API for the given schema
+// GenerateFlows generates an openAPI schema for the Flows API for the given schema.
 func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 	var flowConfigSchema jsonschema.JSONSchema
 	_ = json.Unmarshal(flowConfigRaw, &flowConfigSchema)
@@ -402,13 +402,13 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 	spec.Paths = map[string]PathItemObject{}
 
 	// Add specific flows endpoints with defined inputs
-	for _, flow := range schema.Flows {
-		msg := schema.FindMessage(flow.InputMessageName)
+	for _, flow := range schema.GetFlows() {
+		msg := schema.FindMessage(flow.GetInputMessageName())
 		if msg == nil {
 			continue
 		}
 		inputSchema := jsonschema.JSONSchemaForMessage(ctx, schema, nil, msg, true)
-		endpoint := "/flows/json/" + flow.Name
+		endpoint := "/flows/json/" + flow.GetName()
 
 		// Merge components from this request schema into OpenAPI components
 		if inputSchema.Components != nil {
@@ -420,7 +420,7 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 			Post: &OperationObject{
 				OperationID: &flow.Name,
 				RequestBody: &RequestBodyObject{
-					Description: flow.Name + " Request",
+					Description: flow.GetName() + " Request",
 					Content: map[string]MediaTypeObject{
 						"application/json": {
 							Schema: inputSchema,

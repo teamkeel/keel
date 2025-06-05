@@ -1205,7 +1205,7 @@ func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Mes
 	}
 }
 
-// Adds a set of proto.Messages to top level Messages registry for all inputs of an Action
+// Adds a set of proto.Messages to top level Messages registry for all inputs of an Action.
 func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *parser.ActionNode) string {
 	switch action.Type.Value {
 	case parser.ActionTypeCreate:
@@ -1229,12 +1229,12 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 						Type:        typeInfo,
 						Optional:    input.Optional,
 						Nullable:    false, // TODO: can explicit inputs use the null value?
-						MessageName: rootMessage.Name,
+						MessageName: rootMessage.GetName(),
 					})
 				}
 			}
 
-			return rootMessage.Name
+			return rootMessage.GetName()
 		}
 	case parser.ActionTypeGet, parser.ActionTypeDelete, parser.ActionTypeRead, parser.ActionTypeWrite:
 		if len(action.Inputs) > 0 {
@@ -1257,8 +1257,8 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 
 			fields = append(fields, &proto.MessageField{
 				Name: "where",
-				Optional: lo.EveryBy(whereMessage.Fields, func(f *proto.MessageField) bool {
-					return f.Optional
+				Optional: lo.EveryBy(whereMessage.GetFields(), func(f *proto.MessageField) bool {
+					return f.GetOptional()
 				}),
 				MessageName: makeInputMessageName(action.Name.Value),
 				Type: &proto.TypeInfo{
@@ -1288,7 +1288,7 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 						Type:        typeInfo,
 						Optional:    input.Optional,
 						Nullable:    false, // TODO: can explicit inputs use the null value?
-						MessageName: valuesMessage.Name,
+						MessageName: valuesMessage.GetName(),
 					})
 				}
 			}
@@ -1297,8 +1297,8 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 
 			fields = append(fields, &proto.MessageField{
 				Name: "values",
-				Optional: lo.EveryBy(valuesMessage.Fields, func(f *proto.MessageField) bool {
-					return f.Optional
+				Optional: lo.EveryBy(valuesMessage.GetFields(), func(f *proto.MessageField) bool {
+					return f.GetOptional()
 				}),
 				MessageName: makeInputMessageName(action.Name.Value),
 				Type: &proto.TypeInfo{
@@ -1355,13 +1355,13 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 
 			inputMessage.Fields = append(inputMessage.Fields, &proto.MessageField{
 				Name: "where",
-				Optional: lo.EveryBy(whereMessage.Fields, func(f *proto.MessageField) bool {
-					return f.Optional
+				Optional: lo.EveryBy(whereMessage.GetFields(), func(f *proto.MessageField) bool {
+					return f.GetOptional()
 				}),
 				MessageName: makeInputMessageName(action.Name.Value),
 				Type: &proto.TypeInfo{
 					Type:        proto.Type_TYPE_MESSAGE,
-					MessageName: wrapperspb.String(whereMessage.Name),
+					MessageName: wrapperspb.String(whereMessage.GetName()),
 				},
 			})
 		}
@@ -1430,7 +1430,7 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 
 		scm.proto.Messages = append(scm.proto.Messages, inputMessage)
 
-		return inputMessage.Name
+		return inputMessage.GetName()
 	default:
 		panic("unhandled action type when creating input message types")
 	}

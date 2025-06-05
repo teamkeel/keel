@@ -92,7 +92,7 @@ type Components struct {
 // being created.
 func ValidateRequest(ctx context.Context, schema *proto.Schema, action *proto.Action, input any) (*gojsonschema.Result, error) {
 	requestSchema := JSONSchema{}
-	if action.InputMessageName != "" {
+	if action.GetInputMessageName() != "" {
 		requestSchema = JSONSchemaForActionInput(ctx, schema, action)
 	}
 
