@@ -22,6 +22,7 @@ TEST CASES
 [x] Test all Keel types as inputs
 [x] Permissions and identity tests
 [ ] Stages
+[x] List my runs
 */
 
 test("flows - scalar step", async () => {
@@ -1135,6 +1136,39 @@ test("flows - timeout step", async () => {
   });
 });
 
+test("flows - myRuns", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+  const res = await startFlow({ name: "ErrorInFlow", token, body: {} });
+  expect(res.status).toBe(200);
+
+  let { status, body } = await startFlow({
+    name: "scalarStep",
+    token,
+    body: {},
+  });
+  expect(status).toEqual(200);
+
+  await untilFlowFinished({
+    name: "scalarStep",
+    id: body.id,
+    token,
+  });
+
+  let resListRuns = await listMyRuns({
+    token: token,
+    params: { status: "FAILED" },
+  });
+  expect(resListRuns.status).toBe(200);
+  expect(resListRuns.body.length).toBe(1);
+
+  resListRuns = await listMyRuns({
+    token: token,
+    params: { status: ["FAILED", "COMPLETED"] },
+  });
+  expect(resListRuns.status).toBe(200);
+  expect(resListRuns.body.length).toBe(2);
+});
+
 test("flows - authorised starting, getting and listing flows", async () => {
   const adminToken = await getToken({ email: "admin@keel.xyz" });
   const userToken = await getToken({ email: "user@gmail.com" });
@@ -1287,6 +1321,24 @@ async function getFlowRun({ name, id, token }) {
 
 async function listFlows({ token }) {
   const res = await fetch(`${process.env.KEEL_TESTING_API_URL}/flows/json`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+  });
+
+  return {
+    status: res.status,
+    body: await res.json(),
+  };
+}
+
+async function listMyRuns({ token, params }) {
+  const queryString = new URLSearchParams(params).toString();
+  const url = `${process.env.KEEL_TESTING_API_URL}/flows/json/myRuns?${queryString}`;
+
+  const res = await fetch(url, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
