@@ -162,6 +162,105 @@
         }
       }
     },
+    "/flows/json/myRuns": {
+      "get": {
+        "operationId": "getMyRuns",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Run"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": {
+                              "type": "string"
+                            },
+                            "field": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "description": "",
+          "schema": {
+            "type": "number"
+          }
+        },
+        {
+          "name": "before",
+          "in": "query",
+          "required": false,
+          "description": "",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "after",
+          "in": "query",
+          "required": false,
+          "description": "",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "status",
+          "in": "query",
+          "required": false,
+          "description": "",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "NEW",
+              "RUNNING",
+              "AWAITING_INPUT",
+              "FAILED",
+              "COMPLETED",
+              "CANCELLED"
+            ]
+          }
+        }
+      ]
+    },
     "/flows/json/{flow}": {
       "post": {
         "operationId": "startFlow",
@@ -251,6 +350,33 @@
         }
       },
       "parameters": [
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "description": "",
+          "schema": {
+            "type": "number"
+          }
+        },
+        {
+          "name": "before",
+          "in": "query",
+          "required": false,
+          "description": "",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "after",
+          "in": "query",
+          "required": false,
+          "description": "",
+          "schema": {
+            "type": "string"
+          }
+        },
         {
           "name": "flow",
           "in": "path",
@@ -476,6 +602,7 @@
           "id": { "type": "string" },
           "input": { "type": ["object", "null"], "additionalProperties": true },
           "name": { "type": "string" },
+          "startedBy": { "type": ["string", "null"] },
           "status": {
             "type": "string",
             "enum": [

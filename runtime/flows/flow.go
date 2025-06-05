@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"slices"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/teamkeel/keel/db"
@@ -52,6 +53,7 @@ type Run struct {
 	CreatedAt   time.Time `json:"createdAt"`
 	UpdatedAt   time.Time `json:"updatedAt"`
 	Config      JSON      `json:"config"    gorm:"-"` // Stages config component, omitted from db operations
+	StartedBy   *string   `json:"startedBy"`
 }
 
 func (Run) TableName() string {
@@ -149,6 +151,32 @@ func (p *paginationFields) Parse(inputs map[string]any) {
 	}
 }
 
+type filterFields struct {
+	FlowName  *string
+	StartedBy *string
+	Statuses  []Status
+}
+
+// Parse will set the values for the filter fields from the given map; the only applicable field is `Status`.
+func (ff *filterFields) Parse(inputs map[string]any) {
+	for f, v := range inputs {
+		switch f {
+		case "status":
+			switch val := v.(type) {
+			case string:
+				sts := strings.Split(val, ",")
+				for _, s := range sts {
+					ff.Statuses = append(ff.Statuses, Status(s))
+				}
+			case []string:
+				for _, s := range val {
+					ff.Statuses = append(ff.Statuses, Status(s))
+				}
+			}
+		}
+	}
+}
+
 // GetLimit returns a limit of items to be returned. If no limit set in the pagination fields, a default of 10 will be used.
 func (p *paginationFields) GetLimit() int {
 	// default to 10
@@ -215,7 +243,7 @@ func updateRun(ctx context.Context, runID string, status Status) (*Run, error) {
 }
 
 // createRun will create a new flow run with the given input.
-func createRun(ctx context.Context, flow *proto.Flow, inputs any, traceparent string) (*Run, error) {
+func createRun(ctx context.Context, flow *proto.Flow, inputs any, traceparent string, identityID *string) (*Run, error) {
 	if flow == nil {
 		return nil, fmt.Errorf("invalid flow")
 	}
@@ -226,6 +254,7 @@ func createRun(ctx context.Context, flow *proto.Flow, inputs any, traceparent st
 		Name:        flow.GetName(),
 		Traceparent: traceparent,
 		TraceID:     util.ParseTraceparent(traceparent).TraceID().String(),
+		StartedBy:   identityID,
 	}
 
 	database, err := db.GetDatabase(ctx)
@@ -242,10 +271,7 @@ func createRun(ctx context.Context, flow *proto.Flow, inputs any, traceparent st
 }
 
 // listRuns will list the flow runs for the given flow using cursor pagination. It defaults to.
-func listRuns(ctx context.Context, flow *proto.Flow, page *paginationFields) ([]*Run, error) {
-	if flow == nil {
-		return nil, fmt.Errorf("invalid flow")
-	}
+func listRuns(ctx context.Context, filters *filterFields, page *paginationFields) ([]*Run, error) {
 	database, err := db.GetDatabase(ctx)
 	if err != nil {
 		return nil, err
@@ -253,7 +279,19 @@ func listRuns(ctx context.Context, flow *proto.Flow, page *paginationFields) ([]
 
 	var runs []*Run
 
-	q := database.GetDB().Where("name = ?", flow.GetName()).Limit(page.GetLimit())
+	q := database.GetDB().Limit(page.GetLimit())
+
+	if filters != nil {
+		if filters.FlowName != nil {
+			q = q.Where("name = ?", filters.FlowName)
+		}
+		if filters.StartedBy != nil {
+			q = q.Where("started_by = ?", filters.StartedBy)
+		}
+		if len(filters.Statuses) > 0 {
+			q = q.Where("status IN ?", filters.Statuses)
+		}
+	}
 
 	if page != nil {
 		if page.IsBackwards() {

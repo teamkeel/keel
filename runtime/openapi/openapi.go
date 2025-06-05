@@ -278,6 +278,27 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 	var flowConfigSchema jsonschema.JSONSchema
 	_ = json.Unmarshal(flowConfigRaw, &flowConfigSchema)
 
+	paginationParams := []ParameterObject{
+		{
+			Name:     "limit",
+			In:       "query",
+			Required: false,
+			Schema:   jsonschema.JSONSchema{Type: "number"},
+		},
+		{
+			Name:     "before",
+			In:       "query",
+			Required: false,
+			Schema:   jsonschema.JSONSchema{Type: "string"},
+		},
+		{
+			Name:     "after",
+			In:       "query",
+			Required: false,
+			Schema:   jsonschema.JSONSchema{Type: "string"},
+		},
+	}
+
 	runResponseSchema := jsonschema.JSONSchema{
 		Type: "object",
 		Properties: map[string]jsonschema.JSONSchema{
@@ -300,6 +321,7 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 			"steps":     {Type: "array", Items: &jsonschema.JSONSchema{Ref: "#/components/schemas/Step"}},
 			"config":    flowConfigSchema,
 			"input":     {Type: []string{"object", "null"}, AdditionalProperties: BoolPointer(true)},
+			"startedBy": {Type: []string{"string", "null"}},
 		},
 		Required: []string{"id", "status", "name", "traceId", "createdAt", "updatedAt", "steps", "config", "input"},
 	}
@@ -454,17 +476,60 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 		},
 	}
 
+	spec.Paths["/flows/json/myRuns"] = PathItemObject{
+		Parameters: func() []ParameterObject {
+			return append(paginationParams, ParameterObject{
+				Name:     "status",
+				In:       "query",
+				Required: false,
+				Schema: jsonschema.JSONSchema{
+					Type: "string",
+					Enum: []*string{
+						StringPointer(string(flows.StatusNew)),
+						StringPointer(string(flows.StatusRunning)),
+						StringPointer(string(flows.StatusAwaitingInput)),
+						StringPointer(string(flows.StatusFailed)),
+						StringPointer(string(flows.StatusCompleted)),
+						StringPointer(string(flows.StatusCancelled)),
+					},
+				},
+			})
+		}(),
+		Get: &OperationObject{
+			OperationID: StringPointer("getMyRuns"),
+			Responses: map[string]ResponseObject{
+				"200": {
+					Content: map[string]MediaTypeObject{
+						"application/json": {
+							Schema: jsonschema.JSONSchema{
+								Type:  "array",
+								Items: &jsonschema.JSONSchema{Ref: "#/components/schemas/Run"},
+							},
+						},
+					},
+				},
+				"400": {
+					Content: map[string]MediaTypeObject{
+						"application/json": {
+							Schema: responseErrorSchema,
+						},
+					},
+				},
+			},
+		},
+	}
+
 	spec.Paths["/flows/json/{flow}"] = PathItemObject{
-		Parameters: []ParameterObject{
-			{
+		Parameters: func() []ParameterObject {
+			return append(paginationParams, ParameterObject{
 				Name:     "flow",
 				In:       "path",
 				Required: true,
 				Schema: jsonschema.JSONSchema{
 					Type: "string",
 				},
-			},
-		},
+			})
+		}(),
 		Post: &OperationObject{
 			OperationID: StringPointer("startFlow"),
 			RequestBody: &RequestBodyObject{

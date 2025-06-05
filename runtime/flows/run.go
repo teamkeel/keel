@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/auth"
+	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/util"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -30,7 +32,16 @@ func StartFlow(ctx context.Context, flow *proto.Flow, inputs map[string]any) (ru
 		return
 	}
 
-	run, err = createRun(ctx, flow, inputs, util.GetTraceparent(span.SpanContext()))
+	var identityID *string
+
+	if identity, err := auth.GetIdentity(ctx); err == nil {
+		idenID := identity[parser.FieldNameId].(string)
+		if idenID != "" {
+			identityID = &idenID
+		}
+	}
+
+	run, err = createRun(ctx, flow, inputs, util.GetTraceparent(span.SpanContext()), identityID)
 	if err != nil {
 		err = fmt.Errorf("creating flow run: %w", err)
 		return
@@ -59,8 +70,28 @@ func StartFlow(ctx context.Context, flow *proto.Flow, inputs map[string]any) (ru
 	return run, nil
 }
 
-func ListFlowRuns(ctx context.Context, flow *proto.Flow, inputs map[string]any) (runs []*Run, err error) {
+// ListFlowRuns will return the runs for the given flow; with pagination.
+func ListFlowRuns(ctx context.Context, flow *proto.Flow, pageInputs map[string]any) (runs []*Run, err error) {
 	ctx, span := tracer.Start(ctx, "ListFlowRuns")
+	defer span.End()
+
+	defer func() {
+		if err != nil {
+			span.RecordError(err, trace.WithStackTrace(true))
+			span.SetStatus(codes.Error, err.Error())
+		}
+	}()
+
+	pf := paginationFields{}
+	pf.Parse(pageInputs)
+
+	runs, err = listRuns(ctx, &filterFields{FlowName: &flow.Name}, &pf)
+	return
+}
+
+// ListUserFlowRuns will return the runs initiated by the given identity ID.
+func ListUserFlowRuns(ctx context.Context, identityID string, inputs map[string]any) (runs []*Run, err error) {
+	ctx, span := tracer.Start(ctx, "ListUserFlowRuns")
 	defer span.End()
 
 	defer func() {
@@ -73,7 +104,11 @@ func ListFlowRuns(ctx context.Context, flow *proto.Flow, inputs map[string]any) 
 	pf := paginationFields{}
 	pf.Parse(inputs)
 
-	runs, err = listRuns(ctx, flow, &pf)
+	ff := filterFields{}
+	ff.Parse(inputs)
+	ff.StartedBy = &identityID
+
+	runs, err = listRuns(ctx, &ff, &pf)
 	return
 }
 

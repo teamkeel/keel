@@ -22,6 +22,7 @@ TEST CASES
 [x] Test all Keel types as inputs
 [x] Permissions and identity tests
 [ ] Stages
+[x] List my runs
 */
 
 test("flows - scalar step", async () => {
@@ -46,6 +47,7 @@ test("flows - scalar step", async () => {
     status: "COMPLETED",
     name: "ScalarStep",
     input: {},
+    startedBy: expect.any(String),
     steps: [
       {
         id: expect.any(String),
@@ -87,6 +89,7 @@ test("flows - only functions with config", async () => {
     traceId: expect.any(String),
     status: "RUNNING",
     name: "OnlyFunctions",
+    startedBy: expect.any(String),
     input: {
       name: "My Thing",
       age: 25,
@@ -139,6 +142,7 @@ test("flows - only functions with config", async () => {
     traceId: expect.any(String),
     status: "COMPLETED",
     name: "OnlyFunctions",
+    startedBy: expect.any(String),
     input: {
       name: "My Thing",
       age: 25,
@@ -198,6 +202,7 @@ test("flows - only pages", async () => {
     traceId: expect.any(String),
     status: "AWAITING_INPUT",
     name: "OnlyPages",
+    startedBy: expect.any(String),
     input: {},
     steps: [
       {
@@ -243,6 +248,7 @@ test("flows - only pages", async () => {
     traceId: expect.any(String),
     status: "AWAITING_INPUT",
     name: "OnlyPages",
+    startedBy: expect.any(String),
     input: {},
     steps: [
       {
@@ -309,6 +315,7 @@ test("flows - only pages", async () => {
     traceId: expect.any(String),
     status: "COMPLETED",
     name: "OnlyPages",
+    startedBy: expect.any(String),
     input: {},
     steps: [
       {
@@ -371,6 +378,7 @@ test("flows - stepless flow", async () => {
     id: body.id,
     input: {},
     name: "Stepless",
+    startedBy: expect.any(String),
     status: "COMPLETED",
     steps: [],
     config: null,
@@ -399,6 +407,7 @@ test("flows - first step is a function", async () => {
     id: expect.any(String),
     input: {},
     name: "SingleStep",
+    startedBy: expect.any(String),
     status: "RUNNING",
     steps: [
       {
@@ -437,6 +446,7 @@ test("flows - first step is a function", async () => {
     id: body.id,
     input: {},
     name: "SingleStep",
+    startedBy: expect.any(String),
     status: "COMPLETED",
     steps: [
       {
@@ -485,6 +495,7 @@ test("flows - alternating step types", async () => {
       age: 23,
     },
     name: "MixedStepTypes",
+    startedBy: expect.any(String),
     status: "RUNNING",
     steps: [
       {
@@ -524,6 +535,7 @@ test("flows - alternating step types", async () => {
   expect(body).toEqual({
     id: runId,
     name: "MixedStepTypes",
+    startedBy: expect.any(String),
     status: "AWAITING_INPUT", // Flow is now awaiting input
     input: {
       name: "Keelson",
@@ -623,6 +635,7 @@ test("flows - alternating step types", async () => {
   expect(body).toEqual({
     id: runId,
     name: "MixedStepTypes",
+    startedBy: expect.any(String),
     status: "RUNNING",
     input: {
       name: "Keelson",
@@ -861,6 +874,7 @@ test("flows - all inputs", async () => {
       markdown: "**Hello**",
     },
     name: "AllInputs",
+    startedBy: expect.any(String),
     status: "FAILED",
     steps: [],
     traceId: expect.any(String),
@@ -876,6 +890,7 @@ test("flows - error in step with retries", async () => {
     id: expect.any(String),
     traceId: expect.any(String),
     status: "RUNNING",
+    startedBy: expect.any(String),
     name: "ErrorInStep",
     input: {},
     steps: [
@@ -914,6 +929,7 @@ test("flows - error in step with retries", async () => {
     traceId: res.body.traceId,
     status: "FAILED",
     name: "ErrorInStep",
+    startedBy: expect.any(String),
     input: {},
     steps: [
       {
@@ -977,6 +993,7 @@ test("flows - error in flow", async () => {
     traceId: expect.any(String),
     status: "FAILED",
     name: "ErrorInFlow",
+    startedBy: expect.any(String),
     input: {},
     steps: [],
     createdAt: expect.any(String),
@@ -996,6 +1013,7 @@ test("flows - timeout step", async () => {
     traceId: expect.any(String),
     status: "RUNNING",
     name: "TimeoutStep",
+    startedBy: expect.any(String),
     input: {},
     steps: [
       {
@@ -1033,6 +1051,7 @@ test("flows - timeout step", async () => {
     traceId: res.body.traceId,
     status: "FAILED",
     name: "TimeoutStep",
+    startedBy: expect.any(String),
     input: {},
     steps: [
       {
@@ -1115,6 +1134,39 @@ test("flows - timeout step", async () => {
     updatedAt: expect.any(String),
     config: null,
   });
+});
+
+test("flows - myRuns", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+  const res = await startFlow({ name: "ErrorInFlow", token, body: {} });
+  expect(res.status).toBe(200);
+
+  let { status, body } = await startFlow({
+    name: "scalarStep",
+    token,
+    body: {},
+  });
+  expect(status).toEqual(200);
+
+  await untilFlowFinished({
+    name: "scalarStep",
+    id: body.id,
+    token,
+  });
+
+  let resListRuns = await listMyRuns({
+    token: token,
+    params: { status: "FAILED" },
+  });
+  expect(resListRuns.status).toBe(200);
+  expect(resListRuns.body.length).toBe(1);
+
+  resListRuns = await listMyRuns({
+    token: token,
+    params: { status: ["FAILED", "COMPLETED"] },
+  });
+  expect(resListRuns.status).toBe(200);
+  expect(resListRuns.body.length).toBe(2);
 });
 
 test("flows - authorised starting, getting and listing flows", async () => {
@@ -1269,6 +1321,24 @@ async function getFlowRun({ name, id, token }) {
 
 async function listFlows({ token }) {
   const res = await fetch(`${process.env.KEEL_TESTING_API_URL}/flows/json`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+  });
+
+  return {
+    status: res.status,
+    body: await res.json(),
+  };
+}
+
+async function listMyRuns({ token, params }) {
+  const queryString = new URLSearchParams(params).toString();
+  const url = `${process.env.KEEL_TESTING_API_URL}/flows/json/myRuns?${queryString}`;
+
+  const res = await fetch(url, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
