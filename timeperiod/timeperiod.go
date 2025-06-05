@@ -18,7 +18,7 @@ type TimePeriod struct {
 // When handling a date relative period, such as `last complete day`/`yesterday`, this will have an impact:
 // Given a current time of 15/11/2024 01:15 in UTC
 // * for America/Toronto UTC -5: date_trunc('day', NOW()) should be 14/11/2024
-// * for Europe/Rome UTC +1:  date_trunc('day', NOW()) should be 15/11/2024
+// * for Europe/Rome UTC +1:  date_trunc('day', NOW()) should be 15/11/2024.
 func (tp *TimePeriod) IsTimezoneRelative() bool {
 	if !tp.Complete {
 		return false
@@ -40,7 +40,7 @@ func (tp *TimePeriod) IsTimezoneRelative() bool {
 // * if `this`, then there is no n and no complete; i.e. `this month`, `this day`, `this year`
 // * n = positive integer
 // * `complete“ is optional
-// * period can be either plural or singular version
+// * period can be either plural or singular version.
 func Parse(expression string) (TimePeriod, error) {
 	tkns := toTokens(expression)
 
@@ -77,7 +77,7 @@ func toTokens(expr string) tokens {
 }
 
 // period will extract the period from the tokens, will return "" if no valid period. The period should always be at the
-// end of the expression
+// end of the expression.
 func (t tokens) period() string {
 	p := strings.TrimSuffix(strings.ToLower(t[len(t)-1]), "s")
 	switch p {
@@ -103,7 +103,7 @@ func (t tokens) direction() string {
 	return ""
 }
 
-// complete
+// complete.
 func (t tokens) complete() bool {
 	if t.direction() == "this" {
 		return true

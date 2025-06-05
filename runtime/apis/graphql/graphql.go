@@ -172,7 +172,7 @@ func NewHandler(s *proto.Schema, api *proto.Api) common.HandlerFunc {
 }
 
 // NewGraphQLSchema creates a map of graphql.Schema objects where the keys
-// are the API names from the provided proto.Schema
+// are the API names from the provided proto.Schema.
 func NewGraphQLSchema(proto *proto.Schema, api *proto.Api) (*graphql.Schema, error) {
 	m := &graphqlSchemaBuilder{
 		proto: proto,
@@ -253,29 +253,27 @@ func (mk *graphqlSchemaBuilder) addGlobals() {
 }
 
 // addModel generates the graphql type to represent the given proto.Model, and inserts it into
-// mk.types
+// mk.types.
 func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, error) {
-	if out, ok := mk.types[fmt.Sprintf("model-%s", model.Name)]; ok {
+	if out, ok := mk.types[fmt.Sprintf("model-%s", model.GetName())]; ok {
 		return out.(*graphql.Object), nil
 	}
 
 	object := graphql.NewObject(graphql.ObjectConfig{
-		Name:   model.Name,
+		Name:   model.GetName(),
 		Fields: graphql.Fields{},
 	})
 
-	mk.types[fmt.Sprintf("model-%s", model.Name)] = object
+	mk.types[fmt.Sprintf("model-%s", model.GetName())] = object
 
-	for _, field := range model.Fields {
-		field := field
-
+	for _, field := range model.GetFields() {
 		// Passwords are omitted from GraphQL responses
-		if field.Type.Type == proto.Type_TYPE_PASSWORD {
+		if field.GetType().GetType() == proto.Type_TYPE_PASSWORD {
 			continue
 		}
 
 		// Vectors are omitted from GraphQL responses
-		if field.Type.Type == proto.Type_TYPE_VECTOR {
+		if field.GetType().GetType() == proto.Type_TYPE_VECTOR {
 			continue
 		}
 
@@ -284,9 +282,9 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 			return nil, err
 		}
 
-		if field.Type.Type != proto.Type_TYPE_MODEL {
-			object.AddFieldConfig(field.Name, &graphql.Field{
-				Name: field.Name,
+		if field.GetType().GetType() != proto.Type_TYPE_MODEL {
+			object.AddFieldConfig(field.GetName(), &graphql.Field{
+				Name: field.GetName(),
 				Type: outputType,
 			})
 			continue
@@ -314,21 +312,21 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 			}
 		}
 
-		object.AddFieldConfig(field.Name, &graphql.Field{
-			Name: field.Name,
+		object.AddFieldConfig(field.GetName(), &graphql.Field{
+			Name: field.GetName(),
 			Type: outputType,
 			Args: fieldArgs,
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				ctx, span := tracer.Start(p.Context, fmt.Sprintf("Resolve %s.%s", model.Name, field.Name))
+				ctx, span := tracer.Start(p.Context, fmt.Sprintf("Resolve %s.%s", model.GetName(), field.GetName()))
 				defer span.End()
 
-				relatedModel := mk.proto.FindModel(field.Type.ModelName.Value)
+				relatedModel := mk.proto.FindModel(field.GetType().GetModelName().GetValue())
 
 				// Create a new query for the related model
 				query := actions.NewQuery(relatedModel)
 				query.Select(actions.AllFields())
 
-				foreignKeyField := proto.GetForeignKeyFieldName(mk.proto.Models, field)
+				foreignKeyField := proto.GetForeignKeyFieldName(mk.proto.GetModels(), field)
 
 				// Get the value of the model
 				parent, ok := p.Source.(map[string]interface{})
@@ -346,7 +344,7 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 				// Retrieve the value for the lookup
 				parentFieldValue, ok := parent[parentLookupField]
 				if !ok {
-					return nil, fmt.Errorf("model %s did not have field %s", model.Name, parentLookupField)
+					return nil, fmt.Errorf("model %s did not have field %s", model.GetName(), parentLookupField)
 				}
 
 				// If the value is null (possible if the relationship is not required), then there
@@ -447,7 +445,7 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 
 					return res, nil
 				default:
-					return nil, fmt.Errorf("unhandled model relationship configuration for field: %s on model: %s", field.Name, field.ModelName)
+					return nil, fmt.Errorf("unhandled model relationship configuration for field: %s on model: %s", field.GetName(), field.GetModelName())
 				}
 			},
 		})
@@ -456,22 +454,22 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 	return object, nil
 }
 
-// addOperation generates the graphql field object to represent the given proto.Action
+// addOperation generates the graphql field object to represent the given proto.Action.
 func (mk *graphqlSchemaBuilder) addAction(
 	action *proto.Action,
 	schema *proto.Schema) error {
-	model := schema.FindModel(action.ModelName)
+	model := schema.FindModel(action.GetModelName())
 	modelType, err := mk.addModel(model)
 	if err != nil {
 		return err
 	}
 
 	field := &graphql.Field{
-		Name: action.Name,
+		Name: action.GetName(),
 	}
 
 	// Only add input args if an input field exists.
-	if action.InputMessageName != "" && action.InputMessageName != parser.MessageFieldTypeAny {
+	if action.GetInputMessageName() != "" && action.GetInputMessageName() != parser.MessageFieldTypeAny {
 		operationInputType, allOptionalInputs, err := mk.makeActionInputType(action)
 		if err != nil {
 			return err
@@ -492,7 +490,7 @@ func (mk *graphqlSchemaBuilder) addAction(
 				},
 			}
 		}
-	} else if action.InputMessageName == parser.MessageFieldTypeAny {
+	} else if action.GetInputMessageName() == parser.MessageFieldTypeAny {
 		// Any type
 		field.Args = graphql.FieldConfigArgument{
 			"input": &graphql.ArgumentConfig{
@@ -501,30 +499,30 @@ func (mk *graphqlSchemaBuilder) addAction(
 		}
 	}
 
-	switch action.Type {
+	switch action.GetType() {
 	case proto.ActionType_ACTION_TYPE_GET:
 		field.Type = modelType
-		mk.query.AddFieldConfig(action.Name, field)
+		mk.query.AddFieldConfig(action.GetName(), field)
 	case proto.ActionType_ACTION_TYPE_CREATE,
 		proto.ActionType_ACTION_TYPE_UPDATE:
 		field.Type = graphql.NewNonNull(modelType)
-		mk.mutation.AddFieldConfig(action.Name, field)
+		mk.mutation.AddFieldConfig(action.GetName(), field)
 	case proto.ActionType_ACTION_TYPE_DELETE:
 		field.Type = deleteResponseType
-		mk.mutation.AddFieldConfig(action.Name, field)
+		mk.mutation.AddFieldConfig(action.GetName(), field)
 	case proto.ActionType_ACTION_TYPE_LIST:
 		// for list types we need to wrap the output type in the
 		// connection type which allows for pagination
 		resultInfo := mk.makeResultInfoType(action)
 		field.Type = mk.makeConnectionType(modelType, resultInfo)
-		mk.query.AddFieldConfig(action.Name, field)
+		mk.query.AddFieldConfig(action.GetName(), field)
 	case proto.ActionType_ACTION_TYPE_READ:
-		responseMessage := schema.FindMessage(action.ResponseMessageName)
+		responseMessage := schema.FindMessage(action.GetResponseMessageName())
 		if responseMessage == nil {
-			return fmt.Errorf("response message does not exist: %s", action.ResponseMessageName)
+			return fmt.Errorf("response message does not exist: %s", action.GetResponseMessageName())
 		}
 
-		if responseMessage.Name == parser.MessageFieldTypeAny {
+		if responseMessage.GetName() == parser.MessageFieldTypeAny {
 			field.Type = anyType
 		} else {
 			field.Type, err = mk.addMessage(responseMessage)
@@ -533,19 +531,19 @@ func (mk *graphqlSchemaBuilder) addAction(
 			}
 		}
 
-		mk.query.AddFieldConfig(action.Name, field)
+		mk.query.AddFieldConfig(action.GetName(), field)
 	case proto.ActionType_ACTION_TYPE_WRITE:
-		responseMessage := schema.FindMessage(action.ResponseMessageName)
+		responseMessage := schema.FindMessage(action.GetResponseMessageName())
 		if responseMessage == nil {
-			return fmt.Errorf("response message does not exist: %s", action.ResponseMessageName)
+			return fmt.Errorf("response message does not exist: %s", action.GetResponseMessageName())
 		}
 		field.Type, err = mk.addMessage(responseMessage)
 		if err != nil {
 			return err
 		}
-		mk.mutation.AddFieldConfig(action.Name, field)
+		mk.mutation.AddFieldConfig(action.GetName(), field)
 	default:
-		return fmt.Errorf("addAction() does not yet support this action type: %v", action.Type)
+		return fmt.Errorf("addAction() does not yet support this action type: %v", action.GetType())
 	}
 
 	field.Resolve = ActionFunc(schema, action)
@@ -561,13 +559,13 @@ func (mk *graphqlSchemaBuilder) makeResultInfoType(action *proto.Action) graphql
 
 	fields := graphql.Fields{}
 	for _, field := range facetFields {
-		fields[field.Name] = &graphql.Field{
-			Type: protoTypeToFacetType[field.Type.Type],
+		fields[field.GetName()] = &graphql.Field{
+			Type: protoTypeToFacetType[field.GetType().GetType()],
 		}
 	}
 
 	return graphql.NewObject(graphql.ObjectConfig{
-		Name:   fmt.Sprintf("%sResultInfo", strcase.ToCamel(action.Name)),
+		Name:   fmt.Sprintf("%sResultInfo", strcase.ToCamel(action.GetName())),
 		Fields: fields,
 	})
 }
@@ -616,46 +614,46 @@ func (mk *graphqlSchemaBuilder) makeConnectionType(itemType graphql.Output, resu
 }
 
 func (mk *graphqlSchemaBuilder) addEnum(e *proto.Enum) *graphql.Enum {
-	if out, ok := mk.enums[e.Name]; ok {
+	if out, ok := mk.enums[e.GetName()]; ok {
 		return out
 	}
 
 	values := graphql.EnumValueConfigMap{}
 
-	for _, v := range e.Values {
-		values[v.Name] = &graphql.EnumValueConfig{
-			Value: v.Name,
+	for _, v := range e.GetValues() {
+		values[v.GetName()] = &graphql.EnumValueConfig{
+			Value: v.GetName(),
 		}
 	}
 
 	enum := graphql.NewEnum(graphql.EnumConfig{
-		Name:   e.Name,
+		Name:   e.GetName(),
 		Values: values,
 	})
-	mk.enums[e.Name] = enum
+	mk.enums[e.GetName()] = enum
 	return enum
 }
 
 // addMessage makes a graphql.Object response output from a proto.Message.
 func (mk *graphqlSchemaBuilder) addMessage(message *proto.Message) (graphql.Output, error) {
-	if message.Name == parser.MessageFieldTypeAny {
+	if message.GetName() == parser.MessageFieldTypeAny {
 		return anyType, nil
 	}
-	if out, ok := mk.types[message.Name]; ok {
+	if out, ok := mk.types[message.GetName()]; ok {
 		return out, nil
 	}
 
 	output := graphql.NewObject(graphql.ObjectConfig{
-		Name:   message.Name,
+		Name:   message.GetName(),
 		Fields: graphql.Fields{},
 	})
 
-	for _, field := range message.Fields {
+	for _, field := range message.GetFields() {
 		var fieldType graphql.Output
 
-		switch field.Type.Type {
+		switch field.GetType().GetType() {
 		case proto.Type_TYPE_MESSAGE:
-			fieldMessage := mk.proto.FindMessage(field.Type.MessageName.Value)
+			fieldMessage := mk.proto.FindMessage(field.GetType().GetMessageName().GetValue())
 
 			var err error
 			fieldType, err = mk.addMessage(fieldMessage)
@@ -663,7 +661,7 @@ func (mk *graphqlSchemaBuilder) addMessage(message *proto.Message) (graphql.Outp
 				return nil, err
 			}
 		case proto.Type_TYPE_MODEL:
-			modelMessage := mk.proto.FindModel(field.Type.ModelName.Value)
+			modelMessage := mk.proto.FindModel(field.GetType().GetModelName().GetValue())
 
 			var err error
 			fieldType, err = mk.addModel(modelMessage)
@@ -671,54 +669,54 @@ func (mk *graphqlSchemaBuilder) addMessage(message *proto.Message) (graphql.Outp
 				return nil, err
 			}
 		case proto.Type_TYPE_ENUM:
-			enumMessage := proto.FindEnum(mk.proto.Enums, field.Type.EnumName.Value)
+			enumMessage := proto.FindEnum(mk.proto.GetEnums(), field.GetType().GetEnumName().GetValue())
 			fieldType = mk.addEnum(enumMessage)
 
 		default:
-			fieldType = protoTypeToGraphQLOutput[field.Type.Type]
+			fieldType = protoTypeToGraphQLOutput[field.GetType().GetType()]
 			if fieldType == nil {
-				return nil, fmt.Errorf("cannot yet make output type for: %s", field.Type.Type.String())
+				return nil, fmt.Errorf("cannot yet make output type for: %s", field.GetType().GetType().String())
 			}
 		}
 
-		if field.Type.Repeated {
+		if field.GetType().GetRepeated() {
 			fieldType = graphql.NewList(fieldType)
 		}
-		if !field.Optional {
+		if !field.GetOptional() {
 			fieldType = graphql.NewNonNull(fieldType)
 		}
 
-		output.AddFieldConfig(field.Name, &graphql.Field{
+		output.AddFieldConfig(field.GetName(), &graphql.Field{
 			Type: fieldType,
 		})
 	}
 
-	if len(message.Fields) == 0 {
+	if len(message.GetFields()) == 0 {
 		output.AddFieldConfig("success", &graphql.Field{
 			Type:    graphql.Boolean,
 			Resolve: func(_ graphql.ResolveParams) (interface{}, error) { return true, nil },
 		})
 	}
 
-	mk.types[message.Name] = output
+	mk.types[message.GetName()] = output
 
 	return output, nil
 }
 
 // addModel generates the graphql type to represent the given proto.Model, and inserts it into
-// mk.types
+// mk.types.
 func (mk *graphqlSchemaBuilder) addModelInput(model *proto.Model) (graphql.Input, error) {
-	if in, ok := mk.types[fmt.Sprintf("model-%s", model.Name)]; ok {
+	if in, ok := mk.types[fmt.Sprintf("model-%s", model.GetName())]; ok {
 		return in.(graphql.Input), nil
 	}
 
 	input := graphql.NewInputObject(graphql.InputObjectConfig{
-		Name:   model.Name,
+		Name:   model.GetName(),
 		Fields: graphql.InputObjectConfigFieldMap{},
 	})
 
-	for _, field := range model.Fields {
-		if lo.Contains(parser.FieldNames, field.Name) {
+	for _, field := range model.GetFields() {
+		if lo.Contains(parser.FieldNames, field.GetName()) {
 			continue
 		}
 
@@ -727,7 +725,7 @@ func (mk *graphqlSchemaBuilder) addModelInput(model *proto.Model) (graphql.Input
 			return nil, err
 		}
 
-		input.AddFieldConfig(field.Name, &graphql.InputObjectFieldConfig{
+		input.AddFieldConfig(field.GetName(), &graphql.InputObjectFieldConfig{
 			Type: inputType,
 		})
 	}
@@ -737,12 +735,12 @@ func (mk *graphqlSchemaBuilder) addModelInput(model *proto.Model) (graphql.Input
 
 // inputTypeForModelField maps the type in the given proto.Field to a suitable graphql.Input type.
 func (mk *graphqlSchemaBuilder) inputTypeForModelField(field *proto.Field) (in graphql.Input, err error) {
-	switch field.Type.Type {
+	switch field.GetType().GetType() {
 	case proto.Type_TYPE_ENUM:
-		enumMessage := proto.FindEnum(mk.proto.Enums, field.Type.EnumName.Value)
+		enumMessage := proto.FindEnum(mk.proto.GetEnums(), field.GetType().GetEnumName().GetValue())
 		in = mk.addEnum(enumMessage)
 	case proto.Type_TYPE_MODEL:
-		model := mk.proto.FindModel(field.Type.ModelName.Value)
+		model := mk.proto.FindModel(field.GetType().GetModelName().GetValue())
 		var err error
 		in, err = mk.addModelInput(model)
 		if err != nil {
@@ -750,20 +748,20 @@ func (mk *graphqlSchemaBuilder) inputTypeForModelField(field *proto.Field) (in g
 		}
 	default:
 		var ok bool
-		in, ok = protoTypeToGraphQLInput[field.Type.Type]
+		in, ok = protoTypeToGraphQLInput[field.GetType().GetType()]
 		if !ok {
-			return in, fmt.Errorf("cannot yet make output type for: %s", field.Type.Type.String())
+			return in, fmt.Errorf("cannot yet make output type for: %s", field.GetType().GetType().String())
 		}
 	}
 
-	if field.Type.Repeated {
-		if field.Type.Type == proto.Type_TYPE_MODEL {
+	if field.GetType().GetRepeated() {
+		if field.GetType().GetType() == proto.Type_TYPE_MODEL {
 			in = mk.makeConnectionType(in, nil)
 		} else {
 			in = graphql.NewList(in)
 			in = graphql.NewNonNull(in)
 		}
-	} else if !field.Optional {
+	} else if !field.GetOptional() {
 		in = graphql.NewNonNull(in)
 	}
 
@@ -772,12 +770,12 @@ func (mk *graphqlSchemaBuilder) inputTypeForModelField(field *proto.Field) (in g
 
 // outputTypeForModelField maps the type in the given proto.Field to a suitable graphql.Output type.
 func (mk *graphqlSchemaBuilder) outputTypeForModelField(field *proto.Field) (out graphql.Output, err error) {
-	switch field.Type.Type {
+	switch field.GetType().GetType() {
 	case proto.Type_TYPE_ENUM:
-		enumMessage := proto.FindEnum(mk.proto.Enums, field.Type.EnumName.Value)
+		enumMessage := proto.FindEnum(mk.proto.GetEnums(), field.GetType().GetEnumName().GetValue())
 		out = mk.addEnum(enumMessage)
 	case proto.Type_TYPE_MODEL:
-		modelMessage := mk.proto.FindModel(field.Type.ModelName.Value)
+		modelMessage := mk.proto.FindModel(field.GetType().GetModelName().GetValue())
 		var err error
 		out, err = mk.addModel(modelMessage)
 		if err != nil {
@@ -785,19 +783,19 @@ func (mk *graphqlSchemaBuilder) outputTypeForModelField(field *proto.Field) (out
 		}
 	default:
 		var ok bool
-		out, ok = protoTypeToGraphQLOutput[field.Type.Type]
+		out, ok = protoTypeToGraphQLOutput[field.GetType().GetType()]
 		if !ok {
-			return out, fmt.Errorf("cannot yet make output type for: %s", field.Type.Type.String())
+			return out, fmt.Errorf("cannot yet make output type for: %s", field.GetType().GetType().String())
 		}
 	}
 
-	if field.Type.Repeated {
-		if field.Type.Type == proto.Type_TYPE_MODEL {
+	if field.GetType().GetRepeated() {
+		if field.GetType().GetType() == proto.Type_TYPE_MODEL {
 			out = mk.makeConnectionType(out, nil)
 		} else {
 			out = graphql.NewList(out)
 		}
-	} else if !field.Optional {
+	} else if !field.GetOptional() {
 		out = graphql.NewNonNull(out)
 	}
 
@@ -810,14 +808,14 @@ func (mk *graphqlSchemaBuilder) inputTypeFromMessageField(field *proto.MessageFi
 	var err error
 
 	switch {
-	case field.Type.Type == proto.Type_TYPE_MESSAGE:
-		messageName := field.Type.MessageName.Value
+	case field.GetType().GetType() == proto.Type_TYPE_MESSAGE:
+		messageName := field.GetType().GetMessageName().GetValue()
 		message := mk.proto.FindMessage(messageName)
 		if message == nil {
 			return nil, fmt.Errorf("message does not exist: %s", messageName)
 		}
 
-		if len(message.Fields) == 0 {
+		if len(message.GetFields()) == 0 {
 			break
 		}
 
@@ -831,32 +829,32 @@ func (mk *graphqlSchemaBuilder) inputTypeFromMessageField(field *proto.MessageFi
 			Fields: graphql.InputObjectConfigFieldMap{},
 		})
 
-		for _, input := range message.Fields {
+		for _, input := range message.GetFields() {
 			inputField, err := mk.inputTypeFromMessageField(input)
 			if err != nil {
 				return nil, err
 			}
 
-			inputObject.AddFieldConfig(input.Name, &graphql.InputObjectFieldConfig{
+			inputObject.AddFieldConfig(input.GetName(), &graphql.InputObjectFieldConfig{
 				Type: inputField,
 			})
 		}
 
 		mk.inputs[messageName] = inputObject
 		in = inputObject
-	case field.Type.Type == proto.Type_TYPE_UNION:
+	case field.GetType().GetType() == proto.Type_TYPE_UNION:
 		// GraphQL doesn't support union type or the concept of oneOf for inputs _yet_,
 		// so we will rather compile all the fields from the union types into one message,
 		// make all the fields optional, and rely on runtime validation.
-		messageName := fmt.Sprintf("%sOrderBy", field.MessageName)
+		messageName := fmt.Sprintf("%sOrderBy", field.GetMessageName())
 		inputObject := graphql.NewInputObject(graphql.InputObjectConfig{
 			Name:   mk.makeUniqueInputMessageName(messageName),
 			Fields: graphql.InputObjectConfigFieldMap{},
 		})
 
-		for _, typeName := range field.Type.UnionNames {
-			fieldMessage := mk.proto.FindMessage(typeName.Value)
-			for _, typeField := range fieldMessage.Fields {
+		for _, typeName := range field.GetType().GetUnionNames() {
+			fieldMessage := mk.proto.FindMessage(typeName.GetValue())
+			for _, typeField := range fieldMessage.GetFields() {
 				typeField.Optional = true
 				typeField.Nullable = true
 				inputField, err := mk.inputTypeFromMessageField(typeField)
@@ -864,7 +862,7 @@ func (mk *graphqlSchemaBuilder) inputTypeFromMessageField(field *proto.MessageFi
 					return nil, err
 				}
 
-				inputObject.AddFieldConfig(typeField.Name, &graphql.InputObjectFieldConfig{
+				inputObject.AddFieldConfig(typeField.GetName(), &graphql.InputObjectFieldConfig{
 					Type: inputField,
 				})
 			}
@@ -872,8 +870,8 @@ func (mk *graphqlSchemaBuilder) inputTypeFromMessageField(field *proto.MessageFi
 
 		mk.inputs[messageName] = inputObject
 		in = inputObject
-	case field.Type.Type == proto.Type_TYPE_MODEL:
-		model := mk.proto.FindModel(field.Type.ModelName.Value)
+	case field.GetType().GetType() == proto.Type_TYPE_MODEL:
+		model := mk.proto.FindModel(field.GetType().GetModelName().GetValue())
 		in, err = mk.addModelInput(model)
 		if err != nil {
 			return nil, err
@@ -884,13 +882,13 @@ func (mk *graphqlSchemaBuilder) inputTypeFromMessageField(field *proto.MessageFi
 		}
 	}
 
-	if !field.Optional && !field.Nullable {
+	if !field.GetOptional() && !field.GetNullable() {
 		in = graphql.NewNonNull(in)
 	}
 
-	if field.Type.Repeated {
+	if field.GetType().GetRepeated() {
 		in = graphql.NewList(in)
-		if !field.Optional {
+		if !field.GetOptional() {
 			in = graphql.NewNonNull(in)
 		}
 	}
@@ -901,15 +899,15 @@ func (mk *graphqlSchemaBuilder) inputTypeFromMessageField(field *proto.MessageFi
 // inputTypeFor creates a graphql.Input for non-list operation input types.
 func (mk *graphqlSchemaBuilder) inputTypeFor(field *proto.MessageField) (graphql.Input, error) {
 	var in graphql.Input
-	if field.Type.Type == proto.Type_TYPE_ENUM {
-		enum, _ := lo.Find(mk.proto.Enums, func(e *proto.Enum) bool {
-			return e.Name == field.Type.EnumName.Value
+	if field.GetType().GetType() == proto.Type_TYPE_ENUM {
+		enum, _ := lo.Find(mk.proto.GetEnums(), func(e *proto.Enum) bool {
+			return e.GetName() == field.GetType().GetEnumName().GetValue()
 		})
 		in = mk.addEnum(enum)
 	} else {
 		var ok bool
-		if in, ok = protoTypeToGraphQLInput[field.Type.Type]; !ok {
-			return nil, fmt.Errorf("message %s has unsupported message field type: %s", field.MessageName, field.Type.Type.String())
+		if in, ok = protoTypeToGraphQLInput[field.GetType().GetType()]; !ok {
+			return nil, fmt.Errorf("message %s has unsupported message field type: %s", field.GetMessageName(), field.GetType().GetType().String())
 		}
 	}
 	return in, nil
@@ -918,29 +916,29 @@ func (mk *graphqlSchemaBuilder) inputTypeFor(field *proto.MessageField) (graphql
 // makeActionInputType generates an input type to reflect the inputs of the given
 // proto.Action - which can be used as the Args field in a graphql.Field.
 func (mk *graphqlSchemaBuilder) makeActionInputType(action *proto.Action) (*graphql.InputObject, bool, error) {
-	if action.InputMessageName == "" {
+	if action.GetInputMessageName() == "" {
 		return nil, true, nil
 	}
 
-	message := mk.proto.FindMessage(action.InputMessageName)
+	message := mk.proto.FindMessage(action.GetInputMessageName())
 	allOptionalInputs := true
 
 	inputType := graphql.NewInputObject(graphql.InputObjectConfig{
-		Name:   mk.makeUniqueInputMessageName(message.Name),
+		Name:   mk.makeUniqueInputMessageName(message.GetName()),
 		Fields: graphql.InputObjectConfigFieldMap{},
 	})
 
-	for _, field := range message.Fields {
+	for _, field := range message.GetFields() {
 		fieldType, err := mk.inputTypeFromMessageField(field)
 		if err != nil {
 			return nil, false, err
 		}
 
 		if fieldType != nil {
-			if !field.Optional {
+			if !field.GetOptional() {
 				allOptionalInputs = false
 			}
-			inputType.AddFieldConfig(field.Name, &graphql.InputObjectFieldConfig{
+			inputType.AddFieldConfig(field.GetName(), &graphql.InputObjectFieldConfig{
 				Type: fieldType,
 			})
 		}

@@ -18,6 +18,7 @@ type IdTokenClaims struct {
 }
 
 // https://openid.net/specs/openid-connect-basic-1_0.html#StandardClaims
+
 type UserClaims struct {
 	// default 'email' scope claims
 	Email         string `json:"email,omitempty"`

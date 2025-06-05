@@ -24,7 +24,7 @@ func AuthoriseAction(scope *Scope, input map[string]any, rowsToAuthorise []map[s
 		return false, errors.New("cannot authorise with AuthoriseAction if no operation is provided in scope")
 	}
 
-	if scope.Action.Type == proto.ActionType_ACTION_TYPE_UPDATE || scope.Action.Type == proto.ActionType_ACTION_TYPE_LIST {
+	if scope.Action.GetType() == proto.ActionType_ACTION_TYPE_UPDATE || scope.Action.GetType() == proto.ActionType_ACTION_TYPE_LIST {
 		var ok bool
 		input, ok = input["where"].(map[string]any)
 		if !ok {
@@ -39,7 +39,7 @@ func AuthoriseAction(scope *Scope, input map[string]any, rowsToAuthorise []map[s
 // AuthoriseForActionType checks authorisation for rows using permission and role rules defined for some action type,
 // i.e. agnostic to any action.
 func AuthoriseForActionType(scope *Scope, opType proto.ActionType, rowsToAuthorise []map[string]any) (authorised bool, err error) {
-	permissions := proto.PermissionsForActionType(scope.Schema, scope.Model.Name, opType)
+	permissions := proto.PermissionsForActionType(scope.Schema, scope.Model.GetName(), opType)
 	return authorise(scope, permissions, map[string]any{}, rowsToAuthorise)
 }
 
@@ -149,10 +149,10 @@ func TryResolveAuthorisationEarly(scope *Scope, inputs map[string]any, permissio
 		canResolve := false
 		authorised := false
 		switch {
-		case permission.Expression != nil:
+		case permission.GetExpression() != nil:
 
 			// Try resolve the permission early.
-			canResolve, authorised = TryResolveExpressionEarly(scope.Context, scope.Schema, scope.Model, scope.Action, permission.Expression.Source, inputs)
+			canResolve, authorised = TryResolveExpressionEarly(scope.Context, scope.Schema, scope.Model, scope.Action, permission.GetExpression().GetSource(), inputs)
 
 			if !canResolve {
 				hasDatabaseCheck = true
@@ -204,15 +204,15 @@ func ResolveRolePermissionRule(ctx context.Context, schema *proto.Schema, permis
 	}
 
 	authorised := false
-	for _, roleName := range permission.RoleNames {
+	for _, roleName := range permission.GetRoleNames() {
 		role := proto.FindRole(roleName, schema)
-		for _, email := range role.Emails {
+		for _, email := range role.GetEmails() {
 			if email == identityEmail {
 				authorised = true
 			}
 		}
 
-		for _, domain := range role.Domains {
+		for _, domain := range role.GetDomains() {
 			if domain == identityDomain {
 				authorised = true
 			}
@@ -235,7 +235,7 @@ func GeneratePermissionStatement(scope *Scope, permissions []*proto.PermissionRu
 	// Append SQL where conditions for each permission attribute.
 	query.OpenParenthesis()
 	for _, permission := range permissions {
-		expression, err := parser.ParseExpression(permission.Expression.Source)
+		expression, err := parser.ParseExpression(permission.GetExpression().GetSource())
 		if err != nil {
 			return nil, err
 		}
@@ -264,8 +264,8 @@ func GeneratePermissionStatement(scope *Scope, permissions []*proto.PermissionRu
 	return query.SelectStatement(), nil
 }
 
-// getEmailAndDomain requires that the the given scope's context
-// contains an authenticated user
+// getEmailAndDomain requires that the given scope's context
+// contains an authenticated user.
 func getEmailAndDomain(ctx context.Context) (email string, domain string, verified bool, err error) {
 	// Use the authenticated identity's id to lookup their email address.
 	identity, err := auth.GetIdentity(ctx)

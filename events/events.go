@@ -19,7 +19,7 @@ import (
 	"go.opentelemetry.io/otel/trace/noop"
 )
 
-// Event names
+// Event names.
 const (
 	Created = "created"
 	Updated = "updated"
@@ -48,7 +48,7 @@ type EventTarget struct {
 	PreviousData map[string]any `json:"previousData"`
 }
 
-// The event handler function to be executed for each subscriber event generated.
+// EventHandler is the function to be executed for each subscriber event generated.
 type EventHandler func(ctx context.Context, subscriber string, event *Event, traceparent string) error
 
 type handlerContextKey string
@@ -87,7 +87,7 @@ func SendEvents(ctx context.Context, schema *proto.Schema) error {
 	}
 
 	// If there are no events defined in the schema, then don't bother processing events.
-	if len(schema.Events) == 0 {
+	if len(schema.GetEvents()) == 0 {
 		return nil
 	}
 
@@ -150,7 +150,7 @@ func SendEvents(ctx context.Context, schema *proto.Schema) error {
 			return err
 		}
 
-		protoEvent := proto.FindEvent(schema.Events, eventName)
+		protoEvent := proto.FindEvent(schema.GetEvents(), eventName)
 		if protoEvent == nil {
 			return fmt.Errorf("event '%s' does not exist", eventName)
 		}
@@ -184,7 +184,7 @@ func SendEvents(ctx context.Context, schema *proto.Schema) error {
 				},
 			}
 
-			err = handler(ctx, subscriber.Name, event, traceparent)
+			err = handler(ctx, subscriber.GetName(), event, traceparent)
 			if err != nil {
 				// We do not error yet when the event handler fails
 				handlerErrors = errors.Join(handlerErrors, err)

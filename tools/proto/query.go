@@ -6,29 +6,29 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-// ActionConfigs will return all the actionConfigs in this selection of tools
+// ActionConfigs will return all the actionConfigs in this selection of tools.
 func (tools *Tools) ActionConfigs() []*ActionConfig {
 	if tools == nil {
 		return nil
 	}
 	cfgs := []*ActionConfig{}
-	for _, t := range tools.Configs {
-		if t.Type == Tool_ACTION {
-			cfgs = append(cfgs, t.ActionConfig)
+	for _, t := range tools.GetConfigs() {
+		if t.GetType() == Tool_ACTION {
+			cfgs = append(cfgs, t.GetActionConfig())
 		}
 	}
 
 	return cfgs
 }
 
-// FindByID finds a tool in the given tools message by id
+// FindByID finds a tool in the given tools message by id.
 func (tools *Tools) FindByID(id string) *Tool {
 	if tools == nil {
 		return nil
 	}
 
-	for _, t := range tools.Configs {
-		if t.Id == id {
+	for _, t := range tools.GetConfigs() {
+		if t.GetId() == id {
 			return t
 		}
 	}
@@ -36,7 +36,7 @@ func (tools *Tools) FindByID(id string) *Tool {
 	return nil
 }
 
-// DiffIDs will return a subset of the given tools which do not exist in our current tools wrapper
+// DiffIDs will return a subset of the given tools which do not exist in our current tools wrapper.
 func (tools *Tools) DiffIDs(ids []string) []string {
 	diffs := []string{}
 	for _, id := range ids {
@@ -50,18 +50,18 @@ func (tools *Tools) DiffIDs(ids []string) []string {
 
 // GetOperationName will return the name of the operation that drives this tool.
 //
-// For action based tools, this will be the actionName, for flow based tools, the flow name
+// For action based tools, this will be the actionName, for flow based tools, the flow name.
 func (t *Tool) GetOperationName() string {
 	if t.IsActionBased() {
-		return t.GetActionConfig().ActionName
+		return t.GetActionConfig().GetActionName()
 	}
 
-	return t.GetFlowConfig().FlowName
+	return t.GetFlowConfig().GetFlowName()
 }
 
-// IsActionBased checks if the tool is driven by an API action
+// IsActionBased checks if the tool is driven by an API action.
 func (t *Tool) IsActionBased() bool {
-	return t.Type == Tool_ACTION && t.ActionConfig != nil
+	return t.GetType() == Tool_ACTION && t.GetActionConfig() != nil
 }
 
 // ToTool transforms this ActionConfig into an action based Tool wrapper message.
@@ -71,7 +71,7 @@ func (t *ActionConfig) ToTool() *Tool {
 	}
 
 	return &Tool{
-		Id:           t.Id,
+		Id:           t.GetId(),
 		Type:         Tool_ACTION,
 		ActionConfig: t,
 	}
@@ -130,7 +130,7 @@ func (c *Capabilities) Diff(other *Capabilities) map[string]bool {
 
 func FindLinkByToolID(links []*ToolLink, toolID string) *ToolLink {
 	for _, l := range links {
-		if l.ToolId == toolID {
+		if l.GetToolId() == toolID {
 			return l
 		}
 	}
@@ -139,7 +139,7 @@ func FindLinkByToolID(links []*ToolLink, toolID string) *ToolLink {
 
 func FindToolGroupLinkByToolID(links []*ToolGroup_GroupActionLink, toolID string) *ToolGroup_GroupActionLink {
 	for _, l := range links {
-		if l.ActionLink.ToolId == toolID {
+		if l.GetActionLink().GetToolId() == toolID {
 			return l
 		}
 	}
@@ -148,7 +148,7 @@ func FindToolGroupLinkByToolID(links []*ToolGroup_GroupActionLink, toolID string
 
 func FindToolGroupByID(groups []*ToolGroup, id string) *ToolGroup {
 	for _, g := range groups {
-		if g.Id == id {
+		if g.GetId() == id {
 			return g
 		}
 	}
@@ -220,22 +220,22 @@ func (dl *DisplayLayoutConfig) AllToolLinks() []*ToolLink {
 	}
 
 	if dl.GetInboxConfig() != nil {
-		if dl.GetInboxConfig().GetTool != nil {
-			links = append(links, dl.GetInboxConfig().GetTool)
+		if dl.GetInboxConfig().GetGetTool() != nil {
+			links = append(links, dl.GetInboxConfig().GetGetTool())
 		}
 	}
 	if dl.GetBoardConfig() != nil {
-		if dl.GetBoardConfig().GetTool != nil {
-			links = append(links, dl.GetBoardConfig().GetTool)
+		if dl.GetBoardConfig().GetGetTool() != nil {
+			links = append(links, dl.GetBoardConfig().GetGetTool())
 		}
-		if dl.GetBoardConfig().UpdateAction != nil {
-			links = append(links, dl.GetBoardConfig().UpdateAction)
+		if dl.GetBoardConfig().GetUpdateAction() != nil {
+			links = append(links, dl.GetBoardConfig().GetUpdateAction())
 		}
 	}
 
 	if dl.GetGridConfig() != nil {
-		if dl.GetGridConfig().UpdateAction != nil {
-			links = append(links, dl.GetGridConfig().UpdateAction)
+		if dl.GetGridConfig().GetUpdateAction() != nil {
+			links = append(links, dl.GetGridConfig().GetUpdateAction())
 		}
 	}
 

@@ -42,23 +42,23 @@ const (
 )
 
 type Run struct {
-	ID          string    `json:"id" gorm:"primaryKey;not null;default:null"`
+	ID          string    `json:"id"        gorm:"primaryKey;not null;default:null"`
 	TraceID     string    `json:"traceId"`
 	Traceparent string    `json:"-"`
 	Status      Status    `json:"status"`
 	Name        string    `json:"name"`
-	Input       JSON      `json:"input" gorm:"type:jsonb;serializer:json"`
+	Input       JSON      `json:"input"     gorm:"type:jsonb;serializer:json"`
 	Steps       []Step    `json:"steps"`
 	CreatedAt   time.Time `json:"createdAt"`
 	UpdatedAt   time.Time `json:"updatedAt"`
-	Config      JSON      `json:"config" gorm:"-"` // Stages config component, omitted from db operations
+	Config      JSON      `json:"config"    gorm:"-"` // Stages config component, omitted from db operations
 }
 
 func (Run) TableName() string {
 	return "keel.flow_run"
 }
 
-// HasPendingUIStep tells us if the current run is waiting for UI input
+// HasPendingUIStep tells us if the current run is waiting for UI input.
 func (r *Run) HasPendingUIStep() bool {
 	if r == nil || (r.Status != StatusAwaitingInput && r.Status != StatusRunning) {
 		return false
@@ -73,7 +73,7 @@ func (r *Run) HasPendingUIStep() bool {
 	return false
 }
 
-// SetUIComponents will set the given UI component on the first pending UI step of the flow
+// SetUIComponents will set the given UI component on the first pending UI step of the flow.
 func (r *Run) SetUIComponents(c *FlowUIComponents) {
 	if c == nil {
 		return
@@ -93,19 +93,19 @@ func (r *Run) SetUIComponents(c *FlowUIComponents) {
 }
 
 type Step struct {
-	ID        string     `json:"id" gorm:"primaryKey;not null;default:null"`
+	ID        string     `json:"id"        gorm:"primaryKey;not null;default:null"`
 	Name      string     `json:"name"`
 	RunID     string     `json:"runId"`
 	Status    StepStatus `json:"status"`
 	Type      StepType   `json:"type"`
-	Value     JSON       `json:"value" gorm:"type:jsonb;serializer:json"`
+	Value     JSON       `json:"value"     gorm:"type:jsonb;serializer:json"`
 	Stage     *string    `json:"stage"`
 	Error     *string    `json:"error"`
 	StartTime *time.Time `json:"startTime"`
 	EndTime   *time.Time `json:"endTime"`
 	CreatedAt time.Time  `json:"createdAt"`
 	UpdatedAt time.Time  `json:"updatedAt"`
-	UI        JSON       `json:"ui" gorm:"-"` // UI component, omitted from db operations
+	UI        JSON       `json:"ui"        gorm:"-"` // UI component, omitted from db operations
 }
 
 func (Step) TableName() string {
@@ -120,7 +120,7 @@ type paginationFields struct {
 	Before *string
 }
 
-// Parse will set the values for the pagination fields from the given map
+// Parse will set the values for the pagination fields from the given map.
 func (p *paginationFields) Parse(inputs map[string]any) {
 	for f, v := range inputs {
 		switch f {
@@ -149,7 +149,7 @@ func (p *paginationFields) Parse(inputs map[string]any) {
 	}
 }
 
-// GetLimit returns a limit of items to be returned. If no limit set in the pagination fields, a default of 10 will be used
+// GetLimit returns a limit of items to be returned. If no limit set in the pagination fields, a default of 10 will be used.
 func (p *paginationFields) GetLimit() int {
 	// default to 10
 	if p == nil || p.Limit < 1 {
@@ -163,7 +163,7 @@ func (p *paginationFields) IsBackwards() bool {
 	return p.Before != nil
 }
 
-// getRun returns the flow run with the given ID. If no flow run found, nil nil is returned.
+// getRun returns the flow run with the given ID. If no flow run found, nil/nil is returned.
 func getRun(ctx context.Context, runID string) (*Run, error) {
 	database, err := db.GetDatabase(ctx)
 	if err != nil {
@@ -185,7 +185,7 @@ func getRun(ctx context.Context, runID string) (*Run, error) {
 	return &run, nil
 }
 
-// GetTraceparent returns the traceparent from the db for the given run ID
+// GetTraceparent returns the traceparent from the db for the given run ID.
 func GetTraceparent(ctx context.Context, runID string) (string, error) {
 	database, err := db.GetDatabase(ctx)
 	if err != nil {
@@ -201,7 +201,7 @@ func GetTraceparent(ctx context.Context, runID string) (string, error) {
 	return run.Traceparent, nil
 }
 
-// updateRun will update the status of a flow run
+// updateRun will update the status of a flow run.
 func updateRun(ctx context.Context, runID string, status Status) (*Run, error) {
 	database, err := db.GetDatabase(ctx)
 	if err != nil {
@@ -214,7 +214,7 @@ func updateRun(ctx context.Context, runID string, status Status) (*Run, error) {
 	return &run, result.Error
 }
 
-// createRun will create a new flow run with the given input
+// createRun will create a new flow run with the given input.
 func createRun(ctx context.Context, flow *proto.Flow, inputs any, traceparent string) (*Run, error) {
 	if flow == nil {
 		return nil, fmt.Errorf("invalid flow")
@@ -223,7 +223,7 @@ func createRun(ctx context.Context, flow *proto.Flow, inputs any, traceparent st
 	run := Run{
 		Status:      StatusNew,
 		Input:       inputs,
-		Name:        flow.Name,
+		Name:        flow.GetName(),
 		Traceparent: traceparent,
 		TraceID:     util.ParseTraceparent(traceparent).TraceID().String(),
 	}
@@ -241,7 +241,7 @@ func createRun(ctx context.Context, flow *proto.Flow, inputs any, traceparent st
 	return &run, nil
 }
 
-// listRuns will list the flow runs for the given flow using cursor pagination. It defaults to
+// listRuns will list the flow runs for the given flow using cursor pagination. It defaults to.
 func listRuns(ctx context.Context, flow *proto.Flow, page *paginationFields) ([]*Run, error) {
 	if flow == nil {
 		return nil, fmt.Errorf("invalid flow")
@@ -253,7 +253,7 @@ func listRuns(ctx context.Context, flow *proto.Flow, page *paginationFields) ([]
 
 	var runs []*Run
 
-	q := database.GetDB().Where("name = ?", flow.Name).Limit(page.GetLimit())
+	q := database.GetDB().Where("name = ?", flow.GetName()).Limit(page.GetLimit())
 
 	if page != nil {
 		if page.IsBackwards() {

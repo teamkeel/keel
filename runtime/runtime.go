@@ -108,7 +108,7 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 	return http.HandlerFunc(httpHandler)
 }
 
-// NewAuthHandler handles requests to the authentication endpoints
+// NewAuthHandler handles requests to the authentication endpoints.
 func NewAuthHandler(schema *proto.Schema) func(http.ResponseWriter, *http.Request) common.Response {
 	handleProviders := authapi.ProvidersHandler(schema)
 	handleToken := authapi.TokenEndpointHandler(schema)
@@ -147,12 +147,12 @@ func NewAuthHandler(schema *proto.Schema) func(http.ResponseWriter, *http.Reques
 	}
 }
 
-// NewApiHandler handles requests to the customer APIs
+// NewApiHandler handles requests to the customer APIs.
 func NewApiHandler(s *proto.Schema) common.HandlerFunc {
 	handlers := map[string]common.HandlerFunc{}
 
-	for _, api := range s.Apis {
-		root := "/" + strings.ToLower(api.Name)
+	for _, api := range s.GetApis() {
+		root := "/" + strings.ToLower(api.GetName())
 
 		handlers[root+"/graphql"] = graphql.NewHandler(s, api)
 		handlers[root+"/rpc"] = jsonrpc.NewHandler(s, api)
@@ -189,7 +189,7 @@ func NewApiHandler(s *proto.Schema) common.HandlerFunc {
 	})
 }
 
-// NewFlowsHandler handles requests to the customer flows
+// NewFlowsHandler handles requests to the customer flows.
 func NewFlowsHandler(s *proto.Schema) common.HandlerFunc {
 	defaultFlowHandler := flowsapi.FlowHandler(s)
 
@@ -245,7 +245,7 @@ func (handler JobHandler) RunJob(ctx context.Context, jobName string, input map[
 
 	if trigger == functions.ManualTrigger {
 		// Check if authorisation can be achieved early.
-		canAuthoriseEarly, authorised, err := actions.TryResolveAuthorisationEarly(scope, input, job.Permissions)
+		canAuthoriseEarly, authorised, err := actions.TryResolveAuthorisationEarly(scope, input, job.GetPermissions())
 		if err != nil {
 			return err
 		}
@@ -260,8 +260,8 @@ func (handler JobHandler) RunJob(ctx context.Context, jobName string, input map[
 	}
 
 	var err error
-	if job.InputMessageName != "" {
-		message := scope.Schema.FindMessage(job.InputMessageName)
+	if job.GetInputMessageName() != "" {
+		message := scope.Schema.FindMessage(job.GetInputMessageName())
 		input, err = actions.TransformInputs(handler.schema, message, input, true)
 		if err != nil {
 			return err
@@ -303,7 +303,7 @@ func (handler SubscriberHandler) RunSubscriber(ctx context.Context, subscriberNa
 	ctx, span := tracer.Start(ctx, "Run subscriber")
 	defer span.End()
 
-	subscriber := proto.FindSubscriber(handler.schema.Subscribers, subscriberName)
+	subscriber := proto.FindSubscriber(handler.schema.GetSubscribers(), subscriberName)
 	if subscriber == nil {
 		return fmt.Errorf("no subscriber with the name '%s' exists", subscriberName)
 	}
@@ -329,11 +329,10 @@ func (handler SubscriberHandler) RunSubscriber(ctx context.Context, subscriberNa
 func NewRouter(s *proto.Schema) *httprouter.Router {
 	router := httprouter.New()
 
-	for _, route := range s.Routes {
-		route := route
+	for _, route := range s.GetRoutes() {
 		var method string
 
-		switch route.Method {
+		switch route.GetMethod() {
 		case proto.HttpMethod_HTTP_METHOD_GET:
 			method = http.MethodGet
 		case proto.HttpMethod_HTTP_METHOD_POST:
@@ -344,7 +343,7 @@ func NewRouter(s *proto.Schema) *httprouter.Router {
 			method = http.MethodDelete
 		}
 
-		router.Handle(method, route.Pattern, func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+		router.Handle(method, route.GetPattern(), func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 			body, err := io.ReadAll(r.Body)
 			if err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
@@ -363,7 +362,7 @@ func NewRouter(s *proto.Schema) *httprouter.Router {
 			}
 			ctx := runtimectx.WithRequestHeaders(r.Context(), headers)
 
-			resp, _, err := functions.CallRoute(ctx, route.Handler, &functions.RouteRequest{
+			resp, _, err := functions.CallRoute(ctx, route.GetHandler(), &functions.RouteRequest{
 				Body:   string(body),
 				Method: r.Method,
 				Path:   r.URL.Path,

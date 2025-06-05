@@ -8,7 +8,7 @@ import (
 
 var ErrExpressionNotValidIdent = errors.New("expression is not an ident")
 
-// AsIdent expects and retrieves the single ident operand in an expression
+// AsIdent expects and retrieves the single ident operand in an expression.
 func AsIdent(expression *parser.Expression) (*parser.ExpressionIdent, error) {
 	ident, err := RunCelVisitor(expression, ident())
 	if err != nil {

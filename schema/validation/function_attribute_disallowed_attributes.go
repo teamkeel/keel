@@ -10,7 +10,7 @@ import (
 
 // FunctionDisallowedBehavioursRule will validate against usages of @set, @where and nested inputs
 // for any actions marked with the @function attribute as we do not support these sets of
-// functionality in @function's
+// functionality in @function's.
 func FunctionDisallowedBehavioursRule(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 	return Visitor{
 		EnterAction: func(n *parser.ActionNode) {

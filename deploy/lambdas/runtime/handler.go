@@ -25,16 +25,16 @@ import (
 )
 
 const (
-	// Handles API requests
+	// Handles API requests.
 	RuntimeModeApi = "api"
 
-	// Handles events from SQS
+	// Handles events from SQS.
 	RuntimeModeSubscriber = "subscriber"
 
-	// Handles both manual and scheduled jobs
+	// Handles both manual and scheduled jobs.
 	RuntimeModeJob = "job"
 
-	// Handles flows
+	// Handles flows.
 	RuntimeModeFlow = "flow"
 )
 

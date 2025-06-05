@@ -234,6 +234,7 @@ type FlowInputNode struct {
 // - @orderBy
 // - @sortable
 // - @on
+
 type AttributeNode struct {
 	node.Node
 
@@ -364,7 +365,7 @@ type Error struct {
 	err participle.Error
 }
 
-// compile-time check that Error inplements node.ParserNode
+// compile-time check that Error inplements node.ParserNode.
 var _ node.ParserNode = Error{}
 
 func (e Error) Error() string {

@@ -17,7 +17,7 @@ import (
 // - @unique can't be used on has-many relations
 // - @unique can't be used on array fields
 // - composite @unique attributes must not have duplicate field names
-// - composite @unique can't specify has-many fields
+// - composite @unique can't specify has-many fields.
 func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 	var currentModel *parser.ModelNode
 	var currentField *parser.FieldNode

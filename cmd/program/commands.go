@@ -154,7 +154,7 @@ type GenerateClientMsg struct {
 
 func GenerateClient(dir string, schema *proto.Schema, apiName string, outputDir string, makePackage bool, output chan tea.Msg) tea.Cmd {
 	return func() tea.Msg {
-		if schema == nil || len(schema.Apis) == 0 {
+		if schema == nil || len(schema.GetApis()) == 0 {
 			return GenerateMsg{
 				Status: StatusNotGenerated,
 			}
@@ -539,7 +539,7 @@ func StartTraceServer(port string) tea.Cmd {
 					return
 				}
 
-				_ = localTraceExporter.NewClient().UploadTraces(r.Context(), data.ResourceSpans)
+				_ = localTraceExporter.NewClient().UploadTraces(r.Context(), data.GetResourceSpans())
 			}),
 		}
 
@@ -724,7 +724,7 @@ func StartWatcher(dir string, ch chan tea.Msg, filter []string) tea.Cmd {
 	}
 }
 
-// LoadSecrets lists secrets from the given file and returns a command
+// LoadSecrets lists secrets from the given file and returns a command.
 func LoadSecrets(path, environment string) (map[string]string, error) {
 	projectPath, err := filepath.Abs(path)
 	if err != nil {

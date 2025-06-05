@@ -125,7 +125,7 @@ func (h *AWSAPIHandler) lambdaInvoke(r *http.Request, w http.ResponseWriter) {
 	}
 
 	w.WriteHeader(functionsResponse.StatusCode)
-	w.Header().Set("content-type", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 	_, _ = w.Write(responseBody)
 }
 

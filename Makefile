@@ -40,7 +40,7 @@ test-js:
 	cd ./packages/wasm && pnpm run test
 
 lint:
-	export CGO_ENABLED=0 && golangci-lint run  -c .golangci.yml
+	export CGO_ENABLED=0 && golangci-lint run -c .golangci.yml --fix
 
 wasm:
 	mkdir -p ./packages/wasm/dist

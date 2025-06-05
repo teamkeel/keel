@@ -3,13 +3,13 @@ package schema
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/proto"
-	"golang.org/x/exp/slices"
 
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/schema/node"
@@ -74,7 +74,7 @@ func (scm *Builder) MakeFromString(schemaString string, configString string) (*p
 	})
 }
 
-// MakeFromFile constructs a proto.Schema from the given inputs
+// MakeFromFile constructs a proto.Schema from the given inputs.
 func (scm *Builder) MakeFromInputs(inputs *reader.Inputs) (*proto.Schema, error) {
 	scm.schemaFiles = inputs.SchemaFiles
 
@@ -190,7 +190,7 @@ func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema,
 
 // ValidateFromInputs will tyake the given inputs and build the ASTs and run all validators, including/excluding warnings
 // based on the given param. Similar with MakeFromInputs, this function avoide building the protoModels for increased
-// performance when only validation is required
+// performance when only validation is required.
 func (scm *Builder) ValidateFromInputs(inputs *reader.Inputs, includeWarnings bool) error {
 	scm.schemaFiles = inputs.SchemaFiles
 

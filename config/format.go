@@ -7,6 +7,7 @@ import (
 )
 
 // https://aws.amazon.com/rds/instance-types/
+
 type RDSInstanceTypeFormat struct{}
 
 var rdsInstanceTypeFormatRegex = regexp.MustCompile(`^db\.[\w\d]+\.[\w\d]+$`)

@@ -7,15 +7,15 @@ import (
 	"github.com/samber/lo"
 )
 
-// HasFiles checks if the given schema has any models or messages with fields that are files
+// HasFiles checks if the given schema has any models or messages with fields that are files.
 func (s *Schema) HasFiles() bool {
-	for _, model := range s.Models {
+	for _, model := range s.GetModels() {
 		if model.HasFiles() {
 			return true
 		}
 	}
 
-	for _, message := range s.Messages {
+	for _, message := range s.GetMessages() {
 		if messageHasFiles(s, message) {
 			return true
 		}
@@ -48,13 +48,13 @@ func (s *Schema) FindMessage(messageName string) *Message {
 
 // IsActionInputMessage returns true if the message is used to define an action's inputs.
 func (s *Schema) IsActionInputMessage(messageName string) bool {
-	for _, m := range s.Models {
+	for _, m := range s.GetModels() {
 		for _, a := range m.GetActions() {
-			if a.InputMessageName == messageName {
+			if a.GetInputMessageName() == messageName {
 				return true
 			}
 
-			msg := s.FindMessage(a.InputMessageName)
+			msg := s.FindMessage(a.GetInputMessageName())
 			if msg.hasMessage(s, messageName) {
 				return true
 			}
@@ -65,14 +65,14 @@ func (s *Schema) IsActionInputMessage(messageName string) bool {
 
 // IsActionResponseMessage returns true if the message is used to define an action's response.
 func (s *Schema) IsActionResponseMessage(messageName string) bool {
-	for _, m := range s.Models {
+	for _, m := range s.GetModels() {
 		for _, a := range m.GetActions() {
-			if a.ResponseMessageName == messageName {
+			if a.GetResponseMessageName() == messageName {
 				return true
 			}
 
-			if a.ResponseMessageName != "" {
-				msg := s.FindMessage(a.ResponseMessageName)
+			if a.GetResponseMessageName() != "" {
+				msg := s.FindMessage(a.GetResponseMessageName())
 				if msg.hasMessage(s, messageName) {
 					return true
 				}
@@ -82,15 +82,15 @@ func (s *Schema) IsActionResponseMessage(messageName string) bool {
 	return false
 }
 
-// hasMessage will check to see if a message has a field of type messageName recusively
+// hasMessage will check to see if a message has a field of type messageName recusively.
 func (m *Message) hasMessage(s *Schema, messageName string) bool {
-	for _, f := range m.Fields {
-		if f.Type.Type == Type_TYPE_MESSAGE {
-			if f.Type.MessageName.Value == messageName {
+	for _, f := range m.GetFields() {
+		if f.GetType().GetType() == Type_TYPE_MESSAGE {
+			if f.GetType().GetMessageName().GetValue() == messageName {
 				return true
 			}
 
-			msg := s.FindMessage(f.Type.MessageName.Value)
+			msg := s.FindMessage(f.GetType().GetMessageName().GetValue())
 			if msg.hasMessage(s, messageName) {
 				return true
 			}
@@ -101,8 +101,8 @@ func (m *Message) hasMessage(s *Schema, messageName string) bool {
 
 // ModelNames provides a (sorted) list of all the Model names used in the given schema.
 func (s *Schema) ModelNames() []string {
-	names := lo.Map(s.Models, func(x *Model, _ int) string {
-		return x.Name
+	names := lo.Map(s.GetModels(), func(x *Model, _ int) string {
+		return x.GetName()
 	})
 	sort.Strings(names)
 	return names
@@ -111,15 +111,15 @@ func (s *Schema) ModelNames() []string {
 // AllFields provides a list of all the model fields specified in the schema.
 func (s *Schema) AllFields() []*Field {
 	fields := []*Field{}
-	for _, model := range s.Models {
-		fields = append(fields, model.Fields...)
+	for _, model := range s.GetModels() {
+		fields = append(fields, model.GetFields()...)
 	}
 	return fields
 }
 
 func (s *Schema) FilterActions(filter func(op *Action) bool) (ops []*Action) {
-	for _, model := range s.Models {
-		actions := model.Actions
+	for _, model := range s.GetModels() {
+		actions := model.GetActions()
 
 		for _, o := range actions {
 			if filter(o) {
@@ -134,7 +134,7 @@ func (s *Schema) FilterActions(filter func(op *Action) bool) (ops []*Action) {
 // FindAction finds the action with the given name. Returns nil if action is not found.
 func (s *Schema) FindAction(actionName string) *Action {
 	actions := s.FilterActions(func(op *Action) bool {
-		return op.Name == actionName
+		return op.GetName() == actionName
 	})
 	if len(actions) != 1 {
 		return nil
@@ -142,10 +142,10 @@ func (s *Schema) FindAction(actionName string) *Action {
 	return actions[0]
 }
 
-// FindFlow finds the flow with the given name. Returns nil if a flow is not found. The matching is case insensitive
+// FindFlow finds the flow with the given name. Returns nil if a flow is not found. The matching is case insensitive.
 func (s *Schema) FindFlow(flowName string) *Flow {
-	for _, f := range s.Flows {
-		if strings.EqualFold(f.Name, flowName) {
+	for _, f := range s.GetFlows() {
+		if strings.EqualFold(f.GetName(), flowName) {
 			return f
 		}
 	}
@@ -166,16 +166,16 @@ func (s *Schema) FindEnum(enumName string) *Enum {
 
 // FindJob locates the job of the given name.
 func (s *Schema) FindJob(name string) *Job {
-	job, _ := lo.Find(s.Jobs, func(m *Job) bool {
-		return m.Name == name
+	job, _ := lo.Find(s.GetJobs(), func(m *Job) bool {
+		return m.GetName() == name
 	})
 	return job
 }
 
 // FindEventSubscribers locates the subscribers for the given event.
 func (s *Schema) FindEventSubscribers(event *Event) []*Subscriber {
-	subscribers := lo.Filter(s.Subscribers, func(m *Subscriber, _ int) bool {
-		return lo.Contains(m.EventNames, event.Name)
+	subscribers := lo.Filter(s.GetSubscribers(), func(m *Subscriber, _ int) bool {
+		return lo.Contains(m.GetEventNames(), event.GetName())
 	})
 	return subscribers
 }
@@ -184,12 +184,12 @@ func (s *Schema) FindEventSubscribers(event *Event) []*Subscriber {
 func (s *Schema) FindApiNames(modelName, actionName string) []string {
 	names := []string{}
 
-	for _, api := range s.Apis {
-		for _, apiModel := range api.ApiModels {
-			if apiModel.ModelName == modelName {
-				for _, action := range apiModel.ModelActions {
-					if action.ActionName == actionName {
-						names = append(names, api.Name)
+	for _, api := range s.GetApis() {
+		for _, apiModel := range api.GetApiModels() {
+			if apiModel.GetModelName() == modelName {
+				for _, action := range apiModel.GetModelActions() {
+					if action.GetActionName() == actionName {
+						names = append(names, api.GetName())
 					}
 				}
 			}
@@ -199,17 +199,17 @@ func (s *Schema) FindApiNames(modelName, actionName string) []string {
 	return names
 }
 
-// FlowNames returns an array with the names of all flows defined in this schema
+// FlowNames returns an array with the names of all flows defined in this schema.
 func (s *Schema) FlowNames() []string {
 	names := []string{}
-	for _, f := range s.Flows {
-		names = append(names, f.Name)
+	for _, f := range s.GetFlows() {
+		names = append(names, f.GetName())
 	}
 
 	return names
 }
 
-// HasFlows indicates if the schema has any flows defined
+// HasFlows indicates if the schema has any flows defined.
 func (s *Schema) HasFlows() bool {
-	return len(s.Flows) > 0
+	return len(s.GetFlows()) > 0
 }

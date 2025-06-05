@@ -13,7 +13,7 @@ import (
 
 var wheres = make(map[string]*expressions.Parser)
 
-// defaultWhere will cache the base CEL environment for a schema
+// defaultWhere will cache the base CEL environment for a schema.
 func defaultWhere(schema []*parser.AST) (*expressions.Parser, error) {
 	mutex.Lock()
 	defer mutex.Unlock()

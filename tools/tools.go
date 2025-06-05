@@ -9,7 +9,7 @@ import (
 	toolsproto "github.com/teamkeel/keel/tools/proto"
 )
 
-// GenerateTools will return a map of tool configurations generated for the given schema
+// GenerateTools will return a map of tool configurations generated for the given schema.
 func GenerateTools(ctx context.Context, schema *proto.Schema, config *config.ProjectConfig) ([]*toolsproto.Tool, error) {
 	if schema == nil {
 		return nil, nil

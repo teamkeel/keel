@@ -1,6 +1,6 @@
 package parser
 
-// Keywords
+// Keywords.
 const (
 	KeywordModel   = "model"
 	KeywordModels  = "models"
@@ -24,7 +24,7 @@ const (
 )
 
 // Built in Keel types. Worth noting a field type can also reference
-// another user-defined model
+// another user-defined model.
 const (
 	FieldTypeID        = "ID"        // a uuid or similar
 	FieldTypeText      = "Text"      // a string
@@ -41,7 +41,7 @@ const (
 	FieldTypeDuration  = "Duration"  // a time duration
 )
 
-// Types for Message fields
+// Types for Message fields.
 const (
 	MessageFieldTypeAny = "Any"
 )
@@ -67,7 +67,7 @@ func IsBuiltInFieldType(s string) bool {
 	return ok
 }
 
-// All possible action types
+// All possible action types.
 const (
 	ActionTypeGet    = "get"
 	ActionTypeCreate = "create"
@@ -75,7 +75,7 @@ const (
 	ActionTypeList   = "list"
 	ActionTypeDelete = "delete"
 
-	// Arbitrary function action types
+	// Arbitrary function action types.
 	ActionTypeRead  = "read"
 	ActionTypeWrite = "write"
 )

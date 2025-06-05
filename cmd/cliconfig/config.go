@@ -174,7 +174,7 @@ func (c *Config) GetSecrets(path, environment string) (map[string]string, error)
 
 func (c *Config) writeConfig(cfg interface{}) error {
 	reflectCfg := reflect.ValueOf(cfg)
-	for i := 0; i < reflectCfg.NumField(); i++ {
+	for i := range reflectCfg.NumField() {
 		k := reflectCfg.Type().Field(i).Name
 		v := reflectCfg.Field(i).Interface()
 

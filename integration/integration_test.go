@@ -25,6 +25,7 @@ import (
 
 var pattern = flag.String("pattern", "", "Pattern to match individual test case names")
 
+//nolint:tparallel
 func TestIntegration(t *gotest.T) {
 	t.Parallel()
 	entries, err := os.ReadDir("./testdata")

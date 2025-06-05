@@ -73,7 +73,7 @@ func (h *Handler) JobHandler(ctx context.Context, event *RunJobPayload) error {
 		return h.sendJobStatusWebhook(ctx, event, err, JobStatusFailed)
 	}
 
-	log.Infof("Running job %s", job.Name)
+	log.Infof("Running job %s", job.GetName())
 
 	_ = h.sendJobStatusWebhook(ctx, event, nil, JobStatusProcessing)
 
@@ -94,7 +94,7 @@ func (h *Handler) JobHandler(ctx context.Context, event *RunJobPayload) error {
 	}
 
 	inputs := map[string]any{}
-	if job.InputMessageName != "" {
+	if job.GetInputMessageName() != "" {
 		if event.ID == "" {
 			err = fmt.Errorf("no ref provided but job requires inputs")
 			return h.sendJobStatusWebhook(ctx, event, err, JobStatusFailed)
@@ -121,11 +121,11 @@ func (h *Handler) JobHandler(ctx context.Context, event *RunJobPayload) error {
 	}
 
 	trigger := functions.ManualTrigger
-	if job.Schedule != nil {
+	if job.GetSchedule() != nil {
 		trigger = functions.ScheduledTrigger
 	}
 
-	err = runtime.NewJobHandler(h.schema).RunJob(ctx, job.Name, inputs, trigger)
+	err = runtime.NewJobHandler(h.schema).RunJob(ctx, job.GetName(), inputs, trigger)
 	if err != nil {
 		return h.sendJobStatusWebhook(ctx, event, err, JobStatusFailed)
 	}

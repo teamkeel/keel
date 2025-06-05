@@ -52,7 +52,7 @@ func RunCelVisitor[T any](expression *parser.Expression, visitor Visitor[T]) (T,
 	return resolver.run(expression)
 }
 
-// CelVisitor steps through the CEL AST and calls out to the visitor
+// CelVisitor steps through the CEL AST and calls out to the visitor.
 type CelVisitor[T any] struct {
 	visitor    Visitor[T]
 	expression *parser.Expression
@@ -78,7 +78,7 @@ func (w *CelVisitor[T]) run(expression *parser.Expression) (T, error) {
 
 	w.ast = ast
 
-	if err := w.eval(checkedExpr.Expr, isComplexOperatorWithRespectTo(operators.LogicalAnd, checkedExpr.Expr), false); err != nil {
+	if err := w.eval(checkedExpr.GetExpr(), isComplexOperatorWithRespectTo(operators.LogicalAnd, checkedExpr.GetExpr()), false); err != nil {
 		return zero, err
 	}
 
@@ -88,7 +88,7 @@ func (w *CelVisitor[T]) run(expression *parser.Expression) (T, error) {
 func (w *CelVisitor[T]) eval(expr *exprpb.Expr, nested bool, inBinary bool) error {
 	var err error
 
-	switch expr.ExprKind.(type) {
+	switch expr.GetExprKind().(type) {
 	case *exprpb.Expr_ConstExpr, *exprpb.Expr_ListExpr, *exprpb.Expr_SelectExpr, *exprpb.Expr_IdentExpr:
 		if !inBinary {
 			err := w.visitor.StartTerm(false)
@@ -98,7 +98,7 @@ func (w *CelVisitor[T]) eval(expr *exprpb.Expr, nested bool, inBinary bool) erro
 		}
 	}
 
-	switch expr.ExprKind.(type) {
+	switch expr.GetExprKind().(type) {
 	case *exprpb.Expr_CallExpr:
 		err = w.visitor.StartTerm(nested)
 		if err != nil {
@@ -135,10 +135,10 @@ func (w *CelVisitor[T]) eval(expr *exprpb.Expr, nested bool, inBinary bool) erro
 			return err
 		}
 	default:
-		return fmt.Errorf("no support for expr type: %v", expr.ExprKind)
+		return fmt.Errorf("no support for expr type: %v", expr.GetExprKind())
 	}
 
-	switch expr.ExprKind.(type) {
+	switch expr.GetExprKind().(type) {
 	case *exprpb.Expr_ConstExpr, *exprpb.Expr_ListExpr, *exprpb.Expr_SelectExpr, *exprpb.Expr_IdentExpr:
 		if !inBinary {
 			err := w.visitor.EndTerm(false)
@@ -296,7 +296,7 @@ func (w *CelVisitor[T]) listExpr(expr *exprpb.Expr) error {
 		return w.constArray(expr)
 	}
 
-	switch elems[0].ExprKind.(type) {
+	switch elems[0].GetExprKind().(type) {
 	case *exprpb.Expr_IdentExpr:
 		return w.identArray(expr)
 	case *exprpb.Expr_SelectExpr:
@@ -305,7 +305,7 @@ func (w *CelVisitor[T]) listExpr(expr *exprpb.Expr) error {
 		return w.constArray(expr)
 	}
 
-	return fmt.Errorf("unexpected expr type: %s", expr.ExprKind)
+	return fmt.Errorf("unexpected expr type: %s", expr.GetExprKind())
 }
 
 func (w *CelVisitor[T]) constArray(expr *exprpb.Expr) error {
@@ -329,7 +329,7 @@ func (w *CelVisitor[T]) identArray(expr *exprpb.Expr) error {
 
 	arr := make([]*parser.ExpressionIdent, len(elems))
 	for i, elem := range elems {
-		switch elem.ExprKind.(type) {
+		switch elem.GetExprKind().(type) {
 		case *exprpb.Expr_IdentExpr:
 			s := elem.GetIdentExpr()
 
@@ -363,7 +363,7 @@ func (w *CelVisitor[T]) identArray(expr *exprpb.Expr) error {
 				return err
 			}
 		default:
-			return fmt.Errorf("not an ident or select: %v", expr.ExprKind)
+			return fmt.Errorf("not an ident or select: %v", expr.GetExprKind())
 		}
 	}
 
@@ -401,7 +401,7 @@ func (w *CelVisitor[T]) identExpr(expr *exprpb.Expr) error {
 func (w *CelVisitor[T]) SelectExpr(expr *exprpb.Expr) error {
 	sel := expr.GetSelectExpr()
 
-	switch expr.ExprKind.(type) {
+	switch expr.GetExprKind().(type) {
 	case *exprpb.Expr_CallExpr:
 		err := w.eval(sel.GetOperand(), true, true)
 		if err != nil {
@@ -423,9 +423,9 @@ func (w *CelVisitor[T]) selectToIdent(expr *exprpb.Expr) (*parser.ExpressionIden
 
 	offset := 0
 	for {
-		if s, ok := e.ExprKind.(*exprpb.Expr_SelectExpr); ok {
-			offsets := w.ast.NativeRep().SourceInfo().OffsetRanges()[s.SelectExpr.Operand.Id]
-			start := w.ast.NativeRep().SourceInfo().GetStartLocation(s.SelectExpr.Operand.Id)
+		if s, ok := e.GetExprKind().(*exprpb.Expr_SelectExpr); ok {
+			offsets := w.ast.NativeRep().SourceInfo().OffsetRanges()[s.SelectExpr.GetOperand().GetId()]
+			start := w.ast.NativeRep().SourceInfo().GetStartLocation(s.SelectExpr.GetOperand().GetId())
 
 			ident.Pos = lexer.Position{
 				Filename: w.expression.Pos.Filename,
@@ -437,14 +437,14 @@ func (w *CelVisitor[T]) selectToIdent(expr *exprpb.Expr) (*parser.ExpressionIden
 			offset += len(s.SelectExpr.GetField()) + 1
 
 			ident.Fragments = append([]string{s.SelectExpr.GetField()}, ident.Fragments...)
-			e = s.SelectExpr.Operand
-		} else if _, ok := e.ExprKind.(*exprpb.Expr_IdentExpr); ok {
-			offset += len(e.GetIdentExpr().Name)
+			e = s.SelectExpr.GetOperand()
+		} else if _, ok := e.GetExprKind().(*exprpb.Expr_IdentExpr); ok {
+			offset += len(e.GetIdentExpr().GetName())
 
-			ident.Fragments = append([]string{e.GetIdentExpr().Name}, ident.Fragments...)
+			ident.Fragments = append([]string{e.GetIdentExpr().GetName()}, ident.Fragments...)
 			break
 		} else {
-			return nil, fmt.Errorf("no support for expr kind in select: %v", expr.ExprKind)
+			return nil, fmt.Errorf("no support for expr kind in select: %v", expr.GetExprKind())
 		}
 	}
 
@@ -510,7 +510,7 @@ func isSamePrecedence(op string, expr *exprpb.Expr) bool {
 }
 
 func toNative(c *exprpb.Constant) (any, error) {
-	switch c.ConstantKind.(type) {
+	switch c.GetConstantKind().(type) {
 	case *exprpb.Constant_BoolValue:
 		return c.GetBoolValue(), nil
 	case *exprpb.Constant_DoubleValue:

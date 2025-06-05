@@ -78,9 +78,9 @@ func TestGeneration(t *testing.T) {
 			jsonSchema := openapi.OpenAPI{}
 			switch c.schemaType {
 			case apiType:
-				jsonSchema = openapi.Generate(context.Background(), schema, schema.Apis[0])
+				jsonSchema = openapi.Generate(context.Background(), schema, schema.GetApis()[0])
 			case jobType:
-				jsonSchema = openapi.GenerateJob(context.Background(), schema, schema.Jobs[0].Name)
+				jsonSchema = openapi.GenerateJob(context.Background(), schema, schema.GetJobs()[0].GetName())
 			case flowType:
 				jsonSchema = openapi.GenerateFlows(context.Background(), schema)
 			}

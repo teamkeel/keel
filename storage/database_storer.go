@@ -13,7 +13,7 @@ type DbStore struct {
 	db db.Database
 }
 
-// Make sure DbStore implements the storage.Storer interface. Any missing methods will cause a compile error
+// Make sure DbStore implements the storage.Storer interface. Any missing methods will cause a compile error.
 var _ Storer = &DbStore{}
 
 const dbTable = "keel_storage" // table where files will be stored
@@ -24,7 +24,7 @@ type fileData struct {
 	Data        []byte
 }
 
-// NewDbStore will return a Storage service for files that is db based
+// NewDbStore will return a Storage service for files that is db based.
 func NewDbStore(ctx context.Context, db db.Database) (*DbStore, error) {
 	svc := &DbStore{
 		db: db,
@@ -52,7 +52,7 @@ func (s *DbStore) setupDB(ctx context.Context) error {
 	return nil
 }
 
-// decodeDataURL will take a dataURL and return it as a FileData struct
+// decodeDataURL will take a dataURL and return it as a FileData struct.
 func decodeDataURL(dataURL string) (fileData, error) {
 	durl, err := dataurl.DecodeString(dataURL)
 	if err != nil {

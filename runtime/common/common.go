@@ -97,7 +97,7 @@ const (
 	ErrMethodNotFound = "ERR_ACTION_NOT_FOUND"
 	// The HTTP method is not allowed for this request.
 	ErrHttpMethodNotAllowed = "ERR_HTTP_METHOD_NOT_ALLOWED"
-	// An unexpected error happened from user code
+	// An unexpected error happened from user code.
 	ErrUnknown = "ERR_UNKNOWN"
 )
 
@@ -297,7 +297,7 @@ func parseJsonBody(r *http.Request) (data any, err error) {
 }
 
 func HasContentType(headers http.Header, mimetype string) bool {
-	contentType := headers.Get("Content-type")
+	contentType := headers.Get("Content-Type")
 	if contentType == "" {
 		return mimetype == "application/octet-stream"
 	}

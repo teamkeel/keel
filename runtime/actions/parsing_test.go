@@ -42,8 +42,8 @@ model Post {
 	err = json.Unmarshal([]byte(input), &data)
 	assert.NoError(t, err)
 
-	message := scope.Schema.FindMessage(action.InputMessageName)
-	isFunction := action.Implementation == proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
+	message := scope.Schema.FindMessage(action.GetInputMessageName())
+	isFunction := action.GetImplementation() == proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
 
 	parsed, err := actions.TransformInputs(scope.Schema, message, data, isFunction)
 	assert.NoError(t, err)
@@ -84,8 +84,8 @@ model Post {
 	err = json.Unmarshal([]byte(input), &data)
 	assert.NoError(t, err)
 
-	message := scope.Schema.FindMessage(action.InputMessageName)
-	isFunction := action.Implementation == proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
+	message := scope.Schema.FindMessage(action.GetInputMessageName())
+	isFunction := action.GetImplementation() == proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
 
 	parsed, err := actions.TransformInputs(scope.Schema, message, data, isFunction)
 	assert.NoError(t, err)
@@ -131,8 +131,8 @@ model Post {
 	err = json.Unmarshal([]byte(input), &data)
 	assert.NoError(t, err)
 
-	message := scope.Schema.FindMessage(action.InputMessageName)
-	isFunction := action.Implementation == proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
+	message := scope.Schema.FindMessage(action.GetInputMessageName())
+	isFunction := action.GetImplementation() == proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
 
 	parsed, err := actions.TransformInputs(scope.Schema, message, data, isFunction)
 	assert.NoError(t, err)
@@ -199,8 +199,8 @@ model Post {
 	err = json.Unmarshal([]byte(input), &data)
 	assert.NoError(t, err)
 
-	message := scope.Schema.FindMessage(action.InputMessageName)
-	isFunction := action.Implementation == proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
+	message := scope.Schema.FindMessage(action.GetInputMessageName())
+	isFunction := action.GetImplementation() == proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
 
 	parsed, err := actions.TransformInputs(scope.Schema, message, data, isFunction)
 	assert.NoError(t, err)
@@ -259,8 +259,8 @@ model Post {
 	err = json.Unmarshal([]byte(input), &data)
 	assert.NoError(t, err)
 
-	message := scope.Schema.FindMessage(action.InputMessageName)
-	isFunction := action.Implementation == proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
+	message := scope.Schema.FindMessage(action.GetInputMessageName())
+	isFunction := action.GetImplementation() == proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
 
 	parsed, err := actions.TransformInputs(scope.Schema, message, data, isFunction)
 	assert.NoError(t, err)
@@ -305,8 +305,8 @@ message FileResponse {
 	err = json.Unmarshal([]byte(input), &data)
 	assert.NoError(t, err)
 
-	message := scope.Schema.FindMessage(action.InputMessageName)
-	isFunction := action.Implementation == proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
+	message := scope.Schema.FindMessage(action.GetInputMessageName())
+	isFunction := action.GetImplementation() == proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
 
 	parsed, err := actions.TransformInputs(scope.Schema, message, data, isFunction)
 	assert.NoError(t, err)

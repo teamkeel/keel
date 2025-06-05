@@ -21,23 +21,23 @@ func IsEnabled(dir string, s *proto.Schema, cfg *config.ProjectConfig) bool {
 func HasFunctions(sch *proto.Schema, cfg *config.ProjectConfig) bool {
 	var actions []*proto.Action
 
-	for _, model := range sch.Models {
-		actions = append(actions, model.Actions...)
+	for _, model := range sch.GetModels() {
+		actions = append(actions, model.GetActions()...)
 	}
 
 	hasCustomFunctions := lo.SomeBy(actions, func(o *proto.Action) bool {
-		return o.Implementation == proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
+		return o.GetImplementation() == proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM
 	})
 
 	hasHooks := len(cfg.Auth.EnabledHooks()) > 0
 
-	hasJobs := len(sch.Jobs) > 0
+	hasJobs := len(sch.GetJobs()) > 0
 
-	hasSubscribers := len(sch.Subscribers) > 0
+	hasSubscribers := len(sch.GetSubscribers()) > 0
 
-	hasRoutes := len(sch.Routes) > 0
+	hasRoutes := len(sch.GetRoutes()) > 0
 
-	hasFlows := len(sch.Flows) > 0
+	hasFlows := len(sch.GetFlows()) > 0
 
 	return hasCustomFunctions || hasHooks || hasJobs || hasSubscribers || hasRoutes || hasFlows
 }

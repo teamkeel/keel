@@ -6,7 +6,7 @@ import (
 )
 
 // Writer can be used by any codegeneration utility to build up a code string, and it is
-// agnostic to the target language being generated
+// agnostic to the target language being generated.
 type Writer struct {
 	b      strings.Builder
 	indent int
