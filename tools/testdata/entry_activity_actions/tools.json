@@ -1,217 +1,332 @@
 {
-  "tools": [
+  "toolConfigs": [
     {
       "id": "clean-comments",
-      "name": "Clean comments",
-      "actionName": "cleanComments",
-      "apiNames": ["Api"],
-      "modelName": "BlogPost",
-      "actionType": "ACTION_TYPE_WRITE",
-      "implementation": "ACTION_IMPLEMENTATION_CUSTOM",
-      "inputs": [
-        {
-          "fieldLocation": {
-            "path": "$.id"
-          },
-          "fieldType": "TYPE_ID",
-          "displayName": "Id",
-          "visible": true,
-          "lookupAction": {
-            "toolId": "list-blog-posts"
-          },
-          "getEntryAction": {
-            "toolId": "get-blog-post",
-            "data": [
-              {
-                "key": "$.id",
-                "path": {
-                  "path": "$.id"
+      "actionConfig": {
+        "id": "clean-comments",
+        "name": "Clean comments",
+        "actionName": "cleanComments",
+        "apiNames": [
+          "Api"
+        ],
+        "modelName": "BlogPost",
+        "actionType": "ACTION_TYPE_WRITE",
+        "implementation": "ACTION_IMPLEMENTATION_CUSTOM",
+        "inputs": [
+          {
+            "fieldLocation": {
+              "path": "$.id"
+            },
+            "fieldType": "TYPE_ID",
+            "displayName": "Id",
+            "visible": true,
+            "lookupAction": {
+              "toolId": "list-blog-posts"
+            },
+            "getEntryAction": {
+              "toolId": "get-blog-post",
+              "data": [
+                {
+                  "key": "$.id",
+                  "path": {
+                    "path": "$.id"
+                  }
                 }
-              }
-            ]
-          },
-          "modelName": "BlogPost",
-          "fieldName": "id"
-        }
-      ],
-      "title": {
-        "template": "Clean comments"
-      },
-      "entitySingle": "blog post",
-      "entityPlural": "blog posts",
-      "capabilities": {},
-      "filterConfig": {}
+              ]
+            },
+            "modelName": "BlogPost",
+            "fieldName": "id"
+          }
+        ],
+        "title": {
+          "template": "Clean comments"
+        },
+        "entitySingle": "blog post",
+        "entityPlural": "blog posts",
+        "capabilities": {},
+        "filterConfig": {}
+      }
     },
     {
       "id": "create-blog-post",
-      "name": "Create blog post",
-      "actionName": "createBlogPost",
-      "apiNames": ["Api"],
-      "modelName": "BlogPost",
-      "actionType": "ACTION_TYPE_CREATE",
-      "implementation": "ACTION_IMPLEMENTATION_AUTO",
-      "response": [
-        {
-          "fieldLocation": {
-            "path": "$.id"
-          },
-          "fieldType": "TYPE_ID",
-          "displayName": "Id",
-          "displayOrder": 1,
-          "visible": true,
-          "modelName": "BlogPost",
-          "fieldName": "id"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.createdAt"
-          },
-          "fieldType": "TYPE_DATETIME",
-          "displayName": "Created at",
-          "displayOrder": 2,
-          "visible": true,
-          "modelName": "BlogPost",
-          "fieldName": "createdAt"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.updatedAt"
-          },
-          "fieldType": "TYPE_DATETIME",
-          "displayName": "Updated at",
-          "displayOrder": 3,
-          "visible": true,
-          "modelName": "BlogPost",
-          "fieldName": "updatedAt"
-        }
-      ],
-      "title": {
-        "template": "Create blog post"
-      },
-      "entitySingle": "blog post",
-      "entityPlural": "blog posts",
-      "capabilities": {},
-      "getEntryAction": {
-        "toolId": "get-blog-post",
-        "data": [
+      "actionConfig": {
+        "id": "create-blog-post",
+        "name": "Create blog post",
+        "actionName": "createBlogPost",
+        "apiNames": [
+          "Api"
+        ],
+        "modelName": "BlogPost",
+        "actionType": "ACTION_TYPE_CREATE",
+        "implementation": "ACTION_IMPLEMENTATION_AUTO",
+        "response": [
           {
-            "key": "$.id",
-            "path": {
+            "fieldLocation": {
               "path": "$.id"
-            }
+            },
+            "fieldType": "TYPE_ID",
+            "displayName": "Id",
+            "displayOrder": 1,
+            "visible": true,
+            "modelName": "BlogPost",
+            "fieldName": "id"
+          },
+          {
+            "fieldLocation": {
+              "path": "$.createdAt"
+            },
+            "fieldType": "TYPE_DATETIME",
+            "displayName": "Created at",
+            "displayOrder": 2,
+            "visible": true,
+            "modelName": "BlogPost",
+            "fieldName": "createdAt"
+          },
+          {
+            "fieldLocation": {
+              "path": "$.updatedAt"
+            },
+            "fieldType": "TYPE_DATETIME",
+            "displayName": "Updated at",
+            "displayOrder": 3,
+            "visible": true,
+            "modelName": "BlogPost",
+            "fieldName": "updatedAt"
           }
-        ]
-      },
-      "filterConfig": {}
+        ],
+        "title": {
+          "template": "Create blog post"
+        },
+        "entitySingle": "blog post",
+        "entityPlural": "blog posts",
+        "capabilities": {},
+        "getEntryAction": {
+          "toolId": "get-blog-post",
+          "data": [
+            {
+              "key": "$.id",
+              "path": {
+                "path": "$.id"
+              }
+            }
+          ]
+        },
+        "filterConfig": {}
+      }
     },
     {
       "id": "deactivate-blog-post",
-      "name": "Deactivate blog post",
-      "actionName": "deactivateBlogPost",
-      "apiNames": ["Api"],
-      "modelName": "BlogPost",
-      "actionType": "ACTION_TYPE_UPDATE",
-      "implementation": "ACTION_IMPLEMENTATION_AUTO",
-      "inputs": [
-        {
-          "fieldLocation": {
-            "path": "$.where"
-          },
-          "fieldType": "TYPE_MESSAGE",
-          "displayName": "Where",
-          "visible": true,
-          "scope": "FILTERS"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.where.id"
-          },
-          "fieldType": "TYPE_ID",
-          "displayName": "Id",
-          "visible": true,
-          "lookupAction": {
-            "toolId": "list-blog-posts"
-          },
-          "modelName": "BlogPost",
-          "fieldName": "id",
-          "scope": "FILTERS"
-        }
-      ],
-      "response": [
-        {
-          "fieldLocation": {
-            "path": "$.id"
-          },
-          "fieldType": "TYPE_ID",
-          "displayName": "Id",
-          "displayOrder": 1,
-          "visible": true,
-          "modelName": "BlogPost",
-          "fieldName": "id"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.createdAt"
-          },
-          "fieldType": "TYPE_DATETIME",
-          "displayName": "Created at",
-          "displayOrder": 2,
-          "visible": true,
-          "modelName": "BlogPost",
-          "fieldName": "createdAt"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.updatedAt"
-          },
-          "fieldType": "TYPE_DATETIME",
-          "displayName": "Updated at",
-          "displayOrder": 3,
-          "visible": true,
-          "modelName": "BlogPost",
-          "fieldName": "updatedAt"
-        }
-      ],
-      "title": {
-        "template": "Deactivate blog post"
-      },
-      "entitySingle": "blog post",
-      "entityPlural": "blog posts",
-      "capabilities": {},
-      "getEntryAction": {
-        "toolId": "get-blog-post",
-        "data": [
+      "actionConfig": {
+        "id": "deactivate-blog-post",
+        "name": "Deactivate blog post",
+        "actionName": "deactivateBlogPost",
+        "apiNames": [
+          "Api"
+        ],
+        "modelName": "BlogPost",
+        "actionType": "ACTION_TYPE_UPDATE",
+        "implementation": "ACTION_IMPLEMENTATION_AUTO",
+        "inputs": [
           {
-            "key": "$.id",
-            "path": {
-              "path": "$.id"
-            }
+            "fieldLocation": {
+              "path": "$.where"
+            },
+            "fieldType": "TYPE_MESSAGE",
+            "displayName": "Where",
+            "visible": true,
+            "scope": "FILTERS"
+          },
+          {
+            "fieldLocation": {
+              "path": "$.where.id"
+            },
+            "fieldType": "TYPE_ID",
+            "displayName": "Id",
+            "visible": true,
+            "lookupAction": {
+              "toolId": "list-blog-posts"
+            },
+            "modelName": "BlogPost",
+            "fieldName": "id",
+            "scope": "FILTERS"
           }
-        ]
-      },
-      "filterConfig": {}
+        ],
+        "response": [
+          {
+            "fieldLocation": {
+              "path": "$.id"
+            },
+            "fieldType": "TYPE_ID",
+            "displayName": "Id",
+            "displayOrder": 1,
+            "visible": true,
+            "modelName": "BlogPost",
+            "fieldName": "id"
+          },
+          {
+            "fieldLocation": {
+              "path": "$.createdAt"
+            },
+            "fieldType": "TYPE_DATETIME",
+            "displayName": "Created at",
+            "displayOrder": 2,
+            "visible": true,
+            "modelName": "BlogPost",
+            "fieldName": "createdAt"
+          },
+          {
+            "fieldLocation": {
+              "path": "$.updatedAt"
+            },
+            "fieldType": "TYPE_DATETIME",
+            "displayName": "Updated at",
+            "displayOrder": 3,
+            "visible": true,
+            "modelName": "BlogPost",
+            "fieldName": "updatedAt"
+          }
+        ],
+        "title": {
+          "template": "Deactivate blog post"
+        },
+        "entitySingle": "blog post",
+        "entityPlural": "blog posts",
+        "capabilities": {},
+        "getEntryAction": {
+          "toolId": "get-blog-post",
+          "data": [
+            {
+              "key": "$.id",
+              "path": {
+                "path": "$.id"
+              }
+            }
+          ]
+        },
+        "filterConfig": {}
+      }
     },
     {
       "id": "delete-blog-post",
-      "name": "Delete blog post",
-      "actionName": "deleteBlogPost",
-      "apiNames": ["Api"],
-      "modelName": "BlogPost",
-      "actionType": "ACTION_TYPE_DELETE",
-      "implementation": "ACTION_IMPLEMENTATION_AUTO",
-      "inputs": [
-        {
-          "fieldLocation": {
-            "path": "$.id"
+      "actionConfig": {
+        "id": "delete-blog-post",
+        "name": "Delete blog post",
+        "actionName": "deleteBlogPost",
+        "apiNames": [
+          "Api"
+        ],
+        "modelName": "BlogPost",
+        "actionType": "ACTION_TYPE_DELETE",
+        "implementation": "ACTION_IMPLEMENTATION_AUTO",
+        "inputs": [
+          {
+            "fieldLocation": {
+              "path": "$.id"
+            },
+            "fieldType": "TYPE_ID",
+            "displayName": "Id",
+            "visible": true,
+            "lookupAction": {
+              "toolId": "list-blog-posts"
+            },
+            "getEntryAction": {
+              "toolId": "get-blog-post",
+              "data": [
+                {
+                  "key": "$.id",
+                  "path": {
+                    "path": "$.id"
+                  }
+                }
+              ]
+            },
+            "modelName": "BlogPost",
+            "fieldName": "id"
+          }
+        ],
+        "title": {
+          "template": "Delete blog post"
+        },
+        "entitySingle": "blog post",
+        "entityPlural": "blog posts",
+        "capabilities": {},
+        "filterConfig": {}
+      }
+    },
+    {
+      "id": "get-blog-post",
+      "actionConfig": {
+        "id": "get-blog-post",
+        "name": "Get blog post",
+        "actionName": "getBlogPost",
+        "apiNames": [
+          "Api"
+        ],
+        "modelName": "BlogPost",
+        "actionType": "ACTION_TYPE_GET",
+        "implementation": "ACTION_IMPLEMENTATION_AUTO",
+        "inputs": [
+          {
+            "fieldLocation": {
+              "path": "$.id"
+            },
+            "fieldType": "TYPE_ID",
+            "displayName": "Id",
+            "visible": true,
+            "lookupAction": {
+              "toolId": "list-blog-posts"
+            },
+            "modelName": "BlogPost",
+            "fieldName": "id"
+          }
+        ],
+        "response": [
+          {
+            "fieldLocation": {
+              "path": "$.id"
+            },
+            "fieldType": "TYPE_ID",
+            "displayName": "Id",
+            "displayOrder": 1,
+            "visible": true,
+            "modelName": "BlogPost",
+            "fieldName": "id"
           },
-          "fieldType": "TYPE_ID",
-          "displayName": "Id",
-          "visible": true,
-          "lookupAction": {
-            "toolId": "list-blog-posts"
+          {
+            "fieldLocation": {
+              "path": "$.createdAt"
+            },
+            "fieldType": "TYPE_DATETIME",
+            "displayName": "Created at",
+            "displayOrder": 2,
+            "visible": true,
+            "modelName": "BlogPost",
+            "fieldName": "createdAt"
           },
-          "getEntryAction": {
-            "toolId": "get-blog-post",
+          {
+            "fieldLocation": {
+              "path": "$.updatedAt"
+            },
+            "fieldType": "TYPE_DATETIME",
+            "displayName": "Updated at",
+            "displayOrder": 3,
+            "visible": true,
+            "modelName": "BlogPost",
+            "fieldName": "updatedAt"
+          }
+        ],
+        "title": {
+          "template": "Blog post"
+        },
+        "entitySingle": "blog post",
+        "entityPlural": "blog posts",
+        "capabilities": {
+          "comments": true,
+          "audit": true
+        },
+        "entryActivityActions": [
+          {
+            "toolId": "clean-comments",
             "data": [
               {
                 "key": "$.id",
@@ -219,384 +334,351 @@
                   "path": "$.id"
                 }
               }
-            ]
+            ],
+            "displayOrder": 1,
+            "asDialog": true
           },
-          "modelName": "BlogPost",
-          "fieldName": "id"
-        }
-      ],
-      "title": {
-        "template": "Delete blog post"
-      },
-      "entitySingle": "blog post",
-      "entityPlural": "blog posts",
-      "capabilities": {},
-      "filterConfig": {}
-    },
-    {
-      "id": "get-blog-post",
-      "name": "Get blog post",
-      "actionName": "getBlogPost",
-      "apiNames": ["Api"],
-      "modelName": "BlogPost",
-      "actionType": "ACTION_TYPE_GET",
-      "implementation": "ACTION_IMPLEMENTATION_AUTO",
-      "inputs": [
-        {
-          "fieldLocation": {
-            "path": "$.id"
-          },
-          "fieldType": "TYPE_ID",
-          "displayName": "Id",
-          "visible": true,
-          "lookupAction": {
-            "toolId": "list-blog-posts"
-          },
-          "modelName": "BlogPost",
-          "fieldName": "id"
-        }
-      ],
-      "response": [
-        {
-          "fieldLocation": {
-            "path": "$.id"
-          },
-          "fieldType": "TYPE_ID",
-          "displayName": "Id",
-          "displayOrder": 1,
-          "visible": true,
-          "modelName": "BlogPost",
-          "fieldName": "id"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.createdAt"
-          },
-          "fieldType": "TYPE_DATETIME",
-          "displayName": "Created at",
-          "displayOrder": 2,
-          "visible": true,
-          "modelName": "BlogPost",
-          "fieldName": "createdAt"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.updatedAt"
-          },
-          "fieldType": "TYPE_DATETIME",
-          "displayName": "Updated at",
-          "displayOrder": 3,
-          "visible": true,
-          "modelName": "BlogPost",
-          "fieldName": "updatedAt"
-        }
-      ],
-      "title": {
-        "template": "Blog post"
-      },
-      "entitySingle": "blog post",
-      "entityPlural": "blog posts",
-      "capabilities": {
-        "comments": true,
-        "audit": true
-      },
-      "entryActivityActions": [
-        {
-          "toolId": "clean-comments",
-          "data": [
-            {
-              "key": "$.id",
-              "path": {
-                "path": "$.id"
+          {
+            "toolId": "deactivate-blog-post",
+            "data": [
+              {
+                "key": "$.where.id",
+                "path": {
+                  "path": "$.id"
+                }
               }
-            }
-          ],
-          "displayOrder": 1,
-          "asDialog": true
-        },
-        {
-          "toolId": "deactivate-blog-post",
-          "data": [
-            {
-              "key": "$.where.id",
-              "path": {
-                "path": "$.id"
+            ],
+            "displayOrder": 2,
+            "asDialog": true
+          },
+          {
+            "toolId": "read-comments",
+            "data": [
+              {
+                "key": "$.id",
+                "path": {
+                  "path": "$.id"
+                }
               }
-            }
-          ],
-          "displayOrder": 2,
-          "asDialog": true
-        },
-        {
-          "toolId": "read-comments",
-          "data": [
-            {
-              "key": "$.id",
-              "path": {
-                "path": "$.id"
+            ],
+            "displayOrder": 3,
+            "asDialog": false
+          },
+          {
+            "toolId": "update-blog-post",
+            "data": [
+              {
+                "key": "$.where.id",
+                "path": {
+                  "path": "$.id"
+                }
               }
-            }
-          ],
-          "displayOrder": 3,
-          "asDialog": false
-        },
-        {
-          "toolId": "update-blog-post",
-          "data": [
-            {
-              "key": "$.where.id",
-              "path": {
-                "path": "$.id"
+            ],
+            "displayOrder": 4,
+            "asDialog": true
+          },
+          {
+            "toolId": "delete-blog-post",
+            "data": [
+              {
+                "key": "$.id",
+                "path": {
+                  "path": "$.id"
+                }
               }
-            }
-          ],
-          "displayOrder": 4,
-          "asDialog": true
+            ],
+            "displayOrder": 5,
+            "asDialog": true
+          }
+        ],
+        "createEntryAction": {
+          "toolId": "create-blog-post"
         },
-        {
-          "toolId": "delete-blog-post",
-          "data": [
-            {
-              "key": "$.id",
-              "path": {
-                "path": "$.id"
-              }
-            }
-          ],
-          "displayOrder": 5,
-          "asDialog": true
-        }
-      ],
-      "createEntryAction": {
-        "toolId": "create-blog-post"
-      },
-      "displayLayout": {
-        "type": "RECORD",
-        "recordConfig": {}
-      },
-      "filterConfig": {}
+        "displayLayout": {
+          "type": "RECORD",
+          "recordConfig": {}
+        },
+        "filterConfig": {}
+      }
     },
     {
       "id": "list-blog-posts",
-      "name": "List blog posts",
-      "actionName": "listBlogPosts",
-      "apiNames": ["Api"],
-      "modelName": "BlogPost",
-      "actionType": "ACTION_TYPE_LIST",
-      "implementation": "ACTION_IMPLEMENTATION_AUTO",
-      "inputs": [
-        {
-          "fieldLocation": {
-            "path": "$.first"
+      "actionConfig": {
+        "id": "list-blog-posts",
+        "name": "List blog posts",
+        "actionName": "listBlogPosts",
+        "apiNames": [
+          "Api"
+        ],
+        "modelName": "BlogPost",
+        "actionType": "ACTION_TYPE_LIST",
+        "implementation": "ACTION_IMPLEMENTATION_AUTO",
+        "inputs": [
+          {
+            "fieldLocation": {
+              "path": "$.first"
+            },
+            "fieldType": "TYPE_INT",
+            "displayName": "First",
+            "visible": true,
+            "scope": "PAGINATION"
           },
-          "fieldType": "TYPE_INT",
-          "displayName": "First",
-          "visible": true,
-          "scope": "PAGINATION"
+          {
+            "fieldLocation": {
+              "path": "$.after"
+            },
+            "fieldType": "TYPE_STRING",
+            "displayName": "After",
+            "displayOrder": 1,
+            "visible": true,
+            "scope": "PAGINATION"
+          },
+          {
+            "fieldLocation": {
+              "path": "$.last"
+            },
+            "fieldType": "TYPE_INT",
+            "displayName": "Last",
+            "displayOrder": 2,
+            "visible": true,
+            "scope": "PAGINATION"
+          },
+          {
+            "fieldLocation": {
+              "path": "$.before"
+            },
+            "fieldType": "TYPE_STRING",
+            "displayName": "Before",
+            "displayOrder": 3,
+            "visible": true,
+            "scope": "PAGINATION"
+          },
+          {
+            "fieldLocation": {
+              "path": "$.limit"
+            },
+            "fieldType": "TYPE_INT",
+            "displayName": "Limit",
+            "displayOrder": 4,
+            "visible": true,
+            "scope": "PAGINATION"
+          },
+          {
+            "fieldLocation": {
+              "path": "$.offset"
+            },
+            "fieldType": "TYPE_INT",
+            "displayName": "Offset",
+            "displayOrder": 5,
+            "visible": true,
+            "scope": "PAGINATION"
+          }
+        ],
+        "response": [
+          {
+            "fieldLocation": {
+              "path": "$.pageInfo"
+            },
+            "fieldType": "TYPE_OBJECT",
+            "displayName": "PageInfo",
+            "scope": "PAGINATION"
+          },
+          {
+            "fieldLocation": {
+              "path": "$.pageInfo.count"
+            },
+            "fieldType": "TYPE_INT",
+            "displayName": "Count",
+            "scope": "PAGINATION"
+          },
+          {
+            "fieldLocation": {
+              "path": "$.pageInfo.totalCount"
+            },
+            "fieldType": "TYPE_INT",
+            "displayName": "Total count",
+            "scope": "PAGINATION"
+          },
+          {
+            "fieldLocation": {
+              "path": "$.pageInfo.hasNextPage"
+            },
+            "fieldType": "TYPE_BOOL",
+            "displayName": "Has next page",
+            "scope": "PAGINATION"
+          },
+          {
+            "fieldLocation": {
+              "path": "$.pageInfo.startCursor"
+            },
+            "fieldType": "TYPE_STRING",
+            "displayName": "Start cursor",
+            "scope": "PAGINATION"
+          },
+          {
+            "fieldLocation": {
+              "path": "$.pageInfo.endCursor"
+            },
+            "fieldType": "TYPE_STRING",
+            "displayName": "End cursor",
+            "scope": "PAGINATION"
+          },
+          {
+            "fieldLocation": {
+              "path": "$.pageInfo.pageNumber"
+            },
+            "fieldType": "TYPE_INT",
+            "displayName": "Page Number",
+            "scope": "PAGINATION"
+          },
+          {
+            "fieldLocation": {
+              "path": "$.results[*].id"
+            },
+            "fieldType": "TYPE_ID",
+            "displayName": "Id",
+            "displayOrder": 1,
+            "visible": true,
+            "modelName": "BlogPost",
+            "fieldName": "id"
+          },
+          {
+            "fieldLocation": {
+              "path": "$.results[*].createdAt"
+            },
+            "fieldType": "TYPE_DATETIME",
+            "displayName": "Created at",
+            "displayOrder": 2,
+            "visible": true,
+            "modelName": "BlogPost",
+            "fieldName": "createdAt"
+          },
+          {
+            "fieldLocation": {
+              "path": "$.results[*].updatedAt"
+            },
+            "fieldType": "TYPE_DATETIME",
+            "displayName": "Updated at",
+            "displayOrder": 3,
+            "visible": true,
+            "modelName": "BlogPost",
+            "fieldName": "updatedAt"
+          }
+        ],
+        "title": {
+          "template": "Blog posts"
         },
-        {
-          "fieldLocation": {
-            "path": "$.after"
+        "entitySingle": "blog post",
+        "entityPlural": "blog posts",
+        "capabilities": {},
+        "pagination": {
+          "start": {
+            "requestInput": "after",
+            "responseField": {
+              "path": "$.pageInfo.startCursor"
+            }
           },
-          "fieldType": "TYPE_STRING",
-          "displayName": "After",
-          "displayOrder": 1,
-          "visible": true,
-          "scope": "PAGINATION"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.last"
+          "end": {
+            "requestInput": "before",
+            "responseField": {
+              "path": "$.pageInfo.endCursor"
+            }
           },
-          "fieldType": "TYPE_INT",
-          "displayName": "Last",
-          "displayOrder": 2,
-          "visible": true,
-          "scope": "PAGINATION"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.before"
+          "pageSize": {
+            "requestInput": "first",
+            "responseField": {
+              "path": "$.pageInfo.count"
+            },
+            "defaultValue": 50
           },
-          "fieldType": "TYPE_STRING",
-          "displayName": "Before",
-          "displayOrder": 3,
-          "visible": true,
-          "scope": "PAGINATION"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.limit"
-          },
-          "fieldType": "TYPE_INT",
-          "displayName": "Limit",
-          "displayOrder": 4,
-          "visible": true,
-          "scope": "PAGINATION"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.offset"
-          },
-          "fieldType": "TYPE_INT",
-          "displayName": "Offset",
-          "displayOrder": 5,
-          "visible": true,
-          "scope": "PAGINATION"
-        }
-      ],
-      "response": [
-        {
-          "fieldLocation": {
-            "path": "$.pageInfo"
-          },
-          "fieldType": "TYPE_OBJECT",
-          "displayName": "PageInfo",
-          "scope": "PAGINATION"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.pageInfo.count"
-          },
-          "fieldType": "TYPE_INT",
-          "displayName": "Count",
-          "scope": "PAGINATION"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.pageInfo.totalCount"
-          },
-          "fieldType": "TYPE_INT",
-          "displayName": "Total count",
-          "scope": "PAGINATION"
-        },
-        {
-          "fieldLocation": {
+          "nextPage": {
             "path": "$.pageInfo.hasNextPage"
           },
-          "fieldType": "TYPE_BOOL",
-          "displayName": "Has next page",
-          "scope": "PAGINATION"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.pageInfo.startCursor"
-          },
-          "fieldType": "TYPE_STRING",
-          "displayName": "Start cursor",
-          "scope": "PAGINATION"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.pageInfo.endCursor"
-          },
-          "fieldType": "TYPE_STRING",
-          "displayName": "End cursor",
-          "scope": "PAGINATION"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.pageInfo.pageNumber"
-          },
-          "fieldType": "TYPE_INT",
-          "displayName": "Page Number",
-          "scope": "PAGINATION"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.results[*].id"
-          },
-          "fieldType": "TYPE_ID",
-          "displayName": "Id",
-          "displayOrder": 1,
-          "visible": true,
-          "modelName": "BlogPost",
-          "fieldName": "id"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.results[*].createdAt"
-          },
-          "fieldType": "TYPE_DATETIME",
-          "displayName": "Created at",
-          "displayOrder": 2,
-          "visible": true,
-          "modelName": "BlogPost",
-          "fieldName": "createdAt"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.results[*].updatedAt"
-          },
-          "fieldType": "TYPE_DATETIME",
-          "displayName": "Updated at",
-          "displayOrder": 3,
-          "visible": true,
-          "modelName": "BlogPost",
-          "fieldName": "updatedAt"
-        }
-      ],
-      "title": {
-        "template": "Blog posts"
-      },
-      "entitySingle": "blog post",
-      "entityPlural": "blog posts",
-      "capabilities": {},
-      "pagination": {
-        "start": {
-          "requestInput": "after",
-          "responseField": {
-            "path": "$.pageInfo.startCursor"
+          "totalCount": {
+            "path": "$.pageInfo.totalCount"
           }
         },
-        "end": {
-          "requestInput": "before",
-          "responseField": {
-            "path": "$.pageInfo.endCursor"
-          }
-        },
-        "pageSize": {
-          "requestInput": "first",
-          "responseField": {
-            "path": "$.pageInfo.count"
+        "entryActivityActions": [
+          {
+            "toolId": "clean-comments",
+            "data": [
+              {
+                "key": "$.id",
+                "path": {
+                  "path": "$.results[*].id"
+                }
+              }
+            ],
+            "displayOrder": 1,
+            "asDialog": true
           },
-          "defaultValue": 50
-        },
-        "nextPage": {
-          "path": "$.pageInfo.hasNextPage"
-        },
-        "totalCount": {
-          "path": "$.pageInfo.totalCount"
-        }
-      },
-      "entryActivityActions": [
-        {
-          "toolId": "clean-comments",
-          "data": [
-            {
-              "key": "$.id",
-              "path": {
-                "path": "$.results[*].id"
+          {
+            "toolId": "deactivate-blog-post",
+            "data": [
+              {
+                "key": "$.where.id",
+                "path": {
+                  "path": "$.results[*].id"
+                }
               }
-            }
-          ],
-          "displayOrder": 1,
-          "asDialog": true
-        },
-        {
-          "toolId": "deactivate-blog-post",
-          "data": [
-            {
-              "key": "$.where.id",
-              "path": {
-                "path": "$.results[*].id"
+            ],
+            "displayOrder": 2,
+            "asDialog": true
+          },
+          {
+            "toolId": "get-blog-post",
+            "data": [
+              {
+                "key": "$.id",
+                "path": {
+                  "path": "$.results[*].id"
+                }
               }
-            }
-          ],
-          "displayOrder": 2,
-          "asDialog": true
-        },
-        {
+            ],
+            "displayOrder": 3,
+            "asDialog": false
+          },
+          {
+            "toolId": "read-comments",
+            "data": [
+              {
+                "key": "$.id",
+                "path": {
+                  "path": "$.results[*].id"
+                }
+              }
+            ],
+            "displayOrder": 4,
+            "asDialog": false
+          },
+          {
+            "toolId": "update-blog-post",
+            "data": [
+              {
+                "key": "$.where.id",
+                "path": {
+                  "path": "$.results[*].id"
+                }
+              }
+            ],
+            "displayOrder": 5,
+            "asDialog": true
+          },
+          {
+            "toolId": "delete-blog-post",
+            "data": [
+              {
+                "key": "$.id",
+                "path": {
+                  "path": "$.results[*].id"
+                }
+              }
+            ],
+            "displayOrder": 6,
+            "asDialog": true
+          }
+        ],
+        "getEntryAction": {
           "toolId": "get-blog-post",
           "data": [
             {
@@ -605,264 +687,232 @@
                 "path": "$.results[*].id"
               }
             }
-          ],
-          "displayOrder": 3,
-          "asDialog": false
+          ]
         },
-        {
-          "toolId": "read-comments",
-          "data": [
-            {
-              "key": "$.id",
-              "path": {
-                "path": "$.results[*].id"
-              }
-            }
-          ],
-          "displayOrder": 4,
-          "asDialog": false
+        "createEntryAction": {
+          "toolId": "create-blog-post"
         },
-        {
-          "toolId": "update-blog-post",
-          "data": [
-            {
-              "key": "$.where.id",
-              "path": {
-                "path": "$.results[*].id"
-              }
-            }
-          ],
-          "displayOrder": 5,
-          "asDialog": true
-        },
-        {
-          "toolId": "delete-blog-post",
-          "data": [
-            {
-              "key": "$.id",
-              "path": {
-                "path": "$.results[*].id"
-              }
-            }
-          ],
-          "displayOrder": 6,
-          "asDialog": true
-        }
-      ],
-      "getEntryAction": {
-        "toolId": "get-blog-post",
-        "data": [
-          {
-            "key": "$.id",
-            "path": {
-              "path": "$.results[*].id"
-            }
-          }
-        ]
-      },
-      "createEntryAction": {
-        "toolId": "create-blog-post"
-      },
-      "filterConfig": {}
+        "filterConfig": {}
+      }
     },
     {
       "id": "read-comments",
-      "name": "Read comments",
-      "actionName": "readComments",
-      "apiNames": ["Api"],
-      "modelName": "BlogPost",
-      "actionType": "ACTION_TYPE_READ",
-      "implementation": "ACTION_IMPLEMENTATION_CUSTOM",
-      "inputs": [
-        {
-          "fieldLocation": {
-            "path": "$.id"
-          },
-          "fieldType": "TYPE_ID",
-          "displayName": "Id",
-          "visible": true,
-          "lookupAction": {
-            "toolId": "list-blog-posts"
-          },
-          "getEntryAction": {
-            "toolId": "get-blog-post",
-            "data": [
-              {
-                "key": "$.id",
-                "path": {
-                  "path": "$.id"
+      "actionConfig": {
+        "id": "read-comments",
+        "name": "Read comments",
+        "actionName": "readComments",
+        "apiNames": [
+          "Api"
+        ],
+        "modelName": "BlogPost",
+        "actionType": "ACTION_TYPE_READ",
+        "implementation": "ACTION_IMPLEMENTATION_CUSTOM",
+        "inputs": [
+          {
+            "fieldLocation": {
+              "path": "$.id"
+            },
+            "fieldType": "TYPE_ID",
+            "displayName": "Id",
+            "visible": true,
+            "lookupAction": {
+              "toolId": "list-blog-posts"
+            },
+            "getEntryAction": {
+              "toolId": "get-blog-post",
+              "data": [
+                {
+                  "key": "$.id",
+                  "path": {
+                    "path": "$.id"
+                  }
                 }
-              }
-            ]
-          },
-          "modelName": "BlogPost",
-          "fieldName": "id"
-        }
-      ],
-      "title": {
-        "template": "Comments"
-      },
-      "entitySingle": "blog post",
-      "entityPlural": "blog posts",
-      "capabilities": {},
-      "filterConfig": {}
+              ]
+            },
+            "modelName": "BlogPost",
+            "fieldName": "id"
+          }
+        ],
+        "title": {
+          "template": "Comments"
+        },
+        "entitySingle": "blog post",
+        "entityPlural": "blog posts",
+        "capabilities": {},
+        "filterConfig": {}
+      }
     },
     {
       "id": "request-password-reset",
-      "name": "Request password reset",
-      "actionName": "requestPasswordReset",
-      "apiNames": ["Api"],
-      "modelName": "Identity",
-      "actionType": "ACTION_TYPE_WRITE",
-      "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
-      "inputs": [
-        {
-          "fieldLocation": {
-            "path": "$.email"
+      "actionConfig": {
+        "id": "request-password-reset",
+        "name": "Request password reset",
+        "actionName": "requestPasswordReset",
+        "apiNames": [
+          "Api"
+        ],
+        "modelName": "Identity",
+        "actionType": "ACTION_TYPE_WRITE",
+        "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+        "inputs": [
+          {
+            "fieldLocation": {
+              "path": "$.email"
+            },
+            "fieldType": "TYPE_STRING",
+            "displayName": "Email",
+            "visible": true
           },
-          "fieldType": "TYPE_STRING",
-          "displayName": "Email",
-          "visible": true
+          {
+            "fieldLocation": {
+              "path": "$.redirectUrl"
+            },
+            "fieldType": "TYPE_STRING",
+            "displayName": "Redirect url",
+            "displayOrder": 1,
+            "visible": true
+          }
+        ],
+        "title": {
+          "template": "Request password reset"
         },
-        {
-          "fieldLocation": {
-            "path": "$.redirectUrl"
-          },
-          "fieldType": "TYPE_STRING",
-          "displayName": "Redirect url",
-          "displayOrder": 1,
-          "visible": true
-        }
-      ],
-      "title": {
-        "template": "Request password reset"
-      },
-      "entitySingle": "identity",
-      "entityPlural": "identities",
-      "capabilities": {},
-      "filterConfig": {}
+        "entitySingle": "identity",
+        "entityPlural": "identities",
+        "capabilities": {},
+        "filterConfig": {}
+      }
     },
     {
       "id": "reset-password",
-      "name": "Reset password",
-      "actionName": "resetPassword",
-      "apiNames": ["Api"],
-      "modelName": "Identity",
-      "actionType": "ACTION_TYPE_WRITE",
-      "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
-      "inputs": [
-        {
-          "fieldLocation": {
-            "path": "$.token"
+      "actionConfig": {
+        "id": "reset-password",
+        "name": "Reset password",
+        "actionName": "resetPassword",
+        "apiNames": [
+          "Api"
+        ],
+        "modelName": "Identity",
+        "actionType": "ACTION_TYPE_WRITE",
+        "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+        "inputs": [
+          {
+            "fieldLocation": {
+              "path": "$.token"
+            },
+            "fieldType": "TYPE_STRING",
+            "displayName": "Token",
+            "visible": true
           },
-          "fieldType": "TYPE_STRING",
-          "displayName": "Token",
-          "visible": true
+          {
+            "fieldLocation": {
+              "path": "$.password"
+            },
+            "fieldType": "TYPE_STRING",
+            "displayName": "Password",
+            "displayOrder": 1,
+            "visible": true
+          }
+        ],
+        "title": {
+          "template": "Reset password"
         },
-        {
-          "fieldLocation": {
-            "path": "$.password"
-          },
-          "fieldType": "TYPE_STRING",
-          "displayName": "Password",
-          "displayOrder": 1,
-          "visible": true
-        }
-      ],
-      "title": {
-        "template": "Reset password"
-      },
-      "entitySingle": "identity",
-      "entityPlural": "identities",
-      "capabilities": {},
-      "filterConfig": {}
+        "entitySingle": "identity",
+        "entityPlural": "identities",
+        "capabilities": {},
+        "filterConfig": {}
+      }
     },
     {
       "id": "update-blog-post",
-      "name": "Update blog post",
-      "actionName": "updateBlogPost",
-      "apiNames": ["Api"],
-      "modelName": "BlogPost",
-      "actionType": "ACTION_TYPE_UPDATE",
-      "implementation": "ACTION_IMPLEMENTATION_AUTO",
-      "inputs": [
-        {
-          "fieldLocation": {
-            "path": "$.where"
-          },
-          "fieldType": "TYPE_MESSAGE",
-          "displayName": "Where",
-          "visible": true,
-          "scope": "FILTERS"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.where.id"
-          },
-          "fieldType": "TYPE_ID",
-          "displayName": "Id",
-          "visible": true,
-          "lookupAction": {
-            "toolId": "list-blog-posts"
-          },
-          "modelName": "BlogPost",
-          "fieldName": "id",
-          "scope": "FILTERS"
-        }
-      ],
-      "response": [
-        {
-          "fieldLocation": {
-            "path": "$.id"
-          },
-          "fieldType": "TYPE_ID",
-          "displayName": "Id",
-          "displayOrder": 1,
-          "visible": true,
-          "modelName": "BlogPost",
-          "fieldName": "id"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.createdAt"
-          },
-          "fieldType": "TYPE_DATETIME",
-          "displayName": "Created at",
-          "displayOrder": 2,
-          "visible": true,
-          "modelName": "BlogPost",
-          "fieldName": "createdAt"
-        },
-        {
-          "fieldLocation": {
-            "path": "$.updatedAt"
-          },
-          "fieldType": "TYPE_DATETIME",
-          "displayName": "Updated at",
-          "displayOrder": 3,
-          "visible": true,
-          "modelName": "BlogPost",
-          "fieldName": "updatedAt"
-        }
-      ],
-      "title": {
-        "template": "Update blog post"
-      },
-      "entitySingle": "blog post",
-      "entityPlural": "blog posts",
-      "capabilities": {},
-      "getEntryAction": {
-        "toolId": "get-blog-post",
-        "data": [
+      "actionConfig": {
+        "id": "update-blog-post",
+        "name": "Update blog post",
+        "actionName": "updateBlogPost",
+        "apiNames": [
+          "Api"
+        ],
+        "modelName": "BlogPost",
+        "actionType": "ACTION_TYPE_UPDATE",
+        "implementation": "ACTION_IMPLEMENTATION_AUTO",
+        "inputs": [
           {
-            "key": "$.id",
-            "path": {
-              "path": "$.id"
-            }
+            "fieldLocation": {
+              "path": "$.where"
+            },
+            "fieldType": "TYPE_MESSAGE",
+            "displayName": "Where",
+            "visible": true,
+            "scope": "FILTERS"
+          },
+          {
+            "fieldLocation": {
+              "path": "$.where.id"
+            },
+            "fieldType": "TYPE_ID",
+            "displayName": "Id",
+            "visible": true,
+            "lookupAction": {
+              "toolId": "list-blog-posts"
+            },
+            "modelName": "BlogPost",
+            "fieldName": "id",
+            "scope": "FILTERS"
           }
-        ]
-      },
-      "filterConfig": {}
+        ],
+        "response": [
+          {
+            "fieldLocation": {
+              "path": "$.id"
+            },
+            "fieldType": "TYPE_ID",
+            "displayName": "Id",
+            "displayOrder": 1,
+            "visible": true,
+            "modelName": "BlogPost",
+            "fieldName": "id"
+          },
+          {
+            "fieldLocation": {
+              "path": "$.createdAt"
+            },
+            "fieldType": "TYPE_DATETIME",
+            "displayName": "Created at",
+            "displayOrder": 2,
+            "visible": true,
+            "modelName": "BlogPost",
+            "fieldName": "createdAt"
+          },
+          {
+            "fieldLocation": {
+              "path": "$.updatedAt"
+            },
+            "fieldType": "TYPE_DATETIME",
+            "displayName": "Updated at",
+            "displayOrder": 3,
+            "visible": true,
+            "modelName": "BlogPost",
+            "fieldName": "updatedAt"
+          }
+        ],
+        "title": {
+          "template": "Update blog post"
+        },
+        "entitySingle": "blog post",
+        "entityPlural": "blog posts",
+        "capabilities": {},
+        "getEntryAction": {
+          "toolId": "get-blog-post",
+          "data": [
+            {
+              "key": "$.id",
+              "path": {
+                "path": "$.id"
+              }
+            }
+          ]
+        },
+        "filterConfig": {}
+      }
     }
   ]
 }

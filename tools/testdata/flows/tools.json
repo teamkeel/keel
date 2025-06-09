@@ -1,62 +1,133 @@
 {
-  "tools": [
+  "toolConfigs": [
+    {
+      "id": "my-flow",
+      "type": "FLOW",
+      "flowConfig": {
+        "name": "My flow",
+        "flowName": "MyFlow",
+        "inputs": [
+          {
+            "fieldLocation": {
+              "path": "$.decimal"
+            },
+            "fieldType": "TYPE_DECIMAL",
+            "displayName": "Decimal"
+          },
+          {
+            "fieldLocation": {
+              "path": "$.number"
+            },
+            "fieldType": "TYPE_INT",
+            "displayName": "Number",
+            "displayOrder": 1
+          },
+          {
+            "fieldLocation": {
+              "path": "$.text"
+            },
+            "fieldType": "TYPE_STRING",
+            "displayName": "Text",
+            "displayOrder": 2
+          },
+          {
+            "fieldLocation": {
+              "path": "$.boolean"
+            },
+            "fieldType": "TYPE_BOOL",
+            "displayName": "Boolean",
+            "displayOrder": 3
+          },
+          {
+            "fieldLocation": {
+              "path": "$.duration"
+            },
+            "fieldType": "TYPE_DURATION",
+            "displayName": "Duration",
+            "displayOrder": 4
+          }
+        ]
+      }
+    },
     {
       "id": "request-password-reset",
-      "name": "Request password reset",
-      "actionName": "requestPasswordReset",
-      "apiNames": ["Api"],
-      "modelName": "Identity",
-      "actionType": "ACTION_TYPE_WRITE",
-      "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
-      "inputs": [
-        {
-          "fieldLocation": { "path": "$.email" },
-          "fieldType": "TYPE_STRING",
-          "displayName": "Email",
-          "visible": true
+      "actionConfig": {
+        "id": "request-password-reset",
+        "name": "Request password reset",
+        "actionName": "requestPasswordReset",
+        "apiNames": [
+          "Api"
+        ],
+        "modelName": "Identity",
+        "actionType": "ACTION_TYPE_WRITE",
+        "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+        "inputs": [
+          {
+            "fieldLocation": {
+              "path": "$.email"
+            },
+            "fieldType": "TYPE_STRING",
+            "displayName": "Email",
+            "visible": true
+          },
+          {
+            "fieldLocation": {
+              "path": "$.redirectUrl"
+            },
+            "fieldType": "TYPE_STRING",
+            "displayName": "Redirect url",
+            "displayOrder": 1,
+            "visible": true
+          }
+        ],
+        "title": {
+          "template": "Request password reset"
         },
-        {
-          "fieldLocation": { "path": "$.redirectUrl" },
-          "fieldType": "TYPE_STRING",
-          "displayName": "Redirect url",
-          "displayOrder": 1,
-          "visible": true
-        }
-      ],
-      "title": { "template": "Request password reset" },
-      "entitySingle": "identity",
-      "entityPlural": "identities",
-      "capabilities": {},
-      "filterConfig": {}
+        "entitySingle": "identity",
+        "entityPlural": "identities",
+        "capabilities": {},
+        "filterConfig": {}
+      }
     },
     {
       "id": "reset-password",
-      "name": "Reset password",
-      "actionName": "resetPassword",
-      "apiNames": ["Api"],
-      "modelName": "Identity",
-      "actionType": "ACTION_TYPE_WRITE",
-      "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
-      "inputs": [
-        {
-          "fieldLocation": { "path": "$.token" },
-          "fieldType": "TYPE_STRING",
-          "displayName": "Token",
-          "visible": true
+      "actionConfig": {
+        "id": "reset-password",
+        "name": "Reset password",
+        "actionName": "resetPassword",
+        "apiNames": [
+          "Api"
+        ],
+        "modelName": "Identity",
+        "actionType": "ACTION_TYPE_WRITE",
+        "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+        "inputs": [
+          {
+            "fieldLocation": {
+              "path": "$.token"
+            },
+            "fieldType": "TYPE_STRING",
+            "displayName": "Token",
+            "visible": true
+          },
+          {
+            "fieldLocation": {
+              "path": "$.password"
+            },
+            "fieldType": "TYPE_STRING",
+            "displayName": "Password",
+            "displayOrder": 1,
+            "visible": true
+          }
+        ],
+        "title": {
+          "template": "Reset password"
         },
-        {
-          "fieldLocation": { "path": "$.password" },
-          "fieldType": "TYPE_STRING",
-          "displayName": "Password",
-          "displayOrder": 1,
-          "visible": true
-        }
-      ],
-      "title": { "template": "Reset password" },
-      "entitySingle": "identity",
-      "entityPlural": "identities",
-      "capabilities": {},
-      "filterConfig": {}
+        "entitySingle": "identity",
+        "entityPlural": "identities",
+        "capabilities": {},
+        "filterConfig": {}
+      }
     }
   ]
 }
