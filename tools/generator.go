@@ -220,6 +220,11 @@ func (g *Generator) scaffoldTools() {
 			},
 			Flow: flow,
 		}
+
+		if model := inferFlowRelatedModel(g.Schema, flow); model != nil {
+			t.Model = model
+			t.FlowConfig.ModelName = model.GetName()
+		}
 		g.Tools[t.ID] = &t
 	}
 }
@@ -360,6 +365,19 @@ func (g *Generator) generateEntryActivityActionsLinks() {
 				DisplayOrder: int32(displayOrder),
 				AsDialog:     &asDialog,
 			})
+		}
+
+		// now we look for flows related to this tool's model
+		for _, ft := range g.flowTools() {
+			asDialog := true
+			if ft.Model.GetName() == tool.Model.GetName() {
+				displayOrder++
+				tool.ActionConfig.EntryActivityActions = append(tool.ActionConfig.EntryActivityActions, &toolsproto.ToolLink{
+					ToolId:       ft.ID,
+					DisplayOrder: int32(displayOrder),
+					AsDialog:     &asDialog,
+				})
+			}
 		}
 	}
 }
@@ -1246,6 +1264,43 @@ func inferInputType(actionType proto.ActionType, fieldName string) toolsproto.Re
 	}
 
 	return toolsproto.RequestFieldConfig_DEFAULT
+}
+
+// inferFlowRelatedModel will find a related model to a flow. this is done by looking at the flow inputs
+// i.e. if a flow has a model input.
+func inferFlowRelatedModel(schema *proto.Schema, flow *proto.Flow) *proto.Model {
+	if schema == nil || flow == nil {
+		return nil
+	}
+
+	mInputs := schema.GetFlowModelInputs(flow)
+	if len(mInputs) == 0 {
+		return nil
+	}
+
+	requiredModels := 0
+	relatedModel := ""
+
+	for mName, required := range mInputs {
+		if required {
+			requiredModels++
+			relatedModel = mName
+
+			continue
+		}
+
+		if relatedModel == "" {
+			relatedModel = mName
+		}
+	}
+
+	// if there are multiple required model types OR no required types but multiple optional model types we can't associate
+	// this flow to a particular model
+	if requiredModels != 1 && len(mInputs) > 1 {
+		return nil
+	}
+
+	return schema.FindModel(relatedModel)
 }
 
 // hasOnlyIDInput checks if the tool takes only one input, an ID.
