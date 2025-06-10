@@ -14,7 +14,6 @@ import (
 	"github.com/teamkeel/keel/rpc/rpc"
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/tools"
-	toolsproto "github.com/teamkeel/keel/tools/proto"
 )
 
 func main() {
@@ -45,13 +44,7 @@ func main() {
 			panic(err)
 		}
 
-		actionTools := []*toolsproto.ActionConfig{}
-		for _, tool := range tools {
-			if tool.GetType() == toolsproto.Tool_ACTION {
-				actionTools = append(actionTools, tool.ActionConfig)
-			}
-		}
-		response := &rpc.ListToolsResponse{Tools: actionTools}
+		response := &rpc.ListToolsResponse{ToolConfigs: tools}
 		opts := protojson.MarshalOptions{Indent: "  "}
 		b, err := opts.Marshal(response)
 		if err != nil {
