@@ -62,9 +62,12 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "properties": { "age": { "type": "number" } },
+                "properties": {
+                  "age": { "type": "number" },
+                  "thing": { "$ref": "#/components/schemas/Thing" }
+                },
                 "unevaluatedProperties": false,
-                "required": ["age"]
+                "required": ["age", "thing"]
               }
             }
           }
@@ -172,9 +175,7 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Run"
-                  }
+                  "items": { "$ref": "#/components/schemas/Run" }
                 }
               }
             }
@@ -185,28 +186,20 @@
               "application/json": {
                 "schema": {
                   "properties": {
-                    "code": {
-                      "type": "string"
-                    },
+                    "code": { "type": "string" },
                     "data": {
                       "type": ["object", "null"],
                       "properties": {
                         "errors": {
                           "type": "array",
                           "properties": {
-                            "error": {
-                              "type": "string"
-                            },
-                            "field": {
-                              "type": "string"
-                            }
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
                           }
                         }
                       }
                     },
-                    "message": {
-                      "type": "string"
-                    }
+                    "message": { "type": "string" }
                   }
                 }
               }
@@ -220,27 +213,21 @@
           "in": "query",
           "required": false,
           "description": "",
-          "schema": {
-            "type": "number"
-          }
+          "schema": { "type": "number" }
         },
         {
           "name": "before",
           "in": "query",
           "required": false,
           "description": "",
-          "schema": {
-            "type": "string"
-          }
+          "schema": { "type": "string" }
         },
         {
           "name": "after",
           "in": "query",
           "required": false,
           "description": "",
-          "schema": {
-            "type": "string"
-          }
+          "schema": { "type": "string" }
         },
         {
           "name": "status",
@@ -355,27 +342,21 @@
           "in": "query",
           "required": false,
           "description": "",
-          "schema": {
-            "type": "number"
-          }
+          "schema": { "type": "number" }
         },
         {
           "name": "before",
           "in": "query",
           "required": false,
           "description": "",
-          "schema": {
-            "type": "string"
-          }
+          "schema": { "type": "string" }
         },
         {
           "name": "after",
           "in": "query",
           "required": false,
           "description": "",
-          "schema": {
-            "type": "string"
-          }
+          "schema": { "type": "string" }
         },
         {
           "name": "flow",
@@ -678,6 +659,15 @@
           "endTime",
           "error"
         ]
+      },
+      "Thing": {
+        "properties": {
+          "createdAt": { "type": "string", "format": "date-time" },
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["name", "id", "createdAt", "updatedAt"]
       },
       "UiConfig": {
         "type": "object",
