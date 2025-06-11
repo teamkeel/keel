@@ -76,6 +76,10 @@ flow AllInputs {
     @permission(roles: [Admin])
 }
 
+flow EnvStep {
+    @permission(roles: [Admin])
+}
+
 model Thing {
     fields {
         name Text?

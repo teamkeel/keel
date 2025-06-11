@@ -1069,6 +1069,33 @@ func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
 	w.Dedent()
 	w.Writeln("};")
 
+	w.Writeln("function createFlowContextAPI({ meta }) {")
+	w.Indent()
+	w.Writeln("const now = () => { return new Date(); };")
+	w.Writeln("const env = {")
+	w.Indent()
+
+	for _, variable := range schema.GetEnvironmentVariables() {
+		// fetch the value of the env var from the process.env (will pull the value based on the current environment)
+		// outputs "key: process.env["key"] || []"
+		w.Writef("%s: process.env[\"%s\"] || \"\",\n", variable.GetName(), variable.GetName())
+	}
+
+	w.Dedent()
+	w.Writeln("};")
+	w.Writeln("const secrets = {")
+	w.Indent()
+
+	for _, secret := range schema.GetSecrets() {
+		w.Writef("%s: meta.secrets.%s || \"\",\n", secret.GetName(), secret.GetName())
+	}
+
+	w.Dedent()
+	w.Writeln("};")
+	w.Writeln("return { env, now, secrets };")
+	w.Dedent()
+	w.Writeln("};")
+
 	w.Writeln("function createSubscriberContextAPI({ meta }) {")
 	w.Indent()
 	w.Writeln("const now = () => { return new Date(); };")
@@ -1125,7 +1152,7 @@ func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
 
 	w.Writeln("export const models = createModelAPI();")
 	w.Writeln("export const permissions = createPermissionApi();")
-	w.Writeln("export { createContextAPI, createJobContextAPI, createSubscriberContextAPI };")
+	w.Writeln("export { createContextAPI, createJobContextAPI, createSubscriberContextAPI, createFlowContextAPI };")
 }
 
 func writeTableConfig(w *codegen.Writer, models []*proto.Model) {

@@ -42,6 +42,9 @@ const defaultOpts = {
 export interface FlowContext<C extends FlowConfig> {
   step: Step<C>;
   ui: UI<C>;
+  env: any;
+  now: any;
+  secrets: any;
 }
 
 // Steps can only return values that can be serialized to JSON and then
@@ -126,9 +129,13 @@ type StageConfig = string | StageConfigObject;
 export function createFlowContext<C extends FlowConfig>(
   runId: string,
   data: any,
-  spanId: string
+  spanId: string,
+  ctx: any
 ): FlowContext<C> {
   return {
+    env: ctx.env,
+    now: ctx.now,
+    secrets: ctx.secrets,
     step: async (name, optionsOrFn, fn?) => {
       // We need to check the type of the arguments due to the step function being overloaded
       const options = typeof optionsOrFn === "function" ? {} : optionsOrFn;
