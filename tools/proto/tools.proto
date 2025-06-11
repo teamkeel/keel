@@ -583,6 +583,9 @@ message FlowConfig {
 
 	// Any validation errors for this tool or any child elements of this tool (e.g. an action link that has an error)
 	bool has_errors = 7;
+
+	// The name of the model on which this flow tool operates on.
+	string model_name = 8;
 }
 
 message FlowInputConfig {

@@ -213,3 +213,26 @@ func (s *Schema) FlowNames() []string {
 func (s *Schema) HasFlows() bool {
 	return len(s.GetFlows()) > 0
 }
+
+// GetFlowModelInputs returns a map of model names that are used as inputs to the given flow. The boolean
+// value represents whether the input is required or not.
+func (s *Schema) GetFlowModelInputs(f *Flow) map[string]bool {
+	if f == nil || f.GetInputMessageName() == "" {
+		return nil
+	}
+	// get the input message
+	msg := s.FindMessage(f.GetInputMessageName())
+	if msg == nil {
+		return nil
+	}
+
+	m := map[string]bool{}
+
+	for _, f := range msg.GetFields() {
+		if mName := f.GetType().GetModelName().GetValue(); mName != "" {
+			m[mName] = !f.GetOptional() || m[mName]
+		}
+	}
+
+	return m
+}
