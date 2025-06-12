@@ -1222,7 +1222,7 @@ test("flows - duplicate step name", async () => {
   });
 });
 
-test.only("flows - duplicate step name and UI name", async () => {
+test("flows - duplicate step name and UI name", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
   const res = await startFlow({
     name: "DuplicateStepAndUiName",
@@ -1351,7 +1351,7 @@ test("flows - authorised starting, getting and listing flows", async () => {
 
   const resListAdmin = await listFlows({ token: adminToken });
   expect(resListAdmin.status).toBe(200);
-  expect(resListAdmin.body.flows.length).toBe(13);
+  expect(resListAdmin.body.flows.length).toBe(14);
   expect(resListAdmin.body.flows[0].name).toBe("ScalarStep");
   expect(resListAdmin.body.flows[1].name).toBe("MixedStepTypes");
   expect(resListAdmin.body.flows[2].name).toBe("Stepless");
@@ -1365,7 +1365,8 @@ test("flows - authorised starting, getting and listing flows", async () => {
   expect(resListAdmin.body.flows[10].name).toBe("ValidationBoolean");
   expect(resListAdmin.body.flows[11].name).toBe("AllInputs");
   expect(resListAdmin.body.flows[12].name).toBe("DuplicateStepName");
-
+  expect(resListAdmin.body.flows[13].name).toBe("DuplicateStepAndUiName");
+  
   const resListUser = await listFlows({ token: userToken });
   expect(resListUser.status).toBe(200);
   expect(resListUser.body.flows.length).toBe(1);
