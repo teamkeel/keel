@@ -1136,6 +1136,182 @@ test("flows - timeout step", async () => {
   });
 });
 
+test("flows - duplicate step name", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+  const res = await startFlow({ name: "DuplicateStepName", token, body: {} });
+  expect(res.status).toBe(200);
+  expect(res.body).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "RUNNING",
+    name: "DuplicateStepName",
+    startedBy: expect.any(String),
+    input: {},
+    steps: [
+      {
+        id: expect.any(String),
+        name: "my step",
+        runId: expect.any(String),
+        stage: null,
+        status: "NEW",
+        type: "FUNCTION",
+        value: null,
+        error: null,
+        ui: null,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        endTime: null,
+        startTime: null,
+      },
+    ],
+    createdAt: expect.any(String),
+    updatedAt: expect.any(String),
+    config: {
+      title: "Duplicate step name",
+    },
+  });
+
+  const flow = await untilFlowFinished({
+    name: "DuplicateStepName",
+    id: res.body.id,
+    token,
+  });
+
+  expect(flow).toEqual({
+    id: res.body.id,
+    traceId: res.body.traceId,
+    status: "FAILED",
+    name: "DuplicateStepName",
+    startedBy: expect.any(String),
+    input: {},
+    steps: [
+      {
+        id: res.body.steps[0].id,
+        name: "my step",
+        runId: res.body.id,
+        stage: null,
+        status: "COMPLETED",
+        type: "FUNCTION",
+        value: null,
+        error: null,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        startTime: expect.any(String),
+        endTime: expect.any(String),
+        ui: null,
+      },
+      {
+        id: expect.any(String),
+        name: "my step",
+        runId: res.body.id,
+        stage: null,
+        status: "FAILED",
+        type: "FUNCTION",
+        value: null,
+        error: "Duplicate step name: my step",
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        startTime: expect.any(String),
+        endTime: expect.any(String),
+        ui: null,
+      },
+    ],
+    createdAt: res.body.createdAt,
+    updatedAt: expect.any(String),
+    config: null,
+  });
+});
+
+test.only("flows - duplicate step name and UI name", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+  const res = await startFlow({
+    name: "DuplicateStepAndUiName",
+    token,
+    body: {},
+  });
+  expect(res.status).toBe(200);
+  expect(res.body).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "RUNNING",
+    name: "DuplicateStepAndUiName",
+    startedBy: expect.any(String),
+    input: {},
+    steps: [
+      {
+        id: expect.any(String),
+        name: "my step",
+        runId: expect.any(String),
+        stage: null,
+        status: "NEW",
+        type: "FUNCTION",
+        value: null,
+        error: null,
+        ui: null,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        endTime: null,
+        startTime: null,
+      },
+    ],
+    createdAt: expect.any(String),
+    updatedAt: expect.any(String),
+    config: {
+      title: "Duplicate step and ui name",
+    },
+  });
+
+  const flow = await untilFlowFinished({
+    name: "DuplicateStepAndUiName",
+    id: res.body.id,
+    token,
+  });
+
+  expect(flow).toEqual({
+    id: res.body.id,
+    traceId: res.body.traceId,
+    status: "FAILED",
+    name: "DuplicateStepAndUiName",
+    startedBy: expect.any(String),
+    input: {},
+    steps: [
+      {
+        id: res.body.steps[0].id,
+        name: "my step",
+        runId: res.body.id,
+        stage: null,
+        status: "COMPLETED",
+        type: "FUNCTION",
+        value: null,
+        error: null,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        startTime: expect.any(String),
+        endTime: expect.any(String),
+        ui: null,
+      },
+      {
+        id: expect.any(String),
+        name: "my step",
+        runId: res.body.id,
+        stage: null,
+        status: "FAILED",
+        type: "UI",
+        value: null,
+        error: "Duplicate step name: my step",
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        startTime: expect.any(String),
+        endTime: expect.any(String),
+        ui: null,
+      },
+    ],
+    createdAt: res.body.createdAt,
+    updatedAt: expect.any(String),
+    config: null,
+  });
+});
+
 test("flows - myRuns", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
   const res = await startFlow({ name: "ErrorInFlow", token, body: {} });
@@ -1175,7 +1351,7 @@ test("flows - authorised starting, getting and listing flows", async () => {
 
   const resListAdmin = await listFlows({ token: adminToken });
   expect(resListAdmin.status).toBe(200);
-  expect(resListAdmin.body.flows.length).toBe(12);
+  expect(resListAdmin.body.flows.length).toBe(13);
   expect(resListAdmin.body.flows[0].name).toBe("ScalarStep");
   expect(resListAdmin.body.flows[1].name).toBe("MixedStepTypes");
   expect(resListAdmin.body.flows[2].name).toBe("Stepless");
@@ -1188,6 +1364,7 @@ test("flows - authorised starting, getting and listing flows", async () => {
   expect(resListAdmin.body.flows[9].name).toBe("ValidationText");
   expect(resListAdmin.body.flows[10].name).toBe("ValidationBoolean");
   expect(resListAdmin.body.flows[11].name).toBe("AllInputs");
+  expect(resListAdmin.body.flows[12].name).toBe("DuplicateStepName");
 
   const resListUser = await listFlows({ token: userToken });
   expect(resListUser.status).toBe(200);
