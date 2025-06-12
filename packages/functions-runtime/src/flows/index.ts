@@ -35,12 +35,14 @@ const enum STEP_TYPE {
 }
 
 const defaultOpts = {
-  maxRetries: 5,
-  timeoutInMs: 60000,
+  retries: 5,
+  timeout: 60000,
 };
 
 export interface FlowContext<C extends FlowConfig> {
+  // Defines a function step that will be run in the flow.
   step: Step<C>;
+  // Defines a UI step that will be run in the flow.
   ui: UI<C>;
 }
 
@@ -57,12 +59,18 @@ type JsonSerializable =
 
 export type Step<C extends FlowConfig> = {
   <R extends JsonSerializable | void>(
+    /** The unique name of this step. */
     name: string,
+    /** Configuration options for the step. */
     options: {
+      /** The stage this step belongs to. Used for organising steps in the UI. */
       stage?: ExtractStageKeys<C>;
-      maxRetries?: number;
-      timeoutInMs?: number;
+      /** Number of times to retry the step if it fails. Defaults to 5. */
+      retries?: number;
+      /** Maximum time in milliseconds to wait for the step to complete. Defaults to 60000 (1 minute). */
+      timeout?: number;
     },
+    /** The step function to execute. */
     fn: () => Promise<R> & {
       catch: (
         errorHandler: (err: Error) => Promise<void> | void
@@ -84,8 +92,11 @@ type StepFunction<R> = () => Promise<R> & {
 };
 
 export interface FlowConfig {
+  /** The stages to organise the steps in the flow. */
   stages?: StageConfig[];
+  /** The title of the flow as shown in the Console. */
   title?: string;
+  /** The description of the flow as shown in the Console. */
   description?: string;
 }
 
@@ -115,9 +126,13 @@ export type ExtractStageKeys<T extends FlowConfig> = T extends {
   : never;
 
 type StageConfigObject = {
+  /** The unique key of the stage. */
   key: string;
+  /** The name of the stage as shown in the Console. */
   name: string;
+  /** The description of the stage as shown in the Console. */
   description?: string;
+  /** Whether the stage is initially hidden in the Console. */
   initiallyHidden?: boolean;
 };
 
@@ -187,7 +202,7 @@ export function createFlowContext<C extends FlowConfig>(
         try {
           result = await withTimeout(
             actualFn(),
-            options.timeoutInMs ?? defaultOpts.timeoutInMs
+            options.timeout ?? defaultOpts.timeout
           );
         } catch (e) {
           await db
@@ -204,7 +219,7 @@ export function createFlowContext<C extends FlowConfig>(
 
           if (
             failedSteps.length + 1 >=
-            (options.maxRetries ?? defaultOpts.maxRetries)
+            (options.retries ?? defaultOpts.retries)
           ) {
             throw new ExhuastedRetriesDisrupt();
           }
