@@ -138,10 +138,9 @@ export function createFlowContext<C extends FlowConfig, E = any, S = any>(
     secrets: S;
   }
 ): FlowContext<C, E, S> {
-
   // Track step and page names to prevent duplicates
   const usedNames = new Set<string>();
-  
+
   return {
     env: ctx.env,
     now: ctx.now,
