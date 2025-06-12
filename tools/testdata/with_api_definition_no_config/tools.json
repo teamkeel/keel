@@ -6,9 +6,7 @@
         "id": "delete-category",
         "name": "Delete category",
         "actionName": "deleteCategory",
-        "apiNames": [
-          "Api"
-        ],
+        "apiNames": ["Api"],
         "modelName": "Category",
         "actionType": "ACTION_TYPE_DELETE",
         "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -53,10 +51,7 @@
         "id": "get-category",
         "name": "Get category",
         "actionName": "getCategory",
-        "apiNames": [
-          "Console",
-          "Api"
-        ],
+        "apiNames": ["Console", "Api"],
         "modelName": "Category",
         "actionType": "ACTION_TYPE_GET",
         "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -157,9 +152,7 @@
         "id": "list-categories",
         "name": "List categories",
         "actionName": "listCategories",
-        "apiNames": [
-          "Api"
-        ],
+        "apiNames": ["Api"],
         "modelName": "Category",
         "actionType": "ACTION_TYPE_LIST",
         "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -406,9 +399,7 @@
         "id": "request-password-reset",
         "name": "Request password reset",
         "actionName": "requestPasswordReset",
-        "apiNames": [
-          "Api"
-        ],
+        "apiNames": ["Api"],
         "modelName": "Identity",
         "actionType": "ACTION_TYPE_WRITE",
         "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
@@ -446,9 +437,7 @@
         "id": "reset-password",
         "name": "Reset password",
         "actionName": "resetPassword",
-        "apiNames": [
-          "Api"
-        ],
+        "apiNames": ["Api"],
         "modelName": "Identity",
         "actionType": "ACTION_TYPE_WRITE",
         "implementation": "ACTION_IMPLEMENTATION_RUNTIME",

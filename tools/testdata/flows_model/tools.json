@@ -6,9 +6,7 @@
         "id": "get-thing",
         "name": "Get thing",
         "actionName": "getThing",
-        "apiNames": [
-          "Api"
-        ],
+        "apiNames": ["Api"],
         "modelName": "Thing",
         "actionType": "ACTION_TYPE_GET",
         "implementation": "ACTION_IMPLEMENTATION_AUTO",
@@ -145,9 +143,7 @@
         "id": "request-password-reset",
         "name": "Request password reset",
         "actionName": "requestPasswordReset",
-        "apiNames": [
-          "Api"
-        ],
+        "apiNames": ["Api"],
         "modelName": "Identity",
         "actionType": "ACTION_TYPE_WRITE",
         "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
@@ -185,9 +181,7 @@
         "id": "reset-password",
         "name": "Reset password",
         "actionName": "resetPassword",
-        "apiNames": [
-          "Api"
-        ],
+        "apiNames": ["Api"],
         "modelName": "Identity",
         "actionType": "ACTION_TYPE_WRITE",
         "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
