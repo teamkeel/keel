@@ -129,6 +129,7 @@ type StageConfig = string | StageConfigObject;
 export function createFlowContext<C extends FlowConfig>(
   runId: string,
   data: any,
+  action: string | null,
   spanId: string,
   ctx: any
 ): FlowContext<C> {
@@ -291,6 +292,9 @@ export function createFlowContext<C extends FlowConfig>(
 
         // If this step has already been completed, return the values. Steps are only ever run to completion once.
         if (step && step.status === STEP_STATUS.COMPLETED) {
+          if (step.action) {
+            return { data: step.value, action: step.action };
+          }
           return step.value;
         }
 
@@ -310,25 +314,32 @@ export function createFlowContext<C extends FlowConfig>(
             .executeTakeFirst();
 
           // If no data has been passed in, render the UI by disrupting the step with UIRenderDisrupt.
-          throw new UIRenderDisrupt(step?.id, (await page(options, null)).page);
+          throw new UIRenderDisrupt(
+            step?.id,
+            (await page(options, null, null)).page
+          );
         }
 
         if (!data) {
           // If no data has been passed in, render the UI by disrupting the step with UIRenderDisrupt.
-          throw new UIRenderDisrupt(step?.id, (await page(options, null)).page);
+          throw new UIRenderDisrupt(
+            step?.id,
+            (await page(options, null, null)).page
+          );
         }
 
-        const p = await page(options, data);
+        const p = await page(options, data, action);
         if (p.hasValidationErrors) {
           throw new UIRenderDisrupt(step?.id, p.page);
         }
 
-        // If the data has been passed in and is valid, persist the data and mark the step as COMPLETED, and then return the data.
+        // If the data has been passed in and is valid, persist the data (and action if applicable) and mark the step as COMPLETED, and then return the data.
         await db
           .updateTable("keel.flow_step")
           .set({
             status: STEP_STATUS.COMPLETED,
             value: JSON.stringify(data),
+            action: action,
             spanId: spanId,
             endTime: new Date(),
           })
@@ -336,7 +347,7 @@ export function createFlowContext<C extends FlowConfig>(
           .returningAll()
           .executeTakeFirst();
 
-        return data;
+        return { data, action };
       }) as UiPage<C>,
       inputs: {
         text: textInput as any,
