@@ -39,11 +39,14 @@ const defaultOpts = {
   timeout: 60000,
 };
 
-export interface FlowContext<C extends FlowConfig> {
+export interface FlowContext<C extends FlowConfig, E = any, S = any> {
   // Defines a function step that will be run in the flow.
   step: Step<C>;
   // Defines a UI step that will be run in the flow.
   ui: UI<C>;
+  env: E;
+  now: Date;
+  secrets: S;
 }
 
 // Steps can only return values that can be serialized to JSON and then
@@ -107,10 +110,12 @@ export interface FlowConfigAPI {
   description?: string;
 }
 
-export type FlowFunction<C extends FlowConfig, I extends any = {}> = (
-  ctx: FlowContext<C>,
-  inputs: I
-) => Promise<void>;
+export type FlowFunction<
+  C extends FlowConfig,
+  E extends any = {},
+  S extends any = {},
+  I extends any = {},
+> = (ctx: FlowContext<C, E, S>, inputs: I) => Promise<void>;
 
 // Extract the stage keys from the flow config supporting either a string or an object with a key property
 export type ExtractStageKeys<T extends FlowConfig> = T extends {
@@ -138,12 +143,20 @@ type StageConfigObject = {
 
 type StageConfig = string | StageConfigObject;
 
-export function createFlowContext<C extends FlowConfig>(
+export function createFlowContext<C extends FlowConfig, E = any, S = any>(
   runId: string,
   data: any,
-  spanId: string
-): FlowContext<C> {
+  spanId: string,
+  ctx: {
+    env: E;
+    now: Date;
+    secrets: S;
+  }
+): FlowContext<C, E, S> {
   return {
+    env: ctx.env,
+    now: ctx.now,
+    secrets: ctx.secrets,
     step: async (name, optionsOrFn, fn?) => {
       // We need to check the type of the arguments due to the step function being overloaded
       const options = typeof optionsOrFn === "function" ? {} : optionsOrFn;
