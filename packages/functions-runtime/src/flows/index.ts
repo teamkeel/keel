@@ -39,12 +39,12 @@ const defaultOpts = {
   timeoutInMs: 60000,
 };
 
-export interface FlowContext<C extends FlowConfig> {
+export interface FlowContext<C extends FlowConfig, E = any, S = any> {
   step: Step<C>;
   ui: UI<C>;
-  env: any;
+  env: E;
   now: Date;
-  secrets: any;
+  secrets: S;
 }
 
 // Steps can only return values that can be serialized to JSON and then
@@ -99,10 +99,12 @@ export interface FlowConfigAPI {
   description?: string;
 }
 
-export type FlowFunction<C extends FlowConfig, I extends any = {}> = (
-  ctx: FlowContext<C>,
-  inputs: I
-) => Promise<void>;
+export type FlowFunction<
+  C extends FlowConfig,
+  E extends any = {},
+  S extends any = {},
+  I extends any = {},
+> = (ctx: FlowContext<C, E, S>, inputs: I) => Promise<void>;
 
 // Extract the stage keys from the flow config supporting either a string or an object with a key property
 export type ExtractStageKeys<T extends FlowConfig> = T extends {
@@ -112,8 +114,8 @@ export type ExtractStageKeys<T extends FlowConfig> = T extends {
     ? U extends string
       ? U
       : U extends { key: infer K extends string }
-      ? K
-      : never
+        ? K
+        : never
     : never
   : never;
 
@@ -126,12 +128,16 @@ type StageConfigObject = {
 
 type StageConfig = string | StageConfigObject;
 
-export function createFlowContext<C extends FlowConfig>(
+export function createFlowContext<C extends FlowConfig, E = any, S = any>(
   runId: string,
   data: any,
   spanId: string,
-  ctx: any
-): FlowContext<C> {
+  ctx: {
+    env: E;
+    now: Date;
+    secrets: S;
+  }
+): FlowContext<C, E, S> {
   return {
     env: ctx.env,
     now: ctx.now,

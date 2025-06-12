@@ -1434,9 +1434,9 @@ func writeSubscriberFunctionWrapperType(w *codegen.Writer, subscriber *proto.Sub
 
 func writeFlowFunctionWrapperType(w *codegen.Writer, flow *proto.Flow) {
 	if flow.GetInputMessageName() == "" {
-		w.Writef("export declare const %s: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C>) };", flow.GetName())
+		w.Writef("export declare const %s: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C, Environment, Secrets>) };", flow.GetName())
 	} else {
-		w.Writef("export declare const %s: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C, %s>) };", flow.GetName(), flow.GetInputMessageName())
+		w.Writef("export declare const %s: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C, Environment, Secrets, %s>) };", flow.GetName(), flow.GetInputMessageName())
 	}
 
 	w.Writeln("")
