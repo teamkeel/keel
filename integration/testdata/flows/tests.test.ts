@@ -23,6 +23,7 @@ TEST CASES
 [x] Permissions and identity tests
 [ ] Stages
 [x] List my runs
+[x] ctx env
 */
 
 test("flows - scalar step", async () => {
@@ -1351,7 +1352,7 @@ test("flows - authorised starting, getting and listing flows", async () => {
 
   const resListAdmin = await listFlows({ token: adminToken });
   expect(resListAdmin.status).toBe(200);
-  expect(resListAdmin.body.flows.length).toBe(14);
+  expect(resListAdmin.body.flows.length).toBe(15);
   expect(resListAdmin.body.flows[0].name).toBe("ScalarStep");
   expect(resListAdmin.body.flows[1].name).toBe("MixedStepTypes");
   expect(resListAdmin.body.flows[2].name).toBe("Stepless");
@@ -1366,7 +1367,8 @@ test("flows - authorised starting, getting and listing flows", async () => {
   expect(resListAdmin.body.flows[11].name).toBe("AllInputs");
   expect(resListAdmin.body.flows[12].name).toBe("DuplicateStepName");
   expect(resListAdmin.body.flows[13].name).toBe("DuplicateStepAndUiName");
-  
+  expect(resListAdmin.body.flows[14].name).toBe("EnvStep");
+
   const resListUser = await listFlows({ token: userToken });
   expect(resListUser.status).toBe(200);
   expect(resListUser.body.flows.length).toBe(1);
@@ -1427,6 +1429,52 @@ test("flows - unauthenticated getting flow", async () => {
 test("flows - unauthenticated listing flows", async () => {
   const resGet = await listFlows({ token: null });
   expect(resGet.status).toBe(401);
+});
+
+test("flows - env step", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  let { status, body } = await startFlow({
+    name: "envStep",
+    token,
+    body: {},
+  });
+  expect(status).toEqual(200);
+
+  const flow = await untilFlowFinished({
+    name: "envStep",
+    id: body.id,
+    token,
+  });
+
+  expect(flow).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "COMPLETED",
+    name: "EnvStep",
+    input: {},
+    startedBy: expect.any(String),
+    steps: [
+      {
+        id: expect.any(String),
+        name: "env step",
+        runId: expect.any(String),
+        stage: null,
+        status: "COMPLETED",
+        type: "FUNCTION",
+        value: "Pedro",
+        error: null,
+        startTime: expect.any(String),
+        endTime: expect.any(String),
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        ui: null,
+      },
+    ],
+    createdAt: expect.any(String),
+    updatedAt: expect.any(String),
+    config: null,
+  });
 });
 
 async function getToken({ email }) {

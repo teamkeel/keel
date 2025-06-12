@@ -438,6 +438,16 @@ function createJobContextAPI({ meta }) {
 	};
 	return { identity, env, now, secrets, isAuthenticated };
 };
+function createFlowContextAPI({ meta }) {
+	const now = () => { return new Date(); };
+	const env = {
+		TEST: process.env["TEST"] || "",
+	};
+	const secrets = {
+		SECRET_KEY: meta.secrets.SECRET_KEY || "",
+	};
+	return { env, now, secrets };
+};
 function createSubscriberContextAPI({ meta }) {
 	const now = () => { return new Date(); };
 	const env = {
@@ -459,7 +469,7 @@ function createPermissionApi() {
 };
 export const models = createModelAPI();
 export const permissions = createPermissionApi();
-export { createContextAPI, createJobContextAPI, createSubscriberContextAPI };
+export { createContextAPI, createJobContextAPI, createSubscriberContextAPI, createFlowContextAPI };
 `
 
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
@@ -1952,8 +1962,8 @@ flow MyFlow {
 flow MyFlowWithoutInputs {}`
 
 	expected := `
-export declare const MyFlow: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C, MyFlowMessage>) };
-export declare const MyFlowWithoutInputs: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C>) };`
+export declare const MyFlow: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C, Environment, Secrets, MyFlowMessage>) };
+export declare const MyFlowWithoutInputs: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C, Environment, Secrets>) };`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		for _, f := range s.GetFlows() {
