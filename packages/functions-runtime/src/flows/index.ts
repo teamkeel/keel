@@ -43,7 +43,7 @@ export interface FlowContext<C extends FlowConfig> {
   step: Step<C>;
   ui: UI<C>;
   env: any;
-  now: any;
+  now: Date;
   secrets: any;
 }
 
