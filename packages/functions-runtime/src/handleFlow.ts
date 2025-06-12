@@ -37,7 +37,7 @@ async function handleFlow(request: any, config: any) {
           throw new Error("no runId provided");
         }
 
-        const { flows } = config;
+        const { flows, createFlowContextAPI } = config;
 
         if (!(request.method in flows)) {
           const message = `no corresponding flow found for '${request.method}'`;
@@ -59,7 +59,10 @@ async function handleFlow(request: any, config: any) {
         const ctx = createFlowContext(
           request.meta.runId,
           request.meta.data,
-          span.spanContext().spanId
+          span.spanContext().spanId,
+          createFlowContextAPI({
+            meta: request.meta,
+          })
         );
 
         const flowFunction = flows[request.method].fn;
