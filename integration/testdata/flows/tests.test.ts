@@ -1258,7 +1258,7 @@ test("flows - duplicate step name and UI name", async () => {
     createdAt: expect.any(String),
     updatedAt: expect.any(String),
     config: {
-      title: "Duplicate step and ui name",
+      title: "Duplicate step ui name",
     },
   });
 
