@@ -80,7 +80,7 @@ flow DuplicateStepName {
     @permission(roles: [Admin])
 }
 
-flow DuplicateStepAndUiName {
+flow DuplicateStepUiName {
     @permission(roles: [Admin])
 }
 

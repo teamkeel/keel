@@ -1,6 +1,6 @@
-import { DuplicateStepAndUiName } from "@teamkeel/sdk";
+import { DuplicateStepUiName } from "@teamkeel/sdk";
 
-export default DuplicateStepAndUiName({}, async (ctx) => {
+export default DuplicateStepUiName({}, async (ctx) => {
   await ctx.step("my step", async () => {
     return;
   });

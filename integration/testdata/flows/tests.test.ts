@@ -1226,7 +1226,7 @@ test("flows - duplicate step name", async () => {
 test("flows - duplicate step name and UI name", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
   const res = await startFlow({
-    name: "DuplicateStepAndUiName",
+    name: "DuplicateStepUiName",
     token,
     body: {},
   });
@@ -1235,7 +1235,7 @@ test("flows - duplicate step name and UI name", async () => {
     id: expect.any(String),
     traceId: expect.any(String),
     status: "RUNNING",
-    name: "DuplicateStepAndUiName",
+    name: "DuplicateStepUiName",
     startedBy: expect.any(String),
     input: {},
     steps: [
@@ -1263,7 +1263,7 @@ test("flows - duplicate step name and UI name", async () => {
   });
 
   const flow = await untilFlowFinished({
-    name: "DuplicateStepAndUiName",
+    name: "DuplicateStepUiName",
     id: res.body.id,
     token,
   });
@@ -1272,7 +1272,7 @@ test("flows - duplicate step name and UI name", async () => {
     id: res.body.id,
     traceId: res.body.traceId,
     status: "FAILED",
-    name: "DuplicateStepAndUiName",
+    name: "DuplicateStepUiName",
     startedBy: expect.any(String),
     input: {},
     steps: [
@@ -1366,7 +1366,7 @@ test("flows - authorised starting, getting and listing flows", async () => {
   expect(resListAdmin.body.flows[10].name).toBe("ValidationBoolean");
   expect(resListAdmin.body.flows[11].name).toBe("AllInputs");
   expect(resListAdmin.body.flows[12].name).toBe("DuplicateStepName");
-  expect(resListAdmin.body.flows[13].name).toBe("DuplicateStepAndUiName");
+  expect(resListAdmin.body.flows[13].name).toBe("DuplicateStepUiName");
   expect(resListAdmin.body.flows[14].name).toBe("EnvStep");
 
   const resListUser = await listFlows({ token: userToken });
