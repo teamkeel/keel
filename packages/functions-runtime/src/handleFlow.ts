@@ -59,6 +59,7 @@ async function handleFlow(request: any, config: any) {
         const ctx = createFlowContext(
           request.meta.runId,
           request.meta.data,
+          request.meta.action,
           span.spanContext().spanId,
           createFlowContextAPI({
             meta: request.meta,

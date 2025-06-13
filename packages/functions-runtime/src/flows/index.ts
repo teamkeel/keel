@@ -35,12 +35,14 @@ const enum STEP_TYPE {
 }
 
 const defaultOpts = {
-  maxRetries: 5,
-  timeoutInMs: 60000,
+  retries: 5,
+  timeout: 60000,
 };
 
 export interface FlowContext<C extends FlowConfig, E = any, S = any> {
+  // Defines a function step that will be run in the flow.
   step: Step<C>;
+  // Defines a UI step that will be run in the flow.
   ui: UI<C>;
   env: E;
   now: Date;
@@ -60,12 +62,18 @@ type JsonSerializable =
 
 export type Step<C extends FlowConfig> = {
   <R extends JsonSerializable | void>(
+    /** The unique name of this step. */
     name: string,
+    /** Configuration options for the step. */
     options: {
+      /** The stage this step belongs to. Used for organising steps in the UI. */
       stage?: ExtractStageKeys<C>;
-      maxRetries?: number;
-      timeoutInMs?: number;
+      /** Number of times to retry the step if it fails. Defaults to 5. */
+      retries?: number;
+      /** Maximum time in milliseconds to wait for the step to complete. Defaults to 60000 (1 minute). */
+      timeout?: number;
     },
+    /** The step function to execute. */
     fn: () => Promise<R> & {
       catch: (
         errorHandler: (err: Error) => Promise<void> | void
@@ -87,8 +95,11 @@ type StepFunction<R> = () => Promise<R> & {
 };
 
 export interface FlowConfig {
+  /** The stages to organise the steps in the flow. */
   stages?: StageConfig[];
+  /** The title of the flow as shown in the Console. */
   title?: string;
+  /** The description of the flow as shown in the Console. */
   description?: string;
 }
 
@@ -120,9 +131,13 @@ export type ExtractStageKeys<T extends FlowConfig> = T extends {
   : never;
 
 type StageConfigObject = {
+  /** The unique key of the stage. */
   key: string;
+  /** The name of the stage as shown in the Console. */
   name: string;
+  /** The description of the stage as shown in the Console. */
   description?: string;
+  /** Whether the stage is initially hidden in the Console. */
   initiallyHidden?: boolean;
 };
 
@@ -131,6 +146,7 @@ type StageConfig = string | StageConfigObject;
 export function createFlowContext<C extends FlowConfig, E = any, S = any>(
   runId: string,
   data: any,
+  action: string | null,
   spanId: string,
   ctx: {
     env: E;
@@ -224,7 +240,7 @@ export function createFlowContext<C extends FlowConfig, E = any, S = any>(
         try {
           result = await withTimeout(
             actualFn(),
-            options.timeoutInMs ?? defaultOpts.timeoutInMs
+            options.timeout ?? defaultOpts.timeout
           );
         } catch (e) {
           await db
@@ -241,7 +257,7 @@ export function createFlowContext<C extends FlowConfig, E = any, S = any>(
 
           if (
             failedSteps.length + 1 >=
-            (options.maxRetries ?? defaultOpts.maxRetries)
+            (options.retries ?? defaultOpts.retries)
           ) {
             throw new ExhuastedRetriesDisrupt();
           }
@@ -342,6 +358,9 @@ export function createFlowContext<C extends FlowConfig, E = any, S = any>(
 
         // If this step has already been completed, return the values. Steps are only ever run to completion once.
         if (step && step.status === STEP_STATUS.COMPLETED) {
+          if (step.action) {
+            return { data: step.value, action: step.action };
+          }
           return step.value;
         }
 
@@ -361,25 +380,32 @@ export function createFlowContext<C extends FlowConfig, E = any, S = any>(
             .executeTakeFirst();
 
           // If no data has been passed in, render the UI by disrupting the step with UIRenderDisrupt.
-          throw new UIRenderDisrupt(step?.id, (await page(options, null)).page);
+          throw new UIRenderDisrupt(
+            step?.id,
+            (await page(options, null, null)).page
+          );
         }
 
         if (!data) {
           // If no data has been passed in, render the UI by disrupting the step with UIRenderDisrupt.
-          throw new UIRenderDisrupt(step?.id, (await page(options, null)).page);
+          throw new UIRenderDisrupt(
+            step?.id,
+            (await page(options, null, null)).page
+          );
         }
 
-        const p = await page(options, data);
+        const p = await page(options, data, action);
         if (p.hasValidationErrors) {
           throw new UIRenderDisrupt(step?.id, p.page);
         }
 
-        // If the data has been passed in and is valid, persist the data and mark the step as COMPLETED, and then return the data.
+        // If the data has been passed in and is valid, persist the data (and action if applicable) and mark the step as COMPLETED, and then return the data.
         await db
           .updateTable("keel.flow_step")
           .set({
             status: STEP_STATUS.COMPLETED,
             value: JSON.stringify(data),
+            action: action,
             spanId: spanId,
             endTime: new Date(),
           })
@@ -387,7 +413,7 @@ export function createFlowContext<C extends FlowConfig, E = any, S = any>(
           .returningAll()
           .executeTakeFirst();
 
-        return data;
+        return { data, action };
       }) as UiPage<C>,
       inputs: {
         text: textInput as any,

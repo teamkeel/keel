@@ -242,6 +242,7 @@ test("flows - only pages", async () => {
     stepId: body.steps[0].id,
     token,
     values: {},
+    action: null,
   }));
   expect(status).toEqual(200);
   expect(body).toEqual({
@@ -309,6 +310,7 @@ test("flows - only pages", async () => {
     stepId: body.steps[1].id,
     token,
     values: { yesno: true },
+    action: null,
   }));
   expect(status).toEqual(200);
   expect(body).toEqual({
@@ -631,6 +633,7 @@ test("flows - alternating step types", async () => {
       name: "Keelson updated",
       age: 32,
     },
+    action: null,
   }));
   expect(status).toEqual(200);
   expect(body).toEqual({
@@ -737,6 +740,7 @@ test("flows - text input validation", async () => {
     values: {
       postcode: "blah blah blah",
     },
+    action: null,
   }));
 
   expect(status).toBe(200);
@@ -764,6 +768,7 @@ test("flows - text input validation", async () => {
     values: {
       postcode: "E4 6ED",
     },
+    action: null,
   }));
 
   expect(status).toBe(200);
@@ -795,6 +800,7 @@ test("flows - boolean input validation", async () => {
     values: {
       good: false,
     },
+    action: null,
   }));
 
   expect(status).toBe(200);
@@ -822,6 +828,7 @@ test("flows - boolean input validation", async () => {
     values: {
       good: true,
     },
+    action: null,
   }));
 
   expect(status).toBe(200);
@@ -1063,7 +1070,7 @@ test("flows - timeout step", async () => {
         status: "FAILED",
         type: "FUNCTION",
         value: null,
-        error: "Step function timed out after 1ms",
+        error: "Step function timed out after 10ms",
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
         startTime: expect.any(String),
@@ -1078,7 +1085,7 @@ test("flows - timeout step", async () => {
         status: "FAILED",
         type: "FUNCTION",
         value: null,
-        error: "Step function timed out after 1ms",
+        error: "Step function timed out after 10ms",
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
         startTime: expect.any(String),
@@ -1093,7 +1100,7 @@ test("flows - timeout step", async () => {
         status: "FAILED",
         type: "FUNCTION",
         value: null,
-        error: "Step function timed out after 1ms",
+        error: "Step function timed out after 10ms",
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
         startTime: expect.any(String),
@@ -1108,7 +1115,7 @@ test("flows - timeout step", async () => {
         status: "FAILED",
         type: "FUNCTION",
         value: null,
-        error: "Step function timed out after 1ms",
+        error: "Step function timed out after 10ms",
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
         startTime: expect.any(String),
@@ -1123,7 +1130,7 @@ test("flows - timeout step", async () => {
         status: "FAILED",
         type: "FUNCTION",
         value: null,
-        error: "Step function timed out after 1ms",
+        error: "Step function timed out after 10ms",
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
         startTime: expect.any(String),
@@ -1351,8 +1358,7 @@ test("flows - authorised starting, getting and listing flows", async () => {
   const userToken = await getToken({ email: "user@gmail.com" });
 
   const resListAdmin = await listFlows({ token: adminToken });
-  expect(resListAdmin.status).toBe(200);
-  expect(resListAdmin.body.flows.length).toBe(15);
+  expect(resListAdmin.body.flows.length).toBe(16);
   expect(resListAdmin.body.flows[0].name).toBe("ScalarStep");
   expect(resListAdmin.body.flows[1].name).toBe("MixedStepTypes");
   expect(resListAdmin.body.flows[2].name).toBe("Stepless");
@@ -1368,6 +1374,7 @@ test("flows - authorised starting, getting and listing flows", async () => {
   expect(resListAdmin.body.flows[12].name).toBe("DuplicateStepName");
   expect(resListAdmin.body.flows[13].name).toBe("DuplicateStepUiName");
   expect(resListAdmin.body.flows[14].name).toBe("EnvStep");
+  expect(resListAdmin.body.flows[15].name).toBe("MultipleActions");
 
   const resListUser = await listFlows({ token: userToken });
   expect(resListUser.status).toBe(200);
@@ -1477,6 +1484,263 @@ test("flows - env step", async () => {
   });
 });
 
+test("flows - multiple actions - finish", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  let { status, body } = await startFlow({
+    name: "MultipleActions",
+    token,
+    body: {},
+  });
+  expect(status).toEqual(200);
+  expect(body).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "AWAITING_INPUT",
+    name: "MultipleActions",
+    startedBy: expect.any(String),
+    input: {},
+    steps: [
+      {
+        id: expect.any(String),
+        name: "question",
+        runId: expect.any(String),
+        stage: null,
+        status: "PENDING",
+        type: "UI",
+        value: null,
+        error: null,
+        startTime: expect.any(String),
+        endTime: null,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        ui: {
+          __type: "ui.page",
+          actions: ["finish", "continue"],
+          content: [
+            {
+              __type: "ui.input.boolean",
+              disabled: false,
+              label: "Did you like the things?",
+              mode: "checkbox",
+              name: "yesno",
+              optional: false,
+            },
+          ],
+          title: "Continue flow?",
+        },
+      },
+    ],
+    createdAt: expect.any(String),
+    updatedAt: expect.any(String),
+    config: {
+      title: "Multiple actions",
+    },
+  });
+
+  ({ status, body } = await putStepValues({
+    name: "MultipleActions",
+    runId: body.id,
+    stepId: body.steps[0].id,
+    token,
+    values: { yesno: true },
+    action: "finish",
+  }));
+  expect(status).toEqual(200);
+  expect(body).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "COMPLETED",
+    name: "MultipleActions",
+    startedBy: expect.any(String),
+    input: {},
+    steps: expect.any(Array),
+    createdAt: expect.any(String),
+    updatedAt: expect.any(String),
+    config: {
+      title: "Multiple actions",
+    },
+  });
+});
+
+test("flows - multiple actions - continue", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  let { status, body } = await startFlow({
+    name: "MultipleActions",
+    token,
+    body: {},
+  });
+  expect(status).toEqual(200);
+  expect(body).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "AWAITING_INPUT",
+    name: "MultipleActions",
+    startedBy: expect.any(String),
+    input: {},
+    steps: [
+      {
+        id: expect.any(String),
+        name: "question",
+        runId: expect.any(String),
+        stage: null,
+        status: "PENDING",
+        type: "UI",
+        value: null,
+        error: null,
+        startTime: expect.any(String),
+        endTime: null,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        ui: {
+          __type: "ui.page",
+          actions: ["finish", "continue"],
+          content: [
+            {
+              __type: "ui.input.boolean",
+              disabled: false,
+              label: "Did you like the things?",
+              mode: "checkbox",
+              name: "yesno",
+              optional: false,
+            },
+          ],
+          title: "Continue flow?",
+        },
+      },
+    ],
+    createdAt: expect.any(String),
+    updatedAt: expect.any(String),
+    config: {
+      title: "Multiple actions",
+    },
+  });
+
+  // Provide the values for the pending UI step
+  ({ status, body } = await putStepValues({
+    name: "MultipleActions",
+    runId: body.id,
+    stepId: body.steps[0].id,
+    token,
+    values: {},
+    action: "continue",
+  }));
+  expect(status).toEqual(200);
+  expect(body).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "AWAITING_INPUT",
+    name: "MultipleActions",
+    startedBy: expect.any(String),
+    input: {},
+    steps: [
+      {
+        id: expect.any(String),
+        name: "question",
+        runId: expect.any(String),
+        stage: null,
+        status: "COMPLETED",
+        type: "UI",
+        value: {},
+        error: null,
+        startTime: expect.any(String),
+        endTime: expect.any(String),
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        ui: null,
+      },
+      {
+        id: expect.any(String),
+        name: "another-question",
+        runId: expect.any(String),
+        stage: null,
+        status: "PENDING",
+        type: "UI",
+        value: null,
+        error: null,
+        startTime: expect.any(String),
+        endTime: null,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        ui: {
+          __type: "ui.page",
+          content: [
+            {
+              __type: "ui.input.text",
+              label: "Name",
+              disabled: false,
+              optional: false,
+              name: "name",
+            },
+          ],
+          title: "Another question",
+        },
+      },
+    ],
+    createdAt: expect.any(String),
+    updatedAt: expect.any(String),
+    config: {
+      title: "Multiple actions",
+    },
+  });
+
+  ({ status, body } = await putStepValues({
+    name: "MixedStepTypes",
+    runId: body.id,
+    stepId: body.steps[1].id,
+    token,
+    values: { yesno: true },
+    action: null,
+  }));
+  expect(status).toEqual(200);
+  expect(body).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "COMPLETED",
+    name: "MultipleActions",
+    startedBy: expect.any(String),
+    input: {},
+    steps: [
+      {
+        id: expect.any(String),
+        name: "question",
+        runId: expect.any(String),
+        stage: null,
+        status: "COMPLETED",
+        type: "UI",
+        value: {},
+        error: null,
+        startTime: expect.any(String),
+        endTime: expect.any(String),
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        ui: null,
+      },
+      {
+        id: expect.any(String),
+        name: "another-question",
+        runId: expect.any(String),
+        stage: null,
+        status: "COMPLETED",
+        type: "UI",
+        value: { yesno: true },
+        error: null,
+        startTime: expect.any(String),
+        endTime: expect.any(String),
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        ui: null,
+      },
+    ],
+    createdAt: expect.any(String),
+    updatedAt: expect.any(String),
+    config: {
+      title: "Multiple actions",
+    },
+  });
+});
+
 async function getToken({ email }) {
   const response = await fetch(
     process.env.KEEL_TESTING_AUTH_API_URL + "/token",
@@ -1578,18 +1842,21 @@ async function listMyRuns({ token, params }) {
   };
 }
 
-async function putStepValues({ name, runId, stepId, values, token }) {
-  const res = await fetch(
-    `${process.env.KEEL_TESTING_API_URL}/flows/json/${name}/${runId}/${stepId}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + token,
-      },
-      body: JSON.stringify(values),
-    }
-  );
+async function putStepValues({ name, runId, stepId, values, token, action }) {
+  let url = `${process.env.KEEL_TESTING_API_URL}/flows/json/${name}/${runId}/${stepId}`;
+  if (action) {
+    const queryString = new URLSearchParams({ action }).toString();
+    url = `${url}?${queryString}`;
+  }
+
+  const res = await fetch(url, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+    body: JSON.stringify(values),
+  });
 
   return {
     status: res.status,

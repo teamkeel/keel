@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"sync"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -20,6 +21,7 @@ type S3Object struct {
 }
 
 type AWSAPIHandler struct {
+	m             sync.Mutex
 	PathPrefix    string
 	SSMParameters map[string]string
 	FunctionsURL  string
@@ -29,9 +31,11 @@ type AWSAPIHandler struct {
 }
 
 func (h *AWSAPIHandler) HandleHTTP(r *http.Request, w http.ResponseWriter) {
+	h.m.Lock()
 	if h.S3Bucket == nil {
 		h.S3Bucket = map[string]*S3Object{}
 	}
+	h.m.Unlock()
 
 	s3Prefixes := []string{
 		h.PathPrefix + "files/",
@@ -139,17 +143,22 @@ func (h *AWSAPIHandler) s3PutObject(r *http.Request, w http.ResponseWriter) {
 
 	key := strings.TrimPrefix(r.URL.Path, h.PathPrefix)
 
+	h.m.Lock()
 	h.S3Bucket[key] = &S3Object{
 		// Store the headers so we can return them in GetObject
 		Headers: r.Header.Clone(),
 		Data:    b,
 	}
+	h.m.Unlock()
 
 	_, _ = w.Write([]byte(""))
 }
 
 // https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html
 func (h *AWSAPIHandler) s3GetObject(r *http.Request, w http.ResponseWriter) {
+	h.m.Lock()
+	defer h.m.Unlock()
+
 	key := strings.TrimPrefix(r.URL.Path, h.PathPrefix)
 
 	f, ok := h.S3Bucket[key]

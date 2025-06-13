@@ -52,7 +52,7 @@ func StartFlow(ctx context.Context, flow *proto.Flow, inputs map[string]any) (ru
 		attribute.String("flowRun.id", run.ID),
 	)
 
-	err, uiComponents := o.orchestrateRun(ctx, run.ID, inputs, nil)
+	err, uiComponents := o.orchestrateRun(ctx, run.ID, inputs, nil, "")
 	if err != nil {
 		err = fmt.Errorf("orchestrating flow run: %w", err)
 		return
@@ -154,7 +154,7 @@ func GetFlowRunState(ctx context.Context, runID string) (run *Run, err error) {
 	}
 
 	// retrieving the step component from the flow runtime
-	resp, err := o.CallFlow(ctx, run, run.Input.(map[string]any), nil)
+	resp, err := o.CallFlow(ctx, run, run.Input.(map[string]any), nil, "")
 	if err != nil {
 		err = fmt.Errorf("retrieving ui component: %w", err)
 		return
@@ -211,7 +211,7 @@ func CancelFlowRun(ctx context.Context, runID string) (run *Run, err error) {
 
 // UpdateStep sets the given input on the given pending UI step, updating it's status to COMPLETED. It then returs the
 // updated run state.
-func UpdateStep(ctx context.Context, runID string, stepID string, data map[string]any) (run *Run, err error) {
+func UpdateStep(ctx context.Context, runID string, stepID string, data map[string]any, action string) (run *Run, err error) {
 	ctx, span := tracer.Start(ctx, "UpdateStep")
 	defer span.End()
 
@@ -239,7 +239,7 @@ func UpdateStep(ctx context.Context, runID string, stepID string, data map[strin
 	}
 
 	// Run the flow synchronously
-	err, uiComponents := o.orchestrateRun(ctx, runID, run.Input.(map[string]any), data)
+	err, uiComponents := o.orchestrateRun(ctx, runID, run.Input.(map[string]any), data, action)
 	if err != nil {
 		err = fmt.Errorf("orchestrating flow run: %w", err)
 		return
