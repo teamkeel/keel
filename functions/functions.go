@@ -393,7 +393,7 @@ func CallSubscriber(ctx context.Context, subscriber *proto.Subscriber, event *ev
 }
 
 // CallFlow will invoke the flow function on the runtime node server.
-func CallFlow(ctx context.Context, flow *proto.Flow, runId string, inputs map[string]any, data map[string]any) (any, *FunctionsRuntimeMeta, error) {
+func CallFlow(ctx context.Context, flow *proto.Flow, runId string, inputs map[string]any, data map[string]any, action string) (any, *FunctionsRuntimeMeta, error) {
 	span := trace.SpanFromContext(ctx)
 
 	transport, ok := ctx.Value(contextKey).(Transport)
@@ -412,6 +412,10 @@ func CallFlow(ctx context.Context, flow *proto.Flow, runId string, inputs map[st
 		"tracing": tracingContext,
 		"inputs":  inputs,
 		"data":    data,
+	}
+	if action != "" {
+		meta["action"] = action
+		span.SetAttributes(attribute.String("action", action))
 	}
 
 	req := &FunctionsRuntimeRequest{

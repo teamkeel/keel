@@ -80,6 +80,10 @@ flow EnvStep {
     @permission(roles: [Admin])
 }
 
+flow MultipleActions {
+    @permission(roles: [Admin])
+}
+
 model Thing {
     fields {
         name Text?

@@ -122,7 +122,7 @@ func FlowHandler(s *proto.Schema) common.HandlerFunc {
 				return common.NewJsonResponse(http.StatusOK, run, nil)
 			}
 
-			// Send step updates: PUT flows/json/[flowName]/[runID]/[stepID]
+			// Send step updates: PUT flows/json/[flowName]/[runID]/[stepID]?[action=xxxx]
 			if r.Method != http.MethodPut {
 				return httpjson.NewErrorResponse(ctx, common.NewHttpMethodNotAllowedError("only HTTP PUT accepted"), nil)
 			}
@@ -137,7 +137,7 @@ func FlowHandler(s *proto.Schema) common.HandlerFunc {
 				return httpjson.NewErrorResponse(ctx, common.NewInputMalformedError("data not correctly formatted"), nil)
 			}
 
-			run, err := flows.UpdateStep(ctx, pathParts[1], pathParts[2], data)
+			run, err := flows.UpdateStep(ctx, pathParts[1], pathParts[2], data, r.URL.Query().Get("action"))
 			if err != nil {
 				return httpjson.NewErrorResponse(ctx, err, nil)
 			}

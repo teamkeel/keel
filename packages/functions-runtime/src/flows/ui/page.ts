@@ -51,7 +51,8 @@ export async function page<
   T extends UIElements,
 >(
   options: PageOptions<C, A, T>,
-  data: any
+  data: any,
+  action: string | null
 ): Promise<{ page: UiPageApiResponse; hasValidationErrors: boolean }> {
   // Turn these back into the actual response types
   const content = options.content as unknown as ImplementationResponse<
@@ -60,6 +61,16 @@ export async function page<
   >[];
 
   let hasValidationErrors = false;
+
+  // if we have actions defined, validate that the given action exists
+  if (options.actions) {
+    const isValidAction = options.actions.some((a) => {
+      if (typeof a === "string") return a === action;
+      return a && typeof a === "object" && "label" in a && a.label === action;
+    });
+
+    hasValidationErrors = !isValidAction;
+  }
 
   const contentUiConfig = (await Promise.all(
     content
