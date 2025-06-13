@@ -154,6 +154,9 @@ export function createFlowContext<C extends FlowConfig, E = any, S = any>(
     secrets: S;
   }
 ): FlowContext<C, E, S> {
+  // Track step and page names to prevent duplicates
+  const usedNames = new Set<string>();
+
   return {
     env: ctx.env,
     now: ctx.now,
@@ -166,6 +169,27 @@ export function createFlowContext<C extends FlowConfig, E = any, S = any>(
       ) as StepFunction<any>;
 
       const db = useDatabase();
+
+      // Check for duplicate step names
+      if (usedNames.has(name)) {
+        await db
+          .insertInto("keel.flow_step")
+          .values({
+            run_id: runId,
+            name: name,
+            stage: options.stage,
+            status: STEP_STATUS.FAILED,
+            type: STEP_TYPE.FUNCTION,
+            error: `Duplicate step name: ${name}`,
+            startTime: new Date(),
+            endTime: new Date(),
+          })
+          .returningAll()
+          .executeTakeFirst();
+
+        throw new Error(`Duplicate step name: ${name}`);
+      }
+      usedNames.add(name);
 
       // First check if we already have a result for this step
       const past = await db
@@ -302,6 +326,27 @@ export function createFlowContext<C extends FlowConfig, E = any, S = any>(
     ui: {
       page: (async (name, options) => {
         const db = useDatabase();
+
+        // Check for duplicate step names
+        if (usedNames.has(name)) {
+          await db
+            .insertInto("keel.flow_step")
+            .values({
+              run_id: runId,
+              name: name,
+              stage: options.stage,
+              status: STEP_STATUS.FAILED,
+              type: STEP_TYPE.UI,
+              error: `Duplicate step name: ${name}`,
+              startTime: new Date(),
+              endTime: new Date(),
+            })
+            .returningAll()
+            .executeTakeFirst();
+
+          throw new Error(`Duplicate step name: ${name}`);
+        }
+        usedNames.add(name);
 
         // First check if this step exists
         let step = await db

@@ -76,6 +76,14 @@ flow AllInputs {
     @permission(roles: [Admin])
 }
 
+flow DuplicateStepName {
+    @permission(roles: [Admin])
+}
+
+flow DuplicateStepUiName {
+    @permission(roles: [Admin])
+}
+
 flow EnvStep {
     @permission(roles: [Admin])
 }
