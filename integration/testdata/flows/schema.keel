@@ -92,6 +92,10 @@ flow MultipleActions {
     @permission(roles: [Admin])
 }
 
+flow WithCompletion {
+    @permission(roles: [Admin])
+}
+
 model Thing {
     fields {
         name Text?

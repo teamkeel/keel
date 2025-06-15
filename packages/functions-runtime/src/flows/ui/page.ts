@@ -4,8 +4,10 @@ import {
   ImplementationResponse,
   InputElementResponse,
   UiElementApiResponses,
+  DisplayElementResponse,
   UIElements,
 } from ".";
+
 
 type PageOptions<
   C extends FlowConfig,
@@ -19,6 +21,7 @@ type PageOptions<
   validate?: (data: ExtractFormData<T>) => Promise<true | string>;
   actions?: A;
 };
+
 export type UiPage<C extends FlowConfig> = <
   T extends UIElements,
   const A extends PageActions[] = [],

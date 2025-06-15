@@ -1,4 +1,5 @@
 import { ImplementationResponse, UI } from "./ui";
+import { Completion } from "./ui/completion";
 import { useDatabase } from "../database";
 import { textInput } from "./ui/elements/input/text";
 import { numberInput } from "./ui/elements/input/number";
@@ -44,6 +45,7 @@ export interface FlowContext<C extends FlowConfig, E = any, S = any> {
   step: Step<C>;
   // Defines a UI step that will be run in the flow.
   ui: UI<C>;
+  complete: Completion<C>;
   env: E;
   now: Date;
   secrets: S;
@@ -161,6 +163,23 @@ export function createFlowContext<C extends FlowConfig, E = any, S = any>(
     env: ctx.env,
     now: ctx.now,
     secrets: ctx.secrets,
+    complete: async (options) => {
+      const db = useDatabase();
+      await db
+      .insertInto("keel.flow_step")
+      .values({
+        run_id: runId,
+        name: "complete",
+        //stage: options.stage,
+        status: STEP_STATUS.COMPLETED,
+        type: STEP_TYPE.UI,
+       //error: `Duplicate step name: ${name}`,
+        startTime: new Date(),
+        endTime: new Date(),
+      })
+      .returningAll()
+      .executeTakeFirst();
+    },
     step: async (name, optionsOrFn, fn?) => {
       // We need to check the type of the arguments due to the step function being overloaded
       const options = typeof optionsOrFn === "function" ? {} : optionsOrFn;

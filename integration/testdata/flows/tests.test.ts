@@ -1320,6 +1320,20 @@ test("flows - duplicate step name and UI name", async () => {
   });
 });
 
+test.only("flows - with completion", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+  const res = await startFlow({ name: "WithCompletion", token, body: {} });
+  expect(res.status).toBe(200);
+
+  const flow = await untilFlowFinished({
+    name: "WithCompletion",
+    id: res.body.id,
+    token,
+  });
+
+  console.log(flow);
+});
+
 test("flows - myRuns", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
   const res = await startFlow({ name: "ErrorInFlow", token, body: {} });
