@@ -1,0 +1,25 @@
+model Invoice {
+    fields {
+        reference Text @sequence("INV-")
+    }
+}
+
+===
+
+model Invoice {
+    fields {
+        reference Text @sequence("INV-")
+        comments Text
+    }
+}
+
+===
+
+ALTER TABLE "invoice" ADD COLUMN "comments" TEXT NOT NULL;
+
+===
+
+[
+    {"Model":"Invoice","Field":"comments","Type":"ADDED"}
+]
+
