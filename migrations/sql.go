@@ -211,7 +211,7 @@ func alterColumnStmt(modelName string, field *proto.Field, column *ColumnRow) (s
 
 	alterColumnStmtPrefix := fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s", Identifier(modelName), Identifier(column.ColumnName))
 
-	if field.GetDefaultValue() == nil && column.HasDefault {
+	if field.GetDefaultValue() == nil && field.GetSequence() == nil && column.HasDefault {
 		output := fmt.Sprintf("%s DROP DEFAULT;", alterColumnStmtPrefix)
 		stmts = append(stmts, output)
 	}
@@ -232,8 +232,8 @@ func alterColumnStmt(modelName string, field *proto.Field, column *ColumnRow) (s
 	}
 
 	// these two flags are opposites of each other, so if they are both true
-	// or both false then there is a change to be applied
-	if field.GetOptional() == column.NotNull {
+	// or both false then there is a change to be applied (only for non sequence fields)
+	if field.GetOptional() == column.NotNull && field.GetSequence() == nil {
 		var change string
 		if field.GetOptional() && column.NotNull {
 			change = "DROP NOT NULL"

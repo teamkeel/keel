@@ -360,13 +360,13 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 				continue
 			}
 
-			field := proto.FindField(schema.GetModels(), model.GetName(), casing.ToLowerCamel(column.ColumnName))
+			colName := strings.TrimSuffix(column.ColumnName, sequenceSuffix)
+
+			field := proto.FindField(schema.GetModels(), model.GetName(), casing.ToLowerCamel(colName))
 			if field == nil {
 				statements = append(statements, dropColumnStmt(model.GetName(), column.ColumnName))
 
 				// Remove __sequence suffix if present
-				colName := strings.TrimSuffix(column.ColumnName, sequenceSuffix)
-
 				changes = append(changes, &DatabaseChange{
 					Model: model.GetName(),
 					Field: casing.ToLowerCamel(colName),
