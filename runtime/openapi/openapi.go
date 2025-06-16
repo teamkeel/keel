@@ -635,6 +635,14 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 				Required: true,
 				Schema:   jsonschema.JSONSchema{Type: "string"},
 			},
+			{
+				Name:     "action",
+				In:       "query",
+				Required: false,
+				Schema: jsonschema.JSONSchema{
+					Type: "string",
+				},
+			},
 		},
 		Put: &OperationObject{
 			OperationID: StringPointer("putFlowStep"),
