@@ -12,11 +12,7 @@ function deleteFunction({ model, whereInputs }) {
 
       if (hooks.beforeQuery) {
         data = await runtime.tracing.withSpan("beforeQuery", () => {
-          if (!inputs || Object.keys(inputs).length === 0) {
-            return hooks.beforeQuery(ctx, data);
-          } else {
-            return hooks.beforeQuery(ctx, inputs, data);
-          }
+          return hooks.beforeQuery(ctx, inputs, data);
         });
       }
 
@@ -31,11 +27,7 @@ function deleteFunction({ model, whereInputs }) {
 
       if (hooks.beforeWrite) {
         await runtime.tracing.withSpan("beforeWrite", () => {
-          if (!inputs || Object.keys(inputs).length === 0) {
-            return hooks.beforeWrite(ctx, data);
-          } else {
-            return hooks.beforeWrite(ctx, inputs, data);
-          }
+          return hooks.beforeWrite(ctx, inputs, data);
         });
       }
 
@@ -43,11 +35,7 @@ function deleteFunction({ model, whereInputs }) {
 
       if (hooks.afterWrite) {
         await runtime.tracing.withSpan("afterWrite", () => {
-          if (!inputs || Object.keys(inputs).length === 0) {
-            return hooks.afterWrite(ctx, data);
-          } else {
-            return hooks.afterWrite(ctx, inputs, data);
-          }
+          return hooks.afterWrite(ctx, inputs, data);
         });
       }
 

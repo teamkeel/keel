@@ -10,11 +10,7 @@ function createFunction({ model, valueInputs }) {
 
       if (hooks.beforeWrite) {
         values = await runtime.tracing.withSpan("beforeWrite", () => {
-          if (!inputs || Object.keys(inputs).length === 0) {
-            return hooks.beforeWrite(ctx, values);
-          } else {
-            return hooks.beforeWrite(ctx, inputs, values);
-          }
+          return hooks.beforeWrite(ctx, inputs, values);
         });
       }
 
@@ -22,11 +18,7 @@ function createFunction({ model, valueInputs }) {
 
       if (hooks.afterWrite) {
         const v = await runtime.tracing.withSpan("afterWrite", () => {
-          if (!inputs || Object.keys(inputs).length === 0) {
-            return hooks.afterWrite(ctx, data);
-          } else {
-            return hooks.afterWrite(ctx, inputs, data);
-          }
+          return hooks.afterWrite(ctx, inputs, data);
         });
         if (v !== undefined) {
           data = v;

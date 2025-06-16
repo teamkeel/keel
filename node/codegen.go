@@ -1328,26 +1328,26 @@ func writeFunctionWrapperType(w *codegen.Writer, schema *proto.Schema, model *pr
 	modelName := action.GetModelName()
 	queryBuilder := modelName + "QueryBuilder"
 
+	var inputsType string
+	if action.GetInputMessageName() == "" {
+		inputsType = "never"
+	} else {
+		inputsType = schema.FindMessage(action.GetInputMessageName()).GetName()
+	}
+
 	switch action.GetType() {
 	case proto.ActionType_ACTION_TYPE_GET:
-		if action.GetInputMessageName() == "" {
-			w.Writef("GetFunctionHooksNoInputs<%s, %s>", modelName, queryBuilder)
-		} else {
-			w.Writef("GetFunctionHooks<%s, %s, %s>", modelName, queryBuilder, action.GetInputMessageName())
-		}
+		w.Writef("GetFunctionHooks<%s, %s, %s>", modelName, queryBuilder, inputsType)
 	case proto.ActionType_ACTION_TYPE_LIST:
-		w.Writef("ListFunctionHooks<%s, %s, %s>", modelName, queryBuilder, action.GetInputMessageName())
+		w.Writef("ListFunctionHooks<%s, %s, %s>", modelName, queryBuilder, inputsType)
 	case proto.ActionType_ACTION_TYPE_CREATE:
-
-		if action.GetInputMessageName() == "" {
-			w.Writef("CreateFunctionHooksNoInputs<%s, %s, %sCreateValues>", modelName, queryBuilder, modelName)
-		} else {
+		var beforeWriteValues string
+		if action.GetInputMessageName() != "" {
 			msg := schema.FindMessage(action.GetInputMessageName())
 			pickKeys := lo.FilterMap(msg.GetFields(), func(f *proto.MessageField, _ int) (string, bool) {
 				return fmt.Sprintf("'%s'", f.GetName()), isModelInput(schema, f)
 			})
 
-			var beforeWriteValues string
 			switch len(pickKeys) {
 			case len(msg.GetFields()):
 				// All inputs target model fields, this means the beforeWriteValues are exactly the same as the inputs
@@ -1360,22 +1360,15 @@ func writeFunctionWrapperType(w *codegen.Writer, schema *proto.Schema, model *pr
 				// Some inputs target model fields - so create a new type by picking from inputs
 				beforeWriteValues = fmt.Sprintf("Pick<%s, %s>", action.GetInputMessageName(), strings.Join(pickKeys, " | "))
 			}
-
-			w.Writef("CreateFunctionHooks<%s, %s, %s, %s, %sCreateValues>", modelName, queryBuilder, action.GetInputMessageName(), beforeWriteValues, modelName)
+		} else {
+			beforeWriteValues = "Record<string, never>"
 		}
 
+		w.Writef("CreateFunctionHooks<%s, %s, %s, %s, %sCreateValues>", modelName, queryBuilder, inputsType, beforeWriteValues, modelName)
 	case proto.ActionType_ACTION_TYPE_UPDATE:
-		if action.GetInputMessageName() == "" {
-			w.Writef("UpdateFunctionHooksNoInputs<%s, %s, %sValues>", modelName, queryBuilder, casing.ToCamel(action.GetName()))
-		} else {
-			w.Writef("UpdateFunctionHooks<%s, %s, %s, %sValues>", modelName, queryBuilder, action.GetInputMessageName(), casing.ToCamel(action.GetName()))
-		}
+		w.Writef("UpdateFunctionHooks<%s, %s, %s, %sValues>", modelName, queryBuilder, inputsType, casing.ToCamel(action.GetName()))
 	case proto.ActionType_ACTION_TYPE_DELETE:
-		if action.GetInputMessageName() == "" {
-			w.Writef("DeleteFunctionHooksNoInputs<%s, %s>", modelName, queryBuilder)
-		} else {
-			w.Writef("DeleteFunctionHooks<%s, %s, %s>", modelName, queryBuilder, action.GetInputMessageName())
-		}
+		w.Writef("DeleteFunctionHooks<%s, %s, %s>", modelName, queryBuilder, inputsType)
 	}
 
 	w.Writeln(";")
@@ -1433,11 +1426,14 @@ func writeSubscriberFunctionWrapperType(w *codegen.Writer, subscriber *proto.Sub
 }
 
 func writeFlowFunctionWrapperType(w *codegen.Writer, flow *proto.Flow) {
+	var inputsType string
 	if flow.GetInputMessageName() == "" {
-		w.Writef("export declare const %s: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C, Environment, Secrets>) };", flow.GetName())
+		inputsType = "never"
 	} else {
-		w.Writef("export declare const %s: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C, Environment, Secrets, %s>) };", flow.GetName(), flow.GetInputMessageName())
+		inputsType = flow.GetInputMessageName()
 	}
+
+	w.Writef("export declare const %s: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C, Environment, Secrets, %s>) };", flow.GetName(), inputsType)
 
 	w.Writeln("")
 }

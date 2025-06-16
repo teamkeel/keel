@@ -4,15 +4,15 @@ import { GetBookNoInputs, GetBookNoInputsHooks } from "@teamkeel/sdk";
 const hooks: GetBookNoInputsHooks = {};
 
 export default GetBookNoInputs({
-  beforeQuery(ctx, query) {
+  beforeQuery(ctx, inputs, query) {
     return query.where({
       title: "The Farseer",
     });
   },
-  afterQuery(ctx, data) {
-    if (data.title !== "The Farseer") {
-      return new Error("Title must be 'The Farseer'");
-    }
+  afterQuery(ctx, inputs, data) {
+    // if (data.title !== "The Farseer") {
+    //   return new Error("Title must be 'The Farseer'");
+    // }
     return {
       ...data,
       title: "The Farseer 2",

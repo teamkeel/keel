@@ -12,11 +12,7 @@ function getFunction({ model, whereInputs }) {
 
       if (hooks.beforeQuery) {
         query = await runtime.tracing.withSpan("beforeQuery", () => {
-          if (!inputs || Object.keys(inputs).length === 0) {
-            return hooks.beforeQuery(ctx, query);
-          } else {
-            return hooks.beforeQuery(ctx, inputs, query);
-          }
+          return hooks.beforeQuery(ctx, inputs, query);
         });
       }
 
@@ -31,11 +27,7 @@ function getFunction({ model, whereInputs }) {
 
       if (hooks.afterQuery) {
         query = await runtime.tracing.withSpan("afterQuery", () => {
-          if (!inputs || Object.keys(inputs).length === 0) {
-            return hooks.afterQuery(ctx, query);
-          } else {
-            return hooks.afterQuery(ctx, inputs, query);
-          }
+          return hooks.afterQuery(ctx, inputs, query);
         });
       }
 

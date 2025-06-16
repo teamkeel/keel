@@ -18,11 +18,7 @@ function updateFunction({ model, whereInputs, valueInputs }) {
 
       if (hooks.beforeQuery) {
         data = await runtime.tracing.withSpan("beforeQuery", () => {
-          if (!inputs || Object.keys(inputs).length === 0) {
-            return hooks.beforeQuery(ctx, data);
-          } else {
-            return hooks.beforeQuery(ctx, inputs, data);
-          }
+          return hooks.beforeQuery(ctx, inputs, data);
         });
       }
 
@@ -37,11 +33,7 @@ function updateFunction({ model, whereInputs, valueInputs }) {
 
       if (hooks.beforeWrite) {
         values = await runtime.tracing.withSpan("beforeWrite", () => {
-          if (!inputs || Object.keys(inputs).length === 0) {
-            return hooks.beforeWrite(ctx, values, data);
-          } else {
-            return hooks.beforeWrite(ctx, inputs, values, data);
-          }
+          return hooks.beforeWrite(ctx, inputs, values, data);
         });
       }
 
@@ -49,11 +41,7 @@ function updateFunction({ model, whereInputs, valueInputs }) {
 
       if (hooks.afterWrite) {
         const v = await runtime.tracing.withSpan("afterWrite", () => {
-          if (!inputs || Object.keys(inputs).length === 0) {
-            return hooks.afterWrite(ctx, data);
-          } else {
-            return hooks.afterWrite(ctx, inputs, data);
-          }
+          return hooks.afterWrite(ctx, inputs, data);
         });
         if (v !== undefined) {
           data = v;
