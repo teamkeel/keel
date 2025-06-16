@@ -101,7 +101,9 @@ export async function page<
       content: contentUiConfig,
       actions: options.actions?.map((a) => {
         if (typeof a === "string") {
-          return { label: a, value: a };
+          return { label: a, value: a, mode: "primary" };
+        } else if (typeof a === "object") {
+          a.mode = a.mode || "primary";
         }
         return a;
       }),
@@ -118,8 +120,8 @@ export async function page<
 type ActionValue<T> = T extends string
   ? T
   : T extends { value: infer V }
-  ? V
-  : never;
+    ? V
+    : never;
 
 // Extract the data from elements and return a key-value object based on the name of the element
 type ExtractFormData<T extends UIElements> = {
