@@ -66,7 +66,7 @@ export async function page<
   if (options.actions) {
     const isValidAction = options.actions.some((a) => {
       if (typeof a === "string") return a === action;
-      return a && typeof a === "object" && "label" in a && a.label === action;
+      return a && typeof a === "object" && "value" in a && a.value === action;
     });
 
     hasValidationErrors = !isValidAction;
