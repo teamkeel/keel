@@ -586,6 +586,9 @@ message FlowConfig {
 
 	// The name of the model on which this flow tool operates on.
 	string model_name = 8;
+
+	// Skipped for auto generated tools
+	optional string icon = 9; 
 }
 
 message FlowInputConfig {
