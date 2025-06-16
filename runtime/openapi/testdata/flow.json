@@ -547,6 +547,13 @@
           "required": true,
           "description": "",
           "schema": { "type": "string" }
+        },
+        {
+          "name": "action",
+          "in": "query",
+          "required": false,
+          "description": "",
+          "schema": { "type": "string" }
         }
       ]
     }
