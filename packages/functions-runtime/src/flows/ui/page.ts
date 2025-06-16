@@ -103,7 +103,9 @@ export async function page<
       content: contentUiConfig,
       actions: options.actions?.map((a) => {
         if (typeof a === "string") {
-          return { label: a, value: a };
+          return { label: a, value: a, mode: "primary" };
+        } else if (typeof a === "object") {
+          a.mode = a.mode || "primary";
         }
         return a;
       }),

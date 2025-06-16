@@ -14,8 +14,8 @@ TEST CASES
 [x] Error thrown in flow function
 [x] Error thrown in step function
 [x] Step returning scalar value
-[x] Step function retrying  
-[x] Step function timing out 
+[x] Step function retrying
+[x] Step function timing out
 [x] UI step validation
 [x] Check full API responses
 [ ] All UI elements response
@@ -1519,10 +1519,12 @@ test("flows - multiple actions - finish", async () => {
           actions: [
             {
               label: "finish",
+              mode: "primary",
               value: "finish",
             },
             {
               label: "continue",
+              mode: "primary",
               value: "continue",
             },
           ],
@@ -1607,10 +1609,12 @@ test("flows - multiple actions - continue", async () => {
           actions: [
             {
               label: "finish",
+              mode: "primary",
               value: "finish",
             },
             {
               label: "continue",
+              mode: "primary",
               value: "continue",
             },
           ],
