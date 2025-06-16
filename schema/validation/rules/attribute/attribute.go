@@ -49,6 +49,14 @@ func AttributeLocationsRule(asts []*parser.AST) (errs errorhandling.ValidationEr
 		}
 	}
 
+	for _, flow := range query.Flows(asts) {
+		for _, section := range flow.Sections {
+			if section.Attribute != nil {
+				errs.Concat(checkAttributes([]*parser.AttributeNode{section.Attribute}, "flow", flow.Name.Value))
+			}
+		}
+	}
+
 	return
 }
 
@@ -80,6 +88,9 @@ var attributeLocations = map[string][]string{
 	parser.KeywordJob: {
 		parser.AttributePermission,
 		parser.AttributeSchedule,
+	},
+	parser.KeywordFlow: {
+		parser.AttributePermission,
 	},
 }
 

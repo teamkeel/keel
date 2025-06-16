@@ -223,6 +223,17 @@ func Jobs(asts []*parser.AST) (ret []*parser.JobNode) {
 	return ret
 }
 
+func Flows(asts []*parser.AST) (ret []*parser.FlowNode) {
+	for _, ast := range asts {
+		for _, decl := range ast.Declarations {
+			if decl.Flow != nil {
+				ret = append(ret, decl.Flow)
+			}
+		}
+	}
+	return ret
+}
+
 func IsEnum(asts []*parser.AST, name string) bool {
 	return Enum(asts, name) != nil
 }
