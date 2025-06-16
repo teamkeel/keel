@@ -306,6 +306,9 @@ func listRuns(ctx context.Context, filters *filterFields, page *paginationFields
 		if page.After != nil {
 			q.Where("id < ?", *page.After)
 		}
+	} else {
+		// default order
+		q = q.Order("id DESC")
 	}
 
 	result := q.Find(&runs)
