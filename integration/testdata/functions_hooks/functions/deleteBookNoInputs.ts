@@ -4,7 +4,7 @@ import { DeleteBookNoInputs, DeleteBookNoInputsHooks } from "@teamkeel/sdk";
 const hooks: DeleteBookNoInputsHooks = {};
 
 export default DeleteBookNoInputs({
-  beforeQuery(ctx, query) {
+  beforeQuery(ctx, inputs, query) {
     return query.where({
       title: "The Farseer 2",
     });

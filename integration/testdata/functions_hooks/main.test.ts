@@ -65,7 +65,7 @@ test("create afterWrite - create additional records", async () => {
 });
 
 test("create afterWrite - error and rollback", async () => {
-  expect(
+  await expect(
     actions.createBookAfterWriteErrorRollback({
       title: "Lady Chatterley's Lover",
     })
@@ -244,7 +244,7 @@ test("get afterQuery - permission denied", async () => {
     published: false,
   });
 
-  expect(
+  await expect(
     actions.getBookAfterQueryPermissions({
       id: dbBook.id,
       onlyPublished: true,

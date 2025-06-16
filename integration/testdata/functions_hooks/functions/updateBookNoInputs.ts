@@ -4,13 +4,13 @@ import { UpdateBookNoInputs, UpdateBookNoInputsHooks } from "@teamkeel/sdk";
 const hooks: UpdateBookNoInputsHooks = {};
 
 export default UpdateBookNoInputs({
-  beforeWrite(ctx, values) {
+  beforeWrite(ctx, inputs, values) {
     return {
       ...values,
       title: "The Farseer 2",
     };
   },
-  afterWrite(ctx, data) {
+  afterWrite(ctx, inputs, data) {
     return {
       ...data,
       title: "The Farseer",

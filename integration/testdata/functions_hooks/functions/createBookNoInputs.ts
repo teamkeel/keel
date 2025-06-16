@@ -5,13 +5,13 @@ import { createExpect } from "vitest";
 const hooks: CreateBookNoInputsHooks = {};
 
 export default CreateBookNoInputs({
-  beforeWrite(ctx, values) {
+  beforeWrite(ctx, inputs, values) {
     return {
       ...values,
       title: "The Farseer",
     };
   },
-  afterWrite(ctx, data) {
+  afterWrite(ctx, inputs, data) {
     if (data.title !== "The Farseer") {
       return new Error("Title must be 'The Farseer'");
     }
