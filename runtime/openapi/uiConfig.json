@@ -13,7 +13,28 @@
     "actions": {
       "type": "array",
       "items": {
-        "$ref": "#/$defs/PageActions"
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          },
+          "mode": {
+            "enum": [
+              "destructive",
+              "primary",
+              "secondary"
+            ],
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "label",
+          "value"
+        ]
       }
     },
     "content": {
@@ -74,37 +95,6 @@
   ],
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$defs": {
-    "PageActions": {
-      "anyOf": [
-        {
-          "type": "object",
-          "properties": {
-            "label": {
-              "type": "string"
-            },
-            "value": {
-              "type": "string"
-            },
-            "mode": {
-              "enum": [
-                "destructive",
-                "primary",
-                "secondary"
-              ],
-              "type": "string"
-            }
-          },
-          "additionalProperties": false,
-          "required": [
-            "label",
-            "value"
-          ]
-        },
-        {
-          "type": "string"
-        }
-      ]
-    },
     "UiElementInputTextApiResponse": {
       "type": "object",
       "properties": {
