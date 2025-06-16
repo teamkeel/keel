@@ -1516,7 +1516,16 @@ test("flows - multiple actions - finish", async () => {
         updatedAt: expect.any(String),
         ui: {
           __type: "ui.page",
-          actions: ["finish", "continue"],
+          actions: [
+            {
+              label: "finish",
+              value: "finish",
+            },
+            {
+              label: "continue",
+              value: "continue",
+            },
+          ],
           content: [
             {
               __type: "ui.input.boolean",
