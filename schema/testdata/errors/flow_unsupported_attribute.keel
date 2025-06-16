@@ -1,4 +1,4 @@
 flow MyFlow {
-    //expect-error:5:16:E011:model 'MyFlow' has an unrecognised attribute @whatisthis
+    //expect-error:5:16:E011:flow 'MyFlow' has an unrecognised attribute @whatisthis
     @whatisthis
 }

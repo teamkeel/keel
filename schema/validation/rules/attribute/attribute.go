@@ -89,6 +89,9 @@ var attributeLocations = map[string][]string{
 		parser.AttributePermission,
 		parser.AttributeSchedule,
 	},
+	parser.KeywordFlow: {
+		parser.AttributePermission,
+	},
 }
 
 func checkAttributes(attributes []*parser.AttributeNode, definedOn string, parentName string) (errs errorhandling.ValidationErrors) {
