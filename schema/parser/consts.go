@@ -17,6 +17,7 @@ const (
 	KeywordReturns = "returns"
 	KeywordJob     = "job"
 	KeywordInput   = "inputs"
+	KeywordFlow    = "flow"
 )
 
 const (
