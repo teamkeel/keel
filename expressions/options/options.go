@@ -19,57 +19,57 @@ import (
 // This is used to generate all the necessary combinations of operator overloads.
 var typeCompatibilityMapping = map[string][][]*types.Type{
 	operators.Equals: {
-		{types.StringType, typing.Text, typing.ID, typing.Markdown},
-		{types.IntType, types.DoubleType, typing.Number, typing.Decimal},
-		{typing.Date, typing.Timestamp, types.TimestampType},
-		{typing.Boolean, types.BoolType},
-		{types.NewListType(types.StringType), typing.TextArray, typing.IDArray, typing.MarkdownArray},
-		{types.NewListType(types.IntType), types.NewListType(types.DoubleType), typing.NumberArray, typing.DecimalArray},
-		{typing.Duration},
+		{types.StringType, typing.TypeText, typing.TypeID, typing.TypeMarkdown},
+		{types.IntType, types.DoubleType, typing.TypeNumber, typing.TypeDecimal},
+		{typing.TypeDate, typing.TypeTimestamp, types.TimestampType},
+		{typing.TypeBoolean, types.BoolType},
+		{types.NewListType(types.StringType), typing.TypeTextArray, typing.TypeIDArray, typing.TypeMarkdownArray},
+		{types.NewListType(types.IntType), types.NewListType(types.DoubleType), typing.TypeNumberArray, typing.TypeDecimalArray},
+		{typing.TypeDuration},
 	},
 	operators.NotEquals: {
-		{types.StringType, typing.Text, typing.ID, typing.Markdown},
-		{types.IntType, types.DoubleType, typing.Number, typing.Decimal},
-		{typing.Date, typing.Timestamp, types.TimestampType},
-		{typing.Boolean, types.BoolType},
-		{types.NewListType(types.StringType), typing.TextArray, typing.IDArray, typing.MarkdownArray},
-		{types.NewListType(types.IntType), types.NewListType(types.DoubleType), typing.NumberArray, typing.DecimalArray},
-		{typing.Duration},
+		{types.StringType, typing.TypeText, typing.TypeID, typing.TypeMarkdown},
+		{types.IntType, types.DoubleType, typing.TypeNumber, typing.TypeDecimal},
+		{typing.TypeDate, typing.TypeTimestamp, types.TimestampType},
+		{typing.TypeBoolean, types.BoolType},
+		{types.NewListType(types.StringType), typing.TypeTextArray, typing.TypeIDArray, typing.TypeMarkdownArray},
+		{types.NewListType(types.IntType), types.NewListType(types.DoubleType), typing.TypeNumberArray, typing.TypeDecimalArray},
+		{typing.TypeDuration},
 	},
 	operators.Greater: {
-		{types.IntType, types.DoubleType, typing.Number, typing.Decimal},
-		{typing.Date, typing.Timestamp, types.TimestampType},
-		{typing.Duration},
+		{types.IntType, types.DoubleType, typing.TypeNumber, typing.TypeDecimal},
+		{typing.TypeDate, typing.TypeTimestamp, types.TimestampType},
+		{typing.TypeDuration},
 	},
 	operators.GreaterEquals: {
-		{types.IntType, types.DoubleType, typing.Number, typing.Decimal},
-		{typing.Date, typing.Timestamp, types.TimestampType},
-		{typing.Duration},
+		{types.IntType, types.DoubleType, typing.TypeNumber, typing.TypeDecimal},
+		{typing.TypeDate, typing.TypeTimestamp, types.TimestampType},
+		{typing.TypeDuration},
 	},
 	operators.Less: {
-		{types.IntType, types.DoubleType, typing.Number, typing.Decimal},
-		{typing.Date, typing.Timestamp, types.TimestampType},
-		{typing.Duration},
+		{types.IntType, types.DoubleType, typing.TypeNumber, typing.TypeDecimal},
+		{typing.TypeDate, typing.TypeTimestamp, types.TimestampType},
+		{typing.TypeDuration},
 	},
 	operators.LessEquals: {
-		{types.IntType, types.DoubleType, typing.Number, typing.Decimal},
-		{typing.Date, typing.Timestamp, types.TimestampType},
-		{typing.Duration},
+		{types.IntType, types.DoubleType, typing.TypeNumber, typing.TypeDecimal},
+		{typing.TypeDate, typing.TypeTimestamp, types.TimestampType},
+		{typing.TypeDuration},
 	},
 	operators.Add: {
-		{types.IntType, types.DoubleType, typing.Number, typing.Decimal},
-		{typing.Duration},
-		{types.StringType, typing.Text},
+		{types.IntType, types.DoubleType, typing.TypeNumber, typing.TypeDecimal},
+		{typing.TypeDuration},
+		{types.StringType, typing.TypeText},
 	},
 	operators.Subtract: {
-		{types.IntType, types.DoubleType, typing.Number, typing.Decimal},
-		{typing.Duration},
+		{types.IntType, types.DoubleType, typing.TypeNumber, typing.TypeDecimal},
+		{typing.TypeDuration},
 	},
 	operators.Multiply: {
-		{types.IntType, types.DoubleType, typing.Number, typing.Decimal},
+		{types.IntType, types.DoubleType, typing.TypeNumber, typing.TypeDecimal},
 	},
 	operators.Divide: {
-		{types.IntType, types.DoubleType, typing.Number, typing.Decimal},
+		{types.IntType, types.DoubleType, typing.TypeNumber, typing.TypeDecimal},
 	},
 }
 
@@ -89,21 +89,21 @@ func WithSchemaTypes(schema []*parser.AST) expressions.Option {
 
 		for _, ast := range schema {
 			for _, env := range ast.EnvironmentVariables {
-				if p.Provider.Objects["_EnvironmentVariables"] == nil {
-					p.Provider.Objects["_EnvironmentVariables"] = map[string]*types.Type{}
+				if p.Provider.Objects[typing.TypeNameEnvvars] == nil {
+					p.Provider.Objects[typing.TypeNameEnvvars] = map[string]*types.Type{}
 				}
 
-				p.Provider.Objects["_EnvironmentVariables"][env] = types.StringType
+				p.Provider.Objects[typing.TypeNameEnvvars][env] = types.StringType
 			}
 		}
 
 		for _, ast := range schema {
 			for _, env := range ast.Secrets {
-				if p.Provider.Objects["_Secrets"] == nil {
-					p.Provider.Objects["_Secrets"] = map[string]*types.Type{}
+				if p.Provider.Objects[typing.TypeNameSecrets] == nil {
+					p.Provider.Objects[typing.TypeNameSecrets] = map[string]*types.Type{}
 				}
 
-				p.Provider.Objects["_Secrets"][env] = types.StringType
+				p.Provider.Objects[typing.TypeNameSecrets][env] = types.StringType
 			}
 		}
 
@@ -158,29 +158,29 @@ func WithConstant(identifier string, typeName string) expressions.Option {
 // WithCtx defines the ctx variable in the CEL environment.
 func WithCtx() expressions.Option {
 	return func(p *expressions.Parser) error {
-		p.Provider.Objects["_Context"] = map[string]*types.Type{
+		p.Provider.Objects[typing.TypeNameContext] = map[string]*types.Type{
 			"identity":        types.NewObjectType(parser.IdentityModelName),
 			"isAuthenticated": types.BoolType,
-			"now":             typing.Timestamp,
-			"secrets":         types.NewObjectType("_Secrets"),
-			"env":             types.NewObjectType("_EnvironmentVariables"),
-			"headers":         types.NewObjectType("_Headers"),
+			"now":             typing.TypeTimestamp,
+			"secrets":         typing.TypeSecrets,
+			"env":             typing.TypeEnvvars,
+			"headers":         typing.TypeHeaders,
 		}
 
-		if p.Provider.Objects["_Secrets"] == nil {
-			p.Provider.Objects["_Secrets"] = map[string]*types.Type{}
+		if p.Provider.Objects[typing.TypeNameSecrets] == nil {
+			p.Provider.Objects[typing.TypeNameSecrets] = map[string]*types.Type{}
 		}
 
-		if p.Provider.Objects["_EnvironmentVariables"] == nil {
-			p.Provider.Objects["_EnvironmentVariables"] = map[string]*types.Type{}
+		if p.Provider.Objects[typing.TypeNameEnvvars] == nil {
+			p.Provider.Objects[typing.TypeNameEnvvars] = map[string]*types.Type{}
 		}
 
-		if p.Provider.Objects["_Headers"] == nil {
-			p.Provider.Objects["_Headers"] = map[string]*types.Type{}
+		if p.Provider.Objects[typing.TypeNameHeaders] == nil {
+			p.Provider.Objects[typing.TypeNameHeaders] = map[string]*types.Type{}
 		}
 
 		var err error
-		p.CelEnv, err = p.CelEnv.Extend(cel.Variable("ctx", types.NewObjectType("_Context")))
+		p.CelEnv, err = p.CelEnv.Extend(cel.Variable("ctx", typing.TypeContext))
 		if err != nil {
 			return err
 		}
@@ -351,10 +351,10 @@ func WithComparisonOperators() expressions.Option {
 
 		// Subtracting two date/time variants will produce a duration. We define these separately because the return type is different to the operand types which doesnt fit with the generic mapping.
 		options = append(options,
-			cel.Function(operators.Subtract, cel.Overload(overloadName(operators.Subtract, typing.Date, typing.Timestamp), argTypes(typing.Date, typing.Timestamp), typing.Duration)),
-			cel.Function(operators.Subtract, cel.Overload(overloadName(operators.Subtract, typing.Date, typing.Date), argTypes(typing.Date, typing.Date), typing.Duration)),
-			cel.Function(operators.Subtract, cel.Overload(overloadName(operators.Subtract, typing.Timestamp, typing.Timestamp), argTypes(typing.Timestamp, typing.Timestamp), typing.Duration)),
-			cel.Function(operators.Subtract, cel.Overload(overloadName(operators.Subtract, typing.Timestamp, typing.Date), argTypes(typing.Timestamp, typing.Date), typing.Duration)),
+			cel.Function(operators.Subtract, cel.Overload(overloadName(operators.Subtract, typing.TypeDate, typing.TypeTimestamp), argTypes(typing.TypeDate, typing.TypeTimestamp), typing.TypeDuration)),
+			cel.Function(operators.Subtract, cel.Overload(overloadName(operators.Subtract, typing.TypeDate, typing.TypeDate), argTypes(typing.TypeDate, typing.TypeDate), typing.TypeDuration)),
+			cel.Function(operators.Subtract, cel.Overload(overloadName(operators.Subtract, typing.TypeTimestamp, typing.TypeTimestamp), argTypes(typing.TypeTimestamp, typing.TypeTimestamp), typing.TypeDuration)),
+			cel.Function(operators.Subtract, cel.Overload(overloadName(operators.Subtract, typing.TypeTimestamp, typing.TypeDate), argTypes(typing.TypeTimestamp, typing.TypeDate), typing.TypeDuration)),
 		)
 
 		p.CelEnv, err = p.CelEnv.Extend(options...)
@@ -366,31 +366,31 @@ func WithComparisonOperators() expressions.Option {
 		p.CelEnv, err = p.CelEnv.Extend(
 			cel.Function(operators.In,
 				cel.Overload("in_string_list(string)", argTypes(types.StringType, types.NewListType(types.StringType)), types.BoolType),
-				cel.Overload("in_string_Text[]", argTypes(types.StringType, typing.TextArray), types.BoolType),
-				cel.Overload("in_Text_Text[]", argTypes(typing.Text, typing.TextArray), types.BoolType),
-				cel.Overload("in_Text_list(string)", argTypes(typing.Text, types.NewListType(types.StringType)), types.BoolType),
+				cel.Overload("in_string_Text[]", argTypes(types.StringType, typing.TypeTextArray), types.BoolType),
+				cel.Overload("in_Text_Text[]", argTypes(typing.TypeText, typing.TypeTextArray), types.BoolType),
+				cel.Overload("in_Text_list(string)", argTypes(typing.TypeText, types.NewListType(types.StringType)), types.BoolType),
 
-				cel.Overload("in_string_ID[]", argTypes(types.StringType, typing.IDArray), types.BoolType),
-				cel.Overload("in_ID_ID[]", argTypes(typing.ID, typing.IDArray), types.BoolType),
-				cel.Overload("in_ID_list(string)", argTypes(typing.ID, types.NewListType(types.StringType)), types.BoolType),
+				cel.Overload("in_string_ID[]", argTypes(types.StringType, typing.TypeIDArray), types.BoolType),
+				cel.Overload("in_ID_ID[]", argTypes(typing.TypeID, typing.TypeIDArray), types.BoolType),
+				cel.Overload("in_ID_list(string)", argTypes(typing.TypeID, types.NewListType(types.StringType)), types.BoolType),
 
 				cel.Overload("in_int_list(int)", argTypes(types.IntType, types.NewListType(types.IntType)), types.BoolType),
-				cel.Overload("in_int_Number[]", argTypes(types.IntType, typing.NumberArray), types.BoolType),
-				cel.Overload("in_Number_Number[]", argTypes(typing.Number, typing.NumberArray), types.BoolType),
-				cel.Overload("in_Number_list(int)", argTypes(typing.Number, types.NewListType(types.IntType)), types.BoolType),
+				cel.Overload("in_int_Number[]", argTypes(types.IntType, typing.TypeNumberArray), types.BoolType),
+				cel.Overload("in_Number_Number[]", argTypes(typing.TypeNumber, typing.TypeNumberArray), types.BoolType),
+				cel.Overload("in_Number_list(int)", argTypes(typing.TypeNumber, types.NewListType(types.IntType)), types.BoolType),
 
 				cel.Overload("in_double_list(double)", argTypes(types.DoubleType, types.NewListType(types.DoubleType)), types.BoolType),
-				cel.Overload("in_double_Decimal[]", argTypes(types.DoubleType, typing.DecimalArray), types.BoolType),
-				cel.Overload("in_Decimal_Decimal[]", argTypes(typing.Text, typing.DecimalArray), types.BoolType),
-				cel.Overload("in_Decimal_list(double)", argTypes(typing.Decimal, types.NewListType(types.DoubleType)), types.BoolType),
+				cel.Overload("in_double_Decimal[]", argTypes(types.DoubleType, typing.TypeDecimalArray), types.BoolType),
+				cel.Overload("in_Decimal_Decimal[]", argTypes(typing.TypeText, typing.TypeDecimalArray), types.BoolType),
+				cel.Overload("in_Decimal_list(double)", argTypes(typing.TypeDecimal, types.NewListType(types.DoubleType)), types.BoolType),
 
 				cel.Overload("in_bool_list(bool)", argTypes(types.BoolType, types.NewListType(types.DoubleType)), types.BoolType),
-				cel.Overload("in_bool_Boolean[]", argTypes(types.BoolType, typing.BooleanArray), types.BoolType),
-				cel.Overload("in_Boolean_Boolean[]", argTypes(typing.Boolean, typing.BooleanArray), types.BoolType),
-				cel.Overload("in_Boolean_list(bool)", argTypes(typing.Boolean, types.NewListType(types.BoolType)), types.BoolType),
+				cel.Overload("in_bool_Boolean[]", argTypes(types.BoolType, typing.TypeBooleanArray), types.BoolType),
+				cel.Overload("in_Boolean_Boolean[]", argTypes(typing.TypeBoolean, typing.TypeBooleanArray), types.BoolType),
+				cel.Overload("in_Boolean_list(bool)", argTypes(typing.TypeBoolean, types.NewListType(types.BoolType)), types.BoolType),
 
-				cel.Overload("in_Timestamp_Timestamp[]", argTypes(typing.Timestamp, typing.TimestampArray), types.BoolType),
-				cel.Overload("in_Date_Date[]", argTypes(typing.Date, typing.DateArray), types.BoolType),
+				cel.Overload("in_Timestamp_Timestamp[]", argTypes(typing.TypeTimestamp, typing.TypeTimestampArray), types.BoolType),
+				cel.Overload("in_Date_Date[]", argTypes(typing.TypeDate, typing.TypeDateArray), types.BoolType),
 			),
 		)
 		if err != nil {
@@ -401,17 +401,17 @@ func WithComparisonOperators() expressions.Option {
 		// To be deprecated in favour of functions
 		p.CelEnv, err = p.CelEnv.Extend(
 			cel.Function(operators.Equals,
-				cel.Overload("equals_Text[]_Text", argTypes(typing.TextArray, typing.Text), types.BoolType),
-				cel.Overload("equals_Text[]_string", argTypes(typing.TextArray, types.StringType), types.BoolType),
-				cel.Overload("equals_Text_Text[]", argTypes(typing.Text, typing.TextArray), types.BoolType),
+				cel.Overload("equals_Text[]_Text", argTypes(typing.TypeTextArray, typing.TypeText), types.BoolType),
+				cel.Overload("equals_Text[]_string", argTypes(typing.TypeTextArray, types.StringType), types.BoolType),
+				cel.Overload("equals_Text_Text[]", argTypes(typing.TypeText, typing.TypeTextArray), types.BoolType),
 
-				cel.Overload("equals_ID[]_ID", argTypes(typing.IDArray, typing.ID), types.BoolType),
-				cel.Overload("equals_ID[]_string", argTypes(typing.IDArray, types.StringType), types.BoolType),
-				cel.Overload("equals_ID_ID[]", argTypes(typing.ID, typing.IDArray), types.BoolType),
+				cel.Overload("equals_ID[]_ID", argTypes(typing.TypeIDArray, typing.TypeID), types.BoolType),
+				cel.Overload("equals_ID[]_string", argTypes(typing.TypeIDArray, types.StringType), types.BoolType),
+				cel.Overload("equals_ID_ID[]", argTypes(typing.TypeID, typing.TypeIDArray), types.BoolType),
 
-				cel.Overload("equals_Number[]_Number", argTypes(typing.NumberArray, typing.Number), types.BoolType),
-				cel.Overload("equals_Number[]_int", argTypes(typing.NumberArray, types.IntType), types.BoolType),
-				cel.Overload("equals_Number_Number[]", argTypes(typing.Number, typing.NumberArray), types.BoolType),
+				cel.Overload("equals_Number[]_Number", argTypes(typing.TypeNumberArray, typing.TypeNumber), types.BoolType),
+				cel.Overload("equals_Number[]_int", argTypes(typing.TypeNumberArray, types.IntType), types.BoolType),
+				cel.Overload("equals_Number_Number[]", argTypes(typing.TypeNumber, typing.TypeNumberArray), types.BoolType),
 			),
 		)
 		if err != nil {
@@ -456,17 +456,17 @@ func WithFunctions() expressions.Option {
 		typeParamA := cel.TypeParamType("A")
 		var err error
 		p.CelEnv, err = p.CelEnv.Extend(
-			cel.Function(typing.FunctionCount, cel.Overload("count", []*types.Type{typeParamA}, typing.Number)),
-			cel.Function(typing.FunctionSum, cel.Overload("sum_decimal", []*types.Type{typing.DecimalArray}, typing.Decimal)),
-			cel.Function(typing.FunctionSum, cel.Overload("sum_number", []*types.Type{typing.NumberArray}, typing.Number)),
-			cel.Function(typing.FunctionAvg, cel.Overload("avg_decimal", []*types.Type{typing.DecimalArray}, typing.Decimal)),
-			cel.Function(typing.FunctionAvg, cel.Overload("avg_number", []*types.Type{typing.NumberArray}, typing.Number)),
-			cel.Function(typing.FunctionMin, cel.Overload("min_decimal", []*types.Type{typing.DecimalArray}, typing.Decimal)),
-			cel.Function(typing.FunctionMin, cel.Overload("min_number", []*types.Type{typing.NumberArray}, typing.Number)),
-			cel.Function(typing.FunctionMax, cel.Overload("max_decimal", []*types.Type{typing.DecimalArray}, typing.Decimal)),
-			cel.Function(typing.FunctionMax, cel.Overload("max_number", []*types.Type{typing.NumberArray}, typing.Number)),
-			cel.Function(typing.FunctionMedian, cel.Overload("median_decimal", []*types.Type{typing.DecimalArray}, typing.Decimal)),
-			cel.Function(typing.FunctionMedian, cel.Overload("median_number", []*types.Type{typing.NumberArray}, typing.Number)))
+			cel.Function(typing.FunctionCount, cel.Overload("count", []*types.Type{typeParamA}, typing.TypeNumber)),
+			cel.Function(typing.FunctionSum, cel.Overload("sum_decimal", []*types.Type{typing.TypeDecimalArray}, typing.TypeDecimal)),
+			cel.Function(typing.FunctionSum, cel.Overload("sum_number", []*types.Type{typing.TypeNumberArray}, typing.TypeNumber)),
+			cel.Function(typing.FunctionAvg, cel.Overload("avg_decimal", []*types.Type{typing.TypeDecimalArray}, typing.TypeDecimal)),
+			cel.Function(typing.FunctionAvg, cel.Overload("avg_number", []*types.Type{typing.TypeNumberArray}, typing.TypeNumber)),
+			cel.Function(typing.FunctionMin, cel.Overload("min_decimal", []*types.Type{typing.TypeDecimalArray}, typing.TypeDecimal)),
+			cel.Function(typing.FunctionMin, cel.Overload("min_number", []*types.Type{typing.TypeNumberArray}, typing.TypeNumber)),
+			cel.Function(typing.FunctionMax, cel.Overload("max_decimal", []*types.Type{typing.TypeDecimalArray}, typing.TypeDecimal)),
+			cel.Function(typing.FunctionMax, cel.Overload("max_number", []*types.Type{typing.TypeNumberArray}, typing.TypeNumber)),
+			cel.Function(typing.FunctionMedian, cel.Overload("median_decimal", []*types.Type{typing.TypeDecimalArray}, typing.TypeDecimal)),
+			cel.Function(typing.FunctionMedian, cel.Overload("median_number", []*types.Type{typing.TypeNumberArray}, typing.TypeNumber)))
 		if err != nil {
 			return err
 		}

@@ -153,7 +153,7 @@ func (p *Parser) Validate(expression *parser.Expression) ([]*errorhandling.Valid
 
 		// Backwards compatibility for relationships expressions which is actually performing an "ANY" query
 		// For example, @where(supplier.products.brand.isActive)
-		if mapType(p.ExpectedReturnType.String()) == typing.Boolean.String() && out == typing.BooleanArray.String() {
+		if mapType(p.ExpectedReturnType.String()) == typing.TypeBoolean.String() && out == typing.TypeBooleanArray.String() {
 			return nil, nil
 		}
 
@@ -181,14 +181,14 @@ func typesAssignable(expected *types.Type, actual *types.Type) bool {
 	// Define type compatibility rules
 	// [key] can be assigned to by [values]
 	typeCompatibility := map[string][]string{
-		typing.Date.String():      {mapType(typing.Date.String()), mapType(typing.Timestamp.String())},
-		typing.Timestamp.String(): {mapType(typing.Date.String()), mapType(typing.Timestamp.String())},
-		typing.Markdown.String():  {mapType(typing.Text.String()), mapType(typing.Markdown.String())},
-		typing.ID.String():        {mapType(typing.Text.String()), mapType(typing.ID.String())},
-		typing.Text.String():      {mapType(typing.Text.String()), mapType(typing.Markdown.String()), mapType(typing.ID.String())},
-		typing.Number.String():    {mapType(typing.Number.String()), mapType(typing.Decimal.String())},
-		typing.Decimal.String():   {mapType(typing.Number.String()), mapType(typing.Decimal.String())},
-		typing.Duration.String():  {mapType(typing.Duration.String()), mapType(typing.Text.String())},
+		typing.TypeDate.String():      {mapType(typing.TypeDate.String()), mapType(typing.TypeTimestamp.String())},
+		typing.TypeTimestamp.String(): {mapType(typing.TypeDate.String()), mapType(typing.TypeTimestamp.String())},
+		typing.TypeMarkdown.String():  {mapType(typing.TypeText.String()), mapType(typing.TypeMarkdown.String())},
+		typing.TypeID.String():        {mapType(typing.TypeText.String()), mapType(typing.TypeID.String())},
+		typing.TypeText.String():      {mapType(typing.TypeText.String()), mapType(typing.TypeMarkdown.String()), mapType(typing.TypeID.String())},
+		typing.TypeNumber.String():    {mapType(typing.TypeNumber.String()), mapType(typing.TypeDecimal.String())},
+		typing.TypeDecimal.String():   {mapType(typing.TypeNumber.String()), mapType(typing.TypeDecimal.String())},
+		typing.TypeDuration.String():  {mapType(typing.TypeDuration.String()), mapType(typing.TypeText.String())},
 	}
 
 	// Check if there are specific compatibility rules for the expected type

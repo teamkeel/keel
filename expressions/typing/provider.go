@@ -38,14 +38,14 @@ func (p *TypeProvider) FindStructType(structType string) (*types.Type, bool) {
 		return types.NewObjectType(structType), true
 	case strings.Contains(obj, "_Enum") && query.Enum(p.Schema, strings.TrimSuffix(obj, "_Enum")) != nil:
 		return types.NewObjectType(structType), true
-	case structType == "_Context":
-		return types.NewObjectType(structType), true
-	case structType == "_Headers":
-		return types.NewObjectType(structType), true
-	case structType == "_Secrets":
-		return types.NewObjectType(structType), true
-	case structType == "_EnvironmentVariables":
-		return types.NewObjectType(structType), true
+	case structType == TypeNameContext:
+		return TypeContext, true
+	case structType == TypeNameHeaders:
+		return TypeHeaders, true
+	case structType == TypeNameSecrets:
+		return TypeSecrets, true
+	case structType == TypeNameEnvvars:
+		return TypeEnvvars, true
 	}
 
 	return nil, false
@@ -84,7 +84,7 @@ func (p *TypeProvider) FindStructFieldType(structType, fieldName string) (*types
 		return &types.FieldType{Type: field}, true
 	}
 
-	if structType == "_Headers" {
+	if structType == TypeNameHeaders {
 		return &types.FieldType{Type: types.StringType}, true
 	}
 
