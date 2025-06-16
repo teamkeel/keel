@@ -12,26 +12,39 @@ import (
 type Ident []string
 
 var (
-	ID        = cel.OpaqueType(parser.FieldTypeID)
-	Text      = cel.OpaqueType(parser.FieldTypeText)
-	Markdown  = cel.OpaqueType(parser.FieldTypeMarkdown)
-	Number    = cel.OpaqueType(parser.FieldTypeNumber)
-	Decimal   = cel.OpaqueType(parser.FieldTypeDecimal)
-	Boolean   = cel.OpaqueType(parser.FieldTypeBoolean)
-	Timestamp = cel.OpaqueType(parser.FieldTypeTimestamp)
-	Date      = cel.OpaqueType(parser.FieldTypeDate)
-	Duration  = cel.OpaqueType(parser.FieldTypeDuration)
+	TypeID        = cel.OpaqueType(parser.FieldTypeID)
+	TypeText      = cel.OpaqueType(parser.FieldTypeText)
+	TypeMarkdown  = cel.OpaqueType(parser.FieldTypeMarkdown)
+	TypeNumber    = cel.OpaqueType(parser.FieldTypeNumber)
+	TypeDecimal   = cel.OpaqueType(parser.FieldTypeDecimal)
+	TypeBoolean   = cel.OpaqueType(parser.FieldTypeBoolean)
+	TypeTimestamp = cel.OpaqueType(parser.FieldTypeTimestamp)
+	TypeDate      = cel.OpaqueType(parser.FieldTypeDate)
+	TypeDuration  = cel.OpaqueType(parser.FieldTypeDuration)
+
+	TypeIDArray        = cel.OpaqueType(fmt.Sprintf("%s[]", parser.FieldTypeID))
+	TypeTextArray      = cel.OpaqueType(fmt.Sprintf("%s[]", parser.FieldTypeText))
+	TypeMarkdownArray  = cel.OpaqueType(fmt.Sprintf("%s[]", parser.FieldTypeMarkdown))
+	TypeNumberArray    = cel.OpaqueType(fmt.Sprintf("%s[]", parser.FieldTypeNumber))
+	TypeDecimalArray   = cel.OpaqueType(fmt.Sprintf("%s[]", parser.FieldTypeDecimal))
+	TypeBooleanArray   = cel.OpaqueType(fmt.Sprintf("%s[]", parser.FieldTypeBoolean))
+	TypeTimestampArray = cel.OpaqueType(fmt.Sprintf("%s[]", parser.FieldTypeTimestamp))
+	TypeDateArray      = cel.OpaqueType(fmt.Sprintf("%s[]", parser.FieldTypeDate))
+	TypeDurationArray  = cel.OpaqueType(fmt.Sprintf("%s[]", parser.FieldTypeDuration))
 )
+
 var (
-	IDArray        = cel.OpaqueType(fmt.Sprintf("%s[]", parser.FieldTypeID))
-	TextArray      = cel.OpaqueType(fmt.Sprintf("%s[]", parser.FieldTypeText))
-	MarkdownArray  = cel.OpaqueType(fmt.Sprintf("%s[]", parser.FieldTypeMarkdown))
-	NumberArray    = cel.OpaqueType(fmt.Sprintf("%s[]", parser.FieldTypeNumber))
-	DecimalArray   = cel.OpaqueType(fmt.Sprintf("%s[]", parser.FieldTypeDecimal))
-	BooleanArray   = cel.OpaqueType(fmt.Sprintf("%s[]", parser.FieldTypeBoolean))
-	TimestampArray = cel.OpaqueType(fmt.Sprintf("%s[]", parser.FieldTypeTimestamp))
-	DateArray      = cel.OpaqueType(fmt.Sprintf("%s[]", parser.FieldTypeDate))
-	DurationArray  = cel.OpaqueType(fmt.Sprintf("%s[]", parser.FieldTypeDuration))
+	TypeNameContext = "_Context"
+	TypeNameHeaders = "_Headers"
+	TypeNameSecrets = "_Secrets"
+	TypeNameEnvvars = "_EnvironmentVariables"
+)
+
+var (
+	TypeContext = types.NewObjectType(TypeNameContext)
+	TypeHeaders = types.NewObjectType(TypeNameHeaders)
+	TypeSecrets = types.NewObjectType(TypeNameSecrets)
+	TypeEnvvars = types.NewObjectType(TypeNameEnvvars)
 )
 
 var (
