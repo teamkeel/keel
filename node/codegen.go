@@ -1306,7 +1306,7 @@ func writeFunctionWrapperType(w *codegen.Writer, schema *proto.Schema, model *pr
 		case parser.MessageFieldTypeAny:
 			w.Write("(fn: (ctx: ContextAPI, inputs: any) => ")
 		case "":
-			w.Write("(fn: (ctx: ContextAPI) => ")
+			w.Write("(fn: (ctx: ContextAPI, inputs: never) => ")
 		default:
 			w.Writef("(fn: (ctx: ContextAPI, inputs: %s) => ", action.GetInputMessageName())
 		}

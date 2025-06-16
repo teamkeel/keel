@@ -12,9 +12,9 @@ export default CreateBookNoInputs({
     };
   },
   afterWrite(ctx, inputs, data) {
-    // if (data.title !== "The Farseer") {
-    //   return new Error("Title must be 'The Farseer'");
-    // }
+    if (data.title !== "The Farseer") {
+      return new Error("Title must be 'The Farseer'");
+    }
     return {
       ...data,
       title: "The Farseer 2",
