@@ -201,11 +201,10 @@ export default DoSomethingElse(async (ctx, event) => {
 			Contents: `
 import { MyFlow, FlowConfig } from '@teamkeel/sdk';
 
-const config: FlowConfig = {
+const config = {
 	// See https://docs.keel.so/flows for options
-};
+} as const satisfies FlowConfig;
 
-// To learn more about flows, visit https://docs.keel.so/flows
 export default MyFlow(config, async (ctx, inputs) => {
 
 });`,
@@ -215,11 +214,10 @@ export default MyFlow(config, async (ctx, inputs) => {
 			Contents: `
 import { MyFlowWithoutInputs, FlowConfig } from '@teamkeel/sdk';
 
-const config: FlowConfig = {
+const config = {
 	// See https://docs.keel.so/flows for options
-};
+} as const satisfies FlowConfig;
 
-// To learn more about flows, visit https://docs.keel.so/flows
 export default MyFlowWithoutInputs(config, async (ctx) => {
 
 });`,

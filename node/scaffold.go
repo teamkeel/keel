@@ -228,11 +228,10 @@ func writeFlowWrapper(flow *proto.Flow) string {
 	case flow.GetInputMessageName() == "":
 		return fmt.Sprintf(`import { %s, FlowConfig } from '@teamkeel/sdk';
 
-const config: FlowConfig = {
+const config = {
 	// See https://docs.keel.so/flows for options
-};
+} as const satisfies FlowConfig;
 
-// To learn more about flows, visit https://docs.keel.so/flows
 export default %s(config, async (ctx) => {
 
 });`, flow.GetName(), flow.GetName())
@@ -240,11 +239,10 @@ export default %s(config, async (ctx) => {
 	default:
 		return fmt.Sprintf(`import { %s, FlowConfig } from '@teamkeel/sdk';
 
-const config: FlowConfig = {
+const config = {
 	// See https://docs.keel.so/flows for options
-};
+} as const satisfies FlowConfig;
 
-// To learn more about flows, visit https://docs.keel.so/flows
 export default %s(config, async (ctx, inputs) => {
 
 });`, flow.GetName(), flow.GetName())
