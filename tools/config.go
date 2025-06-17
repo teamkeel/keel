@@ -687,8 +687,9 @@ func (cfg *LinkConfig) applyOn(link *toolsproto.ToolLink) *toolsproto.ToolLink {
 	if cfg.isDeleted() {
 		return nil
 	}
-	// we've added a link
-	if link == nil {
+
+	// we've added a link or changed the target action
+	if link == nil || cfg.ToolID != link.GetToolId() {
 		return &toolsproto.ToolLink{
 			ToolId:      cfg.ToolID,
 			Description: makeStringTemplate(cfg.Description),
