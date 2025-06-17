@@ -11,7 +11,7 @@ export type CompleteOptions<C extends FlowConfig> = {
   title?: string;
   description?: string;
   content: DisplayElementResponse[];
-  data: any;
+  data?: any;
 };
 
 export type Complete<C extends FlowConfig> = (
@@ -34,7 +34,6 @@ export async function complete<C extends FlowConfig>(
     any,
     any
   >[];
-  console.log(content);
   const contentUiConfig = (await Promise.all(
     content.map(async (c) => {
       return c.uiConfig;

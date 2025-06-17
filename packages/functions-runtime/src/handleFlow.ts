@@ -93,10 +93,10 @@ async function handleFlow(request: any, config: any) {
         // parse request params to convert objects into rich field types (e.g. InlineFile)
         const inputs = parseInputs(request.meta?.inputs);
 
-        let completeOpts: CompleteOptions<FlowConfig> | void = undefined;
+        let response: CompleteOptions<FlowConfig> | any | void = undefined;
 
         try {
-          completeOpts = await tryExecuteFlow(db, async () => {
+          response = await tryExecuteFlow(db, async () => {
             return flowFunction(ctx, inputs);
           });
         } catch (e) {
@@ -144,8 +144,10 @@ async function handleFlow(request: any, config: any) {
         }
 
         let ui: CompleteApiResponse | null = null;
+        let data: any = null;
 
-        if (completeOpts) {
+        // TODO: this is not a thorough enough check for the response type
+        if (response && typeof response == "object" && "content" in response) {
           const completeStep = await db
             .selectFrom("keel.flow_step")
             .where("run_id", "=", runId)
@@ -158,8 +160,8 @@ async function handleFlow(request: any, config: any) {
               .insertInto("keel.flow_step")
               .values({
                 run_id: runId,
-                name: "complete",
-                stage: completeOpts.stage,
+                name: "",
+                stage: response.stage,
                 status: STEP_STATUS.COMPLETED,
                 type: STEP_TYPE.COMPLETE,
                 startTime: new Date(),
@@ -169,14 +171,17 @@ async function handleFlow(request: any, config: any) {
               .executeTakeFirst();
           }
 
-          ui = (await complete(completeOpts)).complete;
+          ui = (await complete(response)).complete;
+          data = response.data;
+        } else if (response) {
+          data = response;
         }
 
         // If we reach this point, then we know the entire flow completed successfully
         return createJSONRPCSuccessResponse(request.id, {
           runId: runId,
           runCompleted: true,
-          data: completeOpts?.data,
+          data: data,
           config: flowConfig,
           ui: ui,
         });

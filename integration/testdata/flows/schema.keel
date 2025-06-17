@@ -96,6 +96,10 @@ flow WithCompletion {
     @permission(roles: [Admin])
 }
 
+flow WithReturnedData {
+    @permission(roles: [Admin])
+}
+
 model Thing {
     fields {
         name Text?

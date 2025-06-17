@@ -48,6 +48,7 @@ test("flows - scalar step", async () => {
     status: "COMPLETED",
     name: "ScalarStep",
     input: {},
+    data: null,
     startedBy: expect.any(String),
     steps: [
       {
@@ -95,6 +96,7 @@ test("flows - only functions with config", async () => {
       name: "My Thing",
       age: 25,
     },
+    data: null,
     steps: [
       {
         id: expect.any(String),
@@ -148,6 +150,7 @@ test("flows - only functions with config", async () => {
       name: "My Thing",
       age: 25,
     },
+    data: null,
     steps: [
       {
         id: expect.any(String),
@@ -197,6 +200,7 @@ test("flows - only pages", async () => {
     token,
     body: {},
   });
+
   expect(status).toEqual(200);
   expect(body).toEqual({
     id: expect.any(String),
@@ -205,6 +209,7 @@ test("flows - only pages", async () => {
     name: "OnlyPages",
     startedBy: expect.any(String),
     input: {},
+    data: null,
     steps: [
       {
         id: expect.any(String),
@@ -252,6 +257,7 @@ test("flows - only pages", async () => {
     name: "OnlyPages",
     startedBy: expect.any(String),
     input: {},
+    data: null,
     steps: [
       {
         id: expect.any(String),
@@ -320,6 +326,7 @@ test("flows - only pages", async () => {
     name: "OnlyPages",
     startedBy: expect.any(String),
     input: {},
+    data: null,
     steps: [
       {
         id: expect.any(String),
@@ -380,6 +387,7 @@ test("flows - stepless flow", async () => {
   expect(flow).toEqual({
     id: body.id,
     input: {},
+    data: null,
     name: "Stepless",
     startedBy: expect.any(String),
     status: "COMPLETED",
@@ -412,6 +420,7 @@ test("flows - first step is a function", async () => {
     name: "SingleStep",
     startedBy: expect.any(String),
     status: "RUNNING",
+    data: null,
     steps: [
       {
         id: expect.any(String),
@@ -451,6 +460,7 @@ test("flows - first step is a function", async () => {
     name: "SingleStep",
     startedBy: expect.any(String),
     status: "COMPLETED",
+    data: null,
     steps: [
       {
         id: body.steps[0].id,
@@ -497,6 +507,7 @@ test("flows - alternating step types", async () => {
       name: "Keelson",
       age: 23,
     },
+    data: null,
     name: "MixedStepTypes",
     startedBy: expect.any(String),
     status: "RUNNING",
@@ -544,6 +555,7 @@ test("flows - alternating step types", async () => {
       name: "Keelson",
       age: 23,
     },
+    data: null,
     config: {
       title: "Mixed step types",
     },
@@ -645,6 +657,7 @@ test("flows - alternating step types", async () => {
       name: "Keelson",
       age: 23,
     },
+    data: null,
     steps: [
       step1, // Step 1 should not have changed
       {
@@ -881,6 +894,7 @@ test("flows - all inputs", async () => {
       enum: MyEnum.Value1,
       markdown: "**Hello**",
     },
+    data: null,
     name: "AllInputs",
     startedBy: expect.any(String),
     status: "FAILED",
@@ -901,6 +915,7 @@ test("flows - error in step with retries", async () => {
     startedBy: expect.any(String),
     name: "ErrorInStep",
     input: {},
+    data: null,
     steps: [
       {
         id: expect.any(String),
@@ -939,6 +954,7 @@ test("flows - error in step with retries", async () => {
     name: "ErrorInStep",
     startedBy: expect.any(String),
     input: {},
+    data: null,
     steps: [
       {
         id: res.body.steps[0].id,
@@ -1003,6 +1019,7 @@ test("flows - error in flow", async () => {
     name: "ErrorInFlow",
     startedBy: expect.any(String),
     input: {},
+    data: null,
     steps: [],
     createdAt: expect.any(String),
     updatedAt: expect.any(String),
@@ -1023,6 +1040,7 @@ test("flows - timeout step", async () => {
     name: "TimeoutStep",
     startedBy: expect.any(String),
     input: {},
+    data: null,
     steps: [
       {
         id: expect.any(String),
@@ -1061,6 +1079,7 @@ test("flows - timeout step", async () => {
     name: "TimeoutStep",
     startedBy: expect.any(String),
     input: {},
+    data: null,
     steps: [
       {
         id: res.body.steps[0].id,
@@ -1155,6 +1174,7 @@ test("flows - duplicate step name", async () => {
     name: "DuplicateStepName",
     startedBy: expect.any(String),
     input: {},
+    data: null,
     steps: [
       {
         id: expect.any(String),
@@ -1192,6 +1212,7 @@ test("flows - duplicate step name", async () => {
     name: "DuplicateStepName",
     startedBy: expect.any(String),
     input: {},
+    data: null,
     steps: [
       {
         id: res.body.steps[0].id,
@@ -1245,6 +1266,7 @@ test("flows - duplicate step name and UI name", async () => {
     name: "DuplicateStepUiName",
     startedBy: expect.any(String),
     input: {},
+    data: null,
     steps: [
       {
         id: expect.any(String),
@@ -1282,6 +1304,7 @@ test("flows - duplicate step name and UI name", async () => {
     name: "DuplicateStepUiName",
     startedBy: expect.any(String),
     input: {},
+    data: null,
     steps: [
       {
         id: res.body.steps[0].id,
@@ -1320,7 +1343,7 @@ test("flows - duplicate step name and UI name", async () => {
   });
 });
 
-test.only("flows - with completion", async () => {
+test("flows - with completion", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
   const res = await startFlow({ name: "WithCompletion", token, body: {} });
   expect(res.status).toBe(200);
@@ -1400,7 +1423,7 @@ test.only("flows - with completion", async () => {
       },
       {
         id: expect.any(String),
-        name: "complete",
+        name: "",
         runId: res.body.id,
         stage: "ending",
         status: "COMPLETED",
@@ -1445,6 +1468,80 @@ test.only("flows - with completion", async () => {
   });
 });
 
+test("flows - with returned data", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+  const res = await startFlow({ name: "WithReturnedData", token, body: {} });
+  expect(res.status).toBe(200);
+
+  expect(res.body).toEqual({
+    id: res.body.id,
+    traceId: res.body.traceId,
+    status: "RUNNING",
+    name: "WithReturnedData",
+    startedBy: expect.any(String),
+    input: {},
+    steps: [
+      {
+        id: res.body.steps[0].id,
+        name: "my step",
+        runId: res.body.id,
+        stage: null,
+        status: "NEW",
+        type: "FUNCTION",
+        value: null,
+        error: null,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        startTime: null,
+        endTime: null,
+        ui: null,
+      },
+    ],
+    createdAt: res.body.createdAt,
+    updatedAt: expect.any(String),
+    data: null,
+    config: {
+      title: "With returned data",
+    },
+  });
+
+  const flow = await untilFlowFinished({
+    name: "WithReturnedData",
+    id: res.body.id,
+    token,
+  });
+
+  expect(flow).toEqual({
+    id: res.body.id,
+    traceId: res.body.traceId,
+    status: "COMPLETED",
+    name: "WithReturnedData",
+    startedBy: expect.any(String),
+    input: {},
+    steps: [
+      {
+        id: res.body.steps[0].id,
+        name: "my step",
+        runId: res.body.id,
+        stage: null,
+        status: "COMPLETED",
+        type: "FUNCTION",
+        value: null,
+        error: null,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        startTime: expect.any(String),
+        endTime: expect.any(String),
+        ui: null,
+      },
+    ],
+    createdAt: res.body.createdAt,
+    updatedAt: expect.any(String),
+    data: "hello",
+    config: null,
+  });
+});
+
 test("flows - myRuns", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
   const res = await startFlow({ name: "ErrorInFlow", token, body: {} });
@@ -1483,7 +1580,7 @@ test("flows - authorised starting, getting and listing flows", async () => {
   const userToken = await getToken({ email: "user@gmail.com" });
 
   const resListAdmin = await listFlows({ token: adminToken });
-  expect(resListAdmin.body.flows.length).toBe(16);
+  expect(resListAdmin.body.flows.length).toBe(18);
   expect(resListAdmin.body.flows[0].name).toBe("ScalarStep");
   expect(resListAdmin.body.flows[1].name).toBe("MixedStepTypes");
   expect(resListAdmin.body.flows[2].name).toBe("Stepless");
@@ -1500,6 +1597,8 @@ test("flows - authorised starting, getting and listing flows", async () => {
   expect(resListAdmin.body.flows[13].name).toBe("DuplicateStepUiName");
   expect(resListAdmin.body.flows[14].name).toBe("EnvStep");
   expect(resListAdmin.body.flows[15].name).toBe("MultipleActions");
+  expect(resListAdmin.body.flows[16].name).toBe("WithCompletion");
+  expect(resListAdmin.body.flows[17].name).toBe("WithReturnedData");
 
   const resListUser = await listFlows({ token: userToken });
   expect(resListUser.status).toBe(200);
@@ -1585,6 +1684,7 @@ test("flows - env step", async () => {
     status: "COMPLETED",
     name: "EnvStep",
     input: {},
+    data: null,
     startedBy: expect.any(String),
     steps: [
       {
@@ -1625,6 +1725,7 @@ test("flows - multiple actions - finish", async () => {
     name: "MultipleActions",
     startedBy: expect.any(String),
     input: {},
+    data: null,
     steps: [
       {
         id: expect.any(String),
@@ -1690,6 +1791,7 @@ test("flows - multiple actions - finish", async () => {
     name: "MultipleActions",
     startedBy: expect.any(String),
     input: {},
+    data: null,
     steps: expect.any(Array),
     createdAt: expect.any(String),
     updatedAt: expect.any(String),
@@ -1715,6 +1817,7 @@ test("flows - multiple actions - continue", async () => {
     name: "MultipleActions",
     startedBy: expect.any(String),
     input: {},
+    data: null,
     steps: [
       {
         id: expect.any(String),
@@ -1781,6 +1884,7 @@ test("flows - multiple actions - continue", async () => {
     name: "MultipleActions",
     startedBy: expect.any(String),
     input: {},
+    data: null,
     steps: [
       {
         id: expect.any(String),
@@ -1840,6 +1944,7 @@ test("flows - multiple actions - continue", async () => {
     values: { yesno: true },
     action: null,
   }));
+
   expect(status).toEqual(200);
   expect(body).toEqual({
     id: expect.any(String),
@@ -1848,6 +1953,7 @@ test("flows - multiple actions - continue", async () => {
     name: "MultipleActions",
     startedBy: expect.any(String),
     input: {},
+    data: null,
     steps: [
       {
         id: expect.any(String),
@@ -2038,7 +2144,7 @@ async function untilFlowAwaitingInput({ name, id, token }) {
 
 async function untilFlowFinished({ name, id, token }) {
   const startTime = Date.now();
-  const timeout = 100000; // 1 seconds timeout on polling
+  const timeout = 1000; // 1 seconds timeout on polling
 
   while (true) {
     if (Date.now() - startTime > timeout) {
