@@ -26,6 +26,7 @@ func extractFlowConfig(generated, updated *toolsproto.FlowConfig) *FlowToolConfi
 		Name:               diffString(generated.GetName(), updated.GetName()),
 		HelpText:           diffStringTemplate(generated.GetHelpText(), updated.GetHelpText()),
 		CompletionRedirect: extractLinkConfig(generated.GetCompletionRedirect(), updated.GetCompletionRedirect()),
+		Icon:               diffString(generated.GetIcon(), updated.GetIcon()),
 	}
 
 	cfg.Inputs = FlowInputConfigs{}
