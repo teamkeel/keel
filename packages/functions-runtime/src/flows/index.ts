@@ -1,5 +1,5 @@
 import { ImplementationResponse, UI } from "./ui";
-import { Completion } from "./ui/completion";
+import { Complete, CompleteOptions } from "./ui/complete";
 import { useDatabase } from "../database";
 import { textInput } from "./ui/elements/input/text";
 import { numberInput } from "./ui/elements/input/number";
@@ -21,7 +21,7 @@ import { grid } from "./ui/elements/display/grid";
 import { list } from "./ui/elements/display/list";
 import { header } from "./ui/elements/display/header";
 
-const enum STEP_STATUS {
+export const enum STEP_STATUS {
   NEW = "NEW",
   RUNNING = "RUNNING",
   PENDING = "PENDING",
@@ -29,10 +29,11 @@ const enum STEP_STATUS {
   FAILED = "FAILED",
 }
 
-const enum STEP_TYPE {
+export const enum STEP_TYPE {
   FUNCTION = "FUNCTION",
   UI = "UI",
   DELAY = "DELAY",
+  COMPLETE = "COMPLETE",
 }
 
 const defaultOpts = {
@@ -45,7 +46,7 @@ export interface FlowContext<C extends FlowConfig, E = any, S = any> {
   step: Step<C>;
   // Defines a UI step that will be run in the flow.
   ui: UI<C>;
-  complete: Completion<C>;
+  complete: Complete<C>;
   env: E;
   now: Date;
   secrets: S;
@@ -117,7 +118,7 @@ export type FlowFunction<
   E extends any = {},
   S extends any = {},
   I extends any = {},
-> = (ctx: FlowContext<C, E, S>, inputs: I) => Promise<void>;
+> = (ctx: FlowContext<C, E, S>, inputs: I) => Promise<CompleteOptions<C> | void>;
 
 // Extract the stage keys from the flow config supporting either a string or an object with a key property
 export type ExtractStageKeys<T extends FlowConfig> = T extends {
@@ -163,23 +164,7 @@ export function createFlowContext<C extends FlowConfig, E = any, S = any>(
     env: ctx.env,
     now: ctx.now,
     secrets: ctx.secrets,
-    complete: async (options) => {
-      const db = useDatabase();
-      await db
-      .insertInto("keel.flow_step")
-      .values({
-        run_id: runId,
-        name: "complete",
-        //stage: options.stage,
-        status: STEP_STATUS.COMPLETED,
-        type: STEP_TYPE.UI,
-       //error: `Duplicate step name: ${name}`,
-        startTime: new Date(),
-        endTime: new Date(),
-      })
-      .returningAll()
-      .executeTakeFirst();
-    },
+    complete: (options) => options,
     step: async (name, optionsOrFn, fn?) => {
       // We need to check the type of the arguments due to the step function being overloaded
       const options = typeof optionsOrFn === "function" ? {} : optionsOrFn;

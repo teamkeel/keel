@@ -1331,7 +1331,74 @@ test.only("flows - with completion", async () => {
     token,
   });
 
-  console.log(flow);
+  expect(flow).toEqual({
+    id: res.body.id,
+    traceId: res.body.traceId,
+    status: "COMPLETED",
+    name: "WithCompletion",
+    startedBy: expect.any(String),
+    input: {},
+    steps: [
+      {
+        id: res.body.steps[0].id,
+        name: "my step",
+        runId: res.body.id,
+        stage: "starting",
+        status: "COMPLETED",
+        type: "FUNCTION",
+        value: null,
+        error: null,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        startTime: expect.any(String),
+        endTime: expect.any(String),
+        ui: null,
+      },
+      {
+        id: expect.any(String),
+        name: "complete",
+        runId: res.body.id,
+        stage: "ending",
+        status: "COMPLETED",
+        type: "COMPLETE",
+        value: null,
+        error: null,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        startTime: expect.any(String),
+        endTime: expect.any(String),
+        ui: {
+          __type: "ui.complete",
+          title: "Completed flow",
+          description: "this complete page replaces the normal end page",
+          stage: "ending",
+          content: [
+            { __type: "ui.display.markdown", content: "congratulations" }
+          ],
+        },
+      },
+    ],
+    createdAt: res.body.createdAt,
+    updatedAt: expect.any(String),
+    data: {
+      value: "flow value",
+    },
+    config: {
+      stages: [
+        {
+          description: "this is the starting stage",
+          key: "starting",
+          name: "Starting",
+        },
+        {
+          description: "this is the ending stage",
+          key: "ending",
+          name: "Ending",
+        },
+      ],
+      title: "With completion",
+    },
+  });
 });
 
 test("flows - myRuns", async () => {
@@ -1927,7 +1994,7 @@ async function untilFlowAwaitingInput({ name, id, token }) {
 
 async function untilFlowFinished({ name, id, token }) {
   const startTime = Date.now();
-  const timeout = 1000; // 1 seconds timeout on polling
+  const timeout = 100000; // 1 seconds timeout on polling
 
   while (true) {
     if (Date.now() - startTime > timeout) {

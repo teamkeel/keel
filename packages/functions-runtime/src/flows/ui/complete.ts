@@ -3,13 +3,11 @@ import { FlowConfig, ExtractStageKeys } from "..";
 import {
   BaseUiDisplayResponse,
   ImplementationResponse,
-  InputElementResponse,
   UiElementApiResponses,
   DisplayElementResponse,
-  UIElements,
 } from ".";
 
-type CompletionOptions<C extends FlowConfig> = {
+export type CompleteOptions<C extends FlowConfig> = {
     stage?: ExtractStageKeys<C>;
     title?: string;
     description?: string;
@@ -17,16 +15,11 @@ type CompletionOptions<C extends FlowConfig> = {
     data: any;
   };
 
+export type Complete<C extends FlowConfig> = (
+  options: CompleteOptions<C>
+) => CompleteOptions<C>;;
 
-export type Completion<C extends FlowConfig> = <
-  T extends DisplayElementResponse[],
->(
-  name: string,
-  options: CompletionOptions<C>
-) => void;
-
-
-export interface CompleteApiResponse extends BaseUiDisplayResponse<"complete"> {
+export interface CompleteApiResponse extends BaseUiDisplayResponse<"ui.complete"> {
   stage?: string;
   title?: string;
   description?: string;
@@ -35,28 +28,25 @@ export interface CompleteApiResponse extends BaseUiDisplayResponse<"complete"> {
 
 export async function complete<
   C extends FlowConfig,
-  T extends UIElements,
 >(
-  options: CompletionOptions<C>
+  options: CompleteOptions<C>
 ): Promise<{ complete: CompleteApiResponse }> {
   // Turn these back into the actual response types
   const content = options.content as unknown as ImplementationResponse<
     any,
     any
   >[];
-
-
+console.log(content)
   const contentUiConfig = (await Promise.all(
     content
       .map(async (c) => {
         return c.uiConfig;
       })
-      .filter(Boolean)
   )) as UiElementApiResponses;
 
   return {
     complete: {
-      __type: "complete",
+      __type: "ui.complete",
       stage: options.stage,
       title: options.title,
       description: options.description,
@@ -64,14 +54,3 @@ export async function complete<
     },
   };
 }
-
-
-
-// Extract the data from elements and return a key-value object based on the name of the element
-type ExtractFormData<T extends UIElements> = {
-    [K in Extract<T[number], InputElementResponse<string, any>>["name"]]: Extract<
-      T[number],
-      InputElementResponse<K, any>
-    >["valueType"];
-  };
-  
