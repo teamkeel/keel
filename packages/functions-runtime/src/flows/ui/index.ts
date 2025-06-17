@@ -60,10 +60,6 @@ export interface UI<C extends FlowConfig> {
   select: UiSelectElements;
 }
 
-// export interface Completion<C extends FlowConfig> {
-  
-// }
-
 // Input elements that are named and return values
 type UiInputsElements = {
   text: UiElementInputText;

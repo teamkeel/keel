@@ -10,7 +10,11 @@ import { withSpan } from "./tracing";
 import { tryExecuteFlow } from "./tryExecuteFlow";
 import { parseInputs } from "./parsing";
 import { createFlowContext, FlowConfig, STEP_STATUS, STEP_TYPE } from "./flows";
-import {  CompleteOptions,CompleteApiResponse, complete } from "./flows/ui/complete";
+import {
+  CompleteOptions,
+  CompleteApiResponse,
+  complete,
+} from "./flows/ui/complete";
 
 import {
   StepCreatedDisrupt,
@@ -149,7 +153,7 @@ async function handleFlow(request: any, config: any) {
             .selectAll()
             .executeTakeFirst();
 
-          if (completeStep == undefined) {
+          if (!completeStep) {
             await db
               .insertInto("keel.flow_step")
               .values({
@@ -163,9 +167,9 @@ async function handleFlow(request: any, config: any) {
               })
               .returningAll()
               .executeTakeFirst();
+          }
 
-            ui = (await complete(completeOpts)).complete;
-         }
+          ui = (await complete(completeOpts)).complete;
         }
 
         // If we reach this point, then we know the entire flow completed successfully

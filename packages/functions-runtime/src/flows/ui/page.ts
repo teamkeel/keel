@@ -4,10 +4,8 @@ import {
   ImplementationResponse,
   InputElementResponse,
   UiElementApiResponses,
-  DisplayElementResponse,
   UIElements,
 } from ".";
-
 
 type PageOptions<
   C extends FlowConfig,

@@ -1325,6 +1325,50 @@ test.only("flows - with completion", async () => {
   const res = await startFlow({ name: "WithCompletion", token, body: {} });
   expect(res.status).toBe(200);
 
+  expect(res.body).toEqual({
+    id: res.body.id,
+    traceId: res.body.traceId,
+    status: "RUNNING",
+    name: "WithCompletion",
+    startedBy: expect.any(String),
+    input: {},
+    steps: [
+      {
+        id: res.body.steps[0].id,
+        name: "my step",
+        runId: res.body.id,
+        stage: "starting",
+        status: "NEW",
+        type: "FUNCTION",
+        value: null,
+        error: null,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        startTime: null,
+        endTime: null,
+        ui: null,
+      },
+    ],
+    createdAt: res.body.createdAt,
+    updatedAt: expect.any(String),
+    data: null,
+    config: {
+      stages: [
+        {
+          description: "this is the starting stage",
+          key: "starting",
+          name: "Starting",
+        },
+        {
+          description: "this is the ending stage",
+          key: "ending",
+          name: "Ending",
+        },
+      ],
+      title: "With completion",
+    },
+  });
+
   const flow = await untilFlowFinished({
     name: "WithCompletion",
     id: res.body.id,
@@ -1373,7 +1417,7 @@ test.only("flows - with completion", async () => {
           description: "this complete page replaces the normal end page",
           stage: "ending",
           content: [
-            { __type: "ui.display.markdown", content: "congratulations" }
+            { __type: "ui.display.markdown", content: "congratulations" },
           ],
         },
       },

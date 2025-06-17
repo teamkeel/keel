@@ -118,7 +118,10 @@ export type FlowFunction<
   E extends any = {},
   S extends any = {},
   I extends any = {},
-> = (ctx: FlowContext<C, E, S>, inputs: I) => Promise<CompleteOptions<C> | void>;
+> = (
+  ctx: FlowContext<C, E, S>,
+  inputs: I
+) => Promise<CompleteOptions<C> | void>;
 
 // Extract the stage keys from the flow config supporting either a string or an object with a key property
 export type ExtractStageKeys<T extends FlowConfig> = T extends {

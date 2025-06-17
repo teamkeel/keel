@@ -1,4 +1,3 @@
-
 import { FlowConfig, ExtractStageKeys } from "..";
 import {
   BaseUiDisplayResponse,
@@ -8,27 +7,26 @@ import {
 } from ".";
 
 export type CompleteOptions<C extends FlowConfig> = {
-    stage?: ExtractStageKeys<C>;
-    title?: string;
-    description?: string;
-    content: DisplayElementResponse[];
-    data: any;
-  };
+  stage?: ExtractStageKeys<C>;
+  title?: string;
+  description?: string;
+  content: DisplayElementResponse[];
+  data: any;
+};
 
 export type Complete<C extends FlowConfig> = (
   options: CompleteOptions<C>
-) => CompleteOptions<C>;;
+) => CompleteOptions<C>;
 
-export interface CompleteApiResponse extends BaseUiDisplayResponse<"ui.complete"> {
+export interface CompleteApiResponse
+  extends BaseUiDisplayResponse<"ui.complete"> {
   stage?: string;
   title?: string;
   description?: string;
   content: UiElementApiResponses;
 }
 
-export async function complete<
-  C extends FlowConfig,
->(
+export async function complete<C extends FlowConfig>(
   options: CompleteOptions<C>
 ): Promise<{ complete: CompleteApiResponse }> {
   // Turn these back into the actual response types
@@ -36,12 +34,11 @@ export async function complete<
     any,
     any
   >[];
-console.log(content)
+  console.log(content);
   const contentUiConfig = (await Promise.all(
-    content
-      .map(async (c) => {
-        return c.uiConfig;
-      })
+    content.map(async (c) => {
+      return c.uiConfig;
+    })
   )) as UiElementApiResponses;
 
   return {
