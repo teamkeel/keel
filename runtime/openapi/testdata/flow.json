@@ -683,21 +683,17 @@
           "actions": {
             "type": "array",
             "items": {
-              "additionalProperties": false,
+              "type": "object",
               "properties": {
-                "label": {
-                  "type": "string"
-                },
+                "label": { "type": "string" },
                 "mode": {
-                  "enum": ["destructive", "primary", "secondary"],
-                  "type": "string"
+                  "type": "string",
+                  "enum": ["destructive", "primary", "secondary"]
                 },
-                "value": {
-                  "type": "string"
-                }
+                "value": { "type": "string" }
               },
-              "required": ["label", "value"],
-              "type": "object"
+              "additionalProperties": false,
+              "required": ["label", "value"]
             }
           },
           "content": {
@@ -705,25 +701,10 @@
             "items": {
               "anyOf": [
                 {
-                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementInputTextApiResponse"
-                },
-                {
-                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementInputNumberApiResponse"
-                },
-                {
                   "$ref": "#/components/schemas/UiConfig/$defs/UiElementDividerApiResponse"
                 },
                 {
-                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementInputBooleanApiResponse"
-                },
-                {
                   "$ref": "#/components/schemas/UiConfig/$defs/UiElementMarkdownApiResponse"
-                },
-                {
-                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementTableApiResponse"
-                },
-                {
-                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementSelectOneApiResponse"
                 },
                 {
                   "$ref": "#/components/schemas/UiConfig/$defs/UiElementHeaderApiResponse"
@@ -742,6 +723,21 @@
                 },
                 {
                   "$ref": "#/components/schemas/UiConfig/$defs/UiElementListApiResponse"
+                },
+                {
+                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementTableApiResponse"
+                },
+                {
+                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementInputTextApiResponse"
+                },
+                {
+                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementInputNumberApiResponse"
+                },
+                {
+                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementInputBooleanApiResponse"
+                },
+                {
+                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementSelectOneApiResponse"
                 }
               ]
             }
