@@ -15,6 +15,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
 
 	_ "embed"
 
@@ -319,10 +320,10 @@ func (t *TypeScriptError) Error() string {
 	return fmt.Sprintf("TypeScript error: %s", t.Err.Error())
 }
 
-func UpdateFunctions(schema *proto.Schema, cfg *config.ProjectConfig, dir string) tea.Cmd {
+func UpdateFunctions(timings map[string]time.Time, schema *proto.Schema, cfg *config.ProjectConfig, dir string) tea.Cmd {
 	return func() tea.Msg {
 		ctx := deploy.WithLogLevel(context.Background(), deploy.LogLevelSilent)
-		_, err := deploy.Build(ctx, &deploy.BuildArgs{
+		_, err := deploy.Build(timings, ctx, &deploy.BuildArgs{
 			ProjectRoot: dir,
 			Env:         "development",
 		})
@@ -333,6 +334,8 @@ func UpdateFunctions(schema *proto.Schema, cfg *config.ProjectConfig, dir string
 		cmd := exec.Command("npx", "tsc", "--noEmit", "--pretty")
 		cmd.Dir = dir
 
+		timings["tsc"] = time.Now()
+
 		b, err := cmd.CombinedOutput()
 		if err != nil {
 			return UpdateFunctionsMsg{
@@ -342,6 +345,8 @@ func UpdateFunctions(schema *proto.Schema, cfg *config.ProjectConfig, dir string
 				},
 			}
 		}
+
+		timings["tsc2"] = time.Now()
 
 		return UpdateFunctionsMsg{}
 	}
@@ -410,6 +415,8 @@ type FunctionsOutputMsg struct {
 
 func StartFunctions(m *Model) tea.Cmd {
 	return func() tea.Msg {
+		m.Timings["startFunctions1"] = time.Now()
+
 		envVars := m.Config.GetEnvVars()
 		envVars["KEEL_DB_CONN_TYPE"] = "pg"
 		// KEEL_DB_CONN is passed via a secret but for backwards compatibility with old functions-runtimes
@@ -423,11 +430,16 @@ func StartFunctions(m *Model) tea.Cmd {
 			Buffer: true,
 			ch:     m.functionsLogCh,
 		}
+		m.Timings["startFunctions2"] = time.Now()
+
 		server, err := node.StartDevelopmentServer(context.Background(), m.ProjectDir, &node.ServerOpts{
 			EnvVars: envVars,
 			Output:  output,
 			Watch:   true,
 		})
+
+		m.Timings["startFunctions3"] = time.Now()
+
 		if err != nil {
 			return StartFunctionsMsg{
 				Err: &StartFunctionsError{

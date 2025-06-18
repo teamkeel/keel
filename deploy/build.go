@@ -15,6 +15,7 @@ import (
 	"path/filepath"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/ssm/types"
 	"github.com/iancoleman/strcase"
@@ -55,7 +56,7 @@ type BuildResult struct {
 	FunctionsPath string
 }
 
-func Build(ctx context.Context, args *BuildArgs) (*BuildResult, error) {
+func Build(timings map[string]time.Time, ctx context.Context, args *BuildArgs) (*BuildResult, error) {
 	heading(ctx, "Build")
 
 	t := NewTiming()
@@ -67,6 +68,7 @@ func Build(ctx context.Context, args *BuildArgs) (*BuildResult, error) {
 	if err != nil {
 		return nil, err
 	}
+	timings["buildConfig"] = time.Now()
 
 	projectConfig := configFile.Config
 	builder := schema.Builder{}
@@ -79,6 +81,7 @@ func Build(ctx context.Context, args *BuildArgs) (*BuildResult, error) {
 		protoSchema = args.OnLoadSchema(protoSchema)
 	}
 
+	timings["buildSchema"] = time.Now()
 	log(ctx, "%s Found %s schema file(s) %s", IconTick, orange("%d", len(builder.SchemaFiles())), t.Since())
 
 	// No need to build the collector config file for local builds as we don't run it
@@ -96,6 +99,7 @@ func Build(ctx context.Context, args *BuildArgs) (*BuildResult, error) {
 			log(ctx, "%s Using OpenTelemetry collector config %s", IconTick, t.Since())
 		}
 	}
+	timings["buildCollectorConfig"] = time.Now()
 
 	runtimeResult, err := buildRuntime(ctx, &BuildRuntimeArgs{
 		ProjectRoot:      args.ProjectRoot,
@@ -108,6 +112,8 @@ func Build(ctx context.Context, args *BuildArgs) (*BuildResult, error) {
 	if err != nil {
 		return nil, err
 	}
+	timings["buildRuntime"] = time.Now()
+
 	relPath, err := filepath.Rel(args.ProjectRoot, runtimeResult.Path)
 	if err != nil {
 		return nil, err
@@ -124,6 +130,8 @@ func Build(ctx context.Context, args *BuildArgs) (*BuildResult, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	timings["buildFunctions"] = time.Now()
 
 	return &BuildResult{
 		Schema:        protoSchema,

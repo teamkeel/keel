@@ -94,7 +94,7 @@ var deployBuildCommand = &cobra.Command{
 			os.Exit(1)
 		}
 
-		_, err := deploy.Build(context.Background(), &deploy.BuildArgs{
+		_, err := deploy.Build(map[string]time.Time{}, context.Background(), &deploy.BuildArgs{
 			ProjectRoot:   validated.ProjectDir,
 			Env:           validated.Env,
 			RuntimeBinary: validated.RuntimeBinary,

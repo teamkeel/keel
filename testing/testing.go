@@ -61,7 +61,7 @@ type RunnerOpts struct {
 var tracer = otel.Tracer("github.com/teamkeel/keel/testing")
 
 func Run(ctx context.Context, opts *RunnerOpts) error {
-	buildRessult, err := deploy.Build(ctx, &deploy.BuildArgs{
+	buildRessult, err := deploy.Build(map[string]time.Time{}, ctx, &deploy.BuildArgs{
 		ProjectRoot: opts.Dir,
 		Env:         "test",
 		OnLoadSchema: func(schema *proto.Schema) *proto.Schema {

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/smithy-go"
@@ -27,7 +28,7 @@ type RunArgs struct {
 }
 
 func Run(ctx context.Context, args *RunArgs) error {
-	buildLambdasResult, err := Build(ctx, &BuildArgs{
+	buildLambdasResult, err := Build(map[string]time.Time{}, ctx, &BuildArgs{
 		ProjectRoot:   args.ProjectRoot,
 		Env:           args.Env,
 		RuntimeBinary: args.RuntimeBinary,

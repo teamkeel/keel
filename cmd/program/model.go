@@ -435,7 +435,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		m.Status = StatusUpdateFunctions
-		return m, UpdateFunctions(m.Schema, m.Config, m.ProjectDir)
+		return m, UpdateFunctions(m.Timings, m.Schema, m.Config, m.ProjectDir)
 
 	case SeedDataMsg:
 		m.SeededFiles = msg.SeededFiles
@@ -458,7 +458,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		m.Status = StatusUpdateFunctions
-		return m, UpdateFunctions(m.Schema, m.Config, m.ProjectDir)
+		return m, UpdateFunctions(m.Timings, m.Schema, m.Config, m.ProjectDir)
 
 	case SnapshotDatabaseMsg:
 		m.Err = msg.Err

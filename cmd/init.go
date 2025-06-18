@@ -15,6 +15,7 @@ import (
 	"path/filepath"
 	"runtime/debug"
 	"strings"
+	"time"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/manifoldco/promptui"
@@ -358,7 +359,7 @@ func initStepCreateProject(state *InitState) {
 		panic(err)
 	}
 
-	_, err = deploy.Build(context.Background(), &deploy.BuildArgs{
+	_, err = deploy.Build(map[string]time.Time{}, context.Background(), &deploy.BuildArgs{
 		ProjectRoot: state.targetDir,
 		Env:         "development",
 	})
@@ -397,21 +398,21 @@ func printSuccess(v string) {
 
 func printLogo() {
 	//nolint: dupword
-	logo := `	                                       
-                  bbbb                 
-               bbbbbbbbb               
-            bbbbbbbbbbbbbb            
-              bbbbbbbbbbbbbb          
-       y        bbbbbbbbbbbbbb       
-    yyyyyyy       bbbbbbbbbbbbbb     
-  yyyyyyyyyyy       bbbbbbbbbbbbbb  
-  ooooooooooo      ppppppppppppppp  
-    ooooooo      ppppppppppppppp     
-       o       ppppppppppppppp       
-             ppppppppppppppp          
-            pppppppppppppp            
-               ppppppppp               
-                  pppp                
+	logo := `
+                  bbbb
+               bbbbbbbbb
+            bbbbbbbbbbbbbb
+              bbbbbbbbbbbbbb
+       y        bbbbbbbbbbbbbb
+    yyyyyyy       bbbbbbbbbbbbbb
+  yyyyyyyyyyy       bbbbbbbbbbbbbb
+  ooooooooooo      ppppppppppppppp
+    ooooooo      ppppppppppppppp
+       o       ppppppppppppppp
+             ppppppppppppppp
+            pppppppppppppp
+               ppppppppp
+                  pppp
 	`
 
 	blue := lipgloss.NewStyle().

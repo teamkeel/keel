@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
@@ -40,7 +41,7 @@ var generateCmd = &cobra.Command{
 			return err
 		}
 
-		buildResult, err := deploy.Build(context.Background(), &deploy.BuildArgs{
+		buildResult, err := deploy.Build(map[string]time.Time{}, context.Background(), &deploy.BuildArgs{
 			ProjectRoot: flagProjectDir,
 			Env:         "development",
 		})
