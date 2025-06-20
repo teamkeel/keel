@@ -4,7 +4,7 @@ import {
   DisplayElementResponse,
 } from "../..";
 
-type TableData<T extends Record<string, any>> = {
+export type TableData<T extends Record<string, any>> = {
   data: T[];
   columns?: Array<Extract<keyof T, string>>;
 };
@@ -13,11 +13,16 @@ export type UiElementTable = <const T extends Record<string, any>>(
   options: TableData<T>
 ) => DisplayElementResponse;
 
+export type TableColumn = {
+  name: string;
+  index: number;
+};
+
 // The shape of the response over the API
 export interface UiElementTableApiResponse
   extends BaseUiDisplayResponse<"ui.display.table"> {
   data: any[];
-  columns?: string[]; // Todo: This isn't currently useful (or used), we should support an object form with extra context on the data type
+  columns: TableColumn[];
 }
 
 export const table: DisplayElementImplementation<
@@ -35,10 +40,17 @@ export const table: DisplayElementImplementation<
       })
     : options.data;
 
+  const cols = Object.keys(filteredData[0] || {});
+  const columns = cols.map((column, index) => ({
+    name: column,
+    index,
+  }));
+
   return {
     uiConfig: {
       __type: "ui.display.table",
       data: filteredData || [],
+      columns: columns || [],
     } satisfies UiElementTableApiResponse,
   };
 };

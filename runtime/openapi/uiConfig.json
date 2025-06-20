@@ -338,7 +338,20 @@
         "columns": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "index": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "index",
+              "name"
+            ]
           }
         },
         "__type": {
@@ -349,6 +362,7 @@
       "additionalProperties": false,
       "required": [
         "__type",
+        "columns",
         "data"
       ]
     },
