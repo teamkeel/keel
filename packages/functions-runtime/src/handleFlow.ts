@@ -151,7 +151,7 @@ async function handleFlow(request: any, config: any) {
           const completeStep = await db
             .selectFrom("keel.flow_step")
             .where("run_id", "=", runId)
-            .where("type", "=", "COMPLETE")
+            .where("type", "=", STEP_TYPE.COMPLETE)
             .selectAll()
             .executeTakeFirst();
 
