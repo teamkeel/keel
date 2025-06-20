@@ -18,7 +18,11 @@ export type UiElementKeyValue = DisplayElement<{
 // The shape of the response over the API
 export interface UiElementKeyValueApiResponse
   extends BaseUiDisplayResponse<"ui.display.keyValue"> {
-  data: any[];
+  data: {
+    key: string;
+    value: string | number | Date | boolean;
+    index: number;
+  }[];
   mode: KeyValueMode;
 }
 
@@ -30,7 +34,11 @@ export const keyValue: DisplayElementImplementation<
   return {
     uiConfig: {
       __type: "ui.display.keyValue",
-      data: options?.data || [],
+      data:
+        options?.data?.map((item, index) => ({
+          ...item,
+          index,
+        })) || [],
       mode: options?.mode || "list",
     } satisfies UiElementKeyValueApiResponse,
   };
