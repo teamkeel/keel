@@ -946,10 +946,16 @@ func (g *Generator) findListTools(modelName string) []string {
 
 // findCreateTool will search for a get tool for the given model.
 func (g *Generator) findCreateTool(modelName string) string {
+	toolIds := []string{}
 	for id, tool := range g.actionTools() {
 		if tool.Model.GetName() == modelName && tool.Action.IsCreate() {
-			return id
+			toolIds = append(toolIds, id)
 		}
+	}
+
+	if len(toolIds) > 0 {
+		sort.Strings(toolIds)
+		return toolIds[0]
 	}
 
 	return ""
@@ -972,10 +978,16 @@ func (g *Generator) findGetByIDTool(modelName string) string {
 
 // findGetByIDTool will search for a get tool for the given model that takes in an ID and has no @embeds defined.
 func (g *Generator) findGetByIDWithoutEmbedsTool(modelName string) string {
+	toolIds := []string{}
 	for id, tool := range g.actionTools() {
 		if tool.Model.GetName() == modelName && tool.Action.IsGet() && tool.hasOnlyIDInput() && len(tool.Action.GetResponseEmbeds()) == 0 {
-			return id
+			toolIds = append(toolIds, id)
 		}
+	}
+
+	if len(toolIds) > 0 {
+		sort.Strings(toolIds)
+		return toolIds[0]
 	}
 
 	return ""

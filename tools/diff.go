@@ -322,8 +322,8 @@ func extractLinkConfig(generated, updated *toolsproto.ToolLink) *LinkConfig {
 		}
 	}
 
-	// we didn't have a link, and now we've added it
-	if generated == nil && updated != nil {
+	// we didn't have a link, and now we've added it OR we changed the target tool, therefore the updated link overrides the generated link
+	if (generated == nil && updated != nil) || (generated != nil && updated != nil && generated.GetToolId() != updated.GetToolId()) {
 		return &LinkConfig{
 			ToolID:           updated.GetToolId(),
 			AsDialog:         updated.AsDialog,
@@ -339,7 +339,7 @@ func extractLinkConfig(generated, updated *toolsproto.ToolLink) *LinkConfig {
 
 	// we may have updated the link config
 	cfg := LinkConfig{
-		ToolID:           generated.GetToolId(),
+		ToolID:           updated.GetToolId(),
 		AsDialog:         diffBool(generated.GetAsDialog(), updated.GetAsDialog()),
 		Title:            diffStringTemplate(generated.GetTitle(), updated.GetTitle()),
 		Description:      diffStringTemplate(generated.GetDescription(), updated.GetDescription()),
