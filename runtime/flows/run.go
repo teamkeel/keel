@@ -194,7 +194,7 @@ func CancelFlowRun(ctx context.Context, runID string) (run *Run, err error) {
 	)
 
 	// if the run cannot be cancelled, just return
-	if run.Status != StatusNew && run.Status != StatusRunning {
+	if run.Status != StatusNew && run.Status != StatusRunning && run.Status != StatusAwaitingInput {
 		return
 	}
 

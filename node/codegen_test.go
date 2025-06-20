@@ -440,13 +440,14 @@ function createJobContextAPI({ meta }) {
 };
 function createFlowContextAPI({ meta }) {
 	const now = () => { return new Date(); };
+	const { identity } = meta;
 	const env = {
 		TEST: process.env["TEST"] || "",
 	};
 	const secrets = {
 		SECRET_KEY: meta.secrets.SECRET_KEY || "",
 	};
-	return { env, now, secrets };
+	return { env, now, secrets, identity };
 };
 function createSubscriberContextAPI({ meta }) {
 	const now = () => { return new Date(); };
@@ -1962,8 +1963,8 @@ flow MyFlow {
 flow MyFlowWithoutInputs {}`
 
 	expected := `
-export declare const MyFlow: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C, Environment, Secrets, MyFlowMessage>) };
-export declare const MyFlowWithoutInputs: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C, Environment, Secrets, never>) };`
+export declare const MyFlow: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C, Environment, Secrets, Identity, MyFlowMessage>) };
+export declare const MyFlowWithoutInputs: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C, Environment, Secrets, Identity, never>) };`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		for _, f := range s.GetFlows() {

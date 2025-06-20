@@ -155,6 +155,7 @@ type FlowToolConfig struct {
 	HelpText           *string          `json:"help_text,omitempty"`
 	CompletionRedirect *LinkConfig      `json:"completion_redirect,omitempty"`
 	Inputs             FlowInputConfigs `json:"inputs,omitempty"`
+	Icon               *string          `json:"icon,omitempty"`
 }
 
 func (cfg *FlowToolConfig) toToolConfig() *ToolConfig {
@@ -173,6 +174,7 @@ func (cfg *FlowToolConfig) hasChanges() bool {
 	return cfg.isDuplicated() ||
 		cfg.Name != nil ||
 		cfg.HelpText != nil ||
+		cfg.Icon != nil ||
 		cfg.CompletionRedirect != nil ||
 		len(cfg.Inputs) > 0
 }
@@ -180,6 +182,9 @@ func (cfg *FlowToolConfig) hasChanges() bool {
 func (cfg *FlowToolConfig) applyOn(tool *toolsproto.FlowConfig) {
 	if cfg.Name != nil {
 		tool.Name = *cfg.Name
+	}
+	if cfg.Icon != nil {
+		tool.Icon = cfg.Icon
 	}
 	if cfg.HelpText != nil {
 		tool.HelpText = makeStringTemplate(cfg.HelpText)
@@ -687,8 +692,9 @@ func (cfg *LinkConfig) applyOn(link *toolsproto.ToolLink) *toolsproto.ToolLink {
 	if cfg.isDeleted() {
 		return nil
 	}
-	// we've added a link
-	if link == nil {
+
+	// we've added a link or changed the target action
+	if link == nil || cfg.ToolID != link.GetToolId() {
 		return &toolsproto.ToolLink{
 			ToolId:      cfg.ToolID,
 			Description: makeStringTemplate(cfg.Description),

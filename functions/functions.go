@@ -406,13 +406,24 @@ func CallFlow(ctx context.Context, flow *proto.Flow, runId string, inputs map[st
 	tracingContext := propagation.MapCarrier{}
 	otel.GetTextMapPropagator().Inject(ctx, tracingContext)
 
-	meta := map[string]any{
-		"runId":   runId,
-		"secrets": secrets,
-		"tracing": tracingContext,
-		"inputs":  inputs,
-		"data":    data,
+	var identity auth.Identity
+	var err error
+	if auth.IsAuthenticated(ctx) {
+		identity, err = auth.GetIdentity(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
 	}
+
+	meta := map[string]any{
+		"runId":    runId,
+		"secrets":  secrets,
+		"tracing":  tracingContext,
+		"inputs":   inputs,
+		"data":     data,
+		"identity": identity,
+	}
+
 	if action != "" {
 		meta["action"] = action
 		span.SetAttributes(attribute.String("action", action))

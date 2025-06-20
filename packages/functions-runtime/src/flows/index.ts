@@ -41,7 +41,7 @@ const defaultOpts = {
   timeout: 60000,
 };
 
-export interface FlowContext<C extends FlowConfig, E = any, S = any> {
+export interface FlowContext<C extends FlowConfig, E = any, S = any, Id = any> {
   // Defines a function step that will be run in the flow.
   step: Step<C>;
   // Defines a UI step that will be run in the flow.
@@ -50,6 +50,7 @@ export interface FlowContext<C extends FlowConfig, E = any, S = any> {
   env: E;
   now: Date;
   secrets: S;
+  identity: Id;
 }
 
 // Steps can only return values that can be serialized to JSON and then
@@ -117,9 +118,10 @@ export type FlowFunction<
   C extends FlowConfig,
   E extends any = {},
   S extends any = {},
+  Id extends any = {},
   I extends any = {},
 > = (
-  ctx: FlowContext<C, E, S>,
+  ctx: FlowContext<C, E, S, Id>,
   inputs: I
 ) => Promise<CompleteOptions<C> | any | void>;
 
@@ -149,7 +151,12 @@ type StageConfigObject = {
 
 type StageConfig = string | StageConfigObject;
 
-export function createFlowContext<C extends FlowConfig, E = any, S = any>(
+export function createFlowContext<
+  C extends FlowConfig,
+  E = any,
+  S = any,
+  I = any,
+>(
   runId: string,
   data: any,
   action: string | null,
@@ -158,12 +165,14 @@ export function createFlowContext<C extends FlowConfig, E = any, S = any>(
     env: E;
     now: Date;
     secrets: S;
+    identity: I;
   }
-): FlowContext<C, E, S> {
+): FlowContext<C, E, S, I> {
   // Track step and page names to prevent duplicates
   const usedNames = new Set<string>();
 
   return {
+    identity: ctx.identity,
     env: ctx.env,
     now: ctx.now,
     secrets: ctx.secrets,

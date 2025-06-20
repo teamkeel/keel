@@ -1072,6 +1072,7 @@ func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("function createFlowContextAPI({ meta }) {")
 	w.Indent()
 	w.Writeln("const now = () => { return new Date(); };")
+	w.Writeln("const { identity } = meta;")
 	w.Writeln("const env = {")
 	w.Indent()
 
@@ -1092,7 +1093,7 @@ func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
 
 	w.Dedent()
 	w.Writeln("};")
-	w.Writeln("return { env, now, secrets };")
+	w.Writeln("return { env, now, secrets, identity };")
 	w.Dedent()
 	w.Writeln("};")
 
@@ -1433,7 +1434,7 @@ func writeFlowFunctionWrapperType(w *codegen.Writer, flow *proto.Flow) {
 		inputsType = flow.GetInputMessageName()
 	}
 
-	w.Writef("export declare const %s: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C, Environment, Secrets, %s>) };", flow.GetName(), inputsType)
+	w.Writef("export declare const %s: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C, Environment, Secrets, Identity, %s>) };", flow.GetName(), inputsType)
 
 	w.Writeln("")
 }
