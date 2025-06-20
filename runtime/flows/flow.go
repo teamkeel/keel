@@ -36,6 +36,7 @@ type StepStatus string
 const (
 	StepTypeFunction StepType = "FUNCTION"
 	StepTypeUI       StepType = "UI"
+	StepTypeComplete StepType = "COMPLETE"
 
 	StepStatusPending   StepStatus = "PENDING"
 	StepStatusFailed    StepStatus = "FAILED"
@@ -49,6 +50,7 @@ type Run struct {
 	Status      Status    `json:"status"`
 	Name        string    `json:"name"`
 	Input       JSON      `json:"input"     gorm:"type:jsonb;serializer:json"`
+	Data        JSON      `json:"data"      gorm:"type:jsonb;serializer:json"`
 	Steps       []Step    `json:"steps"`
 	CreatedAt   time.Time `json:"createdAt"`
 	UpdatedAt   time.Time `json:"updatedAt"`
@@ -75,6 +77,15 @@ func (r *Run) HasPendingUIStep() bool {
 	return false
 }
 
+func (r *Run) HasCompleteStep() bool {
+	for _, step := range r.Steps {
+		if step.Type == StepTypeComplete && step.Status == StepStatusCompleted {
+			return true
+		}
+	}
+	return false
+}
+
 // SetUIComponents will set the given UI component on the first pending UI step of the flow.
 func (r *Run) SetUIComponents(c *FlowUIComponents) {
 	if c == nil {
@@ -88,6 +99,14 @@ func (r *Run) SetUIComponents(c *FlowUIComponents) {
 	if r.HasPendingUIStep() && c.UI != nil {
 		for i, step := range r.Steps {
 			if step.Type == StepTypeUI && step.Status == StepStatusPending {
+				r.Steps[i].UI = c.UI
+			}
+		}
+	}
+
+	if r.HasCompleteStep() && c.UI != nil {
+		for i, step := range r.Steps {
+			if step.Type == StepTypeComplete && step.Status == StepStatusCompleted {
 				r.Steps[i].UI = c.UI
 			}
 		}
@@ -230,14 +249,21 @@ func GetTraceparent(ctx context.Context, runID string) (string, error) {
 }
 
 // updateRun will update the status of a flow run.
-func updateRun(ctx context.Context, runID string, status Status) (*Run, error) {
+func updateRun(ctx context.Context, runID string, status Status, data any) (*Run, error) {
 	database, err := db.GetDatabase(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	var run Run
-	result := database.GetDB().Model(&run).Clauses(clause.Returning{}).Where("id = ?", runID).Update("status", status)
+	result := database.GetDB().
+		Model(&run).
+		Clauses(clause.Returning{}).
+		Where("id = ?", runID).
+		Updates(Run{
+			Status: status,
+			Data:   data,
+		})
 
 	return &run, result.Error
 }

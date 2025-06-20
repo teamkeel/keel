@@ -42,25 +42,10 @@
       "items": {
         "anyOf": [
           {
-            "$ref": "#/$defs/UiElementInputTextApiResponse"
-          },
-          {
-            "$ref": "#/$defs/UiElementInputNumberApiResponse"
-          },
-          {
             "$ref": "#/$defs/UiElementDividerApiResponse"
           },
           {
-            "$ref": "#/$defs/UiElementInputBooleanApiResponse"
-          },
-          {
             "$ref": "#/$defs/UiElementMarkdownApiResponse"
-          },
-          {
-            "$ref": "#/$defs/UiElementTableApiResponse"
-          },
-          {
-            "$ref": "#/$defs/UiElementSelectOneApiResponse"
           },
           {
             "$ref": "#/$defs/UiElementHeaderApiResponse"
@@ -79,6 +64,21 @@
           },
           {
             "$ref": "#/$defs/UiElementListApiResponse"
+          },
+          {
+            "$ref": "#/$defs/UiElementTableApiResponse"
+          },
+          {
+            "$ref": "#/$defs/UiElementInputTextApiResponse"
+          },
+          {
+            "$ref": "#/$defs/UiElementInputNumberApiResponse"
+          },
+          {
+            "$ref": "#/$defs/UiElementInputBooleanApiResponse"
+          },
+          {
+            "$ref": "#/$defs/UiElementSelectOneApiResponse"
           }
         ]
       }
@@ -95,103 +95,6 @@
   ],
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$defs": {
-    "UiElementInputTextApiResponse": {
-      "type": "object",
-      "properties": {
-        "placeholder": {
-          "type": "string"
-        },
-        "multiline": {
-          "type": "boolean"
-        },
-        "maxLength": {
-          "type": "number"
-        },
-        "minLength": {
-          "type": "number"
-        },
-        "__type": {
-          "type": "string",
-          "const": "ui.input.text"
-        },
-        "name": {
-          "type": "string"
-        },
-        "label": {
-          "type": "string"
-        },
-        "defaultValue": {
-          "type": "string"
-        },
-        "optional": {
-          "type": "boolean"
-        },
-        "disabled": {
-          "type": "boolean"
-        },
-        "helpText": {
-          "type": "string"
-        },
-        "validationError": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "__type",
-        "disabled",
-        "label",
-        "name",
-        "optional"
-      ]
-    },
-    "UiElementInputNumberApiResponse": {
-      "type": "object",
-      "properties": {
-        "placeholder": {
-          "type": "string"
-        },
-        "min": {
-          "type": "number"
-        },
-        "max": {
-          "type": "number"
-        },
-        "__type": {
-          "type": "string",
-          "const": "ui.input.number"
-        },
-        "name": {
-          "type": "string"
-        },
-        "label": {
-          "type": "string"
-        },
-        "defaultValue": {
-          "type": "number"
-        },
-        "optional": {
-          "type": "boolean"
-        },
-        "disabled": {
-          "type": "boolean"
-        },
-        "helpText": {
-          "type": "string"
-        },
-        "validationError": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "__type",
-        "disabled",
-        "label",
-        "name",
-        "optional"
-      ]
-    },
     "UiElementDividerApiResponse": {
       "type": "object",
       "properties": {
@@ -203,52 +106,6 @@
       "additionalProperties": false,
       "required": [
         "__type"
-      ]
-    },
-    "UiElementInputBooleanApiResponse": {
-      "type": "object",
-      "properties": {
-        "mode": {
-          "enum": [
-            "checkbox",
-            "switch"
-          ],
-          "type": "string"
-        },
-        "__type": {
-          "type": "string",
-          "const": "ui.input.boolean"
-        },
-        "name": {
-          "type": "string"
-        },
-        "label": {
-          "type": "string"
-        },
-        "defaultValue": {
-          "type": "boolean"
-        },
-        "optional": {
-          "type": "boolean"
-        },
-        "disabled": {
-          "type": "boolean"
-        },
-        "helpText": {
-          "type": "string"
-        },
-        "validationError": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "__type",
-        "disabled",
-        "label",
-        "mode",
-        "name",
-        "optional"
       ]
     },
     "UiElementMarkdownApiResponse": {
@@ -266,130 +123,6 @@
       "required": [
         "__type",
         "content"
-      ]
-    },
-    "UiElementTableApiResponse": {
-      "type": "object",
-      "properties": {
-        "data": {
-          "type": "array",
-          "items": true
-        },
-        "columns": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "__type": {
-          "type": "string",
-          "const": "ui.display.table"
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "__type",
-        "data"
-      ]
-    },
-    "UiElementSelectOneApiResponse": {
-      "type": "object",
-      "properties": {
-        "options": {
-          "type": "array",
-          "items": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "object",
-                "properties": {
-                  "label": {
-                    "type": "string"
-                  },
-                  "value": {
-                    "$ref": "#/$defs/ElementDataType"
-                  }
-                },
-                "additionalProperties": false,
-                "required": [
-                  "label",
-                  "value"
-                ]
-              },
-              {
-                "type": [
-                  "string",
-                  "number",
-                  "boolean"
-                ]
-              }
-            ]
-          }
-        },
-        "__type": {
-          "type": "string",
-          "const": "ui.select.one"
-        },
-        "name": {
-          "type": "string"
-        },
-        "label": {
-          "type": "string"
-        },
-        "defaultValue": {
-          "anyOf": [
-            {
-              "type": "string",
-              "format": "date-time"
-            },
-            {
-              "type": [
-                "string",
-                "number",
-                "boolean"
-              ]
-            }
-          ]
-        },
-        "optional": {
-          "type": "boolean"
-        },
-        "disabled": {
-          "type": "boolean"
-        },
-        "helpText": {
-          "type": "string"
-        },
-        "validationError": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "__type",
-        "disabled",
-        "label",
-        "name",
-        "optional",
-        "options"
-      ]
-    },
-    "ElementDataType": {
-      "anyOf": [
-        {
-          "type": "string",
-          "format": "date-time"
-        },
-        {
-          "type": [
-            "string",
-            "number",
-            "boolean"
-          ]
-        }
       ]
     },
     "UiElementHeaderApiResponse": {
@@ -607,6 +340,273 @@
       "required": [
         "__type",
         "data"
+      ]
+    },
+    "UiElementTableApiResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": true
+        },
+        "columns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "__type": {
+          "type": "string",
+          "const": "ui.display.table"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "__type",
+        "data"
+      ]
+    },
+    "UiElementInputTextApiResponse": {
+      "type": "object",
+      "properties": {
+        "placeholder": {
+          "type": "string"
+        },
+        "multiline": {
+          "type": "boolean"
+        },
+        "maxLength": {
+          "type": "number"
+        },
+        "minLength": {
+          "type": "number"
+        },
+        "__type": {
+          "type": "string",
+          "const": "ui.input.text"
+        },
+        "name": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "defaultValue": {
+          "type": "string"
+        },
+        "optional": {
+          "type": "boolean"
+        },
+        "disabled": {
+          "type": "boolean"
+        },
+        "helpText": {
+          "type": "string"
+        },
+        "validationError": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "__type",
+        "disabled",
+        "label",
+        "name",
+        "optional"
+      ]
+    },
+    "UiElementInputNumberApiResponse": {
+      "type": "object",
+      "properties": {
+        "placeholder": {
+          "type": "string"
+        },
+        "min": {
+          "type": "number"
+        },
+        "max": {
+          "type": "number"
+        },
+        "__type": {
+          "type": "string",
+          "const": "ui.input.number"
+        },
+        "name": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "defaultValue": {
+          "type": "number"
+        },
+        "optional": {
+          "type": "boolean"
+        },
+        "disabled": {
+          "type": "boolean"
+        },
+        "helpText": {
+          "type": "string"
+        },
+        "validationError": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "__type",
+        "disabled",
+        "label",
+        "name",
+        "optional"
+      ]
+    },
+    "UiElementInputBooleanApiResponse": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "enum": [
+            "checkbox",
+            "switch"
+          ],
+          "type": "string"
+        },
+        "__type": {
+          "type": "string",
+          "const": "ui.input.boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "defaultValue": {
+          "type": "boolean"
+        },
+        "optional": {
+          "type": "boolean"
+        },
+        "disabled": {
+          "type": "boolean"
+        },
+        "helpText": {
+          "type": "string"
+        },
+        "validationError": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "__type",
+        "disabled",
+        "label",
+        "mode",
+        "name",
+        "optional"
+      ]
+    },
+    "UiElementSelectOneApiResponse": {
+      "type": "object",
+      "properties": {
+        "options": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "$ref": "#/$defs/ElementDataType"
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "label",
+                  "value"
+                ]
+              },
+              {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean"
+                ]
+              }
+            ]
+          }
+        },
+        "__type": {
+          "type": "string",
+          "const": "ui.select.one"
+        },
+        "name": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "defaultValue": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": [
+                "string",
+                "number",
+                "boolean"
+              ]
+            }
+          ]
+        },
+        "optional": {
+          "type": "boolean"
+        },
+        "disabled": {
+          "type": "boolean"
+        },
+        "helpText": {
+          "type": "string"
+        },
+        "validationError": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "__type",
+        "disabled",
+        "label",
+        "name",
+        "optional",
+        "options"
+      ]
+    },
+    "ElementDataType": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ]
+        }
       ]
     }
   }

@@ -9,7 +9,13 @@ import * as opentelemetry from "@opentelemetry/api";
 import { withSpan } from "./tracing";
 import { tryExecuteFlow } from "./tryExecuteFlow";
 import { parseInputs } from "./parsing";
-import { createFlowContext, FlowConfig } from "./flows";
+import { createFlowContext, FlowConfig, STEP_STATUS, STEP_TYPE } from "./flows";
+import {
+  CompleteOptions,
+  CompleteApiResponse,
+  complete,
+} from "./flows/ui/complete";
+
 import {
   StepCreatedDisrupt,
   UIRenderDisrupt,
@@ -87,8 +93,10 @@ async function handleFlow(request: any, config: any) {
         // parse request params to convert objects into rich field types (e.g. InlineFile)
         const inputs = parseInputs(request.meta?.inputs);
 
+        let response: CompleteOptions<FlowConfig> | any | void = undefined;
+
         try {
-          await tryExecuteFlow(db, async () => {
+          response = await tryExecuteFlow(db, async () => {
             return flowFunction(ctx, inputs);
           });
         } catch (e) {
@@ -135,11 +143,47 @@ async function handleFlow(request: any, config: any) {
           });
         }
 
+        let ui: CompleteApiResponse | null = null;
+        let data: any = null;
+
+        // TODO: this is not a thorough enough check for the response type
+        if (response && typeof response == "object" && "content" in response) {
+          const completeStep = await db
+            .selectFrom("keel.flow_step")
+            .where("run_id", "=", runId)
+            .where("type", "=", STEP_TYPE.COMPLETE)
+            .selectAll()
+            .executeTakeFirst();
+
+          if (!completeStep) {
+            await db
+              .insertInto("keel.flow_step")
+              .values({
+                run_id: runId,
+                name: "",
+                stage: response.stage,
+                status: STEP_STATUS.COMPLETED,
+                type: STEP_TYPE.COMPLETE,
+                startTime: new Date(),
+                endTime: new Date(),
+              })
+              .returningAll()
+              .executeTakeFirst();
+          }
+
+          ui = (await complete(response)).complete;
+          data = response.data;
+        } else if (response) {
+          data = response;
+        }
+
         // If we reach this point, then we know the entire flow completed successfully
         return createJSONRPCSuccessResponse(request.id, {
           runId: runId,
           runCompleted: true,
+          data: data,
           config: flowConfig,
+          ui: ui,
         });
       } catch (e) {
         if (e instanceof Error) {

@@ -36,3 +36,5 @@ DROP INDEX IF EXISTS "keel"."flow_run_started_by_idx";
 CREATE INDEX "flow_run_started_by_idx" ON "keel"."flow_run" USING BTREE ("started_by");
 
 ALTER TABLE "keel"."flow_step" ADD COLUMN IF NOT EXISTS "action" TEXT;
+
+ALTER TABLE "keel"."flow_run" ADD COLUMN IF NOT EXISTS "data" JSONB DEFAULT NULL;

@@ -142,7 +142,7 @@ func GetFlowRunState(ctx context.Context, runID string) (run *Run, err error) {
 	)
 
 	// if we're not waiting for a UI step, return
-	if !run.HasPendingUIStep() {
+	if !run.HasPendingUIStep() && !run.HasCompleteStep() {
 		return
 	}
 
@@ -198,7 +198,7 @@ func CancelFlowRun(ctx context.Context, runID string) (run *Run, err error) {
 		return
 	}
 
-	run, err = updateRun(ctx, run.ID, StatusCancelled)
+	run, err = updateRun(ctx, run.ID, StatusCancelled, nil)
 	if err != nil {
 		err = fmt.Errorf("updating flow run: %w", err)
 		return

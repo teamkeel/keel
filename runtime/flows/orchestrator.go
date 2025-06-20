@@ -72,6 +72,7 @@ func NewOrchestrator(s *proto.Schema, opts ...OrchestratorOpt) *Orchestrator {
 type FunctionsResponsePayload struct {
 	RunID        string `json:"runId"`
 	RunCompleted bool   `json:"runCompleted"`
+	Data         JSON   `json:"data"`
 	Config       JSON   `json:"config"`
 	UI           JSON   `json:"ui"` // UI component for the current step, if applicable
 	Error        string `json:"error"`
@@ -112,7 +113,7 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, inputs 
 	case StatusNew, StatusRunning, StatusAwaitingInput:
 		if run.Status == StatusNew {
 			// this is a new run, set it to running and trigger the flows runtime
-			run, err = updateRun(ctx, run.ID, StatusRunning)
+			run, err = updateRun(ctx, run.ID, StatusRunning, nil)
 			if err != nil {
 				return err, nil
 			}
@@ -120,7 +121,7 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, inputs 
 
 		if run.Status == StatusAwaitingInput {
 			// we have been awaiting input, we're now going to continue running
-			run, err = updateRun(ctx, run.ID, StatusRunning)
+			run, err = updateRun(ctx, run.ID, StatusRunning, nil)
 			if err != nil {
 				return err, nil
 			}
@@ -130,7 +131,7 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, inputs 
 		resp, err := o.CallFlow(ctx, run, inputs, data, action)
 		if err != nil {
 			// failed orchestrating, mark the run as failed and return the error
-			_, _ = updateRun(ctx, run.ID, StatusFailed)
+			_, _ = updateRun(ctx, run.ID, StatusFailed, nil)
 			return err, nil
 		}
 
@@ -138,11 +139,11 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, inputs 
 			if resp.Error != "" {
 				// run was orchestrated and completed successfully, but with an error (e.g. exhaused retries)
 				// TODO: store error message against the flow run
-				_, err = updateRun(ctx, run.ID, StatusFailed)
+				_, err = updateRun(ctx, run.ID, StatusFailed, nil)
 				return err, resp.GetUIComponents()
 			}
 
-			_, err = updateRun(ctx, run.ID, StatusCompleted)
+			_, err = updateRun(ctx, run.ID, StatusCompleted, resp.Data)
 			return err, resp.GetUIComponents()
 		}
 
@@ -154,7 +155,7 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, inputs 
 
 		// Check to see if we're in a Pending UI step, break orchestration
 		if run.HasPendingUIStep() {
-			_, err = updateRun(ctx, run.ID, StatusAwaitingInput)
+			_, err = updateRun(ctx, run.ID, StatusAwaitingInput, nil)
 			return err, resp.GetUIComponents()
 		}
 
