@@ -10,6 +10,7 @@ import (
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
+	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/util"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -269,6 +270,12 @@ func (o *Orchestrator) CallFlow(ctx context.Context, run *Run, inputs map[string
 		inputs, err = actions.TransformInputs(o.schema, message, inputs, true)
 		if err != nil {
 			return nil, err
+		}
+	}
+
+	if !auth.IsAuthenticated(ctx) && run.StartedBy != nil {
+		if identity, err := actions.FindIdentityById(ctx, o.schema, *run.StartedBy); err == nil {
+			ctx = auth.WithIdentity(ctx, identity)
 		}
 	}
 
