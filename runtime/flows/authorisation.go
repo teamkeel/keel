@@ -15,7 +15,16 @@ func AuthoriseFlow(ctx context.Context, schema *proto.Schema, flow *proto.Flow) 
 	}
 
 	for _, permission := range flow.GetPermissions() {
-		if permission.RoleNames != nil {
+		switch {
+		case permission.GetExpression() != nil:
+
+			// Try resolve the permission early.
+			canResolve, authorised := actions.TryResolveExpressionEarly(ctx, schema, nil, nil, permission.GetExpression().GetSource(), map[string]any{})
+
+			if canResolve && authorised {
+				return true, nil
+			}
+		case permission.RoleNames != nil:
 			if permission.RoleNames != nil {
 				authorised, err := actions.ResolveRolePermissionRule(ctx, schema, permission)
 				if err != nil {
