@@ -13,6 +13,21 @@ flow MyFlow3 {
     @permission(roles: [Admin, Developer])
 }
 
+flow MyFlow4 {
+    @permission(expression: true)
+}
+
+flow MyFlow4 {
+    @permission(expression: ctx.identity.user.team == "myTeam")
+}
+
+model User {
+    fields {
+        team Text
+        identity Identity @unique
+    }
+}
+
 role Admin {
     domains {
         "keel.so"

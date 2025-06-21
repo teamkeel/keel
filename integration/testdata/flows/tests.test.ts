@@ -1654,7 +1654,7 @@ test("flows - myRuns", async () => {
   expect(resListRuns.body.length).toBe(2);
 });
 
-test("flows - authorised starting, getting and listing flows", async () => {
+test("flows - authorised listing flows", async () => {
   const adminToken = await getToken({ email: "admin@keel.xyz" });
   const userToken = await getToken({ email: "user@gmail.com" });
 
@@ -1740,6 +1740,12 @@ test("flows - unauthenticated getting flow", async () => {
 test("flows - unauthenticated listing flows", async () => {
   const resGet = await listFlows({ token: null });
   expect(resGet.status).toBe(401);
+});
+
+test.only("flows - authorised starting flow with true expression", async () => {
+  const token = await getToken({ email: "user@gmail.com" });
+  const res = await startFlow({ name: "expressionPermissionIsTrue", token, body: {} });
+  expect(res.status).toBe(200);
 });
 
 test("flows - env step", async () => {

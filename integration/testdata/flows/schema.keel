@@ -104,6 +104,21 @@ flow WithReturnedData {
     @permission(roles: [Admin])
 }
 
+flow ExpressionPermissionCtx {
+    @permission(expression: ctx.identity.user.team == "myTeam")
+}
+
+flow ExpressionPermissionIsTrue {
+    @permission(expression: true)
+}
+
+model User {
+    fields {
+        team Text
+        identity Identity @unique
+    }
+}
+
 model Thing {
     fields {
         name Text?
