@@ -29,28 +29,34 @@ export const table: DisplayElementImplementation<
   UiElementTable,
   UiElementTableApiResponse
 > = (options) => {
-  // Only send data for columns we need
-  const filteredData = options.columns
-    ? options.data.map((item) => {
-        return Object.fromEntries(
-          Object.entries(item).filter(
-            ([key]) => options.columns?.includes(key as any)
-          )
-        );
-      })
-    : options.data;
-
-  const cols = Object.keys(filteredData[0] || {});
-  const columns = cols.map((column, index) => ({
-    name: column,
-    index,
-  }));
+  const { data, columns } = processTableData(options.data, options.columns);
 
   return {
     uiConfig: {
       __type: "ui.display.table",
-      data: filteredData || [],
+      data: data || [],
       columns: columns || [],
     } satisfies UiElementTableApiResponse,
   };
+};
+
+// Only send data for columns we need
+export const processTableData = (data: any[], columnsConfig?: string[]) => {
+  const filteredData = columnsConfig
+    ? data.map((item) => {
+        return Object.fromEntries(
+          Object.entries(item).filter(
+            ([key]) => columnsConfig?.includes(key as any)
+          )
+        );
+      })
+    : data;
+
+  const cols = Object.keys(filteredData[0] || {});
+  const columns: TableColumn[] = cols.map((column, index) => ({
+    name: column,
+    index,
+  }));
+
+  return { data: filteredData, columns };
 };

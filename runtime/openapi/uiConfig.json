@@ -79,9 +79,15 @@
           },
           {
             "$ref": "#/$defs/UiElementSelectOneApiResponse"
+          },
+          {
+            "$ref": "#/$defs/UiElementSelectTableApiResponse"
           }
         ]
       }
+    },
+    "hasValidationErrors": {
+      "type": "boolean"
     },
     "__type": {
       "type": "string",
@@ -91,7 +97,8 @@
   "additionalProperties": false,
   "required": [
     "__type",
-    "content"
+    "content",
+    "hasValidationErrors"
   ],
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$defs": {
@@ -622,6 +629,73 @@
           ]
         }
       ]
+    },
+    "UiElementSelectTableApiResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": true
+        },
+        "columns": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "index": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "index",
+              "name"
+            ]
+          }
+        },
+        "mode": {
+          "$ref": "#/$defs/SelectMode"
+        },
+        "name": {
+          "type": "string"
+        },
+        "validationError": {
+          "type": "string"
+        },
+        "__type": {
+          "type": "string",
+          "const": "ui.select.table"
+        },
+        "helpText": {
+          "type": "string"
+        },
+        "optional": {
+          "type": "boolean"
+        },
+        "disabled": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "__type",
+        "columns",
+        "data",
+        "disabled",
+        "mode",
+        "name",
+        "optional"
+      ]
+    },
+    "SelectMode": {
+      "enum": [
+        "multi",
+        "single"
+      ],
+      "type": "string"
     }
   }
 }

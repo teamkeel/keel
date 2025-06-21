@@ -738,16 +738,22 @@
                 },
                 {
                   "$ref": "#/components/schemas/UiConfig/$defs/UiElementSelectOneApiResponse"
+                },
+                {
+                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementSelectTableApiResponse"
                 }
               ]
             }
           },
           "description": { "type": "string" },
           "stage": { "type": "string" },
-          "title": { "type": "string" }
+          "title": { "type": "string" },
+          "hasValidationErrors": {
+            "type": "boolean"
+          }
         },
         "additionalProperties": false,
-        "required": ["__type", "content"],
+        "required": ["__type", "content", "hasValidationErrors"],
         "$defs": {
           "BannerMode": {
             "type": "string",
@@ -1000,12 +1006,94 @@
           "UiElementTableApiResponse": {
             "type": "object",
             "properties": {
-              "__type": { "type": "string", "const": "ui.display.table" },
-              "columns": { "type": "array", "items": { "type": "string" } },
-              "data": { "type": "array", "items": {} }
+              "data": {
+                "type": "array",
+                "items": {}
+              },
+              "columns": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "index": {
+                      "type": "number"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": ["index", "name"]
+                }
+              },
+              "__type": {
+                "type": "string",
+                "const": "ui.display.table"
+              }
             },
             "additionalProperties": false,
-            "required": ["__type", "data"]
+            "required": ["__type", "columns", "data"]
+          },
+          "UiElementSelectTableApiResponse": {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "array",
+                "items": {}
+              },
+              "columns": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "index": {
+                      "type": "number"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": ["index", "name"]
+                }
+              },
+              "mode": {
+                "$ref": "#/components/schemas/UiConfig/$defs/SelectMode"
+              },
+              "name": {
+                "type": "string"
+              },
+              "validationError": {
+                "type": "string"
+              },
+              "__type": {
+                "type": "string",
+                "const": "ui.select.table"
+              },
+              "helpText": {
+                "type": "string"
+              },
+              "optional": {
+                "type": "boolean"
+              },
+              "disabled": {
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "__type",
+              "columns",
+              "data",
+              "disabled",
+              "mode",
+              "name",
+              "optional"
+            ]
+          },
+          "SelectMode": {
+            "enum": ["multi", "single"],
+            "type": "string"
           }
         }
       }

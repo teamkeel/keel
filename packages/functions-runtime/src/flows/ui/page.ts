@@ -45,6 +45,7 @@ export interface UiPageApiResponse extends BaseUiDisplayResponse<"ui.page"> {
   description?: string;
   actions?: PageActionConfig[];
   content: UiElementApiResponses;
+  hasValidationErrors: boolean;
 }
 
 export async function page<
@@ -110,6 +111,7 @@ export async function page<
         }
         return a;
       }),
+      hasValidationErrors,
     },
     hasValidationErrors,
   };
