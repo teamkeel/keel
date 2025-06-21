@@ -21,6 +21,7 @@ import { grid } from "./ui/elements/display/grid";
 import { list } from "./ui/elements/display/list";
 import { header } from "./ui/elements/display/header";
 import { keyValue } from "./ui/elements/display/keyValue";
+import { selectTable } from "./ui/elements/select/table";
 
 export const enum STEP_STATUS {
   NEW = "NEW",
@@ -134,8 +135,8 @@ export type ExtractStageKeys<T extends FlowConfig> = T extends {
     ? U extends string
       ? U
       : U extends { key: infer K extends string }
-      ? K
-      : never
+        ? K
+        : never
     : never
   : never;
 
@@ -456,6 +457,7 @@ export function createFlowContext<
       },
       select: {
         one: selectOne as any,
+        table: selectTable as any,
       },
     },
   };
