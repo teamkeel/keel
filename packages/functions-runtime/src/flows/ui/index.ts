@@ -52,6 +52,10 @@ import {
   UiElementList,
   UiElementListApiResponse,
 } from "./elements/display/list";
+import {
+  UiElementSelectTable,
+  UiElementSelectTableApiResponse,
+} from "./elements/select/table";
 
 export interface UI<C extends FlowConfig> {
   page: UiPage<C>;
@@ -70,6 +74,7 @@ type UiInputsElements = {
 // Select elements that are named and return values
 type UiSelectElements = {
   one: UiElementSelectOne;
+  table: UiElementSelectTable;
 };
 
 // Display elements that do not return values
@@ -166,6 +171,7 @@ export type UIApiResponses = {
   };
   select: {
     one: UiElementSelectOneApiResponse;
+    table: UiElementSelectTableApiResponse;
   };
 };
 
@@ -188,6 +194,7 @@ export type UiElementApiResponses = // Display elements
 
     // Select elements
     | UiElementSelectOneApiResponse
+    | UiElementSelectTableApiResponse
   )[];
 
 // The root API response. Used to generate the OpenAPI schema

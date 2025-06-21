@@ -20,6 +20,7 @@ import { code } from "./ui/elements/display/code";
 import { grid } from "./ui/elements/display/grid";
 import { list } from "./ui/elements/display/list";
 import { header } from "./ui/elements/display/header";
+import { selectTable } from "./ui/elements/select/table";
 
 export const enum STEP_STATUS {
   NEW = "NEW",
@@ -449,6 +450,7 @@ export function createFlowContext<
       },
       select: {
         one: selectOne as any,
+        table: selectTable as any,
       },
     },
   };
