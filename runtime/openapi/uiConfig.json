@@ -78,6 +78,9 @@
             "$ref": "#/$defs/UiElementInputBooleanApiResponse"
           },
           {
+            "$ref": "#/$defs/UiElementInputDataGridApiResponse"
+          },
+          {
             "$ref": "#/$defs/UiElementSelectOneApiResponse"
           },
           {
@@ -532,6 +535,84 @@
         "name",
         "optional"
       ]
+    },
+    "UiElementInputDataGridApiResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": true
+        },
+        "columns": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "index": {
+                "type": "number"
+              },
+              "type": {
+                "$ref": "#/$defs/DataTypes"
+              },
+              "editable": {
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "editable",
+              "index",
+              "key",
+              "label",
+              "type"
+            ]
+          }
+        },
+        "allowAddRows": {
+          "type": "boolean"
+        },
+        "allowDeleteRows": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "validationError": {
+          "type": "string"
+        },
+        "__type": {
+          "type": "string",
+          "const": "ui.input.dataGrid"
+        },
+        "helpText": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "__type",
+        "allowAddRows",
+        "allowDeleteRows",
+        "columns",
+        "data",
+        "name"
+      ]
+    },
+    "DataTypes": {
+      "enum": [
+        "boolean",
+        "hidden",
+        "id",
+        "number",
+        "text"
+      ],
+      "type": "string"
     },
     "UiElementSelectOneApiResponse": {
       "type": "object",

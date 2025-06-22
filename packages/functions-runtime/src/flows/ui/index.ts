@@ -56,6 +56,10 @@ import {
   UiElementSelectTable,
   UiElementSelectTableApiResponse,
 } from "./elements/select/table";
+import {
+  UiElementInputDataGrid,
+  UiElementInputDataGridApiResponse,
+} from "./elements/input/dataGrid";
 
 export interface UI<C extends FlowConfig> {
   page: UiPage<C>;
@@ -69,6 +73,7 @@ type UiInputsElements = {
   text: UiElementInputText;
   number: UiElementInputNumber;
   boolean: UiElementInputBoolean;
+  dataGrid: UiElementInputDataGrid;
 };
 
 // Select elements that are named and return values
@@ -168,6 +173,7 @@ export type UIApiResponses = {
     text: UiElementInputTextApiResponse;
     number: UiElementInputNumberApiResponse;
     boolean: UiElementInputBooleanApiResponse;
+    dataGrid: UiElementInputDataGridApiResponse;
   };
   select: {
     one: UiElementSelectOneApiResponse;
@@ -191,6 +197,7 @@ export type UiElementApiResponses = // Display elements
     | UiElementInputTextApiResponse
     | UiElementInputNumberApiResponse
     | UiElementInputBooleanApiResponse
+    | UiElementInputDataGridApiResponse
 
     // Select elements
     | UiElementSelectOneApiResponse

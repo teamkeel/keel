@@ -737,6 +737,9 @@
                   "$ref": "#/components/schemas/UiConfig/$defs/UiElementInputBooleanApiResponse"
                 },
                 {
+                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementInputDataGridApiResponse"
+                },
+                {
                   "$ref": "#/components/schemas/UiConfig/$defs/UiElementSelectOneApiResponse"
                 },
                 {
@@ -761,6 +764,10 @@
           "BannerMode": {
             "type": "string",
             "enum": ["error", "info", "success", "warning"]
+          },
+          "DataTypes": {
+            "enum": ["boolean", "hidden", "id", "number", "text"],
+            "type": "string"
           },
           "ElementDataType": {
             "anyOf": [
@@ -880,6 +887,68 @@
               "name",
               "optional"
             ]
+          },
+          "UiElementInputDataGridApiResponse": {
+            "additionalProperties": false,
+            "properties": {
+              "__type": {
+                "const": "ui.input.dataGrid",
+                "type": "string"
+              },
+              "allowAddRows": {
+                "type": "boolean"
+              },
+              "allowDeleteRows": {
+                "type": "boolean"
+              },
+              "columns": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "editable": {
+                      "type": "boolean"
+                    },
+                    "index": {
+                      "type": "number"
+                    },
+                    "key": {
+                      "type": "string"
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "$ref": "#/components/schemas/UiConfig/$defs/DataTypes"
+                    }
+                  },
+                  "required": ["editable", "index", "key", "label", "type"],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "data": {
+                "items": {},
+                "type": "array"
+              },
+              "helpText": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "validationError": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "__type",
+              "allowAddRows",
+              "allowDeleteRows",
+              "columns",
+              "data",
+              "name"
+            ],
+            "type": "object"
           },
           "UiElementInputNumberApiResponse": {
             "type": "object",
