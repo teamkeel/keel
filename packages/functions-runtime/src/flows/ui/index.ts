@@ -52,6 +52,10 @@ import {
   UiElementList,
   UiElementListApiResponse,
 } from "./elements/display/list";
+import {
+  UiElementKeyValue,
+  UiElementKeyValueApiResponse,
+} from "./elements/display/keyValue";
 
 export interface UI<C extends FlowConfig> {
   page: UiPage<C>;
@@ -83,6 +87,7 @@ type UiDisplayElements = {
   grid: UiElementGrid;
   list: UiElementList;
   table: UiElementTable;
+  keyValue: UiElementKeyValue;
 };
 
 // The base input element function. All inputs must be named and can optionally have a config
@@ -158,6 +163,7 @@ export type UIApiResponses = {
     grid: UiElementGridApiResponse;
     list: UiElementListApiResponse;
     table: UiElementTableApiResponse;
+    keyValue: UiElementKeyValueApiResponse;
   };
   input: {
     text: UiElementInputTextApiResponse;
@@ -180,6 +186,7 @@ export type UiElementApiResponses = // Display elements
     | UiElementGridApiResponse
     | UiElementListApiResponse
     | UiElementTableApiResponse
+    | UiElementKeyValueApiResponse
 
     // Input elements
     | UiElementInputTextApiResponse
