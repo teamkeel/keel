@@ -326,6 +326,19 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 		Required: []string{"id", "status", "name", "traceId", "createdAt", "updatedAt", "steps", "config", "input"},
 	}
 
+	statsResponseSchema := jsonschema.JSONSchema{
+		Type: "object",
+		Properties: map[string]jsonschema.JSONSchema{
+			"name":           {Type: "string"},
+			"lastRun":        {Type: "string", Format: "date-time"},
+			"totalRuns":      {Type: "number"},
+			"errorRate":      {Type: "number"},
+			"activeRuns":     {Type: "number"},
+			"completedToday": {Type: "number"},
+		},
+		Required: []string{"name", "lastRun", "totalRuns", "errorRate", "activeRuns", "completedToday"},
+	}
+
 	anyTypeSchema := jsonschema.JSONSchema{
 		Type:                 []string{"string", "object", "array", "integer", "number", "boolean", "null"},
 		AdditionalProperties: BoolPointer(true),
@@ -397,6 +410,7 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 			Schemas: map[string]jsonschema.JSONSchema{
 				"Run":      runResponseSchema,
 				"Step":     stepResponseSchema,
+				"Stats":    statsResponseSchema,
 				"UiConfig": uiConfigSchema,
 			},
 		},
@@ -462,6 +476,45 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 					Content: map[string]MediaTypeObject{
 						"application/json": {
 							Schema: listFlowsResponseSchema,
+						},
+					},
+				},
+				"400": {
+					Content: map[string]MediaTypeObject{
+						"application/json": {
+							Schema: responseErrorSchema,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	spec.Paths["/flows/json/stats"] = PathItemObject{
+		Parameters: []ParameterObject{
+			{
+				Name:     "before",
+				In:       "query",
+				Required: false,
+				Schema:   jsonschema.JSONSchema{Type: "string", Format: "date-time"},
+			},
+			{
+				Name:     "after",
+				In:       "query",
+				Required: false,
+				Schema:   jsonschema.JSONSchema{Type: "string", Format: "date-time"},
+			},
+		},
+		Get: &OperationObject{
+			OperationID: StringPointer("getRunsStats"),
+			Responses: map[string]ResponseObject{
+				"200": {
+					Content: map[string]MediaTypeObject{
+						"application/json": {
+							Schema: jsonschema.JSONSchema{
+								Type:  "array",
+								Items: &jsonschema.JSONSchema{Ref: "#/components/schemas/Stats"},
+							},
 						},
 					},
 				},

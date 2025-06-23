@@ -248,6 +248,65 @@
         }
       ]
     },
+    "/flows/json/stats": {
+      "get": {
+        "operationId": "getRunsStats",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Stats" }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": { "type": "string" },
+                    "data": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
+                          }
+                        }
+                      }
+                    },
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "before",
+          "in": "query",
+          "required": false,
+          "description": "",
+          "schema": { "type": "string", "format": "date-time" }
+        },
+        {
+          "name": "after",
+          "in": "query",
+          "required": false,
+          "description": "",
+          "schema": { "type": "string", "format": "date-time" }
+        }
+      ]
+    },
     "/flows/json/{flow}": {
       "post": {
         "operationId": "startFlow",
@@ -619,6 +678,25 @@
           "steps",
           "config",
           "input"
+        ]
+      },
+      "Stats": {
+        "type": "object",
+        "properties": {
+          "activeRuns": { "type": "number" },
+          "completedToday": { "type": "number" },
+          "errorRate": { "type": "number" },
+          "lastRun": { "type": "string", "format": "date-time" },
+          "name": { "type": "string" },
+          "totalRuns": { "type": "number" }
+        },
+        "required": [
+          "name",
+          "lastRun",
+          "totalRuns",
+          "errorRate",
+          "activeRuns",
+          "completedToday"
         ]
       },
       "Step": {

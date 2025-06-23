@@ -113,6 +113,15 @@ func (r *Run) SetUIComponents(c *FlowUIComponents) {
 	}
 }
 
+type FlowStats struct {
+	Name           string     `json:"name"`
+	LastRun        *time.Time `json:"lastRun"`
+	TotalRuns      int        `json:"totalRuns"`
+	ErrorRate      float32    `json:"errorRate"`
+	ActiveRuns     int        `json:"activeRuns"`
+	CompletedToday int        `json:"completedToday"`
+}
+
 type Step struct {
 	ID        string     `json:"id"        gorm:"primaryKey;not null;default:null"`
 	Name      string     `json:"name"`
@@ -174,6 +183,12 @@ type filterFields struct {
 	FlowName  *string
 	StartedBy *string
 	Statuses  []Status
+}
+
+type statsFilters struct {
+	FlowNames []string
+	Before    *time.Time
+	After     *time.Time
 }
 
 // Parse will set the values for the filter fields from the given map; the only applicable field is `Status`.
@@ -347,4 +362,37 @@ func listRuns(ctx context.Context, filters *filterFields, page *paginationFields
 	}
 
 	return runs, nil
+}
+
+// listFlowStats will list generic flow run stats for the given filters.
+func listFlowStats(ctx context.Context, filters statsFilters) ([]*FlowStats, error) {
+	database, err := db.GetDatabase(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var stats []*FlowStats
+
+	query := database.GetDB().Table(Run{}.TableName()).Select(`
+		name,
+		COUNT(*) AS total_runs,
+		COUNT(*) FILTER (WHERE status = 'FAILED')::float / NULLIF(COUNT(*), 0) AS error_rate,
+		COUNT(*) FILTER (WHERE status IN ('RUNNING', 'AWAITING_INPUT')) AS active_runs,
+		COUNT(*) FILTER (WHERE status = 'COMPLETED' AND created_at::date = CURRENT_DATE) AS completed_today,
+		MAX(created_at) AS last_run
+	`).Where("name IN ?", filters.FlowNames)
+
+	if filters.Before != nil && !filters.Before.IsZero() {
+		query = query.Where("created_at <= ?", *filters.Before)
+	}
+	if filters.After != nil && !filters.After.IsZero() {
+		query = query.Where("created_at >= ?", *filters.After)
+	}
+
+	err = query.
+		Group("name").
+		Order("name ASC").
+		Scan(&stats).Error
+
+	return stats, err
 }

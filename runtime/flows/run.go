@@ -3,6 +3,7 @@ package flows
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/auth"
@@ -110,6 +111,27 @@ func ListUserFlowRuns(ctx context.Context, identityID string, inputs map[string]
 
 	runs, err = listRuns(ctx, &ff, &pf)
 	return
+}
+
+// ListFlowStats will return generic stats for all the flows that the current ctx user is authorised to view.
+func ListFlowStats(ctx context.Context, schema *proto.Schema, before *time.Time, after *time.Time) (stats []*FlowStats, err error) {
+	flowNames := []string{}
+	for _, f := range schema.GetFlows() {
+		authorised, err := AuthoriseFlow(ctx, schema, f)
+		if err != nil {
+			return nil, err
+		}
+		// not authorised to view this flow, continue
+		if authorised {
+			flowNames = append(flowNames, f.GetName())
+		}
+	}
+
+	return listFlowStats(ctx, statsFilters{
+		FlowNames: flowNames,
+		Before:    before,
+		After:     after,
+	})
 }
 
 // GetFlowRunState retrieves the state of the given flow run. If the run has a pending UI step, the UI component will be
