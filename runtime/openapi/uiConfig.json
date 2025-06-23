@@ -79,7 +79,10 @@
         }
       },
       "additionalProperties": false,
-      "required": ["__type", "content"]
+      "required": [
+        "__type",
+        "content"
+      ]
     },
     "UiElementDividerApiResponse": {
       "type": "object",
@@ -90,7 +93,9 @@
         }
       },
       "additionalProperties": false,
-      "required": ["__type"]
+      "required": [
+        "__type"
+      ]
     },
     "UiElementMarkdownApiResponse": {
       "type": "object",
@@ -104,7 +109,10 @@
         }
       },
       "additionalProperties": false,
-      "required": ["__type", "content"]
+      "required": [
+        "__type",
+        "content"
+      ]
     },
     "UiElementHeaderApiResponse": {
       "type": "object",
@@ -124,7 +132,12 @@
         }
       },
       "additionalProperties": false,
-      "required": ["__type", "description", "level", "title"]
+      "required": [
+        "__type",
+        "description",
+        "level",
+        "title"
+      ]
     },
     "UiElementBannerApiResponse": {
       "type": "object",
@@ -144,10 +157,20 @@
         }
       },
       "additionalProperties": false,
-      "required": ["__type", "description", "mode", "title"]
+      "required": [
+        "__type",
+        "description",
+        "mode",
+        "title"
+      ]
     },
     "BannerMode": {
-      "enum": ["error", "info", "success", "warning"],
+      "enum": [
+        "error",
+        "info",
+        "success",
+        "warning"
+      ],
       "type": "string"
     },
     "UiElementImageApiResponse": {
@@ -160,7 +183,13 @@
           "type": "string"
         },
         "size": {
-          "enum": ["full", "large", "medium", "small", "thumbnail"],
+          "enum": [
+            "full",
+            "large",
+            "medium",
+            "small",
+            "thumbnail"
+          ],
           "type": "string"
         },
         "caption": {
@@ -172,7 +201,10 @@
         }
       },
       "additionalProperties": false,
-      "required": ["__type", "url"]
+      "required": [
+        "__type",
+        "url"
+      ]
     },
     "UiElementCodeApiResponse": {
       "type": "object",
@@ -189,7 +221,10 @@
         }
       },
       "additionalProperties": false,
-      "required": ["__type", "code"]
+      "required": [
+        "__type",
+        "code"
+      ]
     },
     "UiElementGridApiResponse": {
       "type": "object",
@@ -218,12 +253,17 @@
                     "type": "number"
                   },
                   "fit": {
-                    "enum": ["contain", "cover"],
+                    "enum": [
+                      "contain",
+                      "cover"
+                    ],
                     "type": "string"
                   }
                 },
                 "additionalProperties": false,
-                "required": ["url"]
+                "required": [
+                  "url"
+                ]
               }
             },
             "additionalProperties": false
@@ -235,7 +275,10 @@
         }
       },
       "additionalProperties": false,
-      "required": ["__type", "data"]
+      "required": [
+        "__type",
+        "data"
+      ]
     },
     "UiElementListApiResponse": {
       "type": "object",
@@ -261,12 +304,17 @@
                     "type": "string"
                   },
                   "fit": {
-                    "enum": ["contain", "cover"],
+                    "enum": [
+                      "contain",
+                      "cover"
+                    ],
                     "type": "string"
                   }
                 },
                 "additionalProperties": false,
-                "required": ["url"]
+                "required": [
+                  "url"
+                ]
               }
             },
             "additionalProperties": false
@@ -278,7 +326,10 @@
         }
       },
       "additionalProperties": false,
-      "required": ["__type", "data"]
+      "required": [
+        "__type",
+        "data"
+      ]
     },
     "UiElementTableApiResponse": {
       "type": "object",
@@ -300,7 +351,10 @@
               }
             },
             "additionalProperties": false,
-            "required": ["index", "name"]
+            "required": [
+              "index",
+              "name"
+            ]
           }
         },
         "__type": {
@@ -309,7 +363,11 @@
         }
       },
       "additionalProperties": false,
-      "required": ["__type", "columns", "data"]
+      "required": [
+        "__type",
+        "columns",
+        "data"
+      ]
     },
     "UiElementKeyValueApiResponse": {
       "type": "object",
@@ -329,13 +387,20 @@
                     "format": "date-time"
                   },
                   {
-                    "type": ["string", "number", "boolean"]
+                    "type": [
+                      "string",
+                      "number",
+                      "boolean"
+                    ]
                   }
                 ]
               }
             },
             "additionalProperties": false,
-            "required": ["key", "value"]
+            "required": [
+              "key",
+              "value"
+            ]
           }
         },
         "mode": {
@@ -347,10 +412,18 @@
         }
       },
       "additionalProperties": false,
-      "required": ["__type", "data", "mode"]
+      "required": [
+        "__type",
+        "data",
+        "mode"
+      ]
     },
     "KeyValueMode": {
-      "enum": ["card", "grid", "list"],
+      "enum": [
+        "card",
+        "grid",
+        "list"
+      ],
       "type": "string"
     },
     "UiElementInputTextApiResponse": {
@@ -395,7 +468,13 @@
         }
       },
       "additionalProperties": false,
-      "required": ["__type", "disabled", "label", "name", "optional"]
+      "required": [
+        "__type",
+        "disabled",
+        "label",
+        "name",
+        "optional"
+      ]
     },
     "UiElementInputNumberApiResponse": {
       "type": "object",
@@ -436,13 +515,22 @@
         }
       },
       "additionalProperties": false,
-      "required": ["__type", "disabled", "label", "name", "optional"]
+      "required": [
+        "__type",
+        "disabled",
+        "label",
+        "name",
+        "optional"
+      ]
     },
     "UiElementInputBooleanApiResponse": {
       "type": "object",
       "properties": {
         "mode": {
-          "enum": ["checkbox", "switch"],
+          "enum": [
+            "checkbox",
+            "switch"
+          ],
           "type": "string"
         },
         "__type": {
@@ -472,7 +560,14 @@
         }
       },
       "additionalProperties": false,
-      "required": ["__type", "disabled", "label", "mode", "name", "optional"]
+      "required": [
+        "__type",
+        "disabled",
+        "label",
+        "mode",
+        "name",
+        "optional"
+      ]
     },
     "UiElementSelectOneApiResponse": {
       "type": "object",
@@ -496,10 +591,17 @@
                   }
                 },
                 "additionalProperties": false,
-                "required": ["label", "value"]
+                "required": [
+                  "label",
+                  "value"
+                ]
               },
               {
-                "type": ["string", "number", "boolean"]
+                "type": [
+                  "string",
+                  "number",
+                  "boolean"
+                ]
               }
             ]
           }
@@ -521,7 +623,11 @@
               "format": "date-time"
             },
             {
-              "type": ["string", "number", "boolean"]
+              "type": [
+                "string",
+                "number",
+                "boolean"
+              ]
             }
           ]
         },
@@ -539,7 +645,14 @@
         }
       },
       "additionalProperties": false,
-      "required": ["__type", "disabled", "label", "name", "optional", "options"]
+      "required": [
+        "__type",
+        "disabled",
+        "label",
+        "name",
+        "optional",
+        "options"
+      ]
     },
     "ElementDataType": {
       "anyOf": [
@@ -548,7 +661,11 @@
           "format": "date-time"
         },
         {
-          "type": ["string", "number", "boolean"]
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ]
         }
       ]
     },
@@ -572,7 +689,10 @@
               }
             },
             "additionalProperties": false,
-            "required": ["index", "name"]
+            "required": [
+              "index",
+              "name"
+            ]
           }
         },
         "mode": {
@@ -610,7 +730,10 @@
       ]
     },
     "SelectMode": {
-      "enum": ["multi", "single"],
+      "enum": [
+        "multi",
+        "single"
+      ],
       "type": "string"
     },
     "UiPageApiResponse": {
@@ -637,12 +760,19 @@
                 "type": "string"
               },
               "mode": {
-                "enum": ["destructive", "primary", "secondary"],
+                "enum": [
+                  "destructive",
+                  "primary",
+                  "secondary"
+                ],
                 "type": "string"
               }
             },
             "additionalProperties": false,
-            "required": ["label", "value"]
+            "required": [
+              "label",
+              "value"
+            ]
           }
         },
         "content": {
@@ -700,13 +830,20 @@
         "hasValidationErrors": {
           "type": "boolean"
         },
+        "validationError": {
+          "type": "string"
+        },
         "__type": {
           "type": "string",
           "const": "ui.page"
         }
       },
       "additionalProperties": false,
-      "required": ["__type", "content", "hasValidationErrors"]
+      "required": [
+        "__type",
+        "content",
+        "hasValidationErrors"
+      ]
     }
   }
 }
