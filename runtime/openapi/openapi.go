@@ -52,6 +52,8 @@ type ParameterObject struct {
 	Required    bool                  `json:"required"`
 	Description string                `json:"description"`
 	Schema      jsonschema.JSONSchema `json:"schema"`
+	Style       string                `json:"style,omitempty"`
+	Explode     *bool                 `json:"explode,omitempty"`
 }
 
 type OperationObject struct {
@@ -483,16 +485,21 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 				In:       "query",
 				Required: false,
 				Schema: jsonschema.JSONSchema{
-					Type: "string",
-					Enum: []*string{
-						StringPointer(string(flows.StatusNew)),
-						StringPointer(string(flows.StatusRunning)),
-						StringPointer(string(flows.StatusAwaitingInput)),
-						StringPointer(string(flows.StatusFailed)),
-						StringPointer(string(flows.StatusCompleted)),
-						StringPointer(string(flows.StatusCancelled)),
+					Type: "array",
+					Items: &jsonschema.JSONSchema{
+						Type: "string",
+						Enum: []*string{
+							StringPointer(string(flows.StatusNew)),
+							StringPointer(string(flows.StatusRunning)),
+							StringPointer(string(flows.StatusAwaitingInput)),
+							StringPointer(string(flows.StatusFailed)),
+							StringPointer(string(flows.StatusCompleted)),
+							StringPointer(string(flows.StatusCancelled)),
+						},
 					},
 				},
+				Style:   "form",
+				Explode: BoolPointer(false),
 			})
 		}(),
 		Get: &OperationObject{
