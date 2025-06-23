@@ -22,6 +22,7 @@ import { list } from "./ui/elements/display/list";
 import { header } from "./ui/elements/display/header";
 import { keyValue } from "./ui/elements/display/keyValue";
 import { selectTable } from "./ui/elements/select/table";
+import { dataGridInput } from "./ui/elements/input/dataGrid";
 
 export const enum STEP_STATUS {
   NEW = "NEW",
@@ -442,6 +443,7 @@ export function createFlowContext<
         text: textInput as any,
         number: numberInput as any,
         boolean: booleanInput as any,
+        dataGrid: dataGridInput as any,
       },
       display: {
         divider: divider as any,
