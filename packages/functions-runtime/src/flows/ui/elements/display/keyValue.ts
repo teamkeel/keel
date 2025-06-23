@@ -6,19 +6,21 @@ import {
 
 type KeyValueMode = "list" | "grid" | "card";
 
+type KeyValueData = {
+  key: string;
+  value: string | number | Date | boolean; // TODO: support for an object with richer type info / linking
+};
+
 // The types the user experiences
 export type UiElementKeyValue = DisplayElement<{
-  data: {
-    key: string;
-    value: string | number | Date | boolean; // TODO: support for an object with richer type info / linking
-  }[];
-  mode: KeyValueMode;
+  data: KeyValueData[];
+  mode?: KeyValueMode;
 }>;
 
 // The shape of the response over the API
 export interface UiElementKeyValueApiResponse
   extends BaseUiDisplayResponse<"ui.display.keyValue"> {
-  data: any[];
+  data: KeyValueData[];
   mode: KeyValueMode;
 }
 

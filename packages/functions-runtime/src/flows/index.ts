@@ -20,6 +20,7 @@ import { code } from "./ui/elements/display/code";
 import { grid } from "./ui/elements/display/grid";
 import { list } from "./ui/elements/display/list";
 import { header } from "./ui/elements/display/header";
+import { keyValue } from "./ui/elements/display/keyValue";
 
 export const enum STEP_STATUS {
   NEW = "NEW",
@@ -446,6 +447,7 @@ export function createFlowContext<
         code: code as any,
         grid: grid as any,
         list: list as any,
+        keyValue: keyValue as any,
       },
       select: {
         one: selectOne as any,

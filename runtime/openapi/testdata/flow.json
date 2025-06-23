@@ -733,6 +733,9 @@
                   "$ref": "#/components/schemas/UiConfig/$defs/UiElementTableApiResponse"
                 },
                 {
+                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementKeyValueApiResponse"
+                },
+                {
                   "$ref": "#/components/schemas/UiConfig/$defs/UiElementInputTextApiResponse"
                 },
                 {
@@ -763,6 +766,10 @@
               { "type": "string", "format": "date-time" },
               { "type": ["string", "number", "boolean"] }
             ]
+          },
+          "KeyValueMode": {
+            "enum": ["card", "grid", "list"],
+            "type": "string"
           },
           "UiElementBannerApiResponse": {
             "type": "object",
@@ -913,6 +920,44 @@
             },
             "additionalProperties": false,
             "required": ["__type", "disabled", "label", "name", "optional"]
+          },
+          "UiElementKeyValueApiResponse": {
+            "additionalProperties": false,
+            "properties": {
+              "__type": {
+                "const": "ui.display.keyValue",
+                "type": "string"
+              },
+              "data": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "key": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "anyOf": [
+                        {
+                          "format": "date-time",
+                          "type": "string"
+                        },
+                        {
+                          "type": ["string", "number", "boolean"]
+                        }
+                      ]
+                    }
+                  },
+                  "required": ["key", "value"],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "mode": {
+                "$ref": "#/components/schemas/UiConfig/$defs/KeyValueMode"
+              }
+            },
+            "required": ["__type", "data", "mode"],
+            "type": "object"
           },
           "UiElementListApiResponse": {
             "type": "object",
