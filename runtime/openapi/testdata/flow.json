@@ -750,6 +750,9 @@
           "title": { "type": "string" },
           "hasValidationErrors": {
             "type": "boolean"
+          },
+          "validationError": {
+            "type": "string"
           }
         },
         "additionalProperties": false,

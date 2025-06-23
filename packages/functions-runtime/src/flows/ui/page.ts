@@ -46,6 +46,7 @@ export interface UiPageApiResponse extends BaseUiDisplayResponse<"ui.page"> {
   actions?: PageActionConfig[];
   content: UiElementApiResponses;
   hasValidationErrors: boolean;
+  validationError?: string;
 }
 
 export async function page<
@@ -64,15 +65,19 @@ export async function page<
   >[];
 
   let hasValidationErrors = false;
+  let validationError;
 
   // if we have actions defined, validate that the given action exists
-  if (options.actions) {
+  if (options.actions && action !== null) {
     const isValidAction = options.actions.some((a) => {
       if (typeof a === "string") return a === action;
       return a && typeof a === "object" && "value" in a && a.value === action;
     });
 
-    hasValidationErrors = !isValidAction;
+    if (!isValidAction) {
+      hasValidationErrors = true;
+      validationError = "invalid action";
+    }
   }
 
   const contentUiConfig = (await Promise.all(
@@ -96,6 +101,8 @@ export async function page<
       .filter(Boolean)
   )) as UiElementApiResponses;
 
+  // TODO support the page level validation function
+
   return {
     page: {
       __type: "ui.page",
@@ -112,6 +119,7 @@ export async function page<
         return a;
       }),
       hasValidationErrors,
+      validationError,
     },
     hasValidationErrors,
   };

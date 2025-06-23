@@ -89,6 +89,9 @@
     "hasValidationErrors": {
       "type": "boolean"
     },
+    "validationError": {
+      "type": "string"
+    },
     "__type": {
       "type": "string",
       "const": "ui.page"
