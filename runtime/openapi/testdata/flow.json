@@ -235,16 +235,21 @@
           "required": false,
           "description": "",
           "schema": {
-            "type": "string",
-            "enum": [
-              "NEW",
-              "RUNNING",
-              "AWAITING_INPUT",
-              "FAILED",
-              "COMPLETED",
-              "CANCELLED"
-            ]
-          }
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "NEW",
+                "RUNNING",
+                "AWAITING_INPUT",
+                "FAILED",
+                "COMPLETED",
+                "CANCELLED"
+              ]
+            }
+          },
+          "style": "form",
+          "explode": false
         }
       ]
     },
