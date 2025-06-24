@@ -45,6 +45,7 @@ model Post {
 		views Number @default(0)
 		rating Decimal @default(0.0)
 		wordCount Number @computed(1)
+		permalink Text @sequence("POST_")
 		categories Text[]
 		metadata Text
 	}
@@ -295,6 +296,14 @@ func TestSnapshotDatabase(t *testing.T) {
 
 		// Post table should not include wordCount field
 		require.NotContains(t, sql, "wordCount")
+	})
+
+	t.Run("excludes_sequence_fields", func(t *testing.T) {
+		sql, err := migrations.SnapshotDatabase(context.Background())
+		require.NoError(t, err)
+
+		// Post table should not include permalink field
+		require.NotContains(t, sql, "permalink")
 	})
 
 	t.Run("handles_special_data_types", func(t *testing.T) {
