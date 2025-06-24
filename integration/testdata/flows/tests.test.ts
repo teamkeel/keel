@@ -2009,6 +2009,78 @@ test("flows - multiple actions - continue", async () => {
   });
 });
 
+test("flows - stats", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  await startFlow({ name: "ErrorInFlow", token, body: {} });
+
+  let { status, body } = await startFlow({
+    name: "scalarStep",
+    token,
+    body: {},
+  });
+  expect(status).toEqual(200);
+
+  await untilFlowFinished({
+    name: "scalarStep",
+    id: body.id,
+    token,
+  });
+
+  let stats = await listStats({
+    token: token,
+    params: { interval: "daily" },
+  });
+
+  expect(stats.status).toBe(200);
+  expect(stats.body).toEqual({
+    stats: [
+      {
+        activeRuns: 0,
+        completedToday: 0,
+        errorRate: 1,
+        lastRun: expect.any(String),
+        name: "ErrorInFlow",
+        timeSeries: [
+          {
+            failedRuns: 1,
+            time: expect.any(String),
+            totalRuns: 1,
+          },
+        ],
+        totalRuns: 1,
+      },
+      {
+        activeRuns: 0,
+        completedToday: 1,
+        errorRate: 0,
+        lastRun: expect.any(String),
+        name: "ScalarStep",
+        timeSeries: [
+          {
+            failedRuns: 0,
+            time: expect.any(String),
+            totalRuns: 1,
+          },
+        ],
+        totalRuns: 1,
+      },
+    ],
+  });
+  const res = await fetch(`${process.env.KEEL_TESTING_API_URL}/flows/json`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+  });
+
+  return {
+    status: res.status,
+    body: await res.json(),
+  };
+});
+
 async function getToken({ email }) {
   const response = await fetch(
     process.env.KEEL_TESTING_AUTH_API_URL + "/token",
@@ -2095,6 +2167,24 @@ async function listFlows({ token }) {
 async function listMyRuns({ token, params }) {
   const queryString = new URLSearchParams(params).toString();
   const url = `${process.env.KEEL_TESTING_API_URL}/flows/json/myRuns?${queryString}`;
+
+  const res = await fetch(url, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+  });
+
+  return {
+    status: res.status,
+    body: await res.json(),
+  };
+}
+
+async function listStats({ token, params }) {
+  const queryString = new URLSearchParams(params).toString();
+  const url = `${process.env.KEEL_TESTING_API_URL}/flows/json/stats?${queryString}`;
 
   const res = await fetch(url, {
     method: "GET",
