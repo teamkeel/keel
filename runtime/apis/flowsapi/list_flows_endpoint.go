@@ -100,6 +100,7 @@ func ListFlowsStatsHandler(p *proto.Schema) common.HandlerFunc {
 		}
 
 		var before, after *time.Time
+		var interval *string
 
 		if beforeStr := r.URL.Query().Get("before"); beforeStr != "" {
 			t, err := time.Parse("2006-01-02", beforeStr)
@@ -115,8 +116,14 @@ func ListFlowsStatsHandler(p *proto.Schema) common.HandlerFunc {
 			}
 			after = &t
 		}
+		if intervalStr := r.URL.Query().Get("interval"); intervalStr != "" {
+			if intervalStr != flows.StatsIntervalDaily && intervalStr != flows.StatsIntervalHourly {
+				return httpjson.NewErrorResponse(ctx, common.NewInputMalformedError("Invalid interval"), nil)
+			}
+			interval = &intervalStr
+		}
 
-		stats, err := flows.ListFlowStats(ctx, p, before, after)
+		stats, err := flows.ListFlowStats(ctx, p, before, after, interval)
 		if err != nil {
 			return httpjson.NewErrorResponse(ctx, err, nil)
 		}

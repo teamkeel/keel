@@ -335,8 +335,19 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 			"errorRate":      {Type: "number"},
 			"activeRuns":     {Type: "number"},
 			"completedToday": {Type: "number"},
+			"timeSeries":     {Type: []string{"array", "null"}, Items: &jsonschema.JSONSchema{Ref: "#/components/schemas/StatsBucket"}},
 		},
 		Required: []string{"name", "lastRun", "totalRuns", "errorRate", "activeRuns", "completedToday"},
+	}
+
+	statsBucketResponseSchema := jsonschema.JSONSchema{
+		Type: "object",
+		Properties: map[string]jsonschema.JSONSchema{
+			"time":       {Type: "string", Format: "date-time"},
+			"totalRuns":  {Type: "number"},
+			"failedRuns": {Type: "number"},
+		},
+		Required: []string{"time", "totalRuns", "failedRunts"},
 	}
 
 	anyTypeSchema := jsonschema.JSONSchema{
@@ -408,10 +419,11 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 		Paths: map[string]PathItemObject{},
 		Components: &ComponentsObject{
 			Schemas: map[string]jsonschema.JSONSchema{
-				"Run":      runResponseSchema,
-				"Step":     stepResponseSchema,
-				"Stats":    statsResponseSchema,
-				"UiConfig": uiConfigSchema,
+				"Run":         runResponseSchema,
+				"Step":        stepResponseSchema,
+				"Stats":       statsResponseSchema,
+				"StatsBucket": statsBucketResponseSchema,
+				"UiConfig":    uiConfigSchema,
 			},
 		},
 	}
@@ -503,6 +515,16 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 				In:       "query",
 				Required: false,
 				Schema:   jsonschema.JSONSchema{Type: "string", Format: "date-time"},
+			},
+			{
+				Name:        "interval",
+				In:          "query",
+				Required:    false,
+				Description: "If supplied, the results will include a time series with buckets defined by this interval period.",
+				Schema: jsonschema.JSONSchema{Type: "string", Enum: []*string{
+					StringPointer(flows.StatsIntervalDaily),
+					StringPointer(flows.StatsIntervalHourly),
+				}},
 			},
 		},
 		Get: &OperationObject{
