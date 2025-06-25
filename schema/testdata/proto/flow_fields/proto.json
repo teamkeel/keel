@@ -1,43 +1,6 @@
 {
   "models": [
     {
-      "name": "Thing",
-      "fields": [
-        {
-          "modelName": "Thing",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "unique": true,
-          "primaryKey": true,
-          "defaultValue": {
-            "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Thing",
-          "name": "createdAt",
-          "type": {
-            "type": "TYPE_DATETIME"
-          },
-          "defaultValue": {
-            "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Thing",
-          "name": "updatedAt",
-          "type": {
-            "type": "TYPE_DATETIME"
-          },
-          "defaultValue": {
-            "useZeroValue": true
-          }
-        }
-      ]
-    },
-    {
       "name": "Identity",
       "fields": [
         {
@@ -47,7 +10,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -84,7 +49,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
           "modelName": "Identity",
@@ -232,9 +199,6 @@
       "name": "Api",
       "apiModels": [
         {
-          "modelName": "Thing"
-        },
-        {
           "modelName": "Identity",
           "modelActions": [
             {
@@ -368,14 +332,6 @@
           "name": "duration",
           "type": {
             "type": "TYPE_DURATION"
-          }
-        },
-        {
-          "messageName": "MyWorkflowMessage",
-          "name": "thing",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Thing"
           }
         }
       ]
