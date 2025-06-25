@@ -352,6 +352,7 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 				Enum: []*string{
 					StringPointer(string(flows.StepTypeFunction)),
 					StringPointer(string(flows.StepTypeUI)),
+					StringPointer(string(flows.StepTypeComplete)),
 				},
 			},
 			"value":     anyTypeSchema,
@@ -384,9 +385,13 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 	}
 
 	// Remap the $ref paths in the uiConfigRaw to point to the correct location in the components
-	uiConfigRaw = bytes.ReplaceAll(uiConfigRaw, []byte("#/$defs/"), []byte("#/components/schemas/UiConfig/$defs/"))
+	uiConfigRaw = bytes.ReplaceAll(uiConfigRaw, []byte("#/$defs/"), []byte("#/components/schemas/__UiConfigSchemas/$defs/"))
 	var uiConfigSchema jsonschema.JSONSchema
 	_ = json.Unmarshal(uiConfigRaw, &uiConfigSchema)
+
+	// Create a copy of uiConfigSchema without the definitions
+	uiConfigSchemaWithoutDefs := uiConfigSchema
+	uiConfigSchemaWithoutDefs.Definitions = nil
 
 	spec := OpenAPI{
 		OpenAPI: "3.1.0",
@@ -399,7 +404,10 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 			Schemas: map[string]jsonschema.JSONSchema{
 				"Run":      runResponseSchema,
 				"Step":     stepResponseSchema,
-				"UiConfig": uiConfigSchema,
+				"UiConfig": uiConfigSchemaWithoutDefs,
+				"__UiConfigSchemas": jsonschema.JSONSchema{
+					Definitions: uiConfigSchema.Definitions,
+				},
 			},
 		},
 	}

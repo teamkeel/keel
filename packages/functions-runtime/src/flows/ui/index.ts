@@ -56,6 +56,7 @@ import {
   UiElementKeyValue,
   UiElementKeyValueApiResponse,
 } from "./elements/display/keyValue";
+import { UiCompleteApiResponse } from "./complete";
 
 export interface UI<C extends FlowConfig> {
   page: UiPage<C>;
@@ -198,7 +199,7 @@ export type UiElementApiResponses = // Display elements
   )[];
 
 // The root API response. Used to generate the OpenAPI schema
-export type UiApiUiConfig = UiPageApiResponse;
+export type UiApiUiConfig = UiPageApiResponse | UiCompleteApiResponse;
 
 /* ********************
  * Implementations
