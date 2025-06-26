@@ -70,6 +70,9 @@
             ]
           }
         },
+        "autoClose": {
+          "type": "boolean"
+        },
         "__type": {
           "type": "string",
           "const": "ui.complete"
