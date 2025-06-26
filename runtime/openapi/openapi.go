@@ -52,6 +52,8 @@ type ParameterObject struct {
 	Required    bool                  `json:"required"`
 	Description string                `json:"description"`
 	Schema      jsonschema.JSONSchema `json:"schema"`
+	Style       string                `json:"style,omitempty"`
+	Explode     *bool                 `json:"explode,omitempty"`
 }
 
 type OperationObject struct {
@@ -322,6 +324,7 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 			"config":    flowConfigSchema,
 			"input":     {Type: []string{"object", "null"}, AdditionalProperties: BoolPointer(true)},
 			"startedBy": {Type: []string{"string", "null"}},
+			"data":      {Type: []string{"object", "null"}},
 		},
 		Required: []string{"id", "status", "name", "traceId", "createdAt", "updatedAt", "steps", "config", "input"},
 	}
@@ -374,6 +377,7 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 				Enum: []*string{
 					StringPointer(string(flows.StepTypeFunction)),
 					StringPointer(string(flows.StepTypeUI)),
+					StringPointer(string(flows.StepTypeComplete)),
 				},
 			},
 			"value":     anyTypeSchema,
@@ -406,9 +410,13 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 	}
 
 	// Remap the $ref paths in the uiConfigRaw to point to the correct location in the components
-	uiConfigRaw = bytes.ReplaceAll(uiConfigRaw, []byte("#/$defs/"), []byte("#/components/schemas/UiConfig/$defs/"))
+	uiConfigRaw = bytes.ReplaceAll(uiConfigRaw, []byte("#/$defs/"), []byte("#/components/schemas/__UiConfigSchemas/$defs/"))
 	var uiConfigSchema jsonschema.JSONSchema
 	_ = json.Unmarshal(uiConfigRaw, &uiConfigSchema)
+
+	// Create a copy of uiConfigSchema without the definitions
+	uiConfigSchemaWithoutDefs := uiConfigSchema
+	uiConfigSchemaWithoutDefs.Definitions = nil
 
 	spec := OpenAPI{
 		OpenAPI: "3.1.0",
@@ -423,7 +431,10 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 				"Step":        stepResponseSchema,
 				"Stats":       statsResponseSchema,
 				"StatsBucket": statsBucketResponseSchema,
-				"UiConfig":    uiConfigSchema,
+				"UiConfig":    uiConfigSchemaWithoutDefs,
+				"__UiConfigSchemas": jsonschema.JSONSchema{
+					Definitions: uiConfigSchema.Definitions,
+				},
 			},
 		},
 	}
@@ -558,16 +569,21 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 				In:       "query",
 				Required: false,
 				Schema: jsonschema.JSONSchema{
-					Type: "string",
-					Enum: []*string{
-						StringPointer(string(flows.StatusNew)),
-						StringPointer(string(flows.StatusRunning)),
-						StringPointer(string(flows.StatusAwaitingInput)),
-						StringPointer(string(flows.StatusFailed)),
-						StringPointer(string(flows.StatusCompleted)),
-						StringPointer(string(flows.StatusCancelled)),
+					Type: "array",
+					Items: &jsonschema.JSONSchema{
+						Type: "string",
+						Enum: []*string{
+							StringPointer(string(flows.StatusNew)),
+							StringPointer(string(flows.StatusRunning)),
+							StringPointer(string(flows.StatusAwaitingInput)),
+							StringPointer(string(flows.StatusFailed)),
+							StringPointer(string(flows.StatusCompleted)),
+							StringPointer(string(flows.StatusCancelled)),
+						},
 					},
 				},
+				Style:   "form",
+				Explode: BoolPointer(false),
 			})
 		}(),
 		Get: &OperationObject{

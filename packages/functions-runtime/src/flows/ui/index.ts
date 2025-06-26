@@ -52,6 +52,11 @@ import {
   UiElementList,
   UiElementListApiResponse,
 } from "./elements/display/list";
+import {
+  UiElementKeyValue,
+  UiElementKeyValueApiResponse,
+} from "./elements/display/keyValue";
+import { UiCompleteApiResponse } from "./complete";
 
 export interface UI<C extends FlowConfig> {
   page: UiPage<C>;
@@ -83,6 +88,7 @@ type UiDisplayElements = {
   grid: UiElementGrid;
   list: UiElementList;
   table: UiElementTable;
+  keyValue: UiElementKeyValue;
 };
 
 // The base input element function. All inputs must be named and can optionally have a config
@@ -158,6 +164,7 @@ export type UIApiResponses = {
     grid: UiElementGridApiResponse;
     list: UiElementListApiResponse;
     table: UiElementTableApiResponse;
+    keyValue: UiElementKeyValueApiResponse;
   };
   input: {
     text: UiElementInputTextApiResponse;
@@ -180,6 +187,7 @@ export type UiElementApiResponses = // Display elements
     | UiElementGridApiResponse
     | UiElementListApiResponse
     | UiElementTableApiResponse
+    | UiElementKeyValueApiResponse
 
     // Input elements
     | UiElementInputTextApiResponse
@@ -191,7 +199,7 @@ export type UiElementApiResponses = // Display elements
   )[];
 
 // The root API response. Used to generate the OpenAPI schema
-export type UiApiUiConfig = UiPageApiResponse;
+export type UiApiUiConfig = UiPageApiResponse | UiCompleteApiResponse;
 
 /* ********************
  * Implementations

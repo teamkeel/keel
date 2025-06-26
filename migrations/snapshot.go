@@ -204,7 +204,7 @@ func (m *Migrations) SnapshotDatabase(ctx context.Context) (string, error) {
 			continue
 		}
 
-		// Get column names, excluding computed fields
+		// Get column names, excluding computed fields and sequence fields
 		columns := make([]string, 0)
 		for _, col := range result.Columns {
 			// For keel_storage table, include all columns without schema lookup
@@ -213,7 +213,7 @@ func (m *Migrations) SnapshotDatabase(ctx context.Context) (string, error) {
 				continue
 			}
 			field := proto.FindField(m.Schema.GetModels(), model, casing.ToLowerCamel(col))
-			if field != nil && field.GetComputedExpression() == nil {
+			if field != nil && field.GetComputedExpression() == nil && field.GetSequence() == nil {
 				columns = append(columns, col)
 			}
 		}

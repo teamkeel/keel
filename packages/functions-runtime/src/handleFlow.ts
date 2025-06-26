@@ -12,7 +12,7 @@ import { parseInputs } from "./parsing";
 import { createFlowContext, FlowConfig, STEP_STATUS, STEP_TYPE } from "./flows";
 import {
   CompleteOptions,
-  CompleteApiResponse,
+  UiCompleteApiResponse,
   complete,
 } from "./flows/ui/complete";
 
@@ -143,11 +143,18 @@ async function handleFlow(request: any, config: any) {
           });
         }
 
-        let ui: CompleteApiResponse | null = null;
+        let ui: UiCompleteApiResponse | null = null;
         let data: any = null;
 
         // TODO: this is not a thorough enough check for the response type
-        if (response && typeof response == "object" && "content" in response) {
+        if (
+          response &&
+          typeof response == "object" &&
+          "__type" in response &&
+          response.__type === "ui.complete"
+        ) {
+          ui = await complete(response);
+
           const completeStep = await db
             .selectFrom("keel.flow_step")
             .where("run_id", "=", runId)
@@ -166,12 +173,12 @@ async function handleFlow(request: any, config: any) {
                 type: STEP_TYPE.COMPLETE,
                 startTime: new Date(),
                 endTime: new Date(),
+                ui: JSON.stringify(ui),
               })
               .returningAll()
               .executeTakeFirst();
           }
 
-          ui = (await complete(response)).complete;
           data = response.data;
         } else if (response) {
           data = response;
@@ -183,7 +190,6 @@ async function handleFlow(request: any, config: any) {
           runCompleted: true,
           data: data,
           config: flowConfig,
-          ui: ui,
         });
       } catch (e) {
         if (e instanceof Error) {

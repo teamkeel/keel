@@ -1,0 +1,12 @@
+flow MyFlow1 {
+    inputs {
+        //expect-error:9:14:FlowDefinitionError:Flow input 'thing' is defined with unsupported type Thing
+        thing Thing
+        duplicate Number
+        //expect-error:9:18:DuplicateDefinitionError:Flow input with name 'duplicate' already exists
+        duplicate Text
+    }
+}
+    
+model Thing {
+}

@@ -18,7 +18,7 @@
     "prettier": "3.1.1"
   },
   "dependencies": {
-    "@teamkeel/functions-runtime": "^0.413.8",
+    "@teamkeel/functions-runtime": "^0.414.3",
     "jsonwebtoken": "^9.0.2",
     "kysely": "^0.27.6",
     "lodash.ismatch": "^4.4.0",

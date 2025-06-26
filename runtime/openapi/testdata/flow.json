@@ -62,12 +62,9 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "properties": {
-                  "age": { "type": "number" },
-                  "thing": { "$ref": "#/components/schemas/Thing" }
-                },
+                "properties": { "age": { "type": "number" } },
                 "unevaluatedProperties": false,
-                "required": ["age", "thing"]
+                "required": ["age"]
               }
             }
           }
@@ -235,16 +232,21 @@
           "required": false,
           "description": "",
           "schema": {
-            "type": "string",
-            "enum": [
-              "NEW",
-              "RUNNING",
-              "AWAITING_INPUT",
-              "FAILED",
-              "COMPLETED",
-              "CANCELLED"
-            ]
-          }
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "NEW",
+                "RUNNING",
+                "AWAITING_INPUT",
+                "FAILED",
+                "COMPLETED",
+                "CANCELLED"
+              ]
+            }
+          },
+          "style": "form",
+          "explode": false
         }
       ]
     },
@@ -653,6 +655,7 @@
             "required": ["title"]
           },
           "createdAt": { "type": "string", "format": "date-time" },
+          "data": { "type": ["object", "null"] },
           "id": { "type": "string" },
           "input": { "type": ["object", "null"], "additionalProperties": true },
           "name": { "type": "string" },
@@ -734,7 +737,7 @@
             "type": "string",
             "enum": ["PENDING", "FAILED", "COMPLETED"]
           },
-          "type": { "type": "string", "enum": ["FUNCTION", "UI"] },
+          "type": { "type": "string", "enum": ["FUNCTION", "UI", "COMPLETE"] },
           "ui": { "$ref": "#/components/schemas/UiConfig" },
           "updatedAt": { "type": "string", "format": "date-time" },
           "value": {
@@ -765,87 +768,17 @@
           "error"
         ]
       },
-      "Thing": {
-        "properties": {
-          "createdAt": { "type": "string", "format": "date-time" },
-          "id": { "type": "string" },
-          "name": { "type": "string" },
-          "updatedAt": { "type": "string", "format": "date-time" }
-        },
-        "required": ["name", "id", "createdAt", "updatedAt"]
-      },
       "UiConfig": {
-        "type": "object",
-        "properties": {
-          "__type": { "type": "string", "const": "ui.page" },
-          "actions": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "label": { "type": "string" },
-                "mode": {
-                  "type": "string",
-                  "enum": ["destructive", "primary", "secondary"]
-                },
-                "value": { "type": "string" }
-              },
-              "additionalProperties": false,
-              "required": ["label", "value"]
-            }
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiCompleteApiResponse"
           },
-          "content": {
-            "type": "array",
-            "items": {
-              "anyOf": [
-                {
-                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementDividerApiResponse"
-                },
-                {
-                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementMarkdownApiResponse"
-                },
-                {
-                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementHeaderApiResponse"
-                },
-                {
-                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementBannerApiResponse"
-                },
-                {
-                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementImageApiResponse"
-                },
-                {
-                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementCodeApiResponse"
-                },
-                {
-                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementGridApiResponse"
-                },
-                {
-                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementListApiResponse"
-                },
-                {
-                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementTableApiResponse"
-                },
-                {
-                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementInputTextApiResponse"
-                },
-                {
-                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementInputNumberApiResponse"
-                },
-                {
-                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementInputBooleanApiResponse"
-                },
-                {
-                  "$ref": "#/components/schemas/UiConfig/$defs/UiElementSelectOneApiResponse"
-                }
-              ]
-            }
-          },
-          "description": { "type": "string" },
-          "stage": { "type": "string" },
-          "title": { "type": "string" }
-        },
-        "additionalProperties": false,
-        "required": ["__type", "content"],
+          {
+            "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiPageApiResponse"
+          }
+        ]
+      },
+      "__UiConfigSchemas": {
         "$defs": {
           "BannerMode": {
             "type": "string",
@@ -857,13 +790,77 @@
               { "type": ["string", "number", "boolean"] }
             ]
           },
+          "KeyValueMode": {
+            "type": "string",
+            "enum": ["card", "grid", "list"]
+          },
+          "UiCompleteApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": { "type": "string", "const": "ui.complete" },
+              "content": {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementDividerApiResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementMarkdownApiResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementHeaderApiResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementBannerApiResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementImageApiResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementCodeApiResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementGridApiResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementListApiResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementTableApiResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementKeyValueApiResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementInputTextApiResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementInputNumberApiResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementInputBooleanApiResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementSelectOneApiResponse"
+                    }
+                  ]
+                }
+              },
+              "description": { "type": "string" },
+              "stage": { "type": "string" },
+              "title": { "type": "string" }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "content"]
+          },
           "UiElementBannerApiResponse": {
             "type": "object",
             "properties": {
               "__type": { "type": "string", "const": "ui.display.banner" },
               "description": { "type": "string" },
               "mode": {
-                "$ref": "#/components/schemas/UiConfig/$defs/BannerMode"
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/BannerMode"
               },
               "title": { "type": "string" }
             },
@@ -1007,6 +1004,34 @@
             "additionalProperties": false,
             "required": ["__type", "disabled", "label", "name", "optional"]
           },
+          "UiElementKeyValueApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": { "type": "string", "const": "ui.display.keyValue" },
+              "data": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "key": { "type": "string" },
+                    "value": {
+                      "anyOf": [
+                        { "type": "string", "format": "date-time" },
+                        { "type": ["string", "number", "boolean"] }
+                      ]
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": ["key", "value"]
+                }
+              },
+              "mode": {
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/KeyValueMode"
+              }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "data", "mode"]
+          },
           "UiElementListApiResponse": {
             "type": "object",
             "properties": {
@@ -1073,7 +1098,7 @@
                       "properties": {
                         "label": { "type": "string" },
                         "value": {
-                          "$ref": "#/components/schemas/UiConfig/$defs/ElementDataType"
+                          "$ref": "#/components/schemas/__UiConfigSchemas/$defs/ElementDataType"
                         }
                       },
                       "additionalProperties": false,
@@ -1104,6 +1129,82 @@
             },
             "additionalProperties": false,
             "required": ["__type", "data"]
+          },
+          "UiPageApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": { "type": "string", "const": "ui.page" },
+              "actions": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "label": { "type": "string" },
+                    "mode": {
+                      "type": "string",
+                      "enum": ["destructive", "primary", "secondary"]
+                    },
+                    "value": { "type": "string" }
+                  },
+                  "additionalProperties": false,
+                  "required": ["label", "value"]
+                }
+              },
+              "content": {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementDividerApiResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementMarkdownApiResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementHeaderApiResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementBannerApiResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementImageApiResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementCodeApiResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementGridApiResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementListApiResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementTableApiResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementKeyValueApiResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementInputTextApiResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementInputNumberApiResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementInputBooleanApiResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementSelectOneApiResponse"
+                    }
+                  ]
+                }
+              },
+              "description": { "type": "string" },
+              "stage": { "type": "string" },
+              "title": { "type": "string" }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "content"]
           }
         }
       }

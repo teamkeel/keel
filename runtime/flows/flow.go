@@ -77,15 +77,6 @@ func (r *Run) HasPendingUIStep() bool {
 	return false
 }
 
-func (r *Run) HasCompleteStep() bool {
-	for _, step := range r.Steps {
-		if step.Type == StepTypeComplete && step.Status == StepStatusCompleted {
-			return true
-		}
-	}
-	return false
-}
-
 // SetUIComponents will set the given UI component on the first pending UI step of the flow.
 func (r *Run) SetUIComponents(c *FlowUIComponents) {
 	if c == nil {
@@ -99,14 +90,6 @@ func (r *Run) SetUIComponents(c *FlowUIComponents) {
 	if r.HasPendingUIStep() && c.UI != nil {
 		for i, step := range r.Steps {
 			if step.Type == StepTypeUI && step.Status == StepStatusPending {
-				r.Steps[i].UI = c.UI
-			}
-		}
-	}
-
-	if r.HasCompleteStep() && c.UI != nil {
-		for i, step := range r.Steps {
-			if step.Type == StepTypeComplete && step.Status == StepStatusCompleted {
 				r.Steps[i].UI = c.UI
 			}
 		}
@@ -157,7 +140,7 @@ type Step struct {
 	EndTime   *time.Time `json:"endTime"`
 	CreatedAt time.Time  `json:"createdAt"`
 	UpdatedAt time.Time  `json:"updatedAt"`
-	UI        JSON       `json:"ui"        gorm:"-"` // UI component, omitted from db operations
+	UI        JSON       `json:"ui"        gorm:"type:jsonb;serializer:json;default:null"`
 }
 
 func (Step) TableName() string {

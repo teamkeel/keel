@@ -29,12 +29,19 @@ CREATE TABLE IF NOT EXISTS "keel"."flow_step" (
 CREATE OR REPLACE TRIGGER "keel_flow_step_updated_at" BEFORE UPDATE ON "keel"."flow_step" FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
 
 ALTER TABLE "keel"."flow_run" ADD COLUMN IF NOT EXISTS "traceparent" TEXT;
-
 ALTER TABLE "keel"."flow_run" ADD COLUMN IF NOT EXISTS "started_by" TEXT;
-
-DROP INDEX IF EXISTS "keel"."flow_run_started_by_idx";
-CREATE INDEX "flow_run_started_by_idx" ON "keel"."flow_run" USING BTREE ("started_by");
+ALTER TABLE "keel"."flow_run" ADD COLUMN IF NOT EXISTS "data" JSONB DEFAULT NULL;
 
 ALTER TABLE "keel"."flow_step" ADD COLUMN IF NOT EXISTS "action" TEXT;
+ALTER TABLE "keel"."flow_step" ADD COLUMN IF NOT EXISTS "ui" JSONB DEFAULT NULL;
 
-ALTER TABLE "keel"."flow_run" ADD COLUMN IF NOT EXISTS "data" JSONB DEFAULT NULL;
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_indexes 
+        WHERE indexname = 'flow_run_started_by_idx' 
+        AND schemaname = 'keel'
+    ) THEN
+        CREATE INDEX "flow_run_started_by_idx" ON "keel"."flow_run" USING BTREE ("started_by");
+    END IF;
+END $$;
