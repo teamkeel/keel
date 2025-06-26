@@ -236,17 +236,17 @@ func updateRun(ctx context.Context, runID string, status Status, updatedConfig a
 
 	u := Run{
 		Status: status,
+		Config: updatedConfig,
 	}
-	if updatedConfig != nil {
-		u.Config = updatedConfig
-	}
+	// if updatedConfig != nil {
+	// 	u.Config = updatedConfig
+	// }
 
 	var run Run
 	result := database.GetDB().
 		Model(&run).
 		Clauses(clause.Returning{}).
 		Where("id = ?", runID).
-		//Update("status", status)
 		Updates(u)
 
 	return &run, result.Error
