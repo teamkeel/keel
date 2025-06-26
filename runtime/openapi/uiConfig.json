@@ -594,7 +594,7 @@
                 "type": "number"
               },
               "type": {
-                "$ref": "#/$defs/DataTypes"
+                "$ref": "#/$defs/DataGridDataTypes"
               },
               "editable": {
                 "type": "boolean"
@@ -640,7 +640,7 @@
         "name"
       ]
     },
-    "DataTypes": {
+    "DataGridDataTypes": {
       "enum": [
         "boolean",
         "hidden",

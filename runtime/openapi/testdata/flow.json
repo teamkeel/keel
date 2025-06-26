@@ -692,6 +692,10 @@
               { "type": ["string", "number", "boolean"] }
             ]
           },
+          "DataGridDataTypes": {
+            "enum": ["boolean", "hidden", "id", "number", "text"],
+            "type": "string"
+          },
           "KeyValueMode": {
             "type": "string",
             "enum": ["card", "grid", "list"]
@@ -746,6 +750,9 @@
                     },
                     {
                       "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementInputBooleanApiResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementInputDataGridApiResponse"
                     },
                     {
                       "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementSelectOneApiResponse"
@@ -875,6 +882,68 @@
               "name",
               "optional"
             ]
+          },
+          "UiElementInputDataGridApiResponse": {
+            "additionalProperties": false,
+            "properties": {
+              "__type": {
+                "const": "ui.input.dataGrid",
+                "type": "string"
+              },
+              "allowAddRows": {
+                "type": "boolean"
+              },
+              "allowDeleteRows": {
+                "type": "boolean"
+              },
+              "columns": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "editable": {
+                      "type": "boolean"
+                    },
+                    "index": {
+                      "type": "number"
+                    },
+                    "key": {
+                      "type": "string"
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "$ref": "#/components/schemas/__UiConfigSchemas/$defs/DataGridDataTypes"
+                    }
+                  },
+                  "required": ["editable", "index", "key", "label", "type"],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "data": {
+                "items": {},
+                "type": "array"
+              },
+              "helpText": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "validationError": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "__type",
+              "allowAddRows",
+              "allowDeleteRows",
+              "columns",
+              "data",
+              "name"
+            ],
+            "type": "object"
           },
           "UiElementInputNumberApiResponse": {
             "type": "object",
@@ -1179,6 +1248,9 @@
                     },
                     {
                       "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementInputBooleanApiResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementInputDataGridApiResponse"
                     },
                     {
                       "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementSelectOneApiResponse"

@@ -44,7 +44,7 @@ type MapDataType<U, Fallback> = U extends "text"
 type ColumnConfig<Cols extends string[]> = {
   key: Cols[number];
   label?: string;
-  type?: DataTypes;
+  type?: DataGridDataTypes;
   editable?: boolean;
 };
 
@@ -70,13 +70,13 @@ export interface UiElementInputDataGridApiResponse
   allowDeleteRows: boolean;
 }
 
-type DataTypes = "text" | "number" | "boolean" | "id" | "hidden";
+type DataGridDataTypes = "text" | "number" | "boolean" | "id" | "hidden";
 
 export type DataGridColumn = {
   key: string;
   label: string;
   index: number;
-  type: DataTypes;
+  type: DataGridDataTypes;
   editable: boolean;
 };
 
@@ -92,7 +92,7 @@ export const dataGridInput: InputElementImplementation<
 
   const inferType = (key: string) => {
     const inferredTypeRaw = typeof data[0][key];
-    const inferredTypeMap: Record<typeof inferredTypeRaw, DataTypes> = {
+    const inferredTypeMap: Record<typeof inferredTypeRaw, DataGridDataTypes> = {
       string: "text",
       number: "number",
       boolean: "boolean",

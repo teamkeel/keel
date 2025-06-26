@@ -136,8 +136,8 @@ export type ExtractStageKeys<T extends FlowConfig> = T extends {
     ? U extends string
       ? U
       : U extends { key: infer K extends string }
-        ? K
-        : never
+      ? K
+      : never
     : never
   : never;
 
