@@ -446,5 +446,6 @@ func (s *Service) getGeneratedTool(ctx context.Context, name string) (*toolsprot
 			return t, nil
 		}
 	}
+
 	return nil, fmt.Errorf("tool not found")
 }
