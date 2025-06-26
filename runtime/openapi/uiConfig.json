@@ -65,7 +65,13 @@
                 "$ref": "#/$defs/UiElementInputBooleanApiResponse"
               },
               {
+                "$ref": "#/$defs/UiElementInputDataGridApiResponse"
+              },
+              {
                 "$ref": "#/$defs/UiElementSelectOneApiResponse"
+              },
+              {
+                "$ref": "#/$defs/UiElementSelectTableApiResponse"
               }
             ]
           }
@@ -341,7 +347,20 @@
         "columns": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "index": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "index",
+              "name"
+            ]
           }
         },
         "__type": {
@@ -352,6 +371,7 @@
       "additionalProperties": false,
       "required": [
         "__type",
+        "columns",
         "data"
       ]
     },
@@ -555,6 +575,84 @@
         "optional"
       ]
     },
+    "UiElementInputDataGridApiResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": true
+        },
+        "columns": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "index": {
+                "type": "number"
+              },
+              "type": {
+                "$ref": "#/$defs/DataGridDataTypes"
+              },
+              "editable": {
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "editable",
+              "index",
+              "key",
+              "label",
+              "type"
+            ]
+          }
+        },
+        "allowAddRows": {
+          "type": "boolean"
+        },
+        "allowDeleteRows": {
+          "type": "boolean"
+        },
+        "__type": {
+          "type": "string",
+          "const": "ui.input.dataGrid"
+        },
+        "name": {
+          "type": "string"
+        },
+        "validationError": {
+          "type": "string"
+        },
+        "helpText": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "__type",
+        "allowAddRows",
+        "allowDeleteRows",
+        "columns",
+        "data",
+        "name"
+      ]
+    },
+    "DataGridDataTypes": {
+      "enum": [
+        "boolean",
+        "hidden",
+        "id",
+        "number",
+        "text"
+      ],
+      "type": "string"
+    },
     "UiElementSelectOneApiResponse": {
       "type": "object",
       "properties": {
@@ -655,6 +753,73 @@
         }
       ]
     },
+    "UiElementSelectTableApiResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": true
+        },
+        "columns": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "index": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "index",
+              "name"
+            ]
+          }
+        },
+        "mode": {
+          "$ref": "#/$defs/SelectMode"
+        },
+        "__type": {
+          "type": "string",
+          "const": "ui.select.table"
+        },
+        "name": {
+          "type": "string"
+        },
+        "validationError": {
+          "type": "string"
+        },
+        "helpText": {
+          "type": "string"
+        },
+        "optional": {
+          "type": "boolean"
+        },
+        "disabled": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "__type",
+        "columns",
+        "data",
+        "disabled",
+        "mode",
+        "name",
+        "optional"
+      ]
+    },
+    "SelectMode": {
+      "enum": [
+        "multi",
+        "single"
+      ],
+      "type": "string"
+    },
     "UiPageApiResponse": {
       "type": "object",
       "properties": {
@@ -738,10 +903,22 @@
                 "$ref": "#/$defs/UiElementInputBooleanApiResponse"
               },
               {
+                "$ref": "#/$defs/UiElementInputDataGridApiResponse"
+              },
+              {
                 "$ref": "#/$defs/UiElementSelectOneApiResponse"
+              },
+              {
+                "$ref": "#/$defs/UiElementSelectTableApiResponse"
               }
             ]
           }
+        },
+        "hasValidationErrors": {
+          "type": "boolean"
+        },
+        "validationError": {
+          "type": "string"
         },
         "__type": {
           "type": "string",
@@ -751,7 +928,8 @@
       "additionalProperties": false,
       "required": [
         "__type",
-        "content"
+        "content",
+        "hasValidationErrors"
       ]
     }
   }

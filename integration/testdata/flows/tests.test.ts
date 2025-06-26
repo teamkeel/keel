@@ -230,6 +230,7 @@ test("flows - only pages", async () => {
           content: [
             { __type: "ui.display.grid", data: [{ title: "A thing" }] },
           ],
+          hasValidationErrors: false,
           title: "Grid of things",
         },
       },
@@ -300,6 +301,7 @@ test("flows - only pages", async () => {
               optional: false,
             },
           ],
+          hasValidationErrors: false,
           title: "My flow",
         },
       },
@@ -591,6 +593,7 @@ test("flows - alternating step types", async () => {
         // We have the full UI config because this step is awaiting user input
         ui: {
           __type: "ui.page",
+          hasValidationErrors: false,
           title: "Update thing",
           description: "Confirm the existing data in thing",
           content: [
@@ -771,6 +774,7 @@ test("flows - text input validation", async () => {
         validationError: "not a valid postcode",
       },
     ],
+    hasValidationErrors: true,
     title: "Your postcode",
   });
 
@@ -831,6 +835,7 @@ test("flows - boolean input validation", async () => {
         optional: false,
       },
     ],
+    hasValidationErrors: true,
     title: "Important question",
   });
 
@@ -1853,6 +1858,7 @@ test("flows - multiple actions - finish", async () => {
               optional: false,
             },
           ],
+          hasValidationErrors: false,
           title: "Continue flow?",
         },
       },
@@ -1945,6 +1951,7 @@ test("flows - multiple actions - continue", async () => {
               optional: false,
             },
           ],
+          hasValidationErrors: false,
           title: "Continue flow?",
         },
       },
@@ -2014,6 +2021,7 @@ test("flows - multiple actions - continue", async () => {
               name: "name",
             },
           ],
+          hasValidationErrors: false,
           title: "Another question",
         },
       },
@@ -2073,6 +2081,143 @@ test("flows - multiple actions - continue", async () => {
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
         ui: null,
+      },
+    ],
+    createdAt: expect.any(String),
+    updatedAt: expect.any(String),
+    config: {
+      title: "Multiple actions",
+    },
+  });
+});
+
+test("flows - multiple actions - invalid action", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  let { status, body } = await startFlow({
+    name: "MultipleActions",
+    token,
+    body: {},
+  });
+  expect(status).toEqual(200);
+  expect(body).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "AWAITING_INPUT",
+    name: "MultipleActions",
+    startedBy: expect.any(String),
+    input: {},
+    data: null,
+    steps: [
+      {
+        id: expect.any(String),
+        name: "question",
+        runId: expect.any(String),
+        stage: null,
+        status: "PENDING",
+        type: "UI",
+        value: null,
+        error: null,
+        startTime: expect.any(String),
+        endTime: null,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        ui: {
+          __type: "ui.page",
+          actions: [
+            {
+              label: "finish",
+              mode: "primary",
+              value: "finish",
+            },
+            {
+              label: "continue",
+              mode: "primary",
+              value: "continue",
+            },
+          ],
+          content: [
+            {
+              __type: "ui.input.boolean",
+              disabled: false,
+              label: "Did you like the things?",
+              mode: "checkbox",
+              name: "yesno",
+              optional: false,
+            },
+          ],
+          hasValidationErrors: false,
+          title: "Continue flow?",
+        },
+      },
+    ],
+    createdAt: expect.any(String),
+    updatedAt: expect.any(String),
+    config: {
+      title: "Multiple actions",
+    },
+  });
+
+  // Provide the values for the pending UI step
+  ({ status, body } = await putStepValues({
+    name: "MultipleActions",
+    runId: body.id,
+    stepId: body.steps[0].id,
+    token,
+    values: {},
+    action: "invalid",
+  }));
+  expect(status).toEqual(200);
+  expect(body).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "AWAITING_INPUT",
+    name: "MultipleActions",
+    startedBy: expect.any(String),
+    input: {},
+    data: null,
+    steps: [
+      {
+        id: expect.any(String),
+        name: "question",
+        runId: expect.any(String),
+        stage: null,
+        status: "PENDING",
+        type: "UI",
+        value: null,
+        error: null,
+        startTime: expect.any(String),
+        endTime: null,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        ui: {
+          __type: "ui.page",
+          actions: [
+            {
+              label: "finish",
+              mode: "primary",
+              value: "finish",
+            },
+            {
+              label: "continue",
+              mode: "primary",
+              value: "continue",
+            },
+          ],
+          content: [
+            {
+              __type: "ui.input.boolean",
+              disabled: false,
+              label: "Did you like the things?",
+              mode: "checkbox",
+              name: "yesno",
+              optional: false,
+            },
+          ],
+          hasValidationErrors: true,
+          title: "Continue flow?",
+          validationError: "invalid action",
+        },
       },
     ],
     createdAt: expect.any(String),
