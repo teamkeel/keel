@@ -700,6 +700,7 @@
             "type": "object",
             "properties": {
               "__type": { "type": "string", "const": "ui.complete" },
+              "autoClose": { "type": "boolean" },
               "content": {
                 "type": "array",
                 "items": {
