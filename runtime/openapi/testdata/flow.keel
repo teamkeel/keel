@@ -8,7 +8,6 @@ flow MyWorkflow {
 flow AnotherWorkflow {
     inputs {
         age Number
-        thing Thing
     }
 }
 

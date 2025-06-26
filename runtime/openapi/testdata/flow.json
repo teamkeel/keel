@@ -62,12 +62,9 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "properties": {
-                  "age": { "type": "number" },
-                  "thing": { "$ref": "#/components/schemas/Thing" }
-                },
+                "properties": { "age": { "type": "number" } },
                 "unevaluatedProperties": false,
-                "required": ["age", "thing"]
+                "required": ["age"]
               }
             }
           }
@@ -672,15 +669,6 @@
           "error"
         ]
       },
-      "Thing": {
-        "properties": {
-          "createdAt": { "type": "string", "format": "date-time" },
-          "id": { "type": "string" },
-          "name": { "type": "string" },
-          "updatedAt": { "type": "string", "format": "date-time" }
-        },
-        "required": ["name", "id", "createdAt", "updatedAt"]
-      },
       "UiConfig": {
         "type": "object",
         "properties": {
@@ -768,8 +756,8 @@
             ]
           },
           "KeyValueMode": {
-            "enum": ["card", "grid", "list"],
-            "type": "string"
+            "type": "string",
+            "enum": ["card", "grid", "list"]
           },
           "UiElementBannerApiResponse": {
             "type": "object",
@@ -922,42 +910,32 @@
             "required": ["__type", "disabled", "label", "name", "optional"]
           },
           "UiElementKeyValueApiResponse": {
-            "additionalProperties": false,
+            "type": "object",
             "properties": {
-              "__type": {
-                "const": "ui.display.keyValue",
-                "type": "string"
-              },
+              "__type": { "type": "string", "const": "ui.display.keyValue" },
               "data": {
+                "type": "array",
                 "items": {
-                  "additionalProperties": false,
+                  "type": "object",
                   "properties": {
-                    "key": {
-                      "type": "string"
-                    },
+                    "key": { "type": "string" },
                     "value": {
                       "anyOf": [
-                        {
-                          "format": "date-time",
-                          "type": "string"
-                        },
-                        {
-                          "type": ["string", "number", "boolean"]
-                        }
+                        { "type": "string", "format": "date-time" },
+                        { "type": ["string", "number", "boolean"] }
                       ]
                     }
                   },
-                  "required": ["key", "value"],
-                  "type": "object"
-                },
-                "type": "array"
+                  "additionalProperties": false,
+                  "required": ["key", "value"]
+                }
               },
               "mode": {
                 "$ref": "#/components/schemas/UiConfig/$defs/KeyValueMode"
               }
             },
-            "required": ["__type", "data", "mode"],
-            "type": "object"
+            "additionalProperties": false,
+            "required": ["__type", "data", "mode"]
           },
           "UiElementListApiResponse": {
             "type": "object",

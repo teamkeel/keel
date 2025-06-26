@@ -139,6 +139,7 @@ const (
 	AttributeExpressionError ErrorType = "AttributeExpressionError"
 	RelationshipError        ErrorType = "RelationshipError"
 	JobDefinitionError       ErrorType = "JobDefinitionError"
+	FlowDefinitionError      ErrorType = "FlowDefinitionError"
 	UnsupportedFeatureError  ErrorType = "UnsupportedFeatureError"
 )
 
