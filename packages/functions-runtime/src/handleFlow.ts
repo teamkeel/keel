@@ -153,6 +153,8 @@ async function handleFlow(request: any, config: any) {
           "__type" in response &&
           response.__type === "ui.complete"
         ) {
+          ui = await complete(response);
+
           const completeStep = await db
             .selectFrom("keel.flow_step")
             .where("run_id", "=", runId)
@@ -171,12 +173,12 @@ async function handleFlow(request: any, config: any) {
                 type: STEP_TYPE.COMPLETE,
                 startTime: new Date(),
                 endTime: new Date(),
+                ui: JSON.stringify(ui),
               })
               .returningAll()
               .executeTakeFirst();
           }
 
-          ui = await complete(response);
           data = response.data;
         } else if (response) {
           data = response;
@@ -188,7 +190,6 @@ async function handleFlow(request: any, config: any) {
           runCompleted: true,
           data: data,
           config: flowConfig,
-          ui: ui,
         });
       } catch (e) {
         if (e instanceof Error) {
