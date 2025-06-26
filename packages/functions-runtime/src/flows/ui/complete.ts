@@ -10,15 +10,15 @@ export type CompleteOptions<C extends FlowConfig> = {
   stage?: ExtractStageKeys<C>;
   title?: string;
   description?: string;
-  content: DisplayElementResponse[];
+  content?: DisplayElementResponse[];
   data?: any;
 };
 
 export type Complete<C extends FlowConfig> = (
   options: CompleteOptions<C>
-) => CompleteOptions<C>;
+) => CompleteOptions<C> & { __type: "ui.complete" };
 
-export interface CompleteApiResponse
+export interface UiCompleteApiResponse
   extends BaseUiDisplayResponse<"ui.complete"> {
   stage?: string;
   title?: string;
@@ -28,12 +28,10 @@ export interface CompleteApiResponse
 
 export async function complete<C extends FlowConfig>(
   options: CompleteOptions<C>
-): Promise<{ complete: CompleteApiResponse }> {
+): Promise<UiCompleteApiResponse> {
   // Turn these back into the actual response types
-  const content = options.content as unknown as ImplementationResponse<
-    any,
-    any
-  >[];
+  const content =
+    (options.content as unknown as ImplementationResponse<any, any>[]) || [];
   const contentUiConfig = (await Promise.all(
     content.map(async (c) => {
       return c.uiConfig;
@@ -41,12 +39,10 @@ export async function complete<C extends FlowConfig>(
   )) as UiElementApiResponses;
 
   return {
-    complete: {
-      __type: "ui.complete",
-      stage: options.stage,
-      title: options.title,
-      description: options.description,
-      content: contentUiConfig,
-    },
+    __type: "ui.complete",
+    stage: options.stage,
+    title: options.title,
+    description: options.description,
+    content: contentUiConfig || [],
   };
 }

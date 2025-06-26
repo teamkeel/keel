@@ -24,6 +24,7 @@ TEST CASES
 [ ] Stages
 [x] List my runs
 [x] ctx env
+[x] Completions and returning data
 */
 
 test("flows - scalar step", async () => {
@@ -1450,21 +1451,93 @@ test("flows - with completion", async () => {
     data: {
       value: "flow value",
     },
+    config: null,
+  });
+});
+
+test("flows - with completion - no contents and no returns", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+  const res = await startFlow({
+    name: "WithCompletionMinimal",
+    token,
+    body: {},
+  });
+  expect(res.status).toBe(200);
+
+  expect(res.body).toEqual({
+    id: res.body.id,
+    traceId: res.body.traceId,
+    status: "COMPLETED",
+    name: "WithCompletionMinimal",
+    startedBy: expect.any(String),
+    input: {},
+    steps: [
+      {
+        id: res.body.steps[0].id,
+        name: "",
+        runId: res.body.id,
+        stage: null,
+        status: "COMPLETED",
+        type: "COMPLETE",
+        value: null,
+        error: null,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        startTime: expect.any(String),
+        endTime: expect.any(String),
+        ui: {
+          __type: "ui.complete",
+          title: "Completed flow",
+          content: [],
+        },
+      },
+    ],
+    createdAt: res.body.createdAt,
+    updatedAt: expect.any(String),
+    data: null,
     config: {
-      stages: [
-        {
-          description: "this is the starting stage",
-          key: "starting",
-          name: "Starting",
-        },
-        {
-          description: "this is the ending stage",
-          key: "ending",
-          name: "Ending",
-        },
-      ],
-      title: "With completion",
+      title: "With completion minimal",
     },
+  });
+
+  const flow = await getFlowRun({
+    name: "WithCompletionMinimal",
+    id: res.body.id,
+    token,
+  });
+
+  expect(flow.body).toEqual({
+    id: res.body.id,
+    traceId: res.body.traceId,
+    status: "COMPLETED",
+    name: "WithCompletionMinimal",
+    startedBy: expect.any(String),
+    input: {},
+    steps: [
+      {
+        id: expect.any(String),
+        name: "",
+        runId: res.body.id,
+        stage: null,
+        status: "COMPLETED",
+        type: "COMPLETE",
+        value: null,
+        error: null,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        startTime: expect.any(String),
+        endTime: expect.any(String),
+        ui: {
+          __type: "ui.complete",
+          title: "Completed flow",
+          content: [],
+        },
+      },
+    ],
+    createdAt: res.body.createdAt,
+    updatedAt: expect.any(String),
+    data: null,
+    config: null,
   });
 });
 
@@ -1580,7 +1653,7 @@ test("flows - authorised starting, getting and listing flows", async () => {
   const userToken = await getToken({ email: "user@gmail.com" });
 
   const resListAdmin = await listFlows({ token: adminToken });
-  expect(resListAdmin.body.flows.length).toBe(18);
+  expect(resListAdmin.body.flows.length).toBe(19);
   expect(resListAdmin.body.flows[0].name).toBe("ScalarStep");
   expect(resListAdmin.body.flows[1].name).toBe("MixedStepTypes");
   expect(resListAdmin.body.flows[2].name).toBe("Stepless");
@@ -1598,7 +1671,8 @@ test("flows - authorised starting, getting and listing flows", async () => {
   expect(resListAdmin.body.flows[14].name).toBe("EnvStep");
   expect(resListAdmin.body.flows[15].name).toBe("MultipleActions");
   expect(resListAdmin.body.flows[16].name).toBe("WithCompletion");
-  expect(resListAdmin.body.flows[17].name).toBe("WithReturnedData");
+  expect(resListAdmin.body.flows[17].name).toBe("WithCompletionMinimal");
+  expect(resListAdmin.body.flows[18].name).toBe("WithReturnedData");
 
   const resListUser = await listFlows({ token: userToken });
   expect(resListUser.status).toBe(200);

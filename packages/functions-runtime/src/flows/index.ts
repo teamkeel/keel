@@ -177,7 +177,12 @@ export function createFlowContext<
     env: ctx.env,
     now: ctx.now,
     secrets: ctx.secrets,
-    complete: (options) => options,
+    complete: (options) => {
+      return {
+        __type: "ui.complete",
+        ...options,
+      };
+    },
     step: async (name, optionsOrFn, fn?) => {
       // We need to check the type of the arguments due to the step function being overloaded
       const options = typeof optionsOrFn === "function" ? {} : optionsOrFn;

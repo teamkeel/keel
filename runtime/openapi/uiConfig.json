@@ -1,103 +1,86 @@
 {
-  "type": "object",
-  "properties": {
-    "stage": {
-      "type": "string"
+  "anyOf": [
+    {
+      "$ref": "#/$defs/UiCompleteApiResponse"
     },
-    "title": {
-      "type": "string"
-    },
-    "description": {
-      "type": "string"
-    },
-    "actions": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "label": {
-            "type": "string"
-          },
-          "value": {
-            "type": "string"
-          },
-          "mode": {
-            "enum": [
-              "destructive",
-              "primary",
-              "secondary"
-            ],
-            "type": "string"
-          }
-        },
-        "additionalProperties": false,
-        "required": [
-          "label",
-          "value"
-        ]
-      }
-    },
-    "content": {
-      "type": "array",
-      "items": {
-        "anyOf": [
-          {
-            "$ref": "#/$defs/UiElementDividerApiResponse"
-          },
-          {
-            "$ref": "#/$defs/UiElementMarkdownApiResponse"
-          },
-          {
-            "$ref": "#/$defs/UiElementHeaderApiResponse"
-          },
-          {
-            "$ref": "#/$defs/UiElementBannerApiResponse"
-          },
-          {
-            "$ref": "#/$defs/UiElementImageApiResponse"
-          },
-          {
-            "$ref": "#/$defs/UiElementCodeApiResponse"
-          },
-          {
-            "$ref": "#/$defs/UiElementGridApiResponse"
-          },
-          {
-            "$ref": "#/$defs/UiElementListApiResponse"
-          },
-          {
-            "$ref": "#/$defs/UiElementTableApiResponse"
-          },
-          {
-            "$ref": "#/$defs/UiElementKeyValueApiResponse"
-          },
-          {
-            "$ref": "#/$defs/UiElementInputTextApiResponse"
-          },
-          {
-            "$ref": "#/$defs/UiElementInputNumberApiResponse"
-          },
-          {
-            "$ref": "#/$defs/UiElementInputBooleanApiResponse"
-          },
-          {
-            "$ref": "#/$defs/UiElementSelectOneApiResponse"
-          }
-        ]
-      }
-    },
-    "__type": {
-      "type": "string",
-      "const": "ui.page"
+    {
+      "$ref": "#/$defs/UiPageApiResponse"
     }
-  },
-  "additionalProperties": false,
-  "required": [
-    "__type",
-    "content"
   ],
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$defs": {
+    "UiCompleteApiResponse": {
+      "type": "object",
+      "properties": {
+        "stage": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/UiElementDividerApiResponse"
+              },
+              {
+                "$ref": "#/$defs/UiElementMarkdownApiResponse"
+              },
+              {
+                "$ref": "#/$defs/UiElementHeaderApiResponse"
+              },
+              {
+                "$ref": "#/$defs/UiElementBannerApiResponse"
+              },
+              {
+                "$ref": "#/$defs/UiElementImageApiResponse"
+              },
+              {
+                "$ref": "#/$defs/UiElementCodeApiResponse"
+              },
+              {
+                "$ref": "#/$defs/UiElementGridApiResponse"
+              },
+              {
+                "$ref": "#/$defs/UiElementListApiResponse"
+              },
+              {
+                "$ref": "#/$defs/UiElementTableApiResponse"
+              },
+              {
+                "$ref": "#/$defs/UiElementKeyValueApiResponse"
+              },
+              {
+                "$ref": "#/$defs/UiElementInputTextApiResponse"
+              },
+              {
+                "$ref": "#/$defs/UiElementInputNumberApiResponse"
+              },
+              {
+                "$ref": "#/$defs/UiElementInputBooleanApiResponse"
+              },
+              {
+                "$ref": "#/$defs/UiElementSelectOneApiResponse"
+              }
+            ]
+          }
+        },
+        "__type": {
+          "type": "string",
+          "const": "ui.complete"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "__type",
+        "content"
+      ]
+    },
     "UiElementDividerApiResponse": {
       "type": "object",
       "properties": {
@@ -667,6 +650,105 @@
             "boolean"
           ]
         }
+      ]
+    },
+    "UiPageApiResponse": {
+      "type": "object",
+      "properties": {
+        "stage": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "actions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              },
+              "mode": {
+                "enum": [
+                  "destructive",
+                  "primary",
+                  "secondary"
+                ],
+                "type": "string"
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "label",
+              "value"
+            ]
+          }
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/UiElementDividerApiResponse"
+              },
+              {
+                "$ref": "#/$defs/UiElementMarkdownApiResponse"
+              },
+              {
+                "$ref": "#/$defs/UiElementHeaderApiResponse"
+              },
+              {
+                "$ref": "#/$defs/UiElementBannerApiResponse"
+              },
+              {
+                "$ref": "#/$defs/UiElementImageApiResponse"
+              },
+              {
+                "$ref": "#/$defs/UiElementCodeApiResponse"
+              },
+              {
+                "$ref": "#/$defs/UiElementGridApiResponse"
+              },
+              {
+                "$ref": "#/$defs/UiElementListApiResponse"
+              },
+              {
+                "$ref": "#/$defs/UiElementTableApiResponse"
+              },
+              {
+                "$ref": "#/$defs/UiElementKeyValueApiResponse"
+              },
+              {
+                "$ref": "#/$defs/UiElementInputTextApiResponse"
+              },
+              {
+                "$ref": "#/$defs/UiElementInputNumberApiResponse"
+              },
+              {
+                "$ref": "#/$defs/UiElementInputBooleanApiResponse"
+              },
+              {
+                "$ref": "#/$defs/UiElementSelectOneApiResponse"
+              }
+            ]
+          }
+        },
+        "__type": {
+          "type": "string",
+          "const": "ui.page"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "__type",
+        "content"
       ]
     }
   }
