@@ -250,6 +250,72 @@
         }
       ]
     },
+    "/flows/json/stats": {
+      "get": {
+        "operationId": "getRunsStats",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Stats" }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": { "type": "string" },
+                    "data": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
+                          }
+                        }
+                      }
+                    },
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "before",
+          "in": "query",
+          "required": false,
+          "description": "",
+          "schema": { "type": "string", "format": "date-time" }
+        },
+        {
+          "name": "after",
+          "in": "query",
+          "required": false,
+          "description": "",
+          "schema": { "type": "string", "format": "date-time" }
+        },
+        {
+          "name": "interval",
+          "in": "query",
+          "required": false,
+          "description": "If supplied, the results will include a time series with buckets defined by this interval period.",
+          "schema": { "type": "string", "enum": ["daily", "hourly"] }
+        }
+      ]
+    },
     "/flows/json/{flow}": {
       "post": {
         "operationId": "startFlow",
@@ -623,6 +689,38 @@
           "config",
           "input"
         ]
+      },
+      "Stats": {
+        "type": "object",
+        "properties": {
+          "activeRuns": { "type": "number" },
+          "completedToday": { "type": "number" },
+          "errorRate": { "type": "number" },
+          "lastRun": { "type": "string", "format": "date-time" },
+          "name": { "type": "string" },
+          "timeSeries": {
+            "type": ["array", "null"],
+            "items": { "$ref": "#/components/schemas/StatsBucket" }
+          },
+          "totalRuns": { "type": "number" }
+        },
+        "required": [
+          "name",
+          "lastRun",
+          "totalRuns",
+          "errorRate",
+          "activeRuns",
+          "completedToday"
+        ]
+      },
+      "StatsBucket": {
+        "type": "object",
+        "properties": {
+          "failedRuns": { "type": "number" },
+          "time": { "type": "string", "format": "date-time" },
+          "totalRuns": { "type": "number" }
+        },
+        "required": ["time", "totalRuns", "failedRunts"]
       },
       "Step": {
         "type": "object",

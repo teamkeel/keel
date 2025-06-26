@@ -329,6 +329,30 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 		Required: []string{"id", "status", "name", "traceId", "createdAt", "updatedAt", "steps", "config", "input"},
 	}
 
+	statsResponseSchema := jsonschema.JSONSchema{
+		Type: "object",
+		Properties: map[string]jsonschema.JSONSchema{
+			"name":           {Type: "string"},
+			"lastRun":        {Type: "string", Format: "date-time"},
+			"totalRuns":      {Type: "number"},
+			"errorRate":      {Type: "number"},
+			"activeRuns":     {Type: "number"},
+			"completedToday": {Type: "number"},
+			"timeSeries":     {Type: []string{"array", "null"}, Items: &jsonschema.JSONSchema{Ref: "#/components/schemas/StatsBucket"}},
+		},
+		Required: []string{"name", "lastRun", "totalRuns", "errorRate", "activeRuns", "completedToday"},
+	}
+
+	statsBucketResponseSchema := jsonschema.JSONSchema{
+		Type: "object",
+		Properties: map[string]jsonschema.JSONSchema{
+			"time":       {Type: "string", Format: "date-time"},
+			"totalRuns":  {Type: "number"},
+			"failedRuns": {Type: "number"},
+		},
+		Required: []string{"time", "totalRuns", "failedRunts"},
+	}
+
 	anyTypeSchema := jsonschema.JSONSchema{
 		Type:                 []string{"string", "object", "array", "integer", "number", "boolean", "null"},
 		AdditionalProperties: BoolPointer(true),
@@ -404,9 +428,11 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 		Paths: map[string]PathItemObject{},
 		Components: &ComponentsObject{
 			Schemas: map[string]jsonschema.JSONSchema{
-				"Run":      runResponseSchema,
-				"Step":     stepResponseSchema,
-				"UiConfig": uiConfigSchemaWithoutDefs,
+				"Run":         runResponseSchema,
+				"Step":        stepResponseSchema,
+				"Stats":       statsResponseSchema,
+				"StatsBucket": statsBucketResponseSchema,
+				"UiConfig":    uiConfigSchemaWithoutDefs,
 				"__UiConfigSchemas": jsonschema.JSONSchema{
 					Definitions: uiConfigSchema.Definitions,
 				},
@@ -474,6 +500,55 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 					Content: map[string]MediaTypeObject{
 						"application/json": {
 							Schema: listFlowsResponseSchema,
+						},
+					},
+				},
+				"400": {
+					Content: map[string]MediaTypeObject{
+						"application/json": {
+							Schema: responseErrorSchema,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	spec.Paths["/flows/json/stats"] = PathItemObject{
+		Parameters: []ParameterObject{
+			{
+				Name:     "before",
+				In:       "query",
+				Required: false,
+				Schema:   jsonschema.JSONSchema{Type: "string", Format: "date-time"},
+			},
+			{
+				Name:     "after",
+				In:       "query",
+				Required: false,
+				Schema:   jsonschema.JSONSchema{Type: "string", Format: "date-time"},
+			},
+			{
+				Name:        "interval",
+				In:          "query",
+				Required:    false,
+				Description: "If supplied, the results will include a time series with buckets defined by this interval period.",
+				Schema: jsonschema.JSONSchema{Type: "string", Enum: []*string{
+					StringPointer(flows.StatsIntervalDaily),
+					StringPointer(flows.StatsIntervalHourly),
+				}},
+			},
+		},
+		Get: &OperationObject{
+			OperationID: StringPointer("getRunsStats"),
+			Responses: map[string]ResponseObject{
+				"200": {
+					Content: map[string]MediaTypeObject{
+						"application/json": {
+							Schema: jsonschema.JSONSchema{
+								Type:  "array",
+								Items: &jsonschema.JSONSchema{Ref: "#/components/schemas/Stats"},
+							},
 						},
 					},
 				},
