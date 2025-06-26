@@ -57,6 +57,14 @@ import {
   UiElementKeyValueApiResponse,
 } from "./elements/display/keyValue";
 import { UiCompleteApiResponse } from "./complete";
+import {
+  UiElementSelectTable,
+  UiElementSelectTableApiResponse,
+} from "./elements/select/table";
+import {
+  UiElementInputDataGrid,
+  UiElementInputDataGridApiResponse,
+} from "./elements/input/dataGrid";
 
 export interface UI<C extends FlowConfig> {
   page: UiPage<C>;
@@ -70,11 +78,13 @@ type UiInputsElements = {
   text: UiElementInputText;
   number: UiElementInputNumber;
   boolean: UiElementInputBoolean;
+  dataGrid: UiElementInputDataGrid;
 };
 
 // Select elements that are named and return values
 type UiSelectElements = {
   one: UiElementSelectOne;
+  table: UiElementSelectTable;
 };
 
 // Display elements that do not return values
@@ -170,9 +180,11 @@ export type UIApiResponses = {
     text: UiElementInputTextApiResponse;
     number: UiElementInputNumberApiResponse;
     boolean: UiElementInputBooleanApiResponse;
+    dataGrid: UiElementInputDataGridApiResponse;
   };
   select: {
     one: UiElementSelectOneApiResponse;
+    table: UiElementSelectTableApiResponse;
   };
 };
 
@@ -193,9 +205,11 @@ export type UiElementApiResponses = // Display elements
     | UiElementInputTextApiResponse
     | UiElementInputNumberApiResponse
     | UiElementInputBooleanApiResponse
+    | UiElementInputDataGridApiResponse
 
     // Select elements
     | UiElementSelectOneApiResponse
+    | UiElementSelectTableApiResponse
   )[];
 
 // The root API response. Used to generate the OpenAPI schema

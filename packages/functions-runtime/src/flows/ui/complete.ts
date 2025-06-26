@@ -10,9 +10,22 @@ export type CompleteOptions<C extends FlowConfig> = {
   stage?: ExtractStageKeys<C>;
   title?: string;
   description?: string;
-  content?: DisplayElementResponse[];
+
+  /** Automatically close the flow once complete.
+   * If set, the title and description will be shown in a notification.
+   * If set, you cannot return content as this will not be shown. */
+  autoClose?: boolean;
   data?: any;
-};
+} & (
+  | {
+      autoClose: true;
+      content?: never;
+    }
+  | {
+      autoClose?: false;
+      content?: DisplayElementResponse[];
+    }
+);
 
 export type Complete<C extends FlowConfig> = (
   options: CompleteOptions<C>
@@ -24,6 +37,7 @@ export interface UiCompleteApiResponse
   title?: string;
   description?: string;
   content: UiElementApiResponses;
+  autoClose?: boolean;
 }
 
 export async function complete<C extends FlowConfig>(
@@ -44,5 +58,6 @@ export async function complete<C extends FlowConfig>(
     title: options.title,
     description: options.description,
     content: contentUiConfig || [],
-  };
+    autoClose: options.autoClose,
+  } satisfies UiCompleteApiResponse;
 }
