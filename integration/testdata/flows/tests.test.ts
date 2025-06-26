@@ -2161,6 +2161,7 @@ test("flows - cancelling - with pending ui step", async () => {
           __type: "ui.page",
           title: "Update thing",
           description: "Confirm the existing data in thing",
+          hasValidationErrors: false,
           content: [
             {
               __type: "ui.input.text",
