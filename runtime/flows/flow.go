@@ -54,7 +54,7 @@ type Run struct {
 	Steps       []Step    `json:"steps"`
 	CreatedAt   time.Time `json:"createdAt"`
 	UpdatedAt   time.Time `json:"updatedAt"`
-	Config      JSON      `json:"config"    gorm:"-"` // Stages config component, omitted from db operations
+	Config      JSON      `json:"config"    gorm:"type:jsonb;serializer:json"`
 	StartedBy   *string   `json:"startedBy"`
 }
 
@@ -83,10 +83,6 @@ func (r *Run) SetUIComponents(c *FlowUIComponents) {
 		return
 	}
 
-	if c.Config != nil {
-		r.Config = c.Config
-	}
-
 	if r.HasPendingUIStep() && c.UI != nil {
 		for i, step := range r.Steps {
 			if step.Type == StepTypeUI && step.Status == StepStatusPending {
@@ -109,7 +105,7 @@ type Step struct {
 	EndTime   *time.Time `json:"endTime"`
 	CreatedAt time.Time  `json:"createdAt"`
 	UpdatedAt time.Time  `json:"updatedAt"`
-	UI        JSON       `json:"ui"        gorm:"type:jsonb;serializer:json;default:null"`
+	UI        JSON       `json:"ui"        gorm:"type:jsonb;serializer:json"`
 }
 
 func (Step) TableName() string {
@@ -232,7 +228,32 @@ func GetTraceparent(ctx context.Context, runID string) (string, error) {
 }
 
 // updateRun will update the status of a flow run.
-func updateRun(ctx context.Context, runID string, status Status, data any) (*Run, error) {
+func updateRun(ctx context.Context, runID string, status Status, updatedConfig any) (*Run, error) {
+	database, err := db.GetDatabase(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	u := Run{
+		Status: status,
+	}
+	if updatedConfig != nil {
+		u.Config = updatedConfig
+	}
+
+	var run Run
+	result := database.GetDB().
+		Model(&run).
+		Clauses(clause.Returning{}).
+		Where("id = ?", runID).
+		//Update("status", status)
+		Updates(u)
+
+	return &run, result.Error
+}
+
+// completeRun will complete a flow run.
+func completeRun(ctx context.Context, runID string, data any, config any) (*Run, error) {
 	database, err := db.GetDatabase(ctx)
 	if err != nil {
 		return nil, err
@@ -244,8 +265,9 @@ func updateRun(ctx context.Context, runID string, status Status, data any) (*Run
 		Clauses(clause.Returning{}).
 		Where("id = ?", runID).
 		Updates(Run{
-			Status: status,
+			Status: StatusCompleted,
 			Data:   data,
+			Config: config,
 		})
 
 	return &run, result.Error
