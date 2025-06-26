@@ -143,7 +143,7 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, inputs 
 				return err, resp.GetUIComponents()
 			}
 
-			_, err = completeRun(ctx, run.ID, resp.Data, resp.Config)
+			_, err = completeRun(ctx, run.ID, resp.Config, resp.Data)
 			return err, resp.GetUIComponents()
 		}
 
@@ -157,11 +157,12 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, inputs 
 		if run.HasPendingUIStep() {
 			_, err = updateRun(ctx, run.ID, StatusAwaitingInput, resp.Config)
 			return err, resp.GetUIComponents()
-		} else {
-			_, err = updateRun(ctx, run.ID, run.Status, resp.Config)
-			if err != nil {
-				return err, nil
-			}
+		}
+
+		// Set the config
+		_, err = updateRun(ctx, run.ID, run.Status, resp.Config)
+		if err != nil {
+			return err, nil
 		}
 
 		// Continue running the flow

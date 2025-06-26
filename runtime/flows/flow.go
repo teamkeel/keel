@@ -228,32 +228,27 @@ func GetTraceparent(ctx context.Context, runID string) (string, error) {
 }
 
 // updateRun will update the status of a flow run.
-func updateRun(ctx context.Context, runID string, status Status, updatedConfig any) (*Run, error) {
+func updateRun(ctx context.Context, runID string, status Status, config any) (*Run, error) {
 	database, err := db.GetDatabase(ctx)
 	if err != nil {
 		return nil, err
 	}
-
-	u := Run{
-		Status: status,
-		Config: updatedConfig,
-	}
-	// if updatedConfig != nil {
-	// 	u.Config = updatedConfig
-	// }
 
 	var run Run
 	result := database.GetDB().
 		Model(&run).
 		Clauses(clause.Returning{}).
 		Where("id = ?", runID).
-		Updates(u)
+		Updates(Run{
+			Status: status,
+			Config: config,
+		})
 
 	return &run, result.Error
 }
 
 // completeRun will complete a flow run.
-func completeRun(ctx context.Context, runID string, data any, config any) (*Run, error) {
+func completeRun(ctx context.Context, runID string, config any, data any) (*Run, error) {
 	database, err := db.GetDatabase(ctx)
 	if err != nil {
 		return nil, err
