@@ -128,7 +128,7 @@ func ListFlowsStatsHandler(p *proto.Schema) common.HandlerFunc {
 			return httpjson.NewErrorResponse(ctx, err, nil)
 		}
 
-		return common.NewJsonResponse(http.StatusOK, map[string]any{"stats": stats}, nil)
+		return common.NewJsonResponse(http.StatusOK, stats, nil)
 	}
 }
 
