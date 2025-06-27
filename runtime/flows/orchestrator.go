@@ -113,7 +113,7 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, inputs 
 	case StatusNew, StatusRunning, StatusAwaitingInput:
 		if run.Status == StatusNew {
 			// this is a new run, set it to running and trigger the flows runtime
-			run, err = updateRun(ctx, run.ID, StatusRunning, nil)
+			run, err = updateRun(ctx, run.ID, StatusRunning, run.Config)
 			if err != nil {
 				return err, nil
 			}
@@ -121,7 +121,7 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, inputs 
 
 		if run.Status == StatusAwaitingInput {
 			// we have been awaiting input, we're now going to continue running
-			run, err = updateRun(ctx, run.ID, StatusRunning, nil)
+			run, err = updateRun(ctx, run.ID, StatusRunning, run.Config)
 			if err != nil {
 				return err, nil
 			}
@@ -131,7 +131,7 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, inputs 
 		resp, err := o.CallFlow(ctx, run, inputs, data, action)
 		if err != nil {
 			// failed orchestrating, mark the run as failed and return the error
-			_, _ = updateRun(ctx, run.ID, StatusFailed, nil)
+			_, _ = updateRun(ctx, run.ID, StatusFailed, resp.Config)
 			return err, nil
 		}
 
@@ -139,11 +139,11 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, inputs 
 			if resp.Error != "" {
 				// run was orchestrated and completed successfully, but with an error (e.g. exhaused retries)
 				// TODO: store error message against the flow run
-				_, err = updateRun(ctx, run.ID, StatusFailed, nil)
+				_, err = updateRun(ctx, run.ID, StatusFailed, resp.Config)
 				return err, resp.GetUIComponents()
 			}
 
-			_, err = updateRun(ctx, run.ID, StatusCompleted, resp.Data)
+			_, err = completeRun(ctx, run.ID, resp.Config, resp.Data)
 			return err, resp.GetUIComponents()
 		}
 
@@ -155,8 +155,14 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, inputs 
 
 		// Check to see if we're in a Pending UI step, break orchestration
 		if run.HasPendingUIStep() {
-			_, err = updateRun(ctx, run.ID, StatusAwaitingInput, nil)
+			_, err = updateRun(ctx, run.ID, StatusAwaitingInput, resp.Config)
 			return err, resp.GetUIComponents()
+		}
+
+		// Set the config
+		_, err = updateRun(ctx, run.ID, run.Status, resp.Config)
+		if err != nil {
+			return err, nil
 		}
 
 		// Continue running the flow
