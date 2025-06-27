@@ -2378,40 +2378,38 @@ test("flows - stats", async () => {
   });
 
   expect(stats.status).toBe(200);
-  expect(stats.body).toEqual({
-    stats: [
-      {
-        activeRuns: 0,
-        completedToday: 0,
-        errorRate: 1,
-        lastRun: expect.any(String),
-        name: "ErrorInFlow",
-        timeSeries: [
-          {
-            failedRuns: 1,
-            time: expect.any(String),
-            totalRuns: 1,
-          },
-        ],
-        totalRuns: 1,
-      },
-      {
-        activeRuns: 0,
-        completedToday: 1,
-        errorRate: 0,
-        lastRun: expect.any(String),
-        name: "ScalarStep",
-        timeSeries: [
-          {
-            failedRuns: 0,
-            time: expect.any(String),
-            totalRuns: 1,
-          },
-        ],
-        totalRuns: 1,
-      },
-    ],
-  });
+  expect(stats.body).toEqual([
+    {
+      activeRuns: 0,
+      completedToday: 0,
+      errorRate: 1,
+      lastRun: expect.any(String),
+      name: "ErrorInFlow",
+      timeSeries: [
+        {
+          failedRuns: 1,
+          time: expect.any(String),
+          totalRuns: 1,
+        },
+      ],
+      totalRuns: 1,
+    },
+    {
+      activeRuns: 0,
+      completedToday: 1,
+      errorRate: 0,
+      lastRun: expect.any(String),
+      name: "ScalarStep",
+      timeSeries: [
+        {
+          failedRuns: 0,
+          time: expect.any(String),
+          totalRuns: 1,
+        },
+      ],
+      totalRuns: 1,
+    },
+  ]);
   const res = await fetch(`${process.env.KEEL_TESTING_API_URL}/flows/json`, {
     method: "GET",
     headers: {
