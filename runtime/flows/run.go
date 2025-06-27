@@ -238,8 +238,7 @@ func CancelFlowRun(ctx context.Context, runID string) (run *Run, err error) {
 		return
 	}
 
-	run, err = updateRun(ctx, run.ID, StatusCancelled, nil)
-	if err != nil {
+	if _, err = updateRun(ctx, run.ID, StatusCancelled, nil); err != nil {
 		err = fmt.Errorf("updating flow run: %w", err)
 		return
 	}

@@ -370,6 +370,7 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 					StringPointer(string(flows.StepStatusPending)),
 					StringPointer(string(flows.StepStatusFailed)),
 					StringPointer(string(flows.StepStatusCompleted)),
+					StringPointer(string(flows.StepStatusCancelled)),
 				},
 			},
 			"type": {

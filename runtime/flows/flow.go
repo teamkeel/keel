@@ -38,6 +38,7 @@ const (
 	StepTypeUI       StepType = "UI"
 	StepTypeComplete StepType = "COMPLETE"
 
+	StepStatusCancelled StepStatus = "CANCELLED"
 	StepStatusPending   StepStatus = "PENDING"
 	StepStatusFailed    StepStatus = "FAILED"
 	StepStatusCompleted StepStatus = "COMPLETED"
@@ -269,6 +270,7 @@ func GetTraceparent(ctx context.Context, runID string) (string, error) {
 }
 
 // updateRun will update the status of a flow run.
+// If the flow's status is set to cancelled, any pending steps of that flow's run will be set to cancelled as well.
 func updateRun(ctx context.Context, runID string, status Status, data any) (*Run, error) {
 	database, err := db.GetDatabase(ctx)
 	if err != nil {
@@ -276,16 +278,34 @@ func updateRun(ctx context.Context, runID string, status Status, data any) (*Run
 	}
 
 	var run Run
-	result := database.GetDB().
-		Model(&run).
-		Clauses(clause.Returning{}).
-		Where("id = ?", runID).
-		Updates(Run{
-			Status: status,
-			Data:   data,
-		})
 
-	return &run, result.Error
+	err = database.GetDB().Transaction(func(tx *gorm.DB) error {
+		if err := database.GetDB().
+			Model(&run).
+			Clauses(clause.Returning{}).
+			Where("id = ?", runID).
+			Updates(Run{
+				Status: status,
+				Data:   data,
+			}).Error; err != nil {
+			return err
+		}
+
+		// if we've cancelled the flow, we need to cancel any UI steps that are PENDING
+		if status == StatusCancelled {
+			if err := tx.Model(&Step{}).
+				Where("run_id = ? AND type = ? AND status = ?", runID, StepTypeUI, StepStatusPending).
+				Updates(Step{
+					Status: StepStatusCancelled,
+				}).Error; err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+
+	return &run, err
 }
 
 // createRun will create a new flow run with the given input.

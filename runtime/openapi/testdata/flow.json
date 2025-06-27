@@ -735,7 +735,7 @@
           "startTime": { "type": ["string", "null"], "format": "date-time" },
           "status": {
             "type": "string",
-            "enum": ["PENDING", "FAILED", "COMPLETED"]
+            "enum": ["PENDING", "FAILED", "COMPLETED", "CANCELLED"]
           },
           "type": { "type": "string", "enum": ["FUNCTION", "UI", "COMPLETE"] },
           "ui": { "$ref": "#/components/schemas/UiConfig" },
