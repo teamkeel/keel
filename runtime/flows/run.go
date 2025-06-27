@@ -3,6 +3,7 @@ package flows
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/auth"
@@ -112,6 +113,45 @@ func ListUserFlowRuns(ctx context.Context, identityID string, inputs map[string]
 	return
 }
 
+// ListFlowStats will return generic stats for all the flows that the current ctx user is authorised to view.
+func ListFlowStats(ctx context.Context, schema *proto.Schema, before *time.Time, after *time.Time, interval *string) ([]*FlowStats, error) {
+	flowNames := []string{}
+	for _, f := range schema.GetFlows() {
+		authorised, err := AuthoriseFlow(ctx, schema, f)
+		if err != nil {
+			return nil, err
+		}
+		// not authorised to view this flow, continue
+		if authorised {
+			flowNames = append(flowNames, f.GetName())
+		}
+	}
+
+	filters := statsFilters{
+		FlowNames: flowNames,
+		Before:    before,
+		After:     after,
+	}
+
+	stats, err := listFlowStats(ctx, filters)
+	if err != nil {
+		return nil, err
+	}
+
+	if interval != nil {
+		buckets, err := listFlowStatsSeries(ctx, filters, *interval)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, s := range stats {
+			s.PopulateTimeSeries(buckets)
+		}
+	}
+
+	return stats, nil
+}
+
 // GetFlowRunState retrieves the state of the given flow run. If the run has a pending UI step, the UI component will be
 // injected into the step before returning it.
 func GetFlowRunState(ctx context.Context, runID string) (run *Run, err error) {
@@ -198,8 +238,7 @@ func CancelFlowRun(ctx context.Context, runID string) (run *Run, err error) {
 		return
 	}
 
-	run, err = updateRun(ctx, run.ID, StatusCancelled, nil)
-	if err != nil {
+	if _, err = updateRun(ctx, run.ID, StatusCancelled, nil); err != nil {
 		err = fmt.Errorf("updating flow run: %w", err)
 		return
 	}

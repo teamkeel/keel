@@ -1497,7 +1497,7 @@ func generateTestingPackage(schema *proto.Schema) codegen.GeneratedFiles {
 	js.Indent()
 	js.Writeln("const db = useDatabase();")
 	js.Write("await sql`TRUNCATE TABLE ")
-	tableNames := []string{"keel_audit", "keel_storage"}
+	tableNames := []string{"keel_audit", "keel_storage", `"keel"."flow_run"`}
 	for _, model := range schema.GetModels() {
 		tableNames = append(tableNames, fmt.Sprintf("\"%s\"", casing.ToSnake(model.GetName())))
 	}
