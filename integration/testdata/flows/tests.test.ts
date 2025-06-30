@@ -71,7 +71,9 @@ test("flows - scalar step", async () => {
     ],
     createdAt: expect.any(String),
     updatedAt: expect.any(String),
-    config: null,
+    config: {
+      title: "Scalar step",
+    },
   });
 });
 
@@ -190,7 +192,22 @@ test("flows - only functions with config", async () => {
     ],
     createdAt: expect.any(String),
     updatedAt: expect.any(String),
-    config: null,
+    config: {
+      description: "This is a description",
+      stages: [
+        {
+          description: "This is stage 1's description",
+          key: "stage1",
+          name: "My stage 1",
+        },
+        {
+          description: "This is stage 2's description",
+          key: "stage2",
+          name: "My stage 2",
+        },
+      ],
+      title: "Flow with two functions",
+    },
   });
 });
 
@@ -396,7 +413,9 @@ test("flows - stepless flow", async () => {
     startedBy: expect.any(String),
     status: "COMPLETED",
     steps: [],
-    config: null,
+    config: {
+      title: "Stepless",
+    },
     traceId: expect.any(String),
     createdAt: expect.any(String),
     updatedAt: expect.any(String),
@@ -484,7 +503,9 @@ test("flows - first step is a function", async () => {
         endTime: expect.any(String),
       },
     ],
-    config: null,
+    config: {
+      title: "Single step",
+    },
     traceId: body.traceId,
     createdAt: body.createdAt,
     updatedAt: expect.any(String),
@@ -1011,7 +1032,9 @@ test("flows - error in step with retries", async () => {
     ],
     createdAt: res.body.createdAt,
     updatedAt: expect.any(String),
-    config: null,
+    config: {
+      title: "Error in step",
+    },
   });
 });
 
@@ -1166,7 +1189,9 @@ test("flows - timeout step", async () => {
     ],
     createdAt: res.body.createdAt,
     updatedAt: expect.any(String),
-    config: null,
+    config: {
+      title: "Timeout step",
+    },
   });
 });
 
@@ -1254,7 +1279,9 @@ test("flows - duplicate step name", async () => {
     ],
     createdAt: res.body.createdAt,
     updatedAt: expect.any(String),
-    config: null,
+    config: {
+      title: "Duplicate step name",
+    },
   });
 });
 
@@ -1346,7 +1373,9 @@ test("flows - duplicate step name and UI name", async () => {
     ],
     createdAt: res.body.createdAt,
     updatedAt: expect.any(String),
-    config: null,
+    config: {
+      title: "Duplicate step ui name",
+    },
   });
 });
 
@@ -1457,7 +1486,21 @@ test("flows - with completion", async () => {
     data: {
       value: "flow value",
     },
-    config: null,
+    config: {
+      stages: [
+        {
+          description: "this is the starting stage",
+          key: "starting",
+          name: "Starting",
+        },
+        {
+          description: "this is the ending stage",
+          key: "ending",
+          name: "Ending",
+        },
+      ],
+      title: "With completion",
+    },
   });
 });
 
@@ -1543,7 +1586,9 @@ test("flows - with completion - no contents and no returns", async () => {
     createdAt: res.body.createdAt,
     updatedAt: expect.any(String),
     data: null,
-    config: null,
+    config: {
+      title: "With completion minimal",
+    },
   });
 });
 
@@ -1617,7 +1662,9 @@ test("flows - with returned data", async () => {
     createdAt: res.body.createdAt,
     updatedAt: expect.any(String),
     data: "hello",
-    config: null,
+    config: {
+      title: "With returned data",
+    },
   });
 });
 
@@ -1800,7 +1847,9 @@ test("flows - env step", async () => {
     ],
     createdAt: expect.any(String),
     updatedAt: expect.any(String),
-    config: null,
+    config: {
+      title: "Env step",
+    },
   });
 });
 
