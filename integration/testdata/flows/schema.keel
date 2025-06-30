@@ -108,6 +108,10 @@ flow ExpressionPermissionCtx {
     @permission(expression: ctx.identity.user.team == "myTeam")
 }
 
+flow ExpressionPermissionEnv {
+    @permission(expression: ctx.identity.user.team == ctx.env.ADMIN_TEAM)
+}
+
 flow ExpressionPermissionIsTrue {
     @permission(expression: true)
 }

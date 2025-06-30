@@ -1,4 +1,7 @@
 model MyModel {
-  // FOO is a default environment variable 
   @permission(expression: ctx.env.FOO == "d", actions: [get])
+}
+
+model MyFlow {
+  @permission(expression: ctx.env.FOO == "d")
 }

@@ -1,1 +1,287 @@
-{"models":[{"name":"User","fields":[{"modelName":"User","name":"team","type":{"type":"TYPE_STRING"}},{"modelName":"User","name":"identity","type":{"type":"TYPE_MODEL","modelName":"Identity"},"unique":true,"foreignKeyFieldName":"identityId","inverseFieldName":"user"},{"modelName":"User","name":"identityId","type":{"type":"TYPE_ID"},"unique":true,"foreignKeyInfo":{"relatedModelName":"Identity","relatedModelField":"id"}},{"modelName":"User","name":"id","type":{"type":"TYPE_ID"},"unique":true,"primaryKey":true,"defaultValue":{"useZeroValue":true}},{"modelName":"User","name":"createdAt","type":{"type":"TYPE_DATETIME"},"defaultValue":{"useZeroValue":true}},{"modelName":"User","name":"updatedAt","type":{"type":"TYPE_DATETIME"},"defaultValue":{"useZeroValue":true}}]},{"name":"Identity","fields":[{"modelName":"Identity","name":"email","type":{"type":"TYPE_STRING"},"optional":true,"uniqueWith":["issuer"]},{"modelName":"Identity","name":"emailVerified","type":{"type":"TYPE_BOOL"},"defaultValue":{"expression":{"source":"false"}}},{"modelName":"Identity","name":"password","type":{"type":"TYPE_PASSWORD"},"optional":true},{"modelName":"Identity","name":"externalId","type":{"type":"TYPE_STRING"},"optional":true},{"modelName":"Identity","name":"issuer","type":{"type":"TYPE_STRING"},"optional":true,"uniqueWith":["email"]},{"modelName":"Identity","name":"name","type":{"type":"TYPE_STRING"},"optional":true},{"modelName":"Identity","name":"givenName","type":{"type":"TYPE_STRING"},"optional":true},{"modelName":"Identity","name":"familyName","type":{"type":"TYPE_STRING"},"optional":true},{"modelName":"Identity","name":"middleName","type":{"type":"TYPE_STRING"},"optional":true},{"modelName":"Identity","name":"nickName","type":{"type":"TYPE_STRING"},"optional":true},{"modelName":"Identity","name":"profile","type":{"type":"TYPE_STRING"},"optional":true},{"modelName":"Identity","name":"picture","type":{"type":"TYPE_STRING"},"optional":true},{"modelName":"Identity","name":"website","type":{"type":"TYPE_STRING"},"optional":true},{"modelName":"Identity","name":"gender","type":{"type":"TYPE_STRING"},"optional":true},{"modelName":"Identity","name":"zoneInfo","type":{"type":"TYPE_STRING"},"optional":true},{"modelName":"Identity","name":"locale","type":{"type":"TYPE_STRING"},"optional":true},{"modelName":"Identity","name":"id","type":{"type":"TYPE_ID"},"unique":true,"primaryKey":true,"defaultValue":{"useZeroValue":true}},{"modelName":"Identity","name":"createdAt","type":{"type":"TYPE_DATETIME"},"defaultValue":{"useZeroValue":true}},{"modelName":"Identity","name":"updatedAt","type":{"type":"TYPE_DATETIME"},"defaultValue":{"useZeroValue":true}},{"modelName":"Identity","name":"user","type":{"type":"TYPE_MODEL","modelName":"User"},"optional":true,"inverseFieldName":"identity"}],"actions":[{"modelName":"Identity","name":"requestPasswordReset","type":"ACTION_TYPE_WRITE","implementation":"ACTION_IMPLEMENTATION_RUNTIME","inputMessageName":"RequestPasswordResetInput","responseMessageName":"RequestPasswordResetResponse"},{"modelName":"Identity","name":"resetPassword","type":"ACTION_TYPE_WRITE","implementation":"ACTION_IMPLEMENTATION_RUNTIME","inputMessageName":"ResetPasswordInput","responseMessageName":"ResetPasswordResponse"}]}],"roles":[{"name":"Admin","domains":["keel.so"]},{"name":"Developer"}],"apis":[{"name":"Api","apiModels":[{"modelName":"User"},{"modelName":"Identity","modelActions":[{"actionName":"requestPasswordReset"},{"actionName":"resetPassword"}]}]}],"environmentVariables":[{"name":"FOO"}],"messages":[{"name":"Any"},{"name":"RequestPasswordResetInput","fields":[{"messageName":"RequestPasswordResetInput","name":"email","type":{"type":"TYPE_STRING"}},{"messageName":"RequestPasswordResetInput","name":"redirectUrl","type":{"type":"TYPE_STRING"}}]},{"name":"RequestPasswordResetResponse"},{"name":"ResetPasswordInput","fields":[{"messageName":"ResetPasswordInput","name":"token","type":{"type":"TYPE_STRING"}},{"messageName":"ResetPasswordInput","name":"password","type":{"type":"TYPE_STRING"}}]},{"name":"ResetPasswordResponse"},{"name":"MyFlow2Message","fields":[{"messageName":"MyFlow2Message","name":"name","type":{"type":"TYPE_STRING"}}]}],"flows":[{"name":"MyFlow1"},{"name":"MyFlow2","inputMessageName":"MyFlow2Message","permissions":[{"roleNames":["Admin"]}]},{"name":"MyFlow3","permissions":[{"roleNames":["Admin","Developer"]}]},{"name":"MyFlow4","permissions":[{"expression":{"source":"true"}}]},{"name":"MyFlow4","permissions":[{"expression":{"source":"ctx.identity.user.team == \"myTeam\""}}]}]}
+{
+  "models": [
+    {
+      "name": "User",
+      "fields": [
+        {
+          "modelName": "User",
+          "name": "team",
+          "type": { "type": "TYPE_STRING" }
+        },
+        {
+          "modelName": "User",
+          "name": "identity",
+          "type": { "type": "TYPE_MODEL", "modelName": "Identity" },
+          "unique": true,
+          "foreignKeyFieldName": "identityId",
+          "inverseFieldName": "user"
+        },
+        {
+          "modelName": "User",
+          "name": "identityId",
+          "type": { "type": "TYPE_ID" },
+          "unique": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Identity",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "User",
+          "name": "id",
+          "type": { "type": "TYPE_ID" },
+          "unique": true,
+          "primaryKey": true,
+          "defaultValue": { "useZeroValue": true }
+        },
+        {
+          "modelName": "User",
+          "name": "createdAt",
+          "type": { "type": "TYPE_DATETIME" },
+          "defaultValue": { "useZeroValue": true }
+        },
+        {
+          "modelName": "User",
+          "name": "updatedAt",
+          "type": { "type": "TYPE_DATETIME" },
+          "defaultValue": { "useZeroValue": true }
+        }
+      ]
+    },
+    {
+      "name": "Identity",
+      "fields": [
+        {
+          "modelName": "Identity",
+          "name": "email",
+          "type": { "type": "TYPE_STRING" },
+          "optional": true,
+          "uniqueWith": ["issuer"]
+        },
+        {
+          "modelName": "Identity",
+          "name": "emailVerified",
+          "type": { "type": "TYPE_BOOL" },
+          "defaultValue": { "expression": { "source": "false" } }
+        },
+        {
+          "modelName": "Identity",
+          "name": "password",
+          "type": { "type": "TYPE_PASSWORD" },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "externalId",
+          "type": { "type": "TYPE_STRING" },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "issuer",
+          "type": { "type": "TYPE_STRING" },
+          "optional": true,
+          "uniqueWith": ["email"]
+        },
+        {
+          "modelName": "Identity",
+          "name": "name",
+          "type": { "type": "TYPE_STRING" },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "givenName",
+          "type": { "type": "TYPE_STRING" },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "familyName",
+          "type": { "type": "TYPE_STRING" },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "middleName",
+          "type": { "type": "TYPE_STRING" },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "nickName",
+          "type": { "type": "TYPE_STRING" },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "profile",
+          "type": { "type": "TYPE_STRING" },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "picture",
+          "type": { "type": "TYPE_STRING" },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "website",
+          "type": { "type": "TYPE_STRING" },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "gender",
+          "type": { "type": "TYPE_STRING" },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "zoneInfo",
+          "type": { "type": "TYPE_STRING" },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "locale",
+          "type": { "type": "TYPE_STRING" },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "id",
+          "type": { "type": "TYPE_ID" },
+          "unique": true,
+          "primaryKey": true,
+          "defaultValue": { "useZeroValue": true }
+        },
+        {
+          "modelName": "Identity",
+          "name": "createdAt",
+          "type": { "type": "TYPE_DATETIME" },
+          "defaultValue": { "useZeroValue": true }
+        },
+        {
+          "modelName": "Identity",
+          "name": "updatedAt",
+          "type": { "type": "TYPE_DATETIME" },
+          "defaultValue": { "useZeroValue": true }
+        },
+        {
+          "modelName": "Identity",
+          "name": "user",
+          "type": { "type": "TYPE_MODEL", "modelName": "User" },
+          "optional": true,
+          "inverseFieldName": "identity"
+        }
+      ],
+      "actions": [
+        {
+          "modelName": "Identity",
+          "name": "requestPasswordReset",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "RequestPasswordResetInput",
+          "responseMessageName": "RequestPasswordResetResponse"
+        },
+        {
+          "modelName": "Identity",
+          "name": "resetPassword",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "ResetPasswordInput",
+          "responseMessageName": "ResetPasswordResponse"
+        }
+      ]
+    }
+  ],
+  "roles": [
+    { "name": "Admin", "domains": ["keel.so"] },
+    { "name": "Developer" }
+  ],
+  "apis": [
+    {
+      "name": "Api",
+      "apiModels": [
+        { "modelName": "User" },
+        {
+          "modelName": "Identity",
+          "modelActions": [
+            { "actionName": "requestPasswordReset" },
+            { "actionName": "resetPassword" }
+          ]
+        }
+      ]
+    }
+  ],
+  "environmentVariables": [{ "name": "FOO" }],
+  "messages": [
+    { "name": "Any" },
+    {
+      "name": "RequestPasswordResetInput",
+      "fields": [
+        {
+          "messageName": "RequestPasswordResetInput",
+          "name": "email",
+          "type": { "type": "TYPE_STRING" }
+        },
+        {
+          "messageName": "RequestPasswordResetInput",
+          "name": "redirectUrl",
+          "type": { "type": "TYPE_STRING" }
+        }
+      ]
+    },
+    { "name": "RequestPasswordResetResponse" },
+    {
+      "name": "ResetPasswordInput",
+      "fields": [
+        {
+          "messageName": "ResetPasswordInput",
+          "name": "token",
+          "type": { "type": "TYPE_STRING" }
+        },
+        {
+          "messageName": "ResetPasswordInput",
+          "name": "password",
+          "type": { "type": "TYPE_STRING" }
+        }
+      ]
+    },
+    { "name": "ResetPasswordResponse" },
+    {
+      "name": "MyFlow2Message",
+      "fields": [
+        {
+          "messageName": "MyFlow2Message",
+          "name": "name",
+          "type": { "type": "TYPE_STRING" }
+        }
+      ]
+    }
+  ],
+  "flows": [
+    { "name": "MyFlow1" },
+    {
+      "name": "MyFlow2",
+      "inputMessageName": "MyFlow2Message",
+      "permissions": [{ "roleNames": ["Admin"] }]
+    },
+    {
+      "name": "MyFlow3",
+      "permissions": [{ "roleNames": ["Admin", "Developer"] }]
+    },
+    {
+      "name": "MyFlow4",
+      "permissions": [{ "expression": { "source": "true" } }]
+    },
+    {
+      "name": "MyFlow4",
+      "permissions": [
+        { "expression": { "source": "ctx.identity.user.team == \"myTeam\"" } }
+      ]
+    }
+  ]
+}
