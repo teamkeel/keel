@@ -27,14 +27,12 @@ func AuthoriseFlow(ctx context.Context, schema *proto.Schema, flow *proto.Flow) 
 
 			// Try resolve the permission early.
 			canAuthorise, authorised := actions.TryResolveExpressionEarly(ctx, schema, nil, nil, permission.GetExpression().GetSource(), nil)
-			if err != nil {
-				return false, err
-			}
 
 			// If access can be concluded by role permissions alone
 			if canAuthorise {
 				return authorised, nil
 			}
+
 			query := actions.NewQuery(schema.FindModel(parser.IdentityModelName))
 			query.SelectClause("COUNT(*) as authorised")
 
