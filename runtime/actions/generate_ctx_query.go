@@ -32,12 +32,11 @@ func GenerateCtxQuery(ctx context.Context, query *QueryBuilder, schema *proto.Sc
 var _ resolve.Visitor[*QueryBuilder] = new(ctxQueryGen)
 
 type ctxQueryGen struct {
-	ctx         context.Context
-	query       *QueryBuilder
-	schema      *proto.Schema
-	permissions []*proto.PermissionRule
-	operators   *arraystack.Stack
-	operands    *arraystack.Stack
+	ctx       context.Context
+	query     *QueryBuilder
+	schema    *proto.Schema
+	operators *arraystack.Stack
+	operands  *arraystack.Stack
 }
 
 func (v *ctxQueryGen) StartTerm(nested bool) error {
@@ -160,7 +159,10 @@ func (v *ctxQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
 			identityId = identity[parser.FieldNameId].(string)
 		}
 
-		v.query.Where(IdField(), Equals, Value(identityId))
+		err = v.query.Where(IdField(), Equals, Value(identityId))
+		if err != nil {
+			return err
+		}
 	}
 
 	v.operands.Push(operand)
