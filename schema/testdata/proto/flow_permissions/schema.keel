@@ -17,7 +17,7 @@ flow MyFlow4 {
     @permission(expression: true)
 }
 
-flow MyFlow4 {
+flow MyFlow5 {
     @permission(expression: ctx.identity.user.team == "myTeam")
 }
 

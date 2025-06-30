@@ -138,7 +138,7 @@ func (v *ctxQueryGen) VisitLiteral(value any) error {
 }
 
 func (v *ctxQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
-	operand, err := g(v.ctx, v.schema, ident.Fragments)
+	operand, err := generateOperandForCtxQuery(v.ctx, v.schema, ident.Fragments)
 	if err != nil {
 		return err
 	}
@@ -183,7 +183,7 @@ func (v *ctxQueryGen) Result() (*QueryBuilder, error) {
 	return v.query, nil
 }
 
-func g(ctx context.Context, schema *proto.Schema, fragments []string) (*QueryOperand, error) {
+func generateOperandForCtxQuery(ctx context.Context, schema *proto.Schema, fragments []string) (*QueryOperand, error) {
 	ident, err := NormalisedFragments(schema, fragments)
 	if err != nil {
 		return nil, err
@@ -191,11 +191,7 @@ func g(ctx context.Context, schema *proto.Schema, fragments []string) (*QueryOpe
 
 	switch {
 	case expressions.IsContextDbColumn(ident):
-
-		ident = ident[1:]
-
-		return operandFromFragments(schema, ident)
-
+		return operandFromFragments(schema, ident[1:])
 	case expressions.IsContextIdentityId(ident):
 		isAuthenticated := auth.IsAuthenticated(ctx)
 		if !isAuthenticated {

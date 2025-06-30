@@ -9,6 +9,6 @@ model MyModel {
 flow MyFlow {
     @permission(
         //expect-error:28:29:AttributeExpressionError:field 'FOO' does not exist
-        expression: ctx.env.FOO == "d",
+        expression: ctx.env.FOO == "d"
     )
 }
