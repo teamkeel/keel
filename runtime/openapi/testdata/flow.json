@@ -858,6 +858,12 @@
                     },
                     {
                       "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementSelectTableApiResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementPrintApiResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementPickListApiResponse"
                     }
                   ]
                 }
@@ -1150,6 +1156,111 @@
             "additionalProperties": false,
             "required": ["__type", "content"]
           },
+          "UiElementPickListApiResponse": {
+            "additionalProperties": false,
+            "properties": {
+              "__type": {
+                "const": "ui.interactive.pickList",
+                "type": "string"
+              },
+              "data": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "barcodes": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "image": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "alt": {
+                          "type": "string"
+                        },
+                        "fit": {
+                          "enum": ["contain", "cover"],
+                          "type": "string"
+                        },
+                        "url": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["url"],
+                      "type": "object"
+                    },
+                    "targetQuantity": {
+                      "type": "number"
+                    },
+                    "title": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["id", "targetQuantity"],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "name": {
+                "type": "string"
+              },
+              "validationError": {
+                "type": "string"
+              }
+            },
+            "required": ["__type", "data", "name"],
+            "type": "object"
+          },
+          "UiElementPrintApiResponse": {
+            "additionalProperties": false,
+            "properties": {
+              "__type": {
+                "const": "ui.interactive.print",
+                "type": "string"
+              },
+              "autoPrint": {
+                "type": "boolean"
+              },
+              "data": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "type": {
+                      "enum": ["html", "text", "url", "zpl"],
+                      "type": "string"
+                    },
+                    "url": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["type"],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "description": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              }
+            },
+            "required": ["__type", "autoPrint", "data"],
+            "type": "object"
+          },
           "UiElementSelectOneApiResponse": {
             "type": "object",
             "properties": {
@@ -1356,6 +1467,12 @@
                     },
                     {
                       "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementSelectTableApiResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementPrintApiResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementPickListApiResponse"
                     }
                   ]
                 }
