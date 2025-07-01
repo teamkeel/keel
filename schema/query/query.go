@@ -119,6 +119,9 @@ func ActionModel(asts []*parser.AST, name string) *parser.ModelNode {
 
 // Field provides the field of the given name from the given model. (Or nil).
 func Field(model *parser.ModelNode, name string) *parser.FieldNode {
+	if model == nil {
+		return nil
+	}
 	for _, f := range ModelFields(model) {
 		if f.Name.Value == name {
 			return f
@@ -144,6 +147,9 @@ func IsIdentityModel(asts []*parser.AST, name string) bool {
 }
 
 func ModelAttributes(model *parser.ModelNode) (res []*parser.AttributeNode) {
+	if model == nil {
+		return res
+	}
 	for _, section := range model.Sections {
 		if section.Attribute != nil {
 			res = append(res, section.Attribute)
@@ -281,6 +287,9 @@ func ModelCreateActions(model *parser.ModelNode, filters ...ModelActionFilter) (
 type ModelActionFilter func(a *parser.ActionNode) bool
 
 func ModelActions(model *parser.ModelNode, filters ...ModelActionFilter) (res []*parser.ActionNode) {
+	if model == nil {
+		return res
+	}
 	for _, section := range model.Sections {
 		if len(section.Actions) > 0 {
 		actions:
@@ -306,6 +315,9 @@ func ExcludeBuiltInFields(f *parser.FieldNode) bool {
 }
 
 func ModelFields(model *parser.ModelNode, filters ...ModelFieldFilter) (res []*parser.FieldNode) {
+	if model == nil {
+		return res
+	}
 	for _, section := range model.Sections {
 		if section.Fields == nil {
 			continue
@@ -327,6 +339,9 @@ func ModelFields(model *parser.ModelNode, filters ...ModelFieldFilter) (res []*p
 }
 
 func ModelField(model *parser.ModelNode, name string) *parser.FieldNode {
+	if model == nil {
+		return nil
+	}
 	for _, section := range model.Sections {
 		for _, field := range section.Fields {
 			if field.Name.Value == name {
