@@ -1709,6 +1709,21 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 			return "", nil, fmt.Errorf("operand: %+v is not a valid time period", rhs)
 		}
 		tp, _ := rhs.value.(timeperiod.TimePeriod)
+		
+		// Validate period unit to prevent injection
+		allowedPeriods := map[string]bool{
+			"second": true, "seconds": true,
+			"minute": true, "minutes": true,
+			"hour": true, "hours": true,
+			"day": true, "days": true,
+			"week": true, "weeks": true,
+			"month": true, "months": true,
+			"year": true, "years": true,
+		}
+		if !allowedPeriods[tp.Period] {
+			return "", nil, fmt.Errorf("invalid time period unit: %s", tp.Period)
+		}
+		
 		end := rhsSqlOperand
 		if tp.Value != 0 {
 			end = fmt.Sprintf("(%s + INTERVAL '%d %s')", end, tp.Value, tp.Period)
@@ -1719,6 +1734,21 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 			return "", nil, fmt.Errorf("operand: %+v is not a valid time period", rhs)
 		}
 		tp, _ := rhs.value.(timeperiod.TimePeriod)
+		
+		// Validate period unit to prevent injection
+		allowedPeriods := map[string]bool{
+			"second": true, "seconds": true,
+			"minute": true, "minutes": true,
+			"hour": true, "hours": true,
+			"day": true, "days": true,
+			"week": true, "weeks": true,
+			"month": true, "months": true,
+			"year": true, "years": true,
+		}
+		if !allowedPeriods[tp.Period] {
+			return "", nil, fmt.Errorf("invalid time period unit: %s", tp.Period)
+		}
+		
 		end := rhsSqlOperand
 		if tp.Value != 0 {
 			end = fmt.Sprintf("(%s + INTERVAL '%d %s')", end, tp.Value, tp.Period)

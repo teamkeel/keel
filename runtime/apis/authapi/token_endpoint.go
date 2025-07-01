@@ -187,27 +187,33 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 				return common.InternalServerErrorResponse(ctx, err)
 			}
 
+			var authResult bool
+
 			if ident == nil {
 				if !createIfNotExists {
-					return jsonErrResponse(ctx, http.StatusUnauthorized, TokenErrInvalidClient, "the identity does not exist or the credentials are incorrect", nil)
-				}
+					// Perform dummy bcrypt to maintain constant timing
+					_, _ = bcrypt.GenerateFromPassword([]byte("dummy"), bcrypt.DefaultCost)
+					authResult = false
+				} else {
+					hashedBytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+					if err != nil {
+						return common.InternalServerErrorResponse(ctx, err)
+					}
 
-				hashedBytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-				if err != nil {
-					return common.InternalServerErrorResponse(ctx, err)
+					ident, err = actions.CreateIdentity(ctx, schema, username, string(hashedBytes), oauth.KeelIssuer)
+					if err != nil {
+						return common.InternalServerErrorResponse(ctx, err)
+					}
+					authResult = true
+					identityCreated = true
 				}
-
-				ident, err = actions.CreateIdentity(ctx, schema, username, string(hashedBytes), oauth.KeelIssuer)
-				if err != nil {
-					return common.InternalServerErrorResponse(ctx, err)
-				}
-
-				identityCreated = true
 			} else {
-				correct := bcrypt.CompareHashAndPassword([]byte(ident[parser.IdentityFieldNamePassword].(string)), []byte(password)) == nil
-				if !correct {
-					return jsonErrResponse(ctx, http.StatusUnauthorized, TokenErrInvalidClient, "the identity does not exist or the credentials are incorrect", nil)
-				}
+				// Always perform password check to maintain constant timing
+				authResult = bcrypt.CompareHashAndPassword([]byte(ident[parser.IdentityFieldNamePassword].(string)), []byte(password)) == nil
+			}
+
+			if !authResult {
+				return jsonErrResponse(ctx, http.StatusUnauthorized, TokenErrInvalidClient, "the identity does not exist or the credentials are incorrect", nil)
 			}
 
 			// Generate a refresh token.

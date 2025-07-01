@@ -24,7 +24,7 @@ func defaultWhere(schema []*parser.AST) (*expressions.Parser, error) {
 	}
 	key := hex.EncodeToString([]byte(contents))
 
-	if parser, exists := wheres[key]; exists {
+	if parser, exists := wheres[key]; exists && parser != nil {
 		return parser, nil
 	}
 
