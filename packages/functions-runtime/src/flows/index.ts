@@ -44,7 +44,7 @@ const defaultOpts = {
   timeout: 60000,
 };
 
-export interface FlowContext<C extends FlowConfig, E = any, S = any, Id = any> {
+export interface FlowContext<C extends FlowConfig, E, S, Id> {
   // Defines a function step that will be run in the flow.
   step: Step<C>;
   // Defines a UI step that will be run in the flow.
@@ -117,13 +117,7 @@ export interface FlowConfigAPI {
   description?: string;
 }
 
-export type FlowFunction<
-  C extends FlowConfig,
-  E extends any = {},
-  S extends any = {},
-  Id extends any = {},
-  I extends any = {},
-> = (
+export type FlowFunction<C extends FlowConfig, E, S, Id, I = {}> = (
   ctx: FlowContext<C, E, S, Id>,
   inputs: I
 ) => Promise<CompleteOptions<C> | any | void>;
@@ -154,12 +148,7 @@ type StageConfigObject = {
 
 type StageConfig = string | StageConfigObject;
 
-export function createFlowContext<
-  C extends FlowConfig,
-  E = any,
-  S = any,
-  I = any,
->(
+export function createFlowContext<C extends FlowConfig, E, S, I>(
   runId: string,
   data: any,
   action: string | null,
