@@ -285,6 +285,52 @@ func (FormatConfig_Type) EnumDescriptor() ([]byte, []int) {
 	return file_tools_proto_rawDescGZIP(), []int{27, 0}
 }
 
+type Field_Type int32
+
+const (
+	Field_MODEL Field_Type = 0
+	Field_ENUM  Field_Type = 1
+)
+
+// Enum value maps for Field_Type.
+var (
+	Field_Type_name = map[int32]string{
+		0: "MODEL",
+		1: "ENUM",
+	}
+	Field_Type_value = map[string]int32{
+		"MODEL": 0,
+		"ENUM":  1,
+	}
+)
+
+func (x Field_Type) Enum() *Field_Type {
+	p := new(Field_Type)
+	*p = x
+	return p
+}
+
+func (x Field_Type) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (Field_Type) Descriptor() protoreflect.EnumDescriptor {
+	return file_tools_proto_enumTypes[5].Descriptor()
+}
+
+func (Field_Type) Type() protoreflect.EnumType {
+	return &file_tools_proto_enumTypes[5]
+}
+
+func (x Field_Type) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use Field_Type.Descriptor instead.
+func (Field_Type) EnumDescriptor() ([]byte, []int) {
+	return file_tools_proto_rawDescGZIP(), []int{32, 0}
+}
+
 type Capabilities struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3326,6 +3372,84 @@ func (x *EnumFormatConfig) GetConfigs() []*EnumFormatConfig_EnumValueFormatConfi
 	return nil
 }
 
+// Similar to how Tools wrap config for an action, a Field wraps the formatting config for a model or enum field.
+type Field struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Format    *FormatConfig `protobuf:"bytes,1,opt,name=format,proto3" json:"format,omitempty"`
+	Type      Field_Type    `protobuf:"varint,2,opt,name=type,proto3,enum=tools.Field_Type" json:"type,omitempty"`
+	EnumName  *string       `protobuf:"bytes,3,opt,name=enum_name,json=enumName,proto3,oneof" json:"enum_name,omitempty"`
+	ModelName *string       `protobuf:"bytes,4,opt,name=model_name,json=modelName,proto3,oneof" json:"model_name,omitempty"`
+	FieldName *string       `protobuf:"bytes,5,opt,name=field_name,json=fieldName,proto3,oneof" json:"field_name,omitempty"`
+}
+
+func (x *Field) Reset() {
+	*x = Field{}
+	mi := &file_tools_proto_msgTypes[32]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Field) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Field) ProtoMessage() {}
+
+func (x *Field) ProtoReflect() protoreflect.Message {
+	mi := &file_tools_proto_msgTypes[32]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Field.ProtoReflect.Descriptor instead.
+func (*Field) Descriptor() ([]byte, []int) {
+	return file_tools_proto_rawDescGZIP(), []int{32}
+}
+
+func (x *Field) GetFormat() *FormatConfig {
+	if x != nil {
+		return x.Format
+	}
+	return nil
+}
+
+func (x *Field) GetType() Field_Type {
+	if x != nil {
+		return x.Type
+	}
+	return Field_MODEL
+}
+
+func (x *Field) GetEnumName() string {
+	if x != nil && x.EnumName != nil {
+		return *x.EnumName
+	}
+	return ""
+}
+
+func (x *Field) GetModelName() string {
+	if x != nil && x.ModelName != nil {
+		return *x.ModelName
+	}
+	return ""
+}
+
+func (x *Field) GetFieldName() string {
+	if x != nil && x.FieldName != nil {
+		return *x.FieldName
+	}
+	return ""
+}
+
 // When embedding ToolLinks, we need to provide extra-configuration that will override the
 // link's target tool configuration
 type ToolGroup_GroupActionLink struct {
@@ -3341,7 +3465,7 @@ type ToolGroup_GroupActionLink struct {
 
 func (x *ToolGroup_GroupActionLink) Reset() {
 	*x = ToolGroup_GroupActionLink{}
-	mi := &file_tools_proto_msgTypes[32]
+	mi := &file_tools_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3353,7 +3477,7 @@ func (x *ToolGroup_GroupActionLink) String() string {
 func (*ToolGroup_GroupActionLink) ProtoMessage() {}
 
 func (x *ToolGroup_GroupActionLink) ProtoReflect() protoreflect.Message {
-	mi := &file_tools_proto_msgTypes[32]
+	mi := &file_tools_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3395,7 +3519,7 @@ type CursorPaginationConfig_FieldConfig struct {
 
 func (x *CursorPaginationConfig_FieldConfig) Reset() {
 	*x = CursorPaginationConfig_FieldConfig{}
-	mi := &file_tools_proto_msgTypes[33]
+	mi := &file_tools_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3407,7 +3531,7 @@ func (x *CursorPaginationConfig_FieldConfig) String() string {
 func (*CursorPaginationConfig_FieldConfig) ProtoMessage() {}
 
 func (x *CursorPaginationConfig_FieldConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_tools_proto_msgTypes[33]
+	mi := &file_tools_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3449,7 +3573,7 @@ type CursorPaginationConfig_PageSizeConfig struct {
 
 func (x *CursorPaginationConfig_PageSizeConfig) Reset() {
 	*x = CursorPaginationConfig_PageSizeConfig{}
-	mi := &file_tools_proto_msgTypes[34]
+	mi := &file_tools_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3461,7 +3585,7 @@ func (x *CursorPaginationConfig_PageSizeConfig) String() string {
 func (*CursorPaginationConfig_PageSizeConfig) ProtoMessage() {}
 
 func (x *CursorPaginationConfig_PageSizeConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_tools_proto_msgTypes[34]
+	mi := &file_tools_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3511,7 +3635,7 @@ type GalleryViewConfig_Image struct {
 
 func (x *GalleryViewConfig_Image) Reset() {
 	*x = GalleryViewConfig_Image{}
-	mi := &file_tools_proto_msgTypes[35]
+	mi := &file_tools_proto_msgTypes[36]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3523,7 +3647,7 @@ func (x *GalleryViewConfig_Image) String() string {
 func (*GalleryViewConfig_Image) ProtoMessage() {}
 
 func (x *GalleryViewConfig_Image) ProtoReflect() protoreflect.Message {
-	mi := &file_tools_proto_msgTypes[35]
+	mi := &file_tools_proto_msgTypes[36]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3573,7 +3697,7 @@ type ProgressIndicatorConfig_Step struct {
 
 func (x *ProgressIndicatorConfig_Step) Reset() {
 	*x = ProgressIndicatorConfig_Step{}
-	mi := &file_tools_proto_msgTypes[36]
+	mi := &file_tools_proto_msgTypes[37]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3585,7 +3709,7 @@ func (x *ProgressIndicatorConfig_Step) String() string {
 func (*ProgressIndicatorConfig_Step) ProtoMessage() {}
 
 func (x *ProgressIndicatorConfig_Step) ProtoReflect() protoreflect.Message {
-	mi := &file_tools_proto_msgTypes[36]
+	mi := &file_tools_proto_msgTypes[37]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3637,7 +3761,7 @@ type EnumFormatConfig_EnumValueFormatConfig struct {
 
 func (x *EnumFormatConfig_EnumValueFormatConfig) Reset() {
 	*x = EnumFormatConfig_EnumValueFormatConfig{}
-	mi := &file_tools_proto_msgTypes[37]
+	mi := &file_tools_proto_msgTypes[38]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3649,7 +3773,7 @@ func (x *EnumFormatConfig_EnumValueFormatConfig) String() string {
 func (*EnumFormatConfig_EnumValueFormatConfig) ProtoMessage() {}
 
 func (x *EnumFormatConfig_EnumValueFormatConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_tools_proto_msgTypes[37]
+	mi := &file_tools_proto_msgTypes[38]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4473,10 +4597,27 @@ var file_tools_proto_rawDesc = []byte{
 	0x66, 0x69, 0x78, 0x42, 0x09, 0x0a, 0x07, 0x5f, 0x73, 0x75, 0x66, 0x66, 0x69, 0x78, 0x42, 0x0e,
 	0x0a, 0x0c, 0x5f, 0x74, 0x65, 0x78, 0x74, 0x5f, 0x63, 0x6f, 0x6c, 0x6f, 0x75, 0x72, 0x42, 0x14,
 	0x0a, 0x12, 0x5f, 0x62, 0x61, 0x63, 0x6b, 0x67, 0x72, 0x6f, 0x75, 0x6e, 0x64, 0x5f, 0x63, 0x6f,
-	0x6c, 0x6f, 0x75, 0x72, 0x42, 0x26, 0x5a, 0x24, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63,
-	0x6f, 0x6d, 0x2f, 0x74, 0x65, 0x61, 0x6d, 0x6b, 0x65, 0x65, 0x6c, 0x2f, 0x6b, 0x65, 0x65, 0x6c,
-	0x2f, 0x74, 0x6f, 0x6f, 0x6c, 0x73, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x33,
+	0x6c, 0x6f, 0x75, 0x72, 0x22, 0x8e, 0x02, 0x0a, 0x05, 0x46, 0x69, 0x65, 0x6c, 0x64, 0x12, 0x2b,
+	0x0a, 0x06, 0x66, 0x6f, 0x72, 0x6d, 0x61, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13,
+	0x2e, 0x74, 0x6f, 0x6f, 0x6c, 0x73, 0x2e, 0x46, 0x6f, 0x72, 0x6d, 0x61, 0x74, 0x43, 0x6f, 0x6e,
+	0x66, 0x69, 0x67, 0x52, 0x06, 0x66, 0x6f, 0x72, 0x6d, 0x61, 0x74, 0x12, 0x25, 0x0a, 0x04, 0x74,
+	0x79, 0x70, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x11, 0x2e, 0x74, 0x6f, 0x6f, 0x6c,
+	0x73, 0x2e, 0x46, 0x69, 0x65, 0x6c, 0x64, 0x2e, 0x54, 0x79, 0x70, 0x65, 0x52, 0x04, 0x74, 0x79,
+	0x70, 0x65, 0x12, 0x20, 0x0a, 0x09, 0x65, 0x6e, 0x75, 0x6d, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18,
+	0x03, 0x20, 0x01, 0x28, 0x09, 0x48, 0x00, 0x52, 0x08, 0x65, 0x6e, 0x75, 0x6d, 0x4e, 0x61, 0x6d,
+	0x65, 0x88, 0x01, 0x01, 0x12, 0x22, 0x0a, 0x0a, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x6e, 0x61,
+	0x6d, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x48, 0x01, 0x52, 0x09, 0x6d, 0x6f, 0x64, 0x65,
+	0x6c, 0x4e, 0x61, 0x6d, 0x65, 0x88, 0x01, 0x01, 0x12, 0x22, 0x0a, 0x0a, 0x66, 0x69, 0x65, 0x6c,
+	0x64, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x48, 0x02, 0x52, 0x09,
+	0x66, 0x69, 0x65, 0x6c, 0x64, 0x4e, 0x61, 0x6d, 0x65, 0x88, 0x01, 0x01, 0x22, 0x1b, 0x0a, 0x04,
+	0x54, 0x79, 0x70, 0x65, 0x12, 0x09, 0x0a, 0x05, 0x4d, 0x4f, 0x44, 0x45, 0x4c, 0x10, 0x00, 0x12,
+	0x08, 0x0a, 0x04, 0x45, 0x4e, 0x55, 0x4d, 0x10, 0x01, 0x42, 0x0c, 0x0a, 0x0a, 0x5f, 0x65, 0x6e,
+	0x75, 0x6d, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x42, 0x0d, 0x0a, 0x0b, 0x5f, 0x6d, 0x6f, 0x64, 0x65,
+	0x6c, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x42, 0x0d, 0x0a, 0x0b, 0x5f, 0x66, 0x69, 0x65, 0x6c, 0x64,
+	0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x42, 0x26, 0x5a, 0x24, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e,
+	0x63, 0x6f, 0x6d, 0x2f, 0x74, 0x65, 0x61, 0x6d, 0x6b, 0x65, 0x65, 0x6c, 0x2f, 0x6b, 0x65, 0x65,
+	0x6c, 0x2f, 0x74, 0x6f, 0x6f, 0x6c, 0x73, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -4491,174 +4632,178 @@ func file_tools_proto_rawDescGZIP() []byte {
 	return file_tools_proto_rawDescData
 }
 
-var file_tools_proto_enumTypes = make([]protoimpl.EnumInfo, 5)
-var file_tools_proto_msgTypes = make([]protoimpl.MessageInfo, 38)
+var file_tools_proto_enumTypes = make([]protoimpl.EnumInfo, 6)
+var file_tools_proto_msgTypes = make([]protoimpl.MessageInfo, 39)
 var file_tools_proto_goTypes = []any{
 	(Tool_ToolType)(0),                             // 0: tools.Tool.ToolType
 	(RequestFieldConfig_ScopeType)(0),              // 1: tools.RequestFieldConfig.ScopeType
 	(ResponseFieldConfig_ScopeType)(0),             // 2: tools.ResponseFieldConfig.ScopeType
 	(DisplayLayoutConfig_Type)(0),                  // 3: tools.DisplayLayoutConfig.Type
 	(FormatConfig_Type)(0),                         // 4: tools.FormatConfig.Type
-	(*Capabilities)(nil),                           // 5: tools.Capabilities
-	(*Tools)(nil),                                  // 6: tools.Tools
-	(*Tool)(nil),                                   // 7: tools.Tool
-	(*ActionConfig)(nil),                           // 8: tools.ActionConfig
-	(*RequestFieldConfig)(nil),                     // 9: tools.RequestFieldConfig
-	(*ResponseFieldConfig)(nil),                    // 10: tools.ResponseFieldConfig
-	(*Section)(nil),                                // 11: tools.Section
-	(*ScalarValue)(nil),                            // 12: tools.ScalarValue
-	(*StringTemplate)(nil),                         // 13: tools.StringTemplate
-	(*JsonPath)(nil),                               // 14: tools.JsonPath
-	(*ExternalLink)(nil),                           // 15: tools.ExternalLink
-	(*ToolLink)(nil),                               // 16: tools.ToolLink
-	(*ToolGroup)(nil),                              // 17: tools.ToolGroup
-	(*ResponseOverrides)(nil),                      // 18: tools.ResponseOverrides
-	(*CursorPaginationConfig)(nil),                 // 19: tools.CursorPaginationConfig
-	(*DataMapping)(nil),                            // 20: tools.DataMapping
-	(*DisplayLayoutConfig)(nil),                    // 21: tools.DisplayLayoutConfig
-	(*InboxViewConfig)(nil),                        // 22: tools.InboxViewConfig
-	(*BoardViewConfig)(nil),                        // 23: tools.BoardViewConfig
-	(*GridViewConfig)(nil),                         // 24: tools.GridViewConfig
-	(*GalleryViewConfig)(nil),                      // 25: tools.GalleryViewConfig
-	(*RecordViewConfig)(nil),                       // 26: tools.RecordViewConfig
-	(*ProgressIndicatorConfig)(nil),                // 27: tools.ProgressIndicatorConfig
-	(*FlowConfig)(nil),                             // 28: tools.FlowConfig
-	(*FlowInputConfig)(nil),                        // 29: tools.FlowInputConfig
-	(*ValidationError)(nil),                        // 30: tools.ValidationError
-	(*FilterConfig)(nil),                           // 31: tools.FilterConfig
-	(*FormatConfig)(nil),                           // 32: tools.FormatConfig
-	(*BoolFormatConfig)(nil),                       // 33: tools.BoolFormatConfig
-	(*NumberFormatConfig)(nil),                     // 34: tools.NumberFormatConfig
-	(*StringFormatConfig)(nil),                     // 35: tools.StringFormatConfig
-	(*EnumFormatConfig)(nil),                       // 36: tools.EnumFormatConfig
-	(*ToolGroup_GroupActionLink)(nil),              // 37: tools.ToolGroup.GroupActionLink
-	(*CursorPaginationConfig_FieldConfig)(nil),     // 38: tools.CursorPaginationConfig.FieldConfig
-	(*CursorPaginationConfig_PageSizeConfig)(nil),  // 39: tools.CursorPaginationConfig.PageSizeConfig
-	(*GalleryViewConfig_Image)(nil),                // 40: tools.GalleryViewConfig.Image
-	(*ProgressIndicatorConfig_Step)(nil),           // 41: tools.ProgressIndicatorConfig.Step
-	(*EnumFormatConfig_EnumValueFormatConfig)(nil), // 42: tools.EnumFormatConfig.EnumValueFormatConfig
-	(proto.ActionType)(0),                          // 43: proto.ActionType
-	(proto.ActionImplementation)(0),                // 44: proto.ActionImplementation
-	(proto.Type)(0),                                // 45: proto.Type
+	(Field_Type)(0),                                // 5: tools.Field.Type
+	(*Capabilities)(nil),                           // 6: tools.Capabilities
+	(*Tools)(nil),                                  // 7: tools.Tools
+	(*Tool)(nil),                                   // 8: tools.Tool
+	(*ActionConfig)(nil),                           // 9: tools.ActionConfig
+	(*RequestFieldConfig)(nil),                     // 10: tools.RequestFieldConfig
+	(*ResponseFieldConfig)(nil),                    // 11: tools.ResponseFieldConfig
+	(*Section)(nil),                                // 12: tools.Section
+	(*ScalarValue)(nil),                            // 13: tools.ScalarValue
+	(*StringTemplate)(nil),                         // 14: tools.StringTemplate
+	(*JsonPath)(nil),                               // 15: tools.JsonPath
+	(*ExternalLink)(nil),                           // 16: tools.ExternalLink
+	(*ToolLink)(nil),                               // 17: tools.ToolLink
+	(*ToolGroup)(nil),                              // 18: tools.ToolGroup
+	(*ResponseOverrides)(nil),                      // 19: tools.ResponseOverrides
+	(*CursorPaginationConfig)(nil),                 // 20: tools.CursorPaginationConfig
+	(*DataMapping)(nil),                            // 21: tools.DataMapping
+	(*DisplayLayoutConfig)(nil),                    // 22: tools.DisplayLayoutConfig
+	(*InboxViewConfig)(nil),                        // 23: tools.InboxViewConfig
+	(*BoardViewConfig)(nil),                        // 24: tools.BoardViewConfig
+	(*GridViewConfig)(nil),                         // 25: tools.GridViewConfig
+	(*GalleryViewConfig)(nil),                      // 26: tools.GalleryViewConfig
+	(*RecordViewConfig)(nil),                       // 27: tools.RecordViewConfig
+	(*ProgressIndicatorConfig)(nil),                // 28: tools.ProgressIndicatorConfig
+	(*FlowConfig)(nil),                             // 29: tools.FlowConfig
+	(*FlowInputConfig)(nil),                        // 30: tools.FlowInputConfig
+	(*ValidationError)(nil),                        // 31: tools.ValidationError
+	(*FilterConfig)(nil),                           // 32: tools.FilterConfig
+	(*FormatConfig)(nil),                           // 33: tools.FormatConfig
+	(*BoolFormatConfig)(nil),                       // 34: tools.BoolFormatConfig
+	(*NumberFormatConfig)(nil),                     // 35: tools.NumberFormatConfig
+	(*StringFormatConfig)(nil),                     // 36: tools.StringFormatConfig
+	(*EnumFormatConfig)(nil),                       // 37: tools.EnumFormatConfig
+	(*Field)(nil),                                  // 38: tools.Field
+	(*ToolGroup_GroupActionLink)(nil),              // 39: tools.ToolGroup.GroupActionLink
+	(*CursorPaginationConfig_FieldConfig)(nil),     // 40: tools.CursorPaginationConfig.FieldConfig
+	(*CursorPaginationConfig_PageSizeConfig)(nil),  // 41: tools.CursorPaginationConfig.PageSizeConfig
+	(*GalleryViewConfig_Image)(nil),                // 42: tools.GalleryViewConfig.Image
+	(*ProgressIndicatorConfig_Step)(nil),           // 43: tools.ProgressIndicatorConfig.Step
+	(*EnumFormatConfig_EnumValueFormatConfig)(nil), // 44: tools.EnumFormatConfig.EnumValueFormatConfig
+	(proto.ActionType)(0),                          // 45: proto.ActionType
+	(proto.ActionImplementation)(0),                // 46: proto.ActionImplementation
+	(proto.Type)(0),                                // 47: proto.Type
 }
 var file_tools_proto_depIdxs = []int32{
-	8,   // 0: tools.Tools.tools:type_name -> tools.ActionConfig
-	7,   // 1: tools.Tools.configs:type_name -> tools.Tool
+	9,   // 0: tools.Tools.tools:type_name -> tools.ActionConfig
+	8,   // 1: tools.Tools.configs:type_name -> tools.Tool
 	0,   // 2: tools.Tool.type:type_name -> tools.Tool.ToolType
-	8,   // 3: tools.Tool.action_config:type_name -> tools.ActionConfig
-	28,  // 4: tools.Tool.flow_config:type_name -> tools.FlowConfig
-	43,  // 5: tools.ActionConfig.action_type:type_name -> proto.ActionType
-	44,  // 6: tools.ActionConfig.implementation:type_name -> proto.ActionImplementation
-	9,   // 7: tools.ActionConfig.inputs:type_name -> tools.RequestFieldConfig
-	10,  // 8: tools.ActionConfig.response:type_name -> tools.ResponseFieldConfig
-	13,  // 9: tools.ActionConfig.title:type_name -> tools.StringTemplate
-	13,  // 10: tools.ActionConfig.help_text:type_name -> tools.StringTemplate
-	5,   // 11: tools.ActionConfig.capabilities:type_name -> tools.Capabilities
-	16,  // 12: tools.ActionConfig.related_actions:type_name -> tools.ToolLink
-	19,  // 13: tools.ActionConfig.pagination:type_name -> tools.CursorPaginationConfig
-	15,  // 14: tools.ActionConfig.external_links:type_name -> tools.ExternalLink
-	16,  // 15: tools.ActionConfig.entry_activity_actions:type_name -> tools.ToolLink
-	16,  // 16: tools.ActionConfig.get_entry_action:type_name -> tools.ToolLink
-	16,  // 17: tools.ActionConfig.create_entry_action:type_name -> tools.ToolLink
-	17,  // 18: tools.ActionConfig.embedded_tools:type_name -> tools.ToolGroup
-	21,  // 19: tools.ActionConfig.display_layout:type_name -> tools.DisplayLayoutConfig
-	11,  // 20: tools.ActionConfig.sections:type_name -> tools.Section
-	30,  // 21: tools.ActionConfig.errors:type_name -> tools.ValidationError
-	31,  // 22: tools.ActionConfig.filter_config:type_name -> tools.FilterConfig
-	14,  // 23: tools.RequestFieldConfig.field_location:type_name -> tools.JsonPath
-	45,  // 24: tools.RequestFieldConfig.field_type:type_name -> proto.Type
-	13,  // 25: tools.RequestFieldConfig.help_text:type_name -> tools.StringTemplate
-	16,  // 26: tools.RequestFieldConfig.lookup_action:type_name -> tools.ToolLink
-	16,  // 27: tools.RequestFieldConfig.get_entry_action:type_name -> tools.ToolLink
-	12,  // 28: tools.RequestFieldConfig.default_value:type_name -> tools.ScalarValue
-	13,  // 29: tools.RequestFieldConfig.placeholder:type_name -> tools.StringTemplate
+	9,   // 3: tools.Tool.action_config:type_name -> tools.ActionConfig
+	29,  // 4: tools.Tool.flow_config:type_name -> tools.FlowConfig
+	45,  // 5: tools.ActionConfig.action_type:type_name -> proto.ActionType
+	46,  // 6: tools.ActionConfig.implementation:type_name -> proto.ActionImplementation
+	10,  // 7: tools.ActionConfig.inputs:type_name -> tools.RequestFieldConfig
+	11,  // 8: tools.ActionConfig.response:type_name -> tools.ResponseFieldConfig
+	14,  // 9: tools.ActionConfig.title:type_name -> tools.StringTemplate
+	14,  // 10: tools.ActionConfig.help_text:type_name -> tools.StringTemplate
+	6,   // 11: tools.ActionConfig.capabilities:type_name -> tools.Capabilities
+	17,  // 12: tools.ActionConfig.related_actions:type_name -> tools.ToolLink
+	20,  // 13: tools.ActionConfig.pagination:type_name -> tools.CursorPaginationConfig
+	16,  // 14: tools.ActionConfig.external_links:type_name -> tools.ExternalLink
+	17,  // 15: tools.ActionConfig.entry_activity_actions:type_name -> tools.ToolLink
+	17,  // 16: tools.ActionConfig.get_entry_action:type_name -> tools.ToolLink
+	17,  // 17: tools.ActionConfig.create_entry_action:type_name -> tools.ToolLink
+	18,  // 18: tools.ActionConfig.embedded_tools:type_name -> tools.ToolGroup
+	22,  // 19: tools.ActionConfig.display_layout:type_name -> tools.DisplayLayoutConfig
+	12,  // 20: tools.ActionConfig.sections:type_name -> tools.Section
+	31,  // 21: tools.ActionConfig.errors:type_name -> tools.ValidationError
+	32,  // 22: tools.ActionConfig.filter_config:type_name -> tools.FilterConfig
+	15,  // 23: tools.RequestFieldConfig.field_location:type_name -> tools.JsonPath
+	47,  // 24: tools.RequestFieldConfig.field_type:type_name -> proto.Type
+	14,  // 25: tools.RequestFieldConfig.help_text:type_name -> tools.StringTemplate
+	17,  // 26: tools.RequestFieldConfig.lookup_action:type_name -> tools.ToolLink
+	17,  // 27: tools.RequestFieldConfig.get_entry_action:type_name -> tools.ToolLink
+	13,  // 28: tools.RequestFieldConfig.default_value:type_name -> tools.ScalarValue
+	14,  // 29: tools.RequestFieldConfig.placeholder:type_name -> tools.StringTemplate
 	1,   // 30: tools.RequestFieldConfig.scope:type_name -> tools.RequestFieldConfig.ScopeType
-	30,  // 31: tools.RequestFieldConfig.errors:type_name -> tools.ValidationError
-	14,  // 32: tools.ResponseFieldConfig.field_location:type_name -> tools.JsonPath
-	45,  // 33: tools.ResponseFieldConfig.field_type:type_name -> proto.Type
-	13,  // 34: tools.ResponseFieldConfig.help_text:type_name -> tools.StringTemplate
-	16,  // 35: tools.ResponseFieldConfig.link:type_name -> tools.ToolLink
+	31,  // 31: tools.RequestFieldConfig.errors:type_name -> tools.ValidationError
+	15,  // 32: tools.ResponseFieldConfig.field_location:type_name -> tools.JsonPath
+	47,  // 33: tools.ResponseFieldConfig.field_type:type_name -> proto.Type
+	14,  // 34: tools.ResponseFieldConfig.help_text:type_name -> tools.StringTemplate
+	17,  // 35: tools.ResponseFieldConfig.link:type_name -> tools.ToolLink
 	2,   // 36: tools.ResponseFieldConfig.scope:type_name -> tools.ResponseFieldConfig.ScopeType
-	30,  // 37: tools.ResponseFieldConfig.errors:type_name -> tools.ValidationError
-	32,  // 38: tools.ResponseFieldConfig.format:type_name -> tools.FormatConfig
-	13,  // 39: tools.Section.title:type_name -> tools.StringTemplate
-	13,  // 40: tools.Section.description:type_name -> tools.StringTemplate
-	13,  // 41: tools.ExternalLink.label:type_name -> tools.StringTemplate
-	13,  // 42: tools.ExternalLink.href:type_name -> tools.StringTemplate
-	20,  // 43: tools.ToolLink.data:type_name -> tools.DataMapping
-	13,  // 44: tools.ToolLink.title:type_name -> tools.StringTemplate
-	13,  // 45: tools.ToolLink.description:type_name -> tools.StringTemplate
-	30,  // 46: tools.ToolLink.errors:type_name -> tools.ValidationError
-	13,  // 47: tools.ToolGroup.title:type_name -> tools.StringTemplate
-	37,  // 48: tools.ToolGroup.tools:type_name -> tools.ToolGroup.GroupActionLink
-	30,  // 49: tools.ToolGroup.errors:type_name -> tools.ValidationError
-	14,  // 50: tools.ResponseOverrides.field_location:type_name -> tools.JsonPath
-	38,  // 51: tools.CursorPaginationConfig.start:type_name -> tools.CursorPaginationConfig.FieldConfig
-	38,  // 52: tools.CursorPaginationConfig.end:type_name -> tools.CursorPaginationConfig.FieldConfig
-	39,  // 53: tools.CursorPaginationConfig.page_size:type_name -> tools.CursorPaginationConfig.PageSizeConfig
-	14,  // 54: tools.CursorPaginationConfig.next_page:type_name -> tools.JsonPath
-	14,  // 55: tools.CursorPaginationConfig.total_count:type_name -> tools.JsonPath
-	14,  // 56: tools.DataMapping.path:type_name -> tools.JsonPath
-	20,  // 57: tools.DataMapping.object:type_name -> tools.DataMapping
-	12,  // 58: tools.DataMapping.value:type_name -> tools.ScalarValue
+	31,  // 37: tools.ResponseFieldConfig.errors:type_name -> tools.ValidationError
+	33,  // 38: tools.ResponseFieldConfig.format:type_name -> tools.FormatConfig
+	14,  // 39: tools.Section.title:type_name -> tools.StringTemplate
+	14,  // 40: tools.Section.description:type_name -> tools.StringTemplate
+	14,  // 41: tools.ExternalLink.label:type_name -> tools.StringTemplate
+	14,  // 42: tools.ExternalLink.href:type_name -> tools.StringTemplate
+	21,  // 43: tools.ToolLink.data:type_name -> tools.DataMapping
+	14,  // 44: tools.ToolLink.title:type_name -> tools.StringTemplate
+	14,  // 45: tools.ToolLink.description:type_name -> tools.StringTemplate
+	31,  // 46: tools.ToolLink.errors:type_name -> tools.ValidationError
+	14,  // 47: tools.ToolGroup.title:type_name -> tools.StringTemplate
+	39,  // 48: tools.ToolGroup.tools:type_name -> tools.ToolGroup.GroupActionLink
+	31,  // 49: tools.ToolGroup.errors:type_name -> tools.ValidationError
+	15,  // 50: tools.ResponseOverrides.field_location:type_name -> tools.JsonPath
+	40,  // 51: tools.CursorPaginationConfig.start:type_name -> tools.CursorPaginationConfig.FieldConfig
+	40,  // 52: tools.CursorPaginationConfig.end:type_name -> tools.CursorPaginationConfig.FieldConfig
+	41,  // 53: tools.CursorPaginationConfig.page_size:type_name -> tools.CursorPaginationConfig.PageSizeConfig
+	15,  // 54: tools.CursorPaginationConfig.next_page:type_name -> tools.JsonPath
+	15,  // 55: tools.CursorPaginationConfig.total_count:type_name -> tools.JsonPath
+	15,  // 56: tools.DataMapping.path:type_name -> tools.JsonPath
+	21,  // 57: tools.DataMapping.object:type_name -> tools.DataMapping
+	13,  // 58: tools.DataMapping.value:type_name -> tools.ScalarValue
 	3,   // 59: tools.DisplayLayoutConfig.type:type_name -> tools.DisplayLayoutConfig.Type
-	22,  // 60: tools.DisplayLayoutConfig.inbox_config:type_name -> tools.InboxViewConfig
-	23,  // 61: tools.DisplayLayoutConfig.board_config:type_name -> tools.BoardViewConfig
-	24,  // 62: tools.DisplayLayoutConfig.grid_config:type_name -> tools.GridViewConfig
-	26,  // 63: tools.DisplayLayoutConfig.record_config:type_name -> tools.RecordViewConfig
-	25,  // 64: tools.DisplayLayoutConfig.gallery_config:type_name -> tools.GalleryViewConfig
-	30,  // 65: tools.DisplayLayoutConfig.errors:type_name -> tools.ValidationError
-	16,  // 66: tools.InboxViewConfig.get_tool:type_name -> tools.ToolLink
-	13,  // 67: tools.InboxViewConfig.title:type_name -> tools.StringTemplate
-	13,  // 68: tools.InboxViewConfig.description:type_name -> tools.StringTemplate
-	13,  // 69: tools.InboxViewConfig.context_field:type_name -> tools.StringTemplate
-	13,  // 70: tools.InboxViewConfig.avatar_url:type_name -> tools.StringTemplate
-	13,  // 71: tools.InboxViewConfig.avatar_fallback:type_name -> tools.StringTemplate
-	16,  // 72: tools.BoardViewConfig.get_tool:type_name -> tools.ToolLink
-	13,  // 73: tools.BoardViewConfig.title:type_name -> tools.StringTemplate
-	13,  // 74: tools.BoardViewConfig.description:type_name -> tools.StringTemplate
-	13,  // 75: tools.BoardViewConfig.context_field:type_name -> tools.StringTemplate
-	13,  // 76: tools.BoardViewConfig.avatar_url:type_name -> tools.StringTemplate
-	13,  // 77: tools.BoardViewConfig.avatar_fallback:type_name -> tools.StringTemplate
-	14,  // 78: tools.BoardViewConfig.group_by_field:type_name -> tools.JsonPath
-	16,  // 79: tools.BoardViewConfig.update_action:type_name -> tools.ToolLink
-	13,  // 80: tools.GridViewConfig.title:type_name -> tools.StringTemplate
-	13,  // 81: tools.GridViewConfig.description:type_name -> tools.StringTemplate
-	16,  // 82: tools.GridViewConfig.update_action:type_name -> tools.ToolLink
-	13,  // 83: tools.GalleryViewConfig.title:type_name -> tools.StringTemplate
-	13,  // 84: tools.GalleryViewConfig.description:type_name -> tools.StringTemplate
-	40,  // 85: tools.GalleryViewConfig.image:type_name -> tools.GalleryViewConfig.Image
-	27,  // 86: tools.RecordViewConfig.progress_indicator:type_name -> tools.ProgressIndicatorConfig
-	14,  // 87: tools.ProgressIndicatorConfig.stepper_field:type_name -> tools.JsonPath
-	41,  // 88: tools.ProgressIndicatorConfig.steps:type_name -> tools.ProgressIndicatorConfig.Step
-	13,  // 89: tools.FlowConfig.help_text:type_name -> tools.StringTemplate
-	29,  // 90: tools.FlowConfig.inputs:type_name -> tools.FlowInputConfig
-	16,  // 91: tools.FlowConfig.completion_redirect:type_name -> tools.ToolLink
-	30,  // 92: tools.FlowConfig.errors:type_name -> tools.ValidationError
-	14,  // 93: tools.FlowInputConfig.field_location:type_name -> tools.JsonPath
-	45,  // 94: tools.FlowInputConfig.field_type:type_name -> proto.Type
-	13,  // 95: tools.FlowInputConfig.help_text:type_name -> tools.StringTemplate
-	12,  // 96: tools.FlowInputConfig.default_value:type_name -> tools.ScalarValue
-	13,  // 97: tools.FlowInputConfig.placeholder:type_name -> tools.StringTemplate
-	14,  // 98: tools.FilterConfig.quick_search_field:type_name -> tools.JsonPath
+	23,  // 60: tools.DisplayLayoutConfig.inbox_config:type_name -> tools.InboxViewConfig
+	24,  // 61: tools.DisplayLayoutConfig.board_config:type_name -> tools.BoardViewConfig
+	25,  // 62: tools.DisplayLayoutConfig.grid_config:type_name -> tools.GridViewConfig
+	27,  // 63: tools.DisplayLayoutConfig.record_config:type_name -> tools.RecordViewConfig
+	26,  // 64: tools.DisplayLayoutConfig.gallery_config:type_name -> tools.GalleryViewConfig
+	31,  // 65: tools.DisplayLayoutConfig.errors:type_name -> tools.ValidationError
+	17,  // 66: tools.InboxViewConfig.get_tool:type_name -> tools.ToolLink
+	14,  // 67: tools.InboxViewConfig.title:type_name -> tools.StringTemplate
+	14,  // 68: tools.InboxViewConfig.description:type_name -> tools.StringTemplate
+	14,  // 69: tools.InboxViewConfig.context_field:type_name -> tools.StringTemplate
+	14,  // 70: tools.InboxViewConfig.avatar_url:type_name -> tools.StringTemplate
+	14,  // 71: tools.InboxViewConfig.avatar_fallback:type_name -> tools.StringTemplate
+	17,  // 72: tools.BoardViewConfig.get_tool:type_name -> tools.ToolLink
+	14,  // 73: tools.BoardViewConfig.title:type_name -> tools.StringTemplate
+	14,  // 74: tools.BoardViewConfig.description:type_name -> tools.StringTemplate
+	14,  // 75: tools.BoardViewConfig.context_field:type_name -> tools.StringTemplate
+	14,  // 76: tools.BoardViewConfig.avatar_url:type_name -> tools.StringTemplate
+	14,  // 77: tools.BoardViewConfig.avatar_fallback:type_name -> tools.StringTemplate
+	15,  // 78: tools.BoardViewConfig.group_by_field:type_name -> tools.JsonPath
+	17,  // 79: tools.BoardViewConfig.update_action:type_name -> tools.ToolLink
+	14,  // 80: tools.GridViewConfig.title:type_name -> tools.StringTemplate
+	14,  // 81: tools.GridViewConfig.description:type_name -> tools.StringTemplate
+	17,  // 82: tools.GridViewConfig.update_action:type_name -> tools.ToolLink
+	14,  // 83: tools.GalleryViewConfig.title:type_name -> tools.StringTemplate
+	14,  // 84: tools.GalleryViewConfig.description:type_name -> tools.StringTemplate
+	42,  // 85: tools.GalleryViewConfig.image:type_name -> tools.GalleryViewConfig.Image
+	28,  // 86: tools.RecordViewConfig.progress_indicator:type_name -> tools.ProgressIndicatorConfig
+	15,  // 87: tools.ProgressIndicatorConfig.stepper_field:type_name -> tools.JsonPath
+	43,  // 88: tools.ProgressIndicatorConfig.steps:type_name -> tools.ProgressIndicatorConfig.Step
+	14,  // 89: tools.FlowConfig.help_text:type_name -> tools.StringTemplate
+	30,  // 90: tools.FlowConfig.inputs:type_name -> tools.FlowInputConfig
+	17,  // 91: tools.FlowConfig.completion_redirect:type_name -> tools.ToolLink
+	31,  // 92: tools.FlowConfig.errors:type_name -> tools.ValidationError
+	15,  // 93: tools.FlowInputConfig.field_location:type_name -> tools.JsonPath
+	47,  // 94: tools.FlowInputConfig.field_type:type_name -> proto.Type
+	14,  // 95: tools.FlowInputConfig.help_text:type_name -> tools.StringTemplate
+	13,  // 96: tools.FlowInputConfig.default_value:type_name -> tools.ScalarValue
+	14,  // 97: tools.FlowInputConfig.placeholder:type_name -> tools.StringTemplate
+	15,  // 98: tools.FilterConfig.quick_search_field:type_name -> tools.JsonPath
 	4,   // 99: tools.FormatConfig.type:type_name -> tools.FormatConfig.Type
-	36,  // 100: tools.FormatConfig.enum_config:type_name -> tools.EnumFormatConfig
-	34,  // 101: tools.FormatConfig.number_config:type_name -> tools.NumberFormatConfig
-	35,  // 102: tools.FormatConfig.string_config:type_name -> tools.StringFormatConfig
-	33,  // 103: tools.FormatConfig.bool_config:type_name -> tools.BoolFormatConfig
-	42,  // 104: tools.EnumFormatConfig.configs:type_name -> tools.EnumFormatConfig.EnumValueFormatConfig
-	16,  // 105: tools.ToolGroup.GroupActionLink.action_link:type_name -> tools.ToolLink
-	18,  // 106: tools.ToolGroup.GroupActionLink.response_overrides:type_name -> tools.ResponseOverrides
-	14,  // 107: tools.CursorPaginationConfig.FieldConfig.response_field:type_name -> tools.JsonPath
-	14,  // 108: tools.CursorPaginationConfig.PageSizeConfig.response_field:type_name -> tools.JsonPath
-	14,  // 109: tools.GalleryViewConfig.Image.file_field:type_name -> tools.JsonPath
-	13,  // 110: tools.GalleryViewConfig.Image.alt:type_name -> tools.StringTemplate
-	13,  // 111: tools.ProgressIndicatorConfig.Step.title:type_name -> tools.StringTemplate
-	112, // [112:112] is the sub-list for method output_type
-	112, // [112:112] is the sub-list for method input_type
-	112, // [112:112] is the sub-list for extension type_name
-	112, // [112:112] is the sub-list for extension extendee
-	0,   // [0:112] is the sub-list for field type_name
+	37,  // 100: tools.FormatConfig.enum_config:type_name -> tools.EnumFormatConfig
+	35,  // 101: tools.FormatConfig.number_config:type_name -> tools.NumberFormatConfig
+	36,  // 102: tools.FormatConfig.string_config:type_name -> tools.StringFormatConfig
+	34,  // 103: tools.FormatConfig.bool_config:type_name -> tools.BoolFormatConfig
+	44,  // 104: tools.EnumFormatConfig.configs:type_name -> tools.EnumFormatConfig.EnumValueFormatConfig
+	33,  // 105: tools.Field.format:type_name -> tools.FormatConfig
+	5,   // 106: tools.Field.type:type_name -> tools.Field.Type
+	17,  // 107: tools.ToolGroup.GroupActionLink.action_link:type_name -> tools.ToolLink
+	19,  // 108: tools.ToolGroup.GroupActionLink.response_overrides:type_name -> tools.ResponseOverrides
+	15,  // 109: tools.CursorPaginationConfig.FieldConfig.response_field:type_name -> tools.JsonPath
+	15,  // 110: tools.CursorPaginationConfig.PageSizeConfig.response_field:type_name -> tools.JsonPath
+	15,  // 111: tools.GalleryViewConfig.Image.file_field:type_name -> tools.JsonPath
+	14,  // 112: tools.GalleryViewConfig.Image.alt:type_name -> tools.StringTemplate
+	14,  // 113: tools.ProgressIndicatorConfig.Step.title:type_name -> tools.StringTemplate
+	114, // [114:114] is the sub-list for method output_type
+	114, // [114:114] is the sub-list for method input_type
+	114, // [114:114] is the sub-list for extension type_name
+	114, // [114:114] is the sub-list for extension extendee
+	0,   // [0:114] is the sub-list for field type_name
 }
 
 func init() { file_tools_proto_init() }
@@ -4694,17 +4839,18 @@ func file_tools_proto_init() {
 	file_tools_proto_msgTypes[28].OneofWrappers = []any{}
 	file_tools_proto_msgTypes[29].OneofWrappers = []any{}
 	file_tools_proto_msgTypes[30].OneofWrappers = []any{}
-	file_tools_proto_msgTypes[34].OneofWrappers = []any{}
+	file_tools_proto_msgTypes[32].OneofWrappers = []any{}
 	file_tools_proto_msgTypes[35].OneofWrappers = []any{}
 	file_tools_proto_msgTypes[36].OneofWrappers = []any{}
 	file_tools_proto_msgTypes[37].OneofWrappers = []any{}
+	file_tools_proto_msgTypes[38].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_tools_proto_rawDesc,
-			NumEnums:      5,
-			NumMessages:   38,
+			NumEnums:      6,
+			NumMessages:   39,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
