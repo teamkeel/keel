@@ -24,6 +24,14 @@ flow EventualStepSuccess {
     @permission(roles: [Admin])
 }
 
+flow OnFailureCallback {
+    @permission(roles: [Admin])
+}
+
+flow DoNotRetry {
+    @permission(roles: [Admin])
+}
+
 model Thing {
     fields {
         name Text?

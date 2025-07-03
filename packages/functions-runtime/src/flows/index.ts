@@ -23,6 +23,7 @@ import { header } from "./ui/elements/display/header";
 import { keyValue } from "./ui/elements/display/keyValue";
 import { selectTable } from "./ui/elements/select/table";
 import { dataGridInput } from "./ui/elements/input/dataGrid";
+import { NonRetriableError } from "./errors";
 
 export const enum STEP_STATUS {
   NEW = "NEW",
@@ -99,9 +100,7 @@ type StepArgs<C extends FlowConfig> = {
   stepOptions: StepOptions<C>;
 };
 
-type StepFunction<C extends FlowConfig, R> = (
-  args: StepArgs<C>
-) => Promise<R>;
+type StepFunction<C extends FlowConfig, R> = (args: StepArgs<C>) => Promise<R>;
 
 export interface FlowConfig {
   /** The stages to organise the steps in the flow. */
@@ -272,10 +271,7 @@ export function createFlowContext<
             stepOptions: options,
           };
 
-          result = await withTimeout(
-            actualFn(stepArgs),
-            options.timeout
-          );
+          result = await withTimeout(actualFn(stepArgs), options.timeout);
         } catch (e) {
           await db
             .updateTable("keel.flow_step")
@@ -290,12 +286,12 @@ export function createFlowContext<
             .executeTakeFirst();
 
           if (
-            failedSteps.length >= options.retries
+            failedSteps.length >= options.retries ||
+            e instanceof NonRetriableError
           ) {
             if (options.onFailure) {
-              await options.onFailure();
+              await options.onFailure!();
             }
-
             throw new ExhuastedRetriesDisrupt();
           }
 
@@ -477,4 +473,4 @@ function withTimeout<T>(promiseFn: Promise<T>, timeout: number): Promise<T> {
   ]);
 }
 
-export { UI };
+export { UI, NonRetriableError };

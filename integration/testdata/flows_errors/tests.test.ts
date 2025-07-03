@@ -3,7 +3,6 @@ import { beforeEach, expect, test } from "vitest";
 
 beforeEach(resetDatabase);
 
-
 test("flows - error in step with retries", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
   const res = await startFlow({ name: "ErrorInStep", token, body: {} });
@@ -110,6 +109,191 @@ test("flows - error in step with retries", async () => {
   });
 });
 
+test("flows - on failure callback", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+  const res = await startFlow({ name: "OnFailureCallback", token, body: {} });
+  expect(res.status).toBe(200);
+  expect(res.body).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "RUNNING",
+    startedBy: expect.any(String),
+    name: "OnFailureCallback",
+    input: {},
+    data: null,
+    steps: [
+      {
+        id: expect.any(String),
+        name: "erroring step",
+        runId: expect.any(String),
+        stage: null,
+        status: "NEW",
+        type: "FUNCTION",
+        value: null,
+        error: null,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        startTime: null,
+        endTime: null,
+        ui: null,
+      },
+    ],
+    createdAt: expect.any(String),
+    updatedAt: expect.any(String),
+    config: {
+      title: "On failure callback",
+    },
+  });
+
+  const flow = await untilFlowFinished({
+    name: "OnFailureCallback",
+    id: res.body.id,
+    token,
+  });
+
+  // We are expecting 2 steps (the initial step + 1 retry)
+  expect(flow).toEqual({
+    id: res.body.id,
+    traceId: res.body.traceId,
+    status: "FAILED",
+    name: "OnFailureCallback",
+    startedBy: expect.any(String),
+    input: {},
+    data: null,
+    steps: [
+      {
+        id: res.body.steps[0].id,
+        name: "erroring step",
+        runId: res.body.id,
+        stage: null,
+        status: "FAILED",
+        type: "FUNCTION",
+        value: null,
+        error: "1 exists",
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        startTime: expect.any(String),
+        endTime: expect.any(String),
+        ui: null,
+      },
+      {
+        id: expect.any(String),
+        name: "erroring step",
+        runId: res.body.id,
+        stage: null,
+        status: "FAILED",
+        type: "FUNCTION",
+        value: null,
+        error: "2 exists",
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        startTime: expect.any(String),
+        endTime: expect.any(String),
+        ui: null,
+      },
+      {
+        id: expect.any(String),
+        name: "erroring step",
+        runId: res.body.id,
+        stage: null,
+        status: "FAILED",
+        type: "FUNCTION",
+        value: null,
+        error: "3 exists",
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        startTime: expect.any(String),
+        endTime: expect.any(String),
+        ui: null,
+      },
+    ],
+    createdAt: res.body.createdAt,
+    updatedAt: expect.any(String),
+    config: {
+      title: "On failure callback",
+    },
+  });
+
+  expect(await models.thing.findMany()).toHaveLength(0);
+});
+
+test("flows - do not retry", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+  const res = await startFlow({ name: "DoNotRetry", token, body: {} });
+  expect(res.status).toBe(200);
+  expect(res.body).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "RUNNING",
+    startedBy: expect.any(String),
+    name: "DoNotRetry",
+    input: {},
+    data: null,
+    steps: [
+      {
+        id: expect.any(String),
+        name: "erroring step",
+        runId: expect.any(String),
+        stage: null,
+        status: "NEW",
+        type: "FUNCTION",
+        value: null,
+        error: null,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        startTime: null,
+        endTime: null,
+        ui: null,
+      },
+    ],
+    createdAt: expect.any(String),
+    updatedAt: expect.any(String),
+    config: {
+      title: "Do not retry",
+    },
+  });
+
+  const flow = await untilFlowFinished({
+    name: "DoNotRetry",
+    id: res.body.id,
+    token,
+  });
+
+  // We are expecting 2 steps (the initial step + 1 retry)
+  expect(flow).toEqual({
+    id: res.body.id,
+    traceId: res.body.traceId,
+    status: "FAILED",
+    name: "DoNotRetry",
+    startedBy: expect.any(String),
+    input: {},
+    data: null,
+    steps: [
+      {
+        id: res.body.steps[0].id,
+        name: "erroring step",
+        runId: res.body.id,
+        stage: null,
+        status: "FAILED",
+        type: "FUNCTION",
+        value: null,
+        error: "do not retry!",
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        startTime: expect.any(String),
+        endTime: expect.any(String),
+        ui: null,
+      },
+    ],
+    createdAt: res.body.createdAt,
+    updatedAt: expect.any(String),
+    config: {
+      title: "Do not retry",
+    },
+  });
+
+  expect(await models.thing.findMany()).toHaveLength(0);
+});
 
 test("flows - eventual step success", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
