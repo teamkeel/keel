@@ -694,8 +694,8 @@ message Field {
 		ENUM = 1;
 	}
 	
-	FormatConfig format = 1;
-	Type type = 2;
+	Type type = 1;
+	FormatConfig format = 2;
 	
 	optional string enum_name = 3;
 	optional string model_name = 4;
