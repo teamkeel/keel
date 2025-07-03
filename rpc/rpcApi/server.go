@@ -250,6 +250,43 @@ func (s *Server) DuplicateTool(ctx context.Context, req *rpc.DuplicateToolReques
 	}, nil
 }
 
+// ListFields will list all model & enum fields with their formatting configuration.
+func (s *Server) ListFields(ctx context.Context, req *rpc.ListFieldsRequest) (*rpc.ListFieldsResponse, error) {
+	toolsSvc, err := s.makeToolsService(ctx)
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+
+	fields, err := toolsSvc.GetFields(ctx)
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+	if fields == nil {
+		return nil, nil
+	}
+
+	return &rpc.ListFieldsResponse{
+		Fields: fields,
+	}, nil
+}
+
+// ConfigureFields will configure the formatting of all model & enum fields.
+func (s *Server) ConfigureFields(ctx context.Context, req *rpc.ConfigureFieldsRequest) (*rpc.ConfigureFieldsResponse, error) {
+	toolsSvc, err := s.makeToolsService(ctx)
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+
+	updated, err := toolsSvc.ConfigureFields(ctx, req.GetFields())
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+
+	return &rpc.ConfigureFieldsResponse{
+		Fields: updated,
+	}, nil
+}
+
 // makeToolsService will create a tools service for this server's request (taking in the schema and config from context).
 func (s *Server) makeToolsService(ctx context.Context) (*tools.Service, error) {
 	schema, err := GetSchema(ctx)

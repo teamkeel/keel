@@ -129,27 +129,13 @@ message DuplicateToolResponse {
 message ListFieldsRequest {}
 
 message ListFieldsResponse {
-	repeated FieldConfig fields = 1;	
+	repeated tools.Field fields = 1;	
 }
 
 message ConfigureFieldsRequest {
-	repeated FieldConfig fields = 1;	
+	repeated tools.Field fields = 1;	
 }
 
 message ConfigureFieldsResponse {
-	repeated FieldConfig fields = 1;	
-}
-
-message FieldConfig {
-	enum FieldType {
-		MODEL = 0;
-		ENUM = 1;
-	}
-	
-	tools.FormatConfig config = 1;
-	FieldType type = 2;
-	
-	optional string enum_name = 3;
-	optional string model_name = 4;
-	optional string field_name = 5;
+	repeated tools.Field fields = 1;	
 }
