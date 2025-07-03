@@ -74,7 +74,7 @@ type StepOptions<C extends FlowConfig> = {
   retries?: number;
   /** Maximum time in milliseconds to wait for the step to complete. Defaults to 60000 (1 minute). */
   timeout?: number;
-  /** A function to call if the step fails after exhausts all it retr. */
+  /** A function to call if the step fails after it exhausts all retries. */
   onFailure?: () => Promise<void> | void;
 };
 
