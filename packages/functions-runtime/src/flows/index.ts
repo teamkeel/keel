@@ -69,8 +69,12 @@ type JsonSerializable =
 
 type StepOptions<C extends FlowConfig> = {
   stage?: ExtractStageKeys<C>;
+  /** Number of times to retry the step after it fails. Defaults to 4. */
   retries?: number;
+  /** Maximum time in milliseconds to wait for the step to complete. Defaults to 60000 (1 minute). */
   timeout?: number;
+  /** A function to call if the step fails after exhausts all it retr. */
+  onFailure?: () => Promise<void> | void;
 };
 
 export type Step<C extends FlowConfig> = {
@@ -288,6 +292,10 @@ export function createFlowContext<
           if (
             failedSteps.length >= options.retries
           ) {
+            if (options.onFailure) {
+              await options.onFailure();
+            }
+
             throw new ExhuastedRetriesDisrupt();
           }
 
@@ -337,20 +345,6 @@ export function createFlowContext<
         .executeTakeFirst();
 
       throw new StepCreatedDisrupt();
-
-      // TODO: Incorporate when we have support error handling
-      // const stepPromise = fn({} as any);
-      // const stepWithCatch = Object.assign(stepPromise, {
-      //   catch: async (errorHandler: (err: Error) => Promise<void> | void) => {
-      //     try {
-      //       return await stepPromise;
-      //     } catch (err) {
-      //       await errorHandler(err as Error);
-      //       throw err;
-      //     }
-      //   },
-      // });
-      // return stepWithCatch;
     },
     ui: {
       page: (async (name, options) => {
