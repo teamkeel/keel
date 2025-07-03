@@ -974,7 +974,7 @@ test("flows - error in step with retries", async () => {
     token,
   });
 
-  // We are expecting 3 steps
+  // We are expecting 3 steps (the initial step + 2 retries)
   expect(flow).toEqual({
     id: res.body.id,
     traceId: res.body.traceId,
@@ -1034,6 +1034,143 @@ test("flows - error in step with retries", async () => {
     updatedAt: expect.any(String),
     config: {
       title: "Error in step",
+    },
+  });
+});
+
+
+test("flows - eventual step success", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+  const res = await startFlow({ name: "EventualStepSuccess", token, body: {} });
+  expect(res.status).toBe(200);
+  expect(res.body).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "RUNNING",
+    startedBy: expect.any(String),
+    name: "EventualStepSuccess",
+    input: {},
+    data: null,
+    steps: [
+      {
+        id: expect.any(String),
+        name: "erroring step",
+        runId: expect.any(String),
+        stage: null,
+        status: "NEW",
+        type: "FUNCTION",
+        value: null,
+        error: null,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        startTime: null,
+        endTime: null,
+        ui: null,
+      },
+    ],
+    createdAt: expect.any(String),
+    updatedAt: expect.any(String),
+    config: {
+      title: "Eventual step success",
+    },
+  });
+
+  const flow = await untilFlowFinished({
+    name: "EventualStepSuccess",
+    id: res.body.id,
+    token,
+  });
+
+  // We are expecting 3 steps
+  expect(flow).toEqual({
+    id: res.body.id,
+    traceId: res.body.traceId,
+    status: "COMPLETED",
+    name: "EventualStepSuccess",
+    startedBy: expect.any(String),
+    input: {},
+    data: null,
+    steps: [
+      {
+        id: res.body.steps[0].id,
+        name: "erroring step",
+        runId: res.body.id,
+        stage: null,
+        status: "FAILED",
+        type: "FUNCTION",
+        value: null,
+        error: "Error at attempt 0 of 4",
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        startTime: expect.any(String),
+        endTime: expect.any(String),
+        ui: null,
+      },
+      {
+        id: expect.any(String),
+        name: "erroring step",
+        runId: res.body.id,
+        stage: null,
+        status: "FAILED",
+        type: "FUNCTION",
+        value: null,
+        error: "Error at attempt 1 of 4",
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        startTime: expect.any(String),
+        endTime: expect.any(String),
+        ui: null,
+      },
+      {
+        id: expect.any(String),
+        name: "erroring step",
+        runId: res.body.id,
+        stage: null,
+        status: "FAILED",
+        type: "FUNCTION",
+        value: null,
+        error: "Error at attempt 2 of 4",
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        startTime: expect.any(String),
+        endTime: expect.any(String),
+        ui: null,
+      },
+      {
+        id: expect.any(String),
+        name: "erroring step",
+        runId: res.body.id,
+        stage: null,
+        status: "FAILED",
+        type: "FUNCTION",
+        value: null,
+        error: "Error at attempt 3 of 4",
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        startTime: expect.any(String),
+        endTime: expect.any(String),
+        ui: null,
+      },
+      {
+        id: expect.any(String),
+        name: "erroring step",
+        runId: res.body.id,
+        stage: null,
+        status: "COMPLETED",
+        type: "FUNCTION",
+        value: "Success at attempt 4",
+        error: null,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        startTime: expect.any(String),
+        endTime: expect.any(String),
+        ui: null,
+      },
+    ],
+    createdAt: res.body.createdAt,
+    updatedAt: expect.any(String),
+    config: {
+      title: "Eventual step success",
     },
   });
 });
@@ -1706,7 +1843,7 @@ test("flows - authorised starting, getting and listing flows", async () => {
   const userToken = await getToken({ email: "user@gmail.com" });
 
   const resListAdmin = await listFlows({ token: adminToken });
-  expect(resListAdmin.body.flows.length).toBe(19);
+  expect(resListAdmin.body.flows.length).toBe(20);
   expect(resListAdmin.body.flows[0].name).toBe("ScalarStep");
   expect(resListAdmin.body.flows[1].name).toBe("MixedStepTypes");
   expect(resListAdmin.body.flows[2].name).toBe("Stepless");
@@ -1726,6 +1863,7 @@ test("flows - authorised starting, getting and listing flows", async () => {
   expect(resListAdmin.body.flows[16].name).toBe("WithCompletion");
   expect(resListAdmin.body.flows[17].name).toBe("WithCompletionMinimal");
   expect(resListAdmin.body.flows[18].name).toBe("WithReturnedData");
+  expect(resListAdmin.body.flows[19].name).toBe("EventualStepSuccess");
 
   const resListUser = await listFlows({ token: userToken });
   expect(resListUser.status).toBe(200);

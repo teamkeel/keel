@@ -104,6 +104,10 @@ flow WithReturnedData {
     @permission(roles: [Admin])
 }
 
+flow EventualStepSuccess {
+    @permission(roles: [Admin])
+}
+
 model Thing {
     fields {
         name Text?

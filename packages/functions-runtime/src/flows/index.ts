@@ -40,7 +40,7 @@ export const enum STEP_TYPE {
 }
 
 const defaultOpts = {
-  retries: 5,
+  retries: 4,
   timeout: 60000,
 };
 
@@ -67,39 +67,37 @@ type JsonSerializable =
   | JsonSerializable[]
   | { [key: string]: JsonSerializable };
 
+type StepOptions<C extends FlowConfig> = {
+  stage?: ExtractStageKeys<C>;
+  retries?: number;
+  timeout?: number;
+};
+
 export type Step<C extends FlowConfig> = {
   <R extends JsonSerializable | void>(
     /** The unique name of this step. */
     name: string,
     /** Configuration options for the step. */
-    options: {
-      /** The stage this step belongs to. Used for organising steps in the UI. */
-      stage?: ExtractStageKeys<C>;
-      /** Number of times to retry the step if it fails. Defaults to 5. */
-      retries?: number;
-      /** Maximum time in milliseconds to wait for the step to complete. Defaults to 60000 (1 minute). */
-      timeout?: number;
-    },
+    options: StepOptions<C>,
     /** The step function to execute. */
-    fn: () => Promise<R> & {
-      catch: (
-        errorHandler: (err: Error) => Promise<void> | void
-      ) => Promise<any>;
-    }
+    fn: StepFunction<C, R>
   ): Promise<R>;
   <R extends JsonSerializable | void>(
+    /** The unique name of this step. */
     name: string,
-    fn: () => Promise<R> & {
-      catch: (
-        errorHandler: (err: Error) => Promise<void> | void
-      ) => Promise<any>;
-    }
+    /** The step function to execute. */
+    fn: StepFunction<C, R>
   ): Promise<R>;
 };
 
-type StepFunction<R> = () => Promise<R> & {
-  catch: (errorHandler: (err: Error) => Promise<void> | void) => Promise<any>;
+type StepArgs<C extends FlowConfig> = {
+  attempt: number;
+  stepOptions: StepOptions<C>;
 };
+
+type StepFunction<C extends FlowConfig, R> = (
+  args: StepArgs<C>
+) => Promise<R>;
 
 export interface FlowConfig {
   /** The stages to organise the steps in the flow. */
@@ -190,7 +188,10 @@ export function createFlowContext<
       const options = typeof optionsOrFn === "function" ? {} : optionsOrFn;
       const actualFn = (
         typeof optionsOrFn === "function" ? optionsOrFn : fn!
-      ) as StepFunction<any>;
+      ) as StepFunction<C, any>;
+
+      options.retries = options.retries ?? defaultOpts.retries;
+      options.timeout = options.timeout ?? defaultOpts.timeout;
 
       const db = useDatabase();
 
@@ -262,9 +263,14 @@ export function createFlowContext<
           .executeTakeFirst();
 
         try {
+          const stepArgs: StepArgs<C> = {
+            attempt: failedSteps.length,
+            stepOptions: options,
+          };
+
           result = await withTimeout(
-            actualFn(),
-            options.timeout ?? defaultOpts.timeout
+            actualFn(stepArgs),
+            options.timeout
           );
         } catch (e) {
           await db
@@ -280,8 +286,7 @@ export function createFlowContext<
             .executeTakeFirst();
 
           if (
-            failedSteps.length + 1 >=
-            (options.retries ?? defaultOpts.retries)
+            failedSteps.length >= options.retries
           ) {
             throw new ExhuastedRetriesDisrupt();
           }
