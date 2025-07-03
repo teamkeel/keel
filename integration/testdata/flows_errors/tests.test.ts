@@ -337,7 +337,6 @@ test("flows - eventual step success", async () => {
     token,
   });
 
-  // We are expecting 3 steps
   expect(flow).toEqual({
     id: res.body.id,
     traceId: res.body.traceId,
@@ -349,21 +348,6 @@ test("flows - eventual step success", async () => {
     steps: [
       {
         id: res.body.steps[0].id,
-        name: "erroring step",
-        runId: res.body.id,
-        stage: null,
-        status: "FAILED",
-        type: "FUNCTION",
-        value: null,
-        error: "Error at attempt 0 of 4",
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
-        startTime: expect.any(String),
-        endTime: expect.any(String),
-        ui: null,
-      },
-      {
-        id: expect.any(String),
         name: "erroring step",
         runId: res.body.id,
         stage: null,
@@ -412,9 +396,24 @@ test("flows - eventual step success", async () => {
         name: "erroring step",
         runId: res.body.id,
         stage: null,
+        status: "FAILED",
+        type: "FUNCTION",
+        value: null,
+        error: "Error at attempt 4 of 4",
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        startTime: expect.any(String),
+        endTime: expect.any(String),
+        ui: null,
+      },
+      {
+        id: expect.any(String),
+        name: "erroring step",
+        runId: res.body.id,
+        stage: null,
         status: "COMPLETED",
         type: "FUNCTION",
-        value: "Success at attempt 4",
+        value: "Success at attempt 5",
         error: null,
         createdAt: expect.any(String),
         updatedAt: expect.any(String),

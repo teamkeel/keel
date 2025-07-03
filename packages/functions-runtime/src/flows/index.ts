@@ -267,7 +267,7 @@ export function createFlowContext<
 
         try {
           const stepArgs: StepArgs<C> = {
-            attempt: failedSteps.length,
+            attempt: failedSteps.length + 1,
             stepOptions: options,
           };
 

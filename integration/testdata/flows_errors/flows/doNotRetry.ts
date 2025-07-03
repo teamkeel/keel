@@ -17,7 +17,7 @@ export default DoNotRetry({}, async (ctx) => {
         }
       },
     },
-    async (a) => {
+    async () => {
       await models.thing.create({
         name: "test",
       });
