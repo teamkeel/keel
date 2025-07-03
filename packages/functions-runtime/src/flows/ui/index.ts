@@ -65,12 +65,21 @@ import {
   UiElementInputDataGrid,
   UiElementInputDataGridApiResponse,
 } from "./elements/input/dataGrid";
+import {
+  UiElementPrint,
+  UiElementPrintApiResponse,
+} from "./elements/interactive/print";
+import {
+  UiElementPickList,
+  UiElementPickListApiResponse,
+} from "./elements/interactive/pickList";
 
 export interface UI<C extends FlowConfig> {
   page: UiPage<C>;
   display: UiDisplayElements;
   inputs: UiInputsElements;
   select: UiSelectElements;
+  interactive: UiInteractiveElements;
 }
 
 // Input elements that are named and return values
@@ -101,6 +110,12 @@ type UiDisplayElements = {
   keyValue: UiElementKeyValue;
 };
 
+// Interactive elements may return values, others do not
+type UiInteractiveElements = {
+  print: UiElementPrint;
+  pickList: UiElementPickList;
+};
+
 // The base input element function. All inputs must be named and can optionally have a config
 export type InputElement<TValueType, TConfig extends any = never> = <
   N extends string,
@@ -112,6 +127,10 @@ export type InputElement<TValueType, TConfig extends any = never> = <
 // The base display element function. Display elements do not have a name but optionally have a config
 export type DisplayElement<TConfig extends any = never> = (
   options?: TConfig
+) => DisplayElementResponse;
+
+export type DisplayElementWithRequiredConfig<TConfig extends any = never> = (
+  options: TConfig
 ) => DisplayElementResponse;
 
 // Union of all element function shapes
@@ -143,8 +162,10 @@ export interface BaseInputConfig<T> {
   helpText?: string;
   optional?: boolean;
   disabled?: boolean;
-  validate?: (data: T) => Promise<null | string> | string | null;
+  validate?: ValidateFn<T>;
 }
+
+export type ValidateFn<T> = (data: T) => Promise<null | string> | string | null;
 
 // Base response for all inputs
 export interface BaseUiInputResponse<K, TData> {
@@ -155,6 +176,12 @@ export interface BaseUiInputResponse<K, TData> {
   optional: boolean;
   disabled: boolean;
   helpText?: string;
+  validationError?: string;
+}
+
+export interface BaseUiMinimalInputResponse<K> {
+  __type: K;
+  name: string;
   validationError?: string;
 }
 
@@ -186,6 +213,10 @@ export type UIApiResponses = {
     one: UiElementSelectOneApiResponse;
     table: UiElementSelectTableApiResponse;
   };
+  interactive: {
+    print: UiElementPrintApiResponse;
+    pickList: UiElementPickListApiResponse;
+  };
 };
 
 export type UiElementApiResponses = // Display elements
@@ -210,6 +241,10 @@ export type UiElementApiResponses = // Display elements
     // Select elements
     | UiElementSelectOneApiResponse
     | UiElementSelectTableApiResponse
+
+    // Interactive elements
+    | UiElementPrintApiResponse
+    | UiElementPickListApiResponse
   )[];
 
 // The root API response. Used to generate the OpenAPI schema
@@ -231,7 +266,7 @@ export type InputElementImplementationResponse<TApiResponse, TData> = {
   __type: "input";
   uiConfig: TApiResponse;
   getData: (data: TData) => TData;
-  validate?: (data: TData) => Promise<null | string> | string | null;
+  validate?: ValidateFn<TData>;
 };
 
 export type DisplayElementImplementation<
@@ -241,9 +276,13 @@ export type DisplayElementImplementation<
   ...args: Parameters<TConfig>
 ) => DisplayElementImplementationResponse<TApiResponse>;
 
-export type DisplayElementImplementationResponse<TApiResponse> = {
-  uiConfig: TApiResponse;
-};
+export type DisplayElementImplementationResponse<TApiResponse> =
+  | {
+      uiConfig: TApiResponse;
+    }
+  | Promise<{
+      uiConfig: TApiResponse;
+    }>;
 
 export type ImplementationResponse<TApiResponse, TData> =
   | InputElementImplementationResponse<TApiResponse, TData>

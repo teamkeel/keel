@@ -48,7 +48,7 @@ export async function complete<C extends FlowConfig>(
     (options.content as unknown as ImplementationResponse<any, any>[]) || [];
   const contentUiConfig = (await Promise.all(
     content.map(async (c) => {
-      return c.uiConfig;
+      return (await c).uiConfig;
     })
   )) as UiElementApiResponses;
 
