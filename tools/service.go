@@ -449,3 +449,15 @@ func (s *Service) getGeneratedTool(ctx context.Context, name string) (*toolsprot
 
 	return nil, fmt.Errorf("tool not found")
 }
+
+// GetFields returns the configured fields for this schema.
+func (s *Service) GetFields(ctx context.Context) ([]*toolsproto.Field, error) {
+	//TODO: implement
+	return nil, nil
+}
+
+// ConfigureFields will take the given updated fields config and update the existing project config with it.
+func (s *Service) ConfigureFields(ctx context.Context, updated []*toolsproto.Field) ([]*toolsproto.Field, error) {
+	//TODO: implement
+	return updated, nil
+}

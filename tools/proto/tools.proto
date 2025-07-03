@@ -686,3 +686,19 @@ message EnumFormatConfig {
 
 	repeated EnumValueFormatConfig configs = 1;
 }
+
+// Similar to how Tools wrap config for an action, a Field wraps the formatting config for a model or enum field.
+message Field {
+	enum Type {
+		MODEL = 0;
+		ENUM = 1;
+	}
+	
+	FormatConfig format = 1;
+	Type type = 2;
+	
+	optional string enum_name = 3;
+	optional string model_name = 4;
+	optional string field_name = 5;
+}
+
