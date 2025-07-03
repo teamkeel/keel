@@ -262,6 +262,9 @@ message ResponseFieldConfig {
 
 	// Any validation errors for this field or any child elements of it (e.g. an action link that has an error)
 	bool has_errors = 19;
+
+	// Configuration on how should this field be formatted when displayed
+	optional FormatConfig format = 20;
 }
 
 // A section represents a grouping of fields.
@@ -629,4 +632,57 @@ message ValidationError {
 message FilterConfig {
 	// The field to be used a quick search. e.g. $.name.contains
 	optional JsonPath quick_search_field = 1;
+}
+
+// FormatConfig holds configuration on how a field's value should be formatted when displayed.
+message FormatConfig {
+	enum Type {
+		ENUM = 0;
+		NUMBER = 1;
+		STRING = 2;
+		BOOL = 3;
+	}
+	Type type = 1;
+
+	optional EnumFormatConfig enum_config = 2;
+	optional NumberFormatConfig number_config = 3;
+	optional StringFormatConfig string_config = 4;
+	optional BoolFormatConfig bool_config = 5;
+
+}
+
+message BoolFormatConfig {
+	optional string positive_colour = 1;
+	optional string positive_value = 2; // a string to replace the displayed value when the field is true
+	optional string negative_colour = 3;
+	optional string negative_value = 4; // a string to replace the displayed value when the field is false
+}
+
+message NumberFormatConfig {
+	optional string prefix = 1;
+	optional string suffix = 2;
+	optional int32 precision = 3;
+	optional bool sensitive = 4; // hidden by default, hover to show
+	optional string text_colour = 5; 
+}
+
+message StringFormatConfig {
+	optional string prefix = 1;
+	optional string suffix = 2;
+	bool show_url_preview = 3; 
+	optional bool sensitive = 4; // hidden by default, hover to show
+	optional string text_colour = 5; 
+}
+
+message EnumFormatConfig {
+	message EnumValueFormatConfig {
+		string value = 1; // the value of the enum: e.g. (for an OrderStatus) Pending/Dispatched
+		optional string prefix = 2;
+		optional string suffix = 3;
+		optional string text_colour = 4;
+		optional string background_colour = 5;
+		int32 display_order = 6;
+	}
+
+	repeated EnumValueFormatConfig configs = 1;
 }
