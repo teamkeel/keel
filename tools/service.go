@@ -452,8 +452,18 @@ func (s *Service) getGeneratedTool(ctx context.Context, name string) (*toolsprot
 
 // GetFields returns the configured fields for this schema.
 func (s *Service) GetFields(ctx context.Context) ([]*toolsproto.Field, error) {
-	//TODO: implement
-	return nil, nil
+	// generate tools
+	gen, err := NewGenerator(s.Schema, s.Config)
+	if err != nil {
+		return nil, fmt.Errorf("creating tool generator: %w", err)
+	}
+
+	if err := gen.Generate(ctx); err != nil {
+		return nil, fmt.Errorf("generating tools: %w", err)
+	}
+
+	// TODO: apply user config from file
+	return gen.GetFields(), nil
 }
 
 // ConfigureFields will take the given updated fields config and update the existing project config with it.
