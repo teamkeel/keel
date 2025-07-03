@@ -576,3 +576,11 @@ func diffStringTemplate(old, updated *toolsproto.StringTemplate) *string {
 	}
 	return nil
 }
+
+func stringPointer(val string) *string {
+	if val != "" {
+		return &val
+	}
+
+	return nil
+}
