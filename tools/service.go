@@ -154,7 +154,7 @@ func (s *Service) loadFromFileStorage() (UserConfig, error) {
 	return userConfig, nil
 }
 
-// load will read the tools configurations from storage.
+// load will read the tools and fields configurations from storage.
 func (s *Service) load() (UserConfig, error) {
 	// if we have file storage enabled, load from file
 	if s.hasFileStorage() {
@@ -162,45 +162,101 @@ func (s *Service) load() (UserConfig, error) {
 	}
 
 	// otherwise load from internal cache
-	tools := ToolConfigs{}
+	userConfig := UserConfig{}
+
+	// read tools config
 	for _, fileBytes := range s.ToolsConfigStorage {
 		var cfg ToolConfig
 		if err := json.Unmarshal(fileBytes, &cfg); err != nil {
 			return UserConfig{}, err
 		}
-		tools = append(tools, &cfg)
+		userConfig.Tools = append(userConfig.Tools, &cfg)
 	}
 
-	return UserConfig{
-		Tools: tools,
-	}, nil
+	// read fields config
+	if err := json.Unmarshal(s.FieldsConfigStorage, &userConfig.Fields); err != nil {
+		return UserConfig{}, err
+	}
+
+	return userConfig, nil
 }
 
-// clear will remove all the saved tool configs from the project.
-func (s *Service) clear() error {
+// clearTools will remove all the saved tool configs from the project.
+func (s *Service) clearTools() error {
 	if s.hasFileStorage() {
-		err := os.RemoveAll(s.storageFolder())
+		files, err := os.ReadDir(s.storageFolder())
 		if err != nil {
-			if errors.Is(err, os.ErrNotExist) {
-				return nil
-			}
 			return err
 		}
+		for _, file := range files {
+			if file.Name() == fieldsFile {
+				continue
+			}
+			err := os.Remove(filepath.Join(s.storageFolder(), file.Name()))
+			if err != nil && !errors.Is(err, os.ErrNotExist) {
+				return err
+			}
+		}
+
 		return nil
 	}
 
 	s.ToolsConfigStorage = map[string][]byte{}
+
 	return nil
 }
 
-// store will save the given user configuration.
-func (s *Service) store(userConfig UserConfig) error {
+// clearFields will remove all the saved fields configs from the project.
+func (s *Service) clearFields() error {
+	if s.hasFileStorage() {
+		err := os.Remove(filepath.Join(s.storageFolder(), fieldsFile))
+		if err != nil && !errors.Is(err, os.ErrNotExist) {
+			return err
+		}
+
+		return nil
+	}
+
+	s.FieldsConfigStorage = []byte{}
+	return nil
+}
+
+// storeFields will save the given user configuration.
+func (s *Service) storeFields(cfgs FieldConfigs) error {
+	// if we have no changes, remove any existing changes
+	if !cfgs.haveChanges() {
+		return s.clearFields()
+	}
+
+	b, err := json.Marshal(cfgs.changed())
+	if err != nil {
+		return err
+	}
+	var dest bytes.Buffer
+	if err := json.Indent(&dest, b, "", "  "); err != nil {
+		return fmt.Errorf("formatting fields config: %w", err)
+	}
+
+	if s.hasFileStorage() {
+		err = os.WriteFile(filepath.Join(s.storageFolder(), fieldsFile), dest.Bytes(), 0666)
+		if err != nil {
+			return err
+		}
+	}
+
+	s.FieldsConfigStorage = dest.Bytes()
+
+	return nil
+}
+
+// storeTools will save the given user configuration.
+func (s *Service) storeTools(cfgs ToolConfigs) error {
 	if s.hasFileStorage() {
 		if err := s.initStorageFolder(); err != nil {
 			return fmt.Errorf("initialising tools folder: %w", err)
 		}
 
-		for _, cfg := range userConfig.Tools {
+		for _, cfg := range cfgs {
 			if !cfg.hasChanges() {
 				// no changes to this tool, so remove any existing config for this tool
 				if err := os.Remove(filepath.Join(s.storageFolder(), cfg.ID+".json")); err != nil {
@@ -227,12 +283,13 @@ func (s *Service) store(userConfig UserConfig) error {
 				return err
 			}
 		}
+
 		return nil
 	}
 
 	// we store in memory
 	storage := map[string][]byte{}
-	for _, cfg := range userConfig.Tools {
+	for _, cfg := range cfgs {
 		b, err := json.Marshal(cfg)
 		if err != nil {
 			return err
@@ -244,8 +301,8 @@ func (s *Service) store(userConfig UserConfig) error {
 		}
 		storage[cfg.ID+".json"] = dest.Bytes()
 	}
-
 	s.ToolsConfigStorage = storage
+
 	return nil
 }
 
@@ -263,7 +320,7 @@ func (s *Service) addToProject(cfgs ...*ToolConfig) error {
 		userConfig.Tools = append(userConfig.Tools, toolConfig)
 	}
 
-	if err := s.store(userConfig); err != nil {
+	if err := s.storeTools(userConfig.Tools); err != nil {
 		return fmt.Errorf("storing tool config to project: %w", err)
 	}
 
@@ -289,7 +346,7 @@ func (s *Service) updateToProject(cfgs ...*ToolConfig) error {
 		}
 	}
 
-	if err := s.store(userConfig); err != nil {
+	if err := s.storeTools(userConfig.Tools); err != nil {
 		return fmt.Errorf("storing tools to project: %w", err)
 	}
 
@@ -411,6 +468,8 @@ func (s *Service) GetTools(ctx context.Context) (*toolsproto.Tools, error) {
 		}
 	}
 
+	//TODO: apply fields formatting from userConfig
+
 	NewValidator(s.Schema, tools).validate()
 
 	return tools, nil
@@ -418,7 +477,7 @@ func (s *Service) GetTools(ctx context.Context) (*toolsproto.Tools, error) {
 
 // ResetTools will remove all the saved tool configs and return the schema generated tools.
 func (s *Service) ResetTools(ctx context.Context) (*toolsproto.Tools, error) {
-	if err := s.clear(); err != nil {
+	if err := s.clearTools(); err != nil {
 		return nil, fmt.Errorf("removing saved tools configuration: %w", err)
 	}
 
@@ -487,8 +546,14 @@ func (s *Service) GetFields(ctx context.Context) ([]*toolsproto.Field, error) {
 
 	fields := gen.GetFields()
 
+	// load existing configured tools
+	userConfig, err := s.load()
+	if err != nil {
+		return nil, fmt.Errorf("loading tool configs from file: %w", err)
+	}
+
 	// now we apply user config from file
-	// TODO:
+	userConfig.Fields.applyOn(fields)
 
 	return fields, nil
 }
@@ -506,12 +571,12 @@ func (s *Service) ConfigureFields(ctx context.Context, updated []*toolsproto.Fie
 	}
 
 	// extract user field config by diffing the updated ones with the generated ones
-	extractFieldsConfigs(gen.GetFields(), updated)
+	cfgs := extractFieldsConfigs(gen.GetFields(), updated)
 
-	// persist the user config
-	// TODO:
+	if err := s.storeFields(cfgs); err != nil {
+		return nil, err
+	}
 
 	// retrieve newly configured fields
-
-	return updated, nil
+	return s.GetFields(ctx)
 }

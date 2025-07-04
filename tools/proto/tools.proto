@@ -637,10 +637,11 @@ message FilterConfig {
 // FormatConfig holds configuration on how a field's value should be formatted when displayed.
 message FormatConfig {
 	enum Type {
-		ENUM = 0;
-		NUMBER = 1;
-		STRING = 2;
-		BOOL = 3;
+		UNKNOWN = 0;
+		ENUM = 1;
+		NUMBER = 2;
+		STRING = 3;
+		BOOL = 4;
 	}
 	Type type = 1;
 
