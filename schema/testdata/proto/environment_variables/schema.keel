@@ -2,6 +2,6 @@ model MyModel {
   @permission(expression: ctx.env.FOO == "d", actions: [get])
 }
 
-model MyFlow {
+flow MyFlow {
   @permission(expression: ctx.env.FOO == "d")
 }
