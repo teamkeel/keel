@@ -32,6 +32,11 @@ flow DoNotRetry {
     @permission(roles: [Admin])
 }
 
+flow ErrorInValidation {
+    @permission(roles: [Admin])
+}
+
+
 model Thing {
     fields {
         name Text?

@@ -18,7 +18,7 @@ type PageOptions<
   content: T;
   validate?: (
     data: ExtractFormData<T>
-  ) => Promise<null | string | undefined> | string | null | undefined;
+  ) => Promise<null | string | void> | string | null | void;
   actions?: A;
 };
 
