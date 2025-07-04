@@ -1340,7 +1340,7 @@ test("flows - authorised listing flows", async () => {
   await models.user.create({ team: "myTeam", identityId: identity!.id });
 
   const resListAdmin = await listFlows({ token: adminToken });
-  expect(resListAdmin.body.flows.length).toBe(16);
+  expect(resListAdmin.body.flows.length).toBe(17);
   expect(resListAdmin.body.flows[0].name).toBe("ScalarStep");
   expect(resListAdmin.body.flows[1].name).toBe("MixedStepTypes");
   expect(resListAdmin.body.flows[2].name).toBe("Stepless");
@@ -1350,13 +1350,14 @@ test("flows - authorised listing flows", async () => {
   expect(resListAdmin.body.flows[6].name).toBe("OnlyFunctions");
   expect(resListAdmin.body.flows[7].name).toBe("ValidationText");
   expect(resListAdmin.body.flows[8].name).toBe("ValidationBoolean");
-  expect(resListAdmin.body.flows[9].name).toBe("AllInputs");
-  expect(resListAdmin.body.flows[10].name).toBe("EnvStep");
-  expect(resListAdmin.body.flows[11].name).toBe("MultipleActions");
-  expect(resListAdmin.body.flows[12].name).toBe("WithCompletion");
-  expect(resListAdmin.body.flows[13].name).toBe("WithCompletionMinimal");
-  expect(resListAdmin.body.flows[14].name).toBe("WithReturnedData");
-  expect(resListAdmin.body.flows[15].name).toBe("ExpressionPermissionIsTrue");
+  expect(resListAdmin.body.flows[9].name).toBe("ValidationPage");
+  expect(resListAdmin.body.flows[10].name).toBe("AllInputs");
+  expect(resListAdmin.body.flows[11].name).toBe("EnvStep");
+  expect(resListAdmin.body.flows[12].name).toBe("MultipleActions");
+  expect(resListAdmin.body.flows[13].name).toBe("WithCompletion");
+  expect(resListAdmin.body.flows[14].name).toBe("WithCompletionMinimal");
+  expect(resListAdmin.body.flows[15].name).toBe("WithReturnedData");
+  expect(resListAdmin.body.flows[16].name).toBe("ExpressionPermissionIsTrue");
 
   const resListUser = await listFlows({ token: userToken });
   expect(resListUser.status).toBe(200);
