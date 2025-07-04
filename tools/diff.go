@@ -7,8 +7,90 @@ import (
 // extractFieldsConfigs will diff the updated field based configs against the given generated ones, and return an
 // array of user configurations.
 func extractFieldsConfigs(generated, updated []*toolsproto.Field) FieldConfigs {
-	// TODO: implement
-	return FieldConfigs{}
+	cfgs := FieldConfigs{}
+	for _, updatedField := range updated {
+		for _, genField := range generated {
+			if updatedField.GetID() == genField.GetID() {
+				formatCfg := extractFormatConfig(genField.GetFormat(), updatedField.GetFormat())
+				if formatCfg != nil && formatCfg.hasChanges() {
+					cfgs = append(cfgs, &FieldConfig{
+						ID:     updatedField.GetID(),
+						Format: formatCfg,
+					})
+				}
+			}
+		}
+	}
+
+	return cfgs
+}
+
+func extractFormatConfig(generated, updated *toolsproto.FormatConfig) *FormatConfig {
+	return &FormatConfig{
+		EnumConfig:   nil, //TODO:
+		NumberConfig: extractNumberFormatConfig(generated.GetNumberConfig(), updated.GetNumberConfig()),
+		StringConfig: extractStringFormatConfig(generated.GetStringConfig(), updated.GetStringConfig()),
+		BoolConfig:   extractBoolFormatConfig(generated.GetBoolConfig(), updated.GetBoolConfig()),
+	}
+}
+
+func extractNumberFormatConfig(generated, updated *toolsproto.NumberFormatConfig) *NumberFormatConfig {
+	if updated == nil {
+		return nil
+	}
+
+	cfg := NumberFormatConfig{
+		Prefix:     diffString(generated.GetPrefix(), updated.GetPrefix()),
+		Suffix:     diffString(generated.GetSuffix(), updated.GetSuffix()),
+		Precision:  diffInt(generated.GetPrecision(), updated.GetPrecision()),
+		Sensitive:  diffBool(generated.GetSensitive(), updated.GetSensitive()),
+		TextColour: diffString(generated.GetTextColour(), updated.GetTextColour()),
+	}
+
+	if cfg.hasChanges() {
+		return &cfg
+	}
+
+	return nil
+}
+
+func extractStringFormatConfig(generated, updated *toolsproto.StringFormatConfig) *StringFormatConfig {
+	if updated == nil {
+		return nil
+	}
+
+	cfg := StringFormatConfig{
+		Prefix:         diffString(generated.GetPrefix(), updated.GetPrefix()),
+		Suffix:         diffString(generated.GetSuffix(), updated.GetSuffix()),
+		ShowURLPreview: diffBool(generated.GetShowUrlPreview(), updated.GetShowUrlPreview()),
+		Sensitive:      diffBool(generated.GetSensitive(), updated.GetSensitive()),
+		TextColour:     diffString(generated.GetTextColour(), updated.GetTextColour()),
+	}
+
+	if cfg.hasChanges() {
+		return &cfg
+	}
+
+	return nil
+}
+
+func extractBoolFormatConfig(generated, updated *toolsproto.BoolFormatConfig) *BoolFormatConfig {
+	if updated == nil {
+		return nil
+	}
+
+	cfg := BoolFormatConfig{
+		PositiveValue:  diffString(generated.GetPositiveValue(), updated.GetPositiveValue()),
+		NegativeValue:  diffString(generated.GetNegativeValue(), updated.GetNegativeValue()),
+		PositiveColour: diffString(generated.GetPositiveColour(), updated.GetPositiveColour()),
+		NegativeColour: diffString(generated.GetNegativeColour(), updated.GetNegativeColour()),
+	}
+
+	if cfg.hasChanges() {
+		return &cfg
+	}
+
+	return nil
 }
 
 func extractConfig(generated, updated *toolsproto.Tool) *ToolConfig {
