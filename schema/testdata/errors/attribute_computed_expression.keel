@@ -1,6 +1,8 @@
 model Invoice {
     fields {
         items Item[]
+        //expect-error:36:42:AttributeExpressionError:unknown identifier 'items2'
+        total Number @computed(SUM(items2.price))
     }
 }
 
@@ -27,6 +29,8 @@ model Item {
         invalidStringOp Text @computed("Description" - item.description)
         //expect-error:60:61:AttributeExpressionError:cannot use operator '+' with types Text and Number
         invalidStringValue Text @computed(item.description + 1)
+        //expect-error:41:48:AttributeExpressionError:unknown identifier 'notItem'
+        invalidOperand Number @computed(notItem.quantity + 1)
     }
     actions {
         get getItem(id) 
