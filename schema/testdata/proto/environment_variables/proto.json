@@ -310,5 +310,17 @@
     {
       "name": "ResetPasswordResponse"
     }
+  ],
+  "flows": [
+    {
+      "name": "MyFlow",
+      "permissions": [
+        {
+          "expression": {
+            "source": "ctx.env.FOO == \"d\""
+          }
+        }
+      ]
+    }
   ]
 }

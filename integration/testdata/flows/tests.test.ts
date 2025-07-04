@@ -1230,12 +1230,19 @@ test("flows - myRuns", async () => {
   expect(resListRuns.body.length).toBe(2);
 });
 
-test("flows - authorised starting, getting and listing flows", async () => {
+test("flows - authorised listing flows", async () => {
   const adminToken = await getToken({ email: "admin@keel.xyz" });
   const userToken = await getToken({ email: "user@gmail.com" });
 
+  const identity = await models.identity.findOne({
+    email: "user@gmail.com",
+    issuer: "https://keel.so",
+  });
+
+  await models.user.create({ team: "myTeam", identityId: identity!.id });
+
   const resListAdmin = await listFlows({ token: adminToken });
-  expect(resListAdmin.body.flows.length).toBe(15);
+  expect(resListAdmin.body.flows.length).toBe(16);
   expect(resListAdmin.body.flows[0].name).toBe("ScalarStep");
   expect(resListAdmin.body.flows[1].name).toBe("MixedStepTypes");
   expect(resListAdmin.body.flows[2].name).toBe("Stepless");
@@ -1251,11 +1258,15 @@ test("flows - authorised starting, getting and listing flows", async () => {
   expect(resListAdmin.body.flows[12].name).toBe("WithCompletion");
   expect(resListAdmin.body.flows[13].name).toBe("WithCompletionMinimal");
   expect(resListAdmin.body.flows[14].name).toBe("WithReturnedData");
+  expect(resListAdmin.body.flows[15].name).toBe("ExpressionPermissionIsTrue");
 
   const resListUser = await listFlows({ token: userToken });
   expect(resListUser.status).toBe(200);
-  expect(resListUser.body.flows.length).toBe(1);
+  expect(resListUser.body.flows.length).toBe(4);
   expect(resListUser.body.flows[0].name).toBe("UserFlow");
+  expect(resListUser.body.flows[1].name).toBe("ExpressionPermissionCtx");
+  expect(resListUser.body.flows[2].name).toBe("ExpressionPermissionEnv");
+  expect(resListUser.body.flows[3].name).toBe("ExpressionPermissionIsTrue");
 });
 
 test("flows - unauthorised starting flow", async () => {
@@ -1312,6 +1323,119 @@ test("flows - unauthenticated getting flow", async () => {
 test("flows - unauthenticated listing flows", async () => {
   const resGet = await listFlows({ token: null });
   expect(resGet.status).toBe(401);
+});
+
+test("flows - authorised starting flow with true expression", async () => {
+  const token = await getToken({ email: "user@gmail.com" });
+  const res = await startFlow({
+    name: "expressionPermissionIsTrue",
+    token,
+    body: {},
+  });
+  expect(res.status).toBe(200);
+});
+
+test("flows - not authorised starting flow with backlink expression", async () => {
+  const token = await getToken({ email: "user@gmail.com" });
+  const res = await startFlow({
+    name: "ExpressionPermissionCtx",
+    token,
+    body: {},
+  });
+  expect(res.status).toBe(403);
+});
+
+test("flows - unauthorised (wrong team) starting flow with backlink expression", async () => {
+  const token = await getToken({ email: "user@keel.xyz" });
+
+  const identity = await models.identity.findOne({
+    email: "user@keel.xyz",
+    issuer: "https://keel.so",
+  });
+
+  const user = await models.user.create({
+    team: "wrongTeam",
+    identityId: identity!.id,
+  });
+
+  const res = await startFlow({
+    name: "ExpressionPermissionCtx",
+    token: token,
+    body: {},
+  });
+  expect(res.status).toBe(403);
+});
+
+test("flows - authorised starting flow with backlink expression", async () => {
+  const token = await getToken({ email: "user@keel.xyz" });
+
+  const identity = await models.identity.findOne({
+    email: "user@keel.xyz",
+    issuer: "https://keel.so",
+  });
+
+  const user = await models.user.create({
+    team: "myTeam",
+    identityId: identity!.id,
+  });
+
+  const res = await startFlow({
+    name: "ExpressionPermissionCtx",
+    token: token,
+    body: {},
+  });
+  expect(res.status).toBe(200);
+});
+
+test("flows - authorised starting flow with env var expression", async () => {
+  const token = await getToken({ email: "user@keel.xyz" });
+
+  const identity = await models.identity.findOne({
+    email: "user@keel.xyz",
+    issuer: "https://keel.so",
+  });
+
+  const user = await models.user.create({
+    team: "myTeam",
+    identityId: identity!.id,
+  });
+
+  const res = await startFlow({
+    name: "ExpressionPermissionEnv",
+    token: token,
+    body: {},
+  });
+  expect(res.status).toBe(200);
+});
+
+test("flows - unauthorised (wrong team) starting flow with env var expression", async () => {
+  const token = await getToken({ email: "user@keel.xyz" });
+
+  const identity = await models.identity.findOne({
+    email: "user@keel.xyz",
+    issuer: "https://keel.so",
+  });
+
+  const user = await models.user.create({
+    team: "wrongTeam",
+    identityId: identity!.id,
+  });
+
+  const res = await startFlow({
+    name: "ExpressionPermissionEnv",
+    token: token,
+    body: {},
+  });
+  expect(res.status).toBe(403);
+});
+
+test("flows - unauthenticated starting flow with backlink expression", async () => {
+  const res = await startFlow({
+    name: "ExpressionPermissionCtx",
+    token: null,
+    body: {},
+  });
+  expect(res.status).toBe(401);
 });
 
 test("flows - env step", async () => {
