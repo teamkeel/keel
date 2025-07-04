@@ -12,10 +12,6 @@ export default ErrorInValidation({}, async (ctx) => {
       }),
     ],
     validate(value) {
-      // if (value.email === "test@test.com") {
-      //   return "null";
-      // }
-
       throw new Error("something has gone wrong");
     },
   });
