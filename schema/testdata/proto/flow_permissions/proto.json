@@ -1,6 +1,73 @@
 {
   "models": [
     {
+      "name": "User",
+      "fields": [
+        {
+          "modelName": "User",
+          "name": "team",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "modelName": "User",
+          "name": "identity",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Identity"
+          },
+          "unique": true,
+          "foreignKeyFieldName": "identityId",
+          "inverseFieldName": "user"
+        },
+        {
+          "modelName": "User",
+          "name": "identityId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Identity",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "User",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "User",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "User",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        }
+      ]
+    },
+    {
       "name": "Identity",
       "fields": [
         {
@@ -168,6 +235,16 @@
           "defaultValue": {
             "useZeroValue": true
           }
+        },
+        {
+          "modelName": "Identity",
+          "name": "user",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "User"
+          },
+          "optional": true,
+          "inverseFieldName": "identity"
         }
       ],
       "actions": [
@@ -203,6 +280,9 @@
     {
       "name": "Api",
       "apiModels": [
+        {
+          "modelName": "User"
+        },
         {
           "modelName": "Identity",
           "modelActions": [
@@ -301,6 +381,26 @@
       "permissions": [
         {
           "roleNames": ["Admin", "Developer"]
+        }
+      ]
+    },
+    {
+      "name": "MyFlow4",
+      "permissions": [
+        {
+          "expression": {
+            "source": "true"
+          }
+        }
+      ]
+    },
+    {
+      "name": "MyFlow5",
+      "permissions": [
+        {
+          "expression": {
+            "source": "ctx.identity.user.team == \"myTeam\""
+          }
         }
       ]
     }

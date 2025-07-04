@@ -19,18 +19,6 @@ flow MyFlow4 {
     @permission([Admin])
 }
 
-flow MyFlow5 {
-    //expect-error:17:27:AttributeArgumentError:unexpected argument 'expression' for @permission
-    //expect-error:17:27:AttributeArgumentError:cannot provide 'expression' arguments when using @permission in a flow
-    @permission(expression: true)
-}
-
-flow MyFlow6 {
-    //expect-error:17:27:AttributeArgumentError:unexpected argument 'expression' for @permission
-    //expect-error:17:27:AttributeArgumentError:cannot provide 'expression' arguments when using @permission in a flow
-    @permission(expression: ctx.isAuthenticated, roles: [Admin])
-}
-
 role Admin {
 }
 

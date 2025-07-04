@@ -1,3 +1,5 @@
 environment:
   - name: PERSON_NAME
     value: "Pedro"
+  - name: ADMIN_TEAM
+    value: "myTeam"

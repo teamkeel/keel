@@ -980,7 +980,9 @@ secrets:
 				}
 			}
 
-			sql, values, err := permissions.ToSQL(s, model, action)
+			perms := proto.PermissionsForAction(s, action)
+
+			sql, values, err := permissions.ToSQL(s, model, perms)
 			require.NoError(t, err)
 
 			// Assert SQL is as expecte

@@ -26,8 +26,10 @@ func writePermissions(w *codegen.Writer, schema *proto.Schema) {
 				continue
 			}
 
+			perms := proto.PermissionsForAction(schema, action)
+
 			// TODO: think about how to handle error's here
-			sql, values, _ := permissions.ToSQL(schema, model, action)
+			sql, values, _ := permissions.ToSQL(schema, model, perms)
 			if sql == "" {
 				w.Writef("%s: [],\n", action.GetName())
 				continue
