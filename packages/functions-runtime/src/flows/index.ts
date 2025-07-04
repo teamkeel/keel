@@ -402,9 +402,30 @@ export function createFlowContext<C extends FlowConfig, E, S, I>(
           );
         }
 
-        const p = await page(options, data, action);
-        if (p.hasValidationErrors) {
-          throw new UIRenderDisrupt(step?.id, p.page);
+        try {
+          const p = await page(options, data, action);
+
+          if (p.hasValidationErrors) {
+            throw new UIRenderDisrupt(step?.id, p.page);
+          }
+        } catch (e) {
+          if (e instanceof UIRenderDisrupt) {
+            throw e;
+          }
+
+          await db
+            .updateTable("keel.flow_step")
+            .set({
+              status: STEP_STATUS.FAILED,
+              spanId: spanId,
+              endTime: new Date(),
+              error: e instanceof Error ? e.message : "An error occurred",
+            })
+            .where("id", "=", step?.id)
+            .returningAll()
+            .executeTakeFirst();
+
+          throw e;
         }
 
         // If the data has been passed in and is valid, persist the data (and action if applicable) and mark the step as COMPLETED, and then return the data.

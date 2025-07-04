@@ -46,6 +46,10 @@ flow ValidationBoolean {
     @permission(roles: [Admin])
 }
 
+flow ValidationPage {
+    @permission(roles: [Admin])
+}
+
 enum MyEnum {
     Value1
     Value2

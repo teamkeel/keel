@@ -16,7 +16,9 @@ type PageOptions<
   title?: string;
   description?: string;
   content: T;
-  validate?: (data: ExtractFormData<T>) => Promise<true | string>;
+  validate?: (
+    data: ExtractFormData<T>
+  ) => Promise<null | string | void> | string | null | void;
   actions?: A;
 };
 
@@ -65,7 +67,7 @@ export async function page<
   >[];
 
   let hasValidationErrors = false;
-  let validationError;
+  let validationError: string | undefined;
 
   // if we have actions defined, validate that the given action exists
   if (options.actions && action !== null) {
@@ -101,7 +103,13 @@ export async function page<
       .filter(Boolean)
   )) as UiElementApiResponses;
 
-  // TODO support the page level validation function
+  if (data && options.validate) {
+    const validationResult = await options.validate(data);
+    if (typeof validationResult === "string") {
+      hasValidationErrors = true;
+      validationError = validationResult;
+    }
+  }
 
   return {
     page: {
