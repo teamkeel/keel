@@ -30,8 +30,8 @@ async function handleJob(request, config) {
       try {
         const { createJobContextAPI, jobs } = config;
 
-        if (!(request.method in jobs)) {
-          const message = `no corresponding job found for '${request.method}'`;
+        if (!jobs[request.method]) {
+          const message = `job '${request.method}' does not exist or has not been implemented`;
           span.setStatus({
             code: opentelemetry.SpanStatusCode.ERROR,
             message: message,

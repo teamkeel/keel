@@ -34,8 +34,8 @@ async function handleRequest(request, config) {
         const { createContextAPI, functions, permissionFns, actionTypes } =
           config;
 
-        if (!(request.method in functions)) {
-          const message = `no corresponding function found for '${request.method}'`;
+        if (!functions[request.method]) {
+          const message = `function '${request.method}' does not exist or has not been implemented`;
           span.setStatus({
             code: opentelemetry.SpanStatusCode.ERROR,
             message: message,

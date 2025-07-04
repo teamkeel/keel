@@ -30,8 +30,8 @@ async function handleSubscriber(request, config) {
       try {
         const { createSubscriberContextAPI, subscribers } = config;
 
-        if (!(request.method in subscribers)) {
-          const message = `no corresponding subscriber found for '${request.method}'`;
+        if (!subscribers[request.method]) {
+          const message = `subscriber '${request.method}' does not exist or has not been implemented`;
           span.setStatus({
             code: opentelemetry.SpanStatusCode.ERROR,
             message: message,
