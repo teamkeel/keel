@@ -433,7 +433,6 @@ func generateFunctionsHandler(schema *proto.Schema, cfg *config.ProjectConfig, p
 			// Check if the file actually exists before requiring it
 			path := filepath.Join(projectRoot, "functions", op.GetName()+".ts")
 			if _, err := os.Stat(path); err == nil {
-
 				functions[op.GetName()] = op.GetName()
 				actionTypes[op.GetName()] = op.GetType().String()
 			}
