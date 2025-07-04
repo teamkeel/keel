@@ -59,6 +59,11 @@ func ComputedNullableFieldRules(asts []*parser.AST, errs *errorhandling.Validati
 					if i == 0 {
 						continue
 					}
+
+					if currModel == nil {
+						return
+					}
+
 					currField := query.Field(currModel, ident)
 					if currField == nil {
 						return
