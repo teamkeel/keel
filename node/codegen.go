@@ -43,7 +43,7 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 	sdkTypes.Writeln(`import { Kysely, Generated } from "kysely"`)
 	sdkTypes.Writeln(`import * as runtime from "@teamkeel/functions-runtime"`)
 	sdkTypes.Writeln(`import { Headers } from 'node-fetch'`)
-	sdkTypes.Writeln(`export { InlineFile, File, Duration, FileWriteTypes, SortDirection, FlowConfig } from "@teamkeel/functions-runtime"`)
+	sdkTypes.Writeln(`export { InlineFile, File, Duration, FileWriteTypes, SortDirection, FlowConfig, NonRetriableError } from "@teamkeel/functions-runtime"`)
 	sdkTypes.Writeln("")
 
 	writePermissions(sdk, schema)
@@ -62,7 +62,7 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 	writeTableConfig(sdk, schema.GetModels())
 	writeAPIFactory(sdk, schema)
 
-	sdk.Writeln("export { useDatabase, ErrorPresets as errors, File, InlineFile, Duration } from '@teamkeel/functions-runtime';")
+	sdk.Writeln("export { useDatabase, ErrorPresets as errors, File, InlineFile, Duration, NonRetriableError } from '@teamkeel/functions-runtime';")
 
 	for _, model := range schema.GetModels() {
 		writeTableInterface(sdkTypes, model)

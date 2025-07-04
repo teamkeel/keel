@@ -23,6 +23,7 @@ import { header } from "./ui/elements/display/header";
 import { keyValue } from "./ui/elements/display/keyValue";
 import { selectTable } from "./ui/elements/select/table";
 import { dataGridInput } from "./ui/elements/input/dataGrid";
+import { NonRetriableError } from "./errors";
 
 export const enum STEP_STATUS {
   NEW = "NEW",
@@ -40,11 +41,11 @@ export const enum STEP_TYPE {
 }
 
 const defaultOpts = {
-  retries: 5,
+  retries: 4,
   timeout: 60000,
 };
 
-export interface FlowContext<C extends FlowConfig, E = any, S = any, Id = any> {
+export interface FlowContext<C extends FlowConfig, E, S, Id> {
   // Defines a function step that will be run in the flow.
   step: Step<C>;
   // Defines a UI step that will be run in the flow.
@@ -67,39 +68,39 @@ type JsonSerializable =
   | JsonSerializable[]
   | { [key: string]: JsonSerializable };
 
+type StepOptions<C extends FlowConfig> = {
+  stage?: ExtractStageKeys<C>;
+  /** Number of times to retry the step after it fails. Defaults to 4. */
+  retries?: number;
+  /** Maximum time in milliseconds to wait for the step to complete. Defaults to 60000 (1 minute). */
+  timeout?: number;
+  /** A function to call if the step fails after it exhausts all retries. */
+  onFailure?: () => Promise<void> | void;
+};
+
 export type Step<C extends FlowConfig> = {
   <R extends JsonSerializable | void>(
     /** The unique name of this step. */
     name: string,
     /** Configuration options for the step. */
-    options: {
-      /** The stage this step belongs to. Used for organising steps in the UI. */
-      stage?: ExtractStageKeys<C>;
-      /** Number of times to retry the step if it fails. Defaults to 5. */
-      retries?: number;
-      /** Maximum time in milliseconds to wait for the step to complete. Defaults to 60000 (1 minute). */
-      timeout?: number;
-    },
+    options: StepOptions<C>,
     /** The step function to execute. */
-    fn: () => Promise<R> & {
-      catch: (
-        errorHandler: (err: Error) => Promise<void> | void
-      ) => Promise<any>;
-    }
+    fn: StepFunction<C, R>
   ): Promise<R>;
   <R extends JsonSerializable | void>(
+    /** The unique name of this step. */
     name: string,
-    fn: () => Promise<R> & {
-      catch: (
-        errorHandler: (err: Error) => Promise<void> | void
-      ) => Promise<any>;
-    }
+    /** The step function to execute. */
+    fn: StepFunction<C, R>
   ): Promise<R>;
 };
 
-type StepFunction<R> = () => Promise<R> & {
-  catch: (errorHandler: (err: Error) => Promise<void> | void) => Promise<any>;
+type StepArgs<C extends FlowConfig> = {
+  attempt: number;
+  stepOptions: StepOptions<C>;
 };
+
+type StepFunction<C extends FlowConfig, R> = (args: StepArgs<C>) => Promise<R>;
 
 export interface FlowConfig {
   /** The stages to organise the steps in the flow. */
@@ -117,13 +118,7 @@ export interface FlowConfigAPI {
   description?: string;
 }
 
-export type FlowFunction<
-  C extends FlowConfig,
-  E extends any = {},
-  S extends any = {},
-  Id extends any = {},
-  I extends any = {},
-> = (
+export type FlowFunction<C extends FlowConfig, E, S, Id, I = {}> = (
   ctx: FlowContext<C, E, S, Id>,
   inputs: I
 ) => Promise<CompleteOptions<C> | any | void>;
@@ -154,12 +149,7 @@ type StageConfigObject = {
 
 type StageConfig = string | StageConfigObject;
 
-export function createFlowContext<
-  C extends FlowConfig,
-  E = any,
-  S = any,
-  I = any,
->(
+export function createFlowContext<C extends FlowConfig, E, S, I>(
   runId: string,
   data: any,
   action: string | null,
@@ -190,7 +180,10 @@ export function createFlowContext<
       const options = typeof optionsOrFn === "function" ? {} : optionsOrFn;
       const actualFn = (
         typeof optionsOrFn === "function" ? optionsOrFn : fn!
-      ) as StepFunction<any>;
+      ) as StepFunction<C, any>;
+
+      options.retries = options.retries ?? defaultOpts.retries;
+      options.timeout = options.timeout ?? defaultOpts.timeout;
 
       const db = useDatabase();
 
@@ -262,10 +255,12 @@ export function createFlowContext<
           .executeTakeFirst();
 
         try {
-          result = await withTimeout(
-            actualFn(),
-            options.timeout ?? defaultOpts.timeout
-          );
+          const stepArgs: StepArgs<C> = {
+            attempt: failedSteps.length + 1,
+            stepOptions: options,
+          };
+
+          result = await withTimeout(actualFn(stepArgs), options.timeout);
         } catch (e) {
           await db
             .updateTable("keel.flow_step")
@@ -280,9 +275,12 @@ export function createFlowContext<
             .executeTakeFirst();
 
           if (
-            failedSteps.length + 1 >=
-            (options.retries ?? defaultOpts.retries)
+            failedSteps.length >= options.retries ||
+            e instanceof NonRetriableError
           ) {
+            if (options.onFailure) {
+              await options.onFailure!();
+            }
             throw new ExhuastedRetriesDisrupt();
           }
 
@@ -332,20 +330,6 @@ export function createFlowContext<
         .executeTakeFirst();
 
       throw new StepCreatedDisrupt();
-
-      // TODO: Incorporate when we have support error handling
-      // const stepPromise = fn({} as any);
-      // const stepWithCatch = Object.assign(stepPromise, {
-      //   catch: async (errorHandler: (err: Error) => Promise<void> | void) => {
-      //     try {
-      //       return await stepPromise;
-      //     } catch (err) {
-      //       await errorHandler(err as Error);
-      //       throw err;
-      //     }
-      //   },
-      // });
-      // return stepWithCatch;
     },
     ui: {
       page: (async (name, options) => {
@@ -478,4 +462,4 @@ function withTimeout<T>(promiseFn: Promise<T>, timeout: number): Promise<T> {
   ]);
 }
 
-export { UI };
+export { UI, NonRetriableError };
