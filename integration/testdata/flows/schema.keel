@@ -22,15 +22,7 @@ flow SingleStep {
     @permission(roles: [Admin])
 }
 
-flow ErrorInStep {
-    @permission(roles: [Admin])
-}
-
 flow ErrorInFlow {
-    @permission(roles: [Admin])
-}
-
-flow TimeoutStep {
     @permission(roles: [Admin])
 }
 
@@ -73,14 +65,6 @@ flow AllInputs {
         duration Duration?
         myEnum MyEnum?
     }
-    @permission(roles: [Admin])
-}
-
-flow DuplicateStepName {
-    @permission(roles: [Admin])
-}
-
-flow DuplicateStepUiName {
     @permission(roles: [Admin])
 }
 
