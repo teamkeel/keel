@@ -104,12 +104,20 @@ func (f *Field) asPB() *toolsproto.Field {
 	}
 }
 
+type Fields map[string]*Field
+
+func (f Fields) Find(modelName, fieldName string) *Field {
+	id := modelName + " . " + fieldName
+
+	return f[id]
+}
+
 type Generator struct {
 	Schema     *proto.Schema
 	KeelConfig *config.ProjectConfig
 	Tools      map[string]*Tool
 	// Fields represents the complete set of model fields and enums that are present in the given schema
-	Fields map[string]*Field
+	Fields Fields
 }
 
 func (g *Generator) actionTools() map[string]*Tool {
@@ -184,10 +192,6 @@ func (g *Generator) Generate(ctx context.Context) error {
 
 	// reset any previous tools & fields
 	g.Tools = map[string]*Tool{}
-	g.Fields = map[string]*Field{}
-
-	// generate all the fields
-	g.generateFields()
 
 	// first pass at generating tools;
 	g.scaffoldTools()
@@ -200,9 +204,18 @@ func (g *Generator) Generate(ctx context.Context) error {
 	return nil
 }
 
-// generateFields will take the current schema and generate the map of all model fields & enums that can be formatted with
+// Generate will generate all the fields for this generator's schema.
+// It will take the current schema and generate the map of all model fields & enums that can be formatted with
 // schema-based config.
-func (g *Generator) generateFields() {
+func (g *Generator) GenerateFields(ctx context.Context) error {
+	if g.Schema == nil {
+		return ErrInvalidSchema
+	}
+
+	// reset any previous fields
+	g.Fields = Fields{}
+
+	// generate all the fields
 	for _, model := range g.Schema.GetModels() {
 		for _, field := range model.GetFields() {
 			f := Field{
@@ -222,6 +235,8 @@ func (g *Generator) generateFields() {
 		}
 		g.Fields[f.Path()] = &f
 	}
+
+	return nil
 }
 
 // scaffoldTools will generate all the basic tools. These will be incomplete configurations, with fields and
