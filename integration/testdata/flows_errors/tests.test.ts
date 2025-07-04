@@ -587,6 +587,63 @@ test("flows - timeout step", async () => {
   });
 });
 
+test("flows - error in validation", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+  let { status, body } = await startFlow({
+    name: "ErrorInValidation",
+    token,
+    body: {},
+  });
+
+  expect(status).toBe(200);
+  expect(body.steps[0].status).toBe("PENDING");
+
+  const runId = body.id;
+  let stepId = body.steps[0].id;
+
+  ({ status, body } = await putStepValues({
+    name: "ErrorInValidation",
+    runId,
+    stepId,
+    token,
+    values: {},
+    action: null,
+  }));
+
+  expect(status).toBe(200);
+  expect(body).toEqual({
+    createdAt: expect.any(String),
+    data: null,
+    id: expect.any(String),
+    input: {},
+    name: "ErrorInValidation",
+    startedBy: expect.any(String),
+    status: "FAILED",
+    steps: [
+      {
+        createdAt: expect.any(String),
+        endTime: expect.any(String),
+        error: "something has gone wrong",
+        id: expect.any(String),
+        name: "first page",
+        runId: expect.any(String),
+        stage: null,
+        startTime: expect.any(String),
+        status: "FAILED",
+        type: "UI",
+        updatedAt: expect.any(String),
+        value: null,
+        ui: null,
+      },
+    ],
+    traceId: expect.any(String),
+    updatedAt: expect.any(String),
+    config: {
+      title: "Error in validation",
+    },
+  });
+});
+
 test("flows - duplicate step name", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
   const res = await startFlow({ name: "DuplicateStepName", token, body: {} });
@@ -865,4 +922,26 @@ async function untilFlowFinished({ name, id, token }) {
 
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
+}
+
+async function putStepValues({ name, runId, stepId, values, token, action }) {
+  let url = `${process.env.KEEL_TESTING_API_URL}/flows/json/${name}/${runId}/${stepId}`;
+  if (action) {
+    const queryString = new URLSearchParams({ action }).toString();
+    url = `${url}?${queryString}`;
+  }
+
+  const res = await fetch(url, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+    body: JSON.stringify(values),
+  });
+
+  return {
+    status: res.status,
+    body: await res.json(),
+  };
 }

@@ -156,7 +156,7 @@ export interface BaseInputConfig<T> {
   helpText?: string;
   optional?: boolean;
   disabled?: boolean;
-  validate?: (data: T) => Promise<null | string> | string | null;
+  validate?: (data: T) => Promise<null | string | void> | string | null | void;
 }
 
 // Base response for all inputs
@@ -248,7 +248,9 @@ export type InputElementImplementationResponse<TApiResponse, TData> = {
   __type: "input";
   uiConfig: TApiResponse;
   getData: (data: TData) => TData;
-  validate?: (data: TData) => Promise<null | string> | string | null;
+  validate?: (
+    data: TData
+  ) => Promise<null | string | void> | string | null | void;
 };
 
 export type IteratorElementImplementation<
