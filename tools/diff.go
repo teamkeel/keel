@@ -4,6 +4,13 @@ import (
 	toolsproto "github.com/teamkeel/keel/tools/proto"
 )
 
+// extractFieldsConfigs will diff the updated field based configs against the given generated ones, and return an
+// array of user configurations.
+func extractFieldsConfigs(generated, updated []*toolsproto.Field) FieldConfigs {
+	// TODO: implement
+	return FieldConfigs{}
+}
+
 func extractConfig(generated, updated *toolsproto.Tool) *ToolConfig {
 	if generated.GetType() != updated.GetType() {
 		return nil
