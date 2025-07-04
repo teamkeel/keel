@@ -855,7 +855,7 @@ test("flows - boolean input validation", async () => {
   });
 });
 
-test.only("flows - page validation", async () => {
+test("flows - page validation", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
   let { status, body } = await startFlow({
     name: "ValidationPage",
