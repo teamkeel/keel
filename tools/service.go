@@ -468,7 +468,26 @@ func (s *Service) GetTools(ctx context.Context) (*toolsproto.Tools, error) {
 		}
 	}
 
-	//TODO: apply fields formatting from userConfig
+	// if we have user configured field formatting, let's apply them to all the tools
+	if len(userConfig.Fields) > 0 {
+		for _, t := range tools.GetConfigs() {
+			// skip any tools that are not action powered
+			if !t.IsActionBased() {
+				continue
+			}
+
+			for _, response := range t.GetActionConfig().GetResponse() {
+				// if this is a model field
+				if modelName := response.GetModelName(); modelName != "" {
+					// .. and we have a field config
+					if fieldCfg := userConfig.Fields.find(modelName + "." + response.GetFieldName()); fieldCfg != nil {
+						// .. apply it on the response
+						response.Format = fieldCfg.Format.applyOn(response.GetFormat())
+					}
+				}
+			}
+		}
+	}
 
 	NewValidator(s.Schema, tools).validate()
 
