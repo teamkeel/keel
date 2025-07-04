@@ -17,7 +17,7 @@ func (f FieldConfigs) haveChanges() bool {
 	return false
 }
 
-// find returns the field with the given id if any
+// find returns the field with the given id if any.
 func (f FieldConfigs) find(id string) *FieldConfig {
 	for _, field := range f {
 		if field.ID == id {
