@@ -143,7 +143,9 @@ export interface BaseInputConfig<T> {
   helpText?: string;
   optional?: boolean;
   disabled?: boolean;
-  validate?: (data: T) => Promise<null | string> | string | null;
+  validate?: (
+    data: T
+  ) => Promise<null | string | undefined> | string | null | undefined;
 }
 
 // Base response for all inputs

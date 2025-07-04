@@ -855,6 +855,104 @@ test("flows - boolean input validation", async () => {
   });
 });
 
+test.only("flows - page validation", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+  let { status, body } = await startFlow({
+    name: "ValidationPage",
+    token,
+    body: {},
+  });
+
+  expect(status).toBe(200);
+  expect(body.steps[0].status).toBe("PENDING");
+
+  const runId = body.id;
+  let stepId = body.steps[0].id;
+
+  ({ status, body } = await putStepValues({
+    name: "ValidationPage",
+    runId,
+    stepId,
+    token,
+    values: {},
+    action: null,
+  }));
+
+  expect(status).toBe(200);
+  expect(body.steps[0].ui).toEqual({
+    __type: "ui.page",
+    content: [
+      {
+        __type: "ui.input.text",
+        disabled: false,
+        label: "Email",
+        name: "email",
+        optional: true,
+      },
+      {
+        __type: "ui.input.text",
+        disabled: false,
+        label: "Phone",
+        name: "phone",
+        optional: true,
+      },
+    ],
+    hasValidationErrors: true,
+    validationError: "Email or phone is required",
+  });
+
+  ({ status, body } = await putStepValues({
+    name: "ValidationPage",
+    runId,
+    stepId,
+    token,
+    values: {
+      email: "keelson.keel.xyz",
+    },
+    action: null,
+  }));
+
+  expect(status).toBe(200);
+  expect(body.steps[0].ui).toEqual({
+    __type: "ui.page",
+    content: [
+      {
+        __type: "ui.input.text",
+        disabled: false,
+        label: "Email",
+        name: "email",
+        optional: true,
+        validationError: "Not a valid email",
+      },
+      {
+        __type: "ui.input.text",
+        disabled: false,
+        label: "Phone",
+        name: "phone",
+        optional: true,
+      },
+    ],
+    hasValidationErrors: true,
+  });
+
+  ({ status, body } = await putStepValues({
+    name: "ValidationPage",
+    runId,
+    stepId,
+    token,
+    values: {
+      email: "keelson@keel.xyz",
+    },
+    action: null,
+  }));
+
+  expect(status).toBe(200);
+  expect(body.steps[0].status).toBe("COMPLETED");
+  expect(body.steps[0].value).toEqual({
+    email: "keelson@keel.xyz",
+  });
+});
+
 test("flows - all inputs", async () => {
   const fileContents = "hello";
   const dataUrl = `data:text/plain;name=my-file.txt;base64,${Buffer.from(
