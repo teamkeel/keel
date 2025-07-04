@@ -1,0 +1,46 @@
+
+
+flow ErrorInStep {
+    @permission(roles: [Admin])
+}
+
+flow ErrorInFlow {
+    @permission(roles: [Admin])
+}
+
+flow TimeoutStep {
+    @permission(roles: [Admin])
+}
+
+flow DuplicateStepName {
+    @permission(roles: [Admin])
+}
+
+flow DuplicateStepUiName {
+    @permission(roles: [Admin])
+}
+
+flow EventualStepSuccess {
+    @permission(roles: [Admin])
+}
+
+flow OnFailureCallback {
+    @permission(roles: [Admin])
+}
+
+flow DoNotRetry {
+    @permission(roles: [Admin])
+}
+
+model Thing {
+    fields {
+        name Text?
+        age Number?
+    }
+}
+
+role Admin {
+    domains {
+        "keel.xyz"
+    }   
+}
