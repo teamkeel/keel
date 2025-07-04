@@ -670,7 +670,7 @@ message NumberFormatConfig {
 message StringFormatConfig {
 	optional string prefix = 1;
 	optional string suffix = 2;
-	bool show_url_preview = 3; 
+	optional bool show_url_preview = 3; 
 	optional bool sensitive = 4; // hidden by default, hover to show
 	optional string text_colour = 5; 
 }
