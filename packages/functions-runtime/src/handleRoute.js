@@ -25,8 +25,8 @@ async function handleRoute(request, config) {
       try {
         const { createContextAPI, functions } = config;
 
-        if (!(request.method in functions)) {
-          const message = `no route function found for '${request.method}'`;
+        if (!functions[request.method]) {
+          const message = `route function '${request.method}' does not exist or has not been implemented`;
           span.setStatus({
             code: opentelemetry.SpanStatusCode.ERROR,
             message: message,

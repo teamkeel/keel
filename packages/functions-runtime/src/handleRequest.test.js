@@ -72,7 +72,7 @@ test("when there is no matching function for the path", async () => {
     jsonrpc: "2.0",
     error: {
       code: JSONRPCErrorCode.MethodNotFound,
-      message: "no corresponding function found for 'unknown'",
+      message: "function 'unknown' does not exist or has not been implemented",
     },
   });
 });
@@ -269,6 +269,38 @@ test("when a BadRequest error preset is thrown in the custom function", async ()
     error: {
       code: RuntimeErrors.BadRequestError,
       message: "invalid inputs",
+    },
+  });
+});
+
+test("when a function does not exist or has not been implemented", async () => {
+  const config = {
+    functions: {
+      createPost: async (ctx, inputs) => {},
+    },
+    actionTypes: {
+      createPost: PROTO_ACTION_TYPES.CREATE,
+    },
+    createContextAPI: () => {
+      return {
+        response: {
+          headers: new Headers(),
+        },
+      };
+    },
+  };
+
+  const rpcReq = createJSONRPCRequest("123", "nonExistentFunction", {
+    title: "a post",
+  });
+
+  expect(await handleRequest(rpcReq, config)).toEqual({
+    id: "123",
+    jsonrpc: "2.0",
+    error: {
+      code: JSONRPCErrorCode.MethodNotFound,
+      message:
+        "function 'nonExistentFunction' does not exist or has not been implemented",
     },
   });
 });

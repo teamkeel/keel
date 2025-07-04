@@ -45,8 +45,8 @@ async function handleFlow(request: any, config: any) {
 
         const { flows, createFlowContextAPI } = config;
 
-        if (!(request.method in flows)) {
-          const message = `no corresponding flow found for '${request.method}'`;
+        if (!flows[request.method]) {
+          const message = `flow '${request.method}' does not exist or has not been implemented`;
           span.setStatus({
             code: opentelemetry.SpanStatusCode.ERROR,
             message: message,
