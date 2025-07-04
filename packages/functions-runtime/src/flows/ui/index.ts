@@ -233,7 +233,9 @@ export type InputElementImplementationResponse<TApiResponse, TData> = {
   __type: "input";
   uiConfig: TApiResponse;
   getData: (data: TData) => TData;
-  validate?: (data: TData) => Promise<null | string | undefined> | string | null | undefined;
+  validate?: (
+    data: TData
+  ) => Promise<null | string | undefined> | string | null | undefined;
 };
 
 export type DisplayElementImplementation<
