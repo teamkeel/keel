@@ -265,7 +265,7 @@ func (t *FlowConfig) FindInputByPath(location string) *FlowInputConfig {
 // GetID returns an identifier for this field.
 //
 // In the case of MODEL fields, it will be modelName.fieldName
-// For ENUM fields, it will be enumName
+// For ENUM fields, it will be enumName.
 func (f *Field) GetID() string {
 	if f == nil {
 		return ""

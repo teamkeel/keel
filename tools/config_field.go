@@ -1,6 +1,8 @@
 package tools
 
-import toolsproto "github.com/teamkeel/keel/tools/proto"
+import (
+	toolsproto "github.com/teamkeel/keel/tools/proto"
+)
 
 type FieldConfigs []*FieldConfig
 
@@ -13,6 +15,17 @@ func (f FieldConfigs) haveChanges() bool {
 	}
 
 	return false
+}
+
+// find returns the field with the given id if any
+func (f FieldConfigs) find(id string) *FieldConfig {
+	for _, field := range f {
+		if field.ID == id {
+			return field
+		}
+	}
+
+	return nil
 }
 
 // changed returns a subset of FieldConfigs including just the fields with changes.
@@ -38,8 +51,8 @@ func (f FieldConfigs) applyOn(fields []*toolsproto.Field) {
 }
 
 type FieldConfig struct {
-	ID     string
-	Format *FormatConfig
+	ID     string        `json:"id"`
+	Format *FormatConfig `json:"format,omitempty"`
 }
 
 func (f *FieldConfig) hasChanges() bool {
@@ -55,10 +68,10 @@ func (f *FieldConfig) applyOn(field *toolsproto.Field) {
 }
 
 type FormatConfig struct {
-	EnumConfig   *EnumFormatConfig
-	NumberConfig *NumberFormatConfig
-	StringConfig *StringFormatConfig
-	BoolConfig   *BoolFormatConfig
+	EnumConfig   *EnumFormatConfig   `json:"enum_config,omitempty"`
+	NumberConfig *NumberFormatConfig `json:"number_config,omitempty"`
+	StringConfig *StringFormatConfig `json:"string_config,omitempty"`
+	BoolConfig   *BoolFormatConfig   `json:"bool_config,omitempty"`
 }
 
 func (f *FormatConfig) GetType() toolsproto.FormatConfig_Type {
@@ -88,22 +101,21 @@ func (f *FormatConfig) applyOn(cfg *toolsproto.FormatConfig) *toolsproto.FormatC
 		return &toolsproto.FormatConfig{
 			Type:         f.GetType(),
 			EnumConfig:   nil, //TODO
-			NumberConfig: nil, //TODO
-			StringConfig: nil, //TODO
+			NumberConfig: f.NumberConfig.applyOn(nil),
+			StringConfig: f.StringConfig.applyOn(nil),
 			BoolConfig:   f.BoolConfig.applyOn(nil),
 		}
 	}
-	if f.EnumConfig != nil {
-		// TODO: Implement applyOn for EnumConfig when ready
-		// cfg.EnumConfig = f.EnumConfig.applyOn(cfg.EnumConfig)
-	}
+	// TODO: implement
+	// if f.EnumConfig != nil {
+	// cfg.EnumConfig = f.EnumConfig.applyOn(cfg.EnumConfig)
+	// }
+
 	if f.NumberConfig != nil {
-		// TODO: Implement applyOn for NumberConfig when ready
-		// cfg.NumberConfig = f.NumberConfig.applyOn(cfg.NumberConfig)
+		cfg.NumberConfig = f.NumberConfig.applyOn(cfg.GetNumberConfig())
 	}
 	if f.StringConfig != nil {
-		// TODO: Implement applyOn for StringConfig when ready
-		// cfg.StringConfig = f.StringConfig.applyOn(cfg.StringConfig)
+		cfg.StringConfig = f.StringConfig.applyOn(cfg.GetStringConfig())
 	}
 	if f.BoolConfig != nil {
 		cfg.BoolConfig = f.BoolConfig.applyOn(cfg.GetBoolConfig())
@@ -122,11 +134,11 @@ func (e *EnumFormatConfig) hasChanges() bool {
 }
 
 type NumberFormatConfig struct {
-	Prefix     *string
-	Suffix     *string
-	Precision  *int32
-	Sensitive  *bool // hidden by default, hover to show
-	TextColour *string
+	Prefix     *string `json:"prefix,omitempty"`
+	Suffix     *string `json:"suffix,omitempty"`
+	Precision  *int32  `json:"precision,omitempty"`
+	Sensitive  *bool   `json:"sensitive,omitempty"` // hidden by default, hover to show
+	TextColour *string `json:"text_colour,omitempty"`
 }
 
 func (n *NumberFormatConfig) hasChanges() bool {
@@ -137,12 +149,46 @@ func (n *NumberFormatConfig) hasChanges() bool {
 		n.TextColour != nil
 }
 
+func (n *NumberFormatConfig) applyOn(cfg *toolsproto.NumberFormatConfig) *toolsproto.NumberFormatConfig {
+	if n == nil {
+		return cfg
+	}
+
+	if cfg == nil {
+		return &toolsproto.NumberFormatConfig{
+			Prefix:     n.Prefix,
+			Suffix:     n.Suffix,
+			Precision:  n.Precision,
+			Sensitive:  n.Sensitive,
+			TextColour: n.TextColour,
+		}
+	}
+
+	if n.Prefix != nil {
+		cfg.Prefix = n.Prefix
+	}
+	if n.Suffix != nil {
+		cfg.Suffix = n.Suffix
+	}
+	if n.Precision != nil {
+		cfg.Precision = n.Precision
+	}
+	if n.Sensitive != nil {
+		cfg.Sensitive = n.Sensitive
+	}
+	if n.TextColour != nil {
+		cfg.TextColour = n.TextColour
+	}
+
+	return cfg
+}
+
 type StringFormatConfig struct {
-	Prefix         *string
-	Suffix         *string
-	ShowURLPreview *bool
-	Sensitive      *bool // hidden by default, hover to show
-	TextColour     *string
+	Prefix         *string `json:"prefix,omitempty"`
+	Suffix         *string `json:"suffix,omitempty"`
+	ShowURLPreview *bool   `json:"show_url_preview,omitempty"`
+	Sensitive      *bool   `json:"sensitive,omitempty"` // hidden by default, hover to show
+	TextColour     *string `json:"text_colour,omitempty"`
 }
 
 func (s *StringFormatConfig) hasChanges() bool {
@@ -153,11 +199,45 @@ func (s *StringFormatConfig) hasChanges() bool {
 		s.ShowURLPreview != nil
 }
 
+func (s *StringFormatConfig) applyOn(cfg *toolsproto.StringFormatConfig) *toolsproto.StringFormatConfig {
+	if s == nil {
+		return cfg
+	}
+
+	if cfg == nil {
+		return &toolsproto.StringFormatConfig{
+			Prefix:         s.Prefix,
+			Suffix:         s.Suffix,
+			ShowUrlPreview: s.ShowURLPreview,
+			Sensitive:      s.Sensitive,
+			TextColour:     s.TextColour,
+		}
+	}
+
+	if s.Prefix != nil {
+		cfg.Prefix = s.Prefix
+	}
+	if s.Suffix != nil {
+		cfg.Suffix = s.Suffix
+	}
+	if s.ShowURLPreview != nil {
+		cfg.ShowUrlPreview = s.ShowURLPreview
+	}
+	if s.Sensitive != nil {
+		cfg.Sensitive = s.Sensitive
+	}
+	if s.TextColour != nil {
+		cfg.TextColour = s.TextColour
+	}
+
+	return cfg
+}
+
 type BoolFormatConfig struct {
-	PositiveColour *string
-	PositiveValue  *string
-	NegativeColour *string
-	NegativeValue  *string
+	PositiveColour *string `json:"positive_colour,omitempty"`
+	PositiveValue  *string `json:"positive_value,omitempty"`
+	NegativeColour *string `json:"negative_colour,omitempty"`
+	NegativeValue  *string `json:"negative_value,omitempty"`
 }
 
 func (b *BoolFormatConfig) hasChanges() bool {
