@@ -424,7 +424,7 @@ func getZeroValue(field *proto.Field) (string, error) {
 		proto.Type_TYPE_STRING:    db.QuoteLiteral(""),
 		proto.Type_TYPE_MARKDOWN:  db.QuoteLiteral(""),
 		proto.Type_TYPE_INT:       "0",
-		proto.Type_TYPE_DECIMAL:   "0",
+		proto.Type_TYPE_DECIMAL:   "0.0",
 		proto.Type_TYPE_BOOL:      "false",
 		proto.Type_TYPE_DATE:      "now()",
 		proto.Type_TYPE_DATETIME:  "now()",
@@ -535,7 +535,30 @@ func toSqlLiteral(value any, field *proto.Field) (string, error) {
 	case field.GetType().GetType() == proto.Type_TYPE_STRING:
 		return db.QuoteLiteral(fmt.Sprintf("%s", value)), nil
 	case field.GetType().GetType() == proto.Type_TYPE_DECIMAL:
-		return fmt.Sprintf("%f", value), nil
+		// Ensure decimal values are always formatted as decimal literals
+		// This handles both integer and float values correctly
+		switch v := value.(type) {
+		case int64:
+			return fmt.Sprintf("%d.0", v), nil
+		case int:
+			return fmt.Sprintf("%d.0", v), nil
+		case float64:
+			// Use %g but ensure we always have a decimal point for clarity
+			formatted := fmt.Sprintf("%g", v)
+			if !strings.Contains(formatted, ".") && !strings.Contains(formatted, "e") {
+				formatted += ".0"
+			}
+			return formatted, nil
+		case float32:
+			// Use %g but ensure we always have a decimal point for clarity
+			formatted := fmt.Sprintf("%g", v)
+			if !strings.Contains(formatted, ".") && !strings.Contains(formatted, "e") {
+				formatted += ".0"
+			}
+			return formatted, nil
+		default:
+			return fmt.Sprintf("%f", value), nil
+		}
 	case field.GetType().GetType() == proto.Type_TYPE_INT:
 		return fmt.Sprintf("%d", value), nil
 	case field.GetType().GetType() == proto.Type_TYPE_BOOL:
