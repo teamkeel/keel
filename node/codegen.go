@@ -1540,6 +1540,8 @@ export default defineConfig({
 	test: {
 		setupFiles: [__dirname + "/vitest.setup"],
 		testTimeout: 100000,
+		// only run tests in the root path and schemas directory
+		include: ['*.test.ts', '*.test.js', '*.spec.ts', '*.spec.js', 'schemas/*.test.ts', 'schemas/*.test.js', 'schemas/*.spec.ts', 'schemas/*.spec.js'],
 	},
 	resolve: {
 		// on top of the "paths" entry in the project's tsconfig file that aliases the @teamkeel/sdk and @teamkeel/testing
@@ -1553,8 +1555,7 @@ export default defineConfig({
 			'@teamkeel/sdk': path.resolve(__dirname, './sdk')
 		}
 	}
-});
-			`,
+});`,
 		},
 		{
 			Path: ".build/vitest.setup.mjs",
@@ -1566,8 +1567,7 @@ expect.extend({
 	toHaveError,
 	toHaveAuthorizationError,
 	toHaveAuthenticationError,
-});
-			`,
+});`,
 		},
 	}
 }
