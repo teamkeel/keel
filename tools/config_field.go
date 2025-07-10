@@ -134,19 +134,23 @@ func (e *EnumFormatConfig) hasChanges() bool {
 }
 
 type NumberFormatConfig struct {
-	Prefix     *string `json:"prefix,omitempty"`
-	Suffix     *string `json:"suffix,omitempty"`
-	Precision  *int32  `json:"precision,omitempty"`
-	Sensitive  *bool   `json:"sensitive,omitempty"` // hidden by default, hover to show
-	TextColour *string `json:"text_colour,omitempty"`
+	Prefix       *string `json:"prefix,omitempty"`
+	Suffix       *string `json:"suffix,omitempty"`
+	Sensitive    *bool   `json:"sensitive,omitempty"` // hidden by default, hover to show
+	Mode         *string `json:"mode,omitempty"`
+	CurrencyCode *string `json:"currency_code,omitempty"`
+	UnitCode     *string `json:"unit_code,omitempty"`
+	Locale       *string `json:"locale,omitempty"`
 }
 
 func (n *NumberFormatConfig) hasChanges() bool {
 	return n.Prefix != nil ||
 		n.Suffix != nil ||
-		n.Precision != nil ||
 		n.Sensitive != nil ||
-		n.TextColour != nil
+		n.Mode != nil ||
+		n.CurrencyCode != nil ||
+		n.UnitCode != nil ||
+		n.Locale != nil
 }
 
 func (n *NumberFormatConfig) applyOn(cfg *toolsproto.NumberFormatConfig) *toolsproto.NumberFormatConfig {
@@ -156,11 +160,19 @@ func (n *NumberFormatConfig) applyOn(cfg *toolsproto.NumberFormatConfig) *toolsp
 
 	if cfg == nil {
 		return &toolsproto.NumberFormatConfig{
-			Prefix:     n.Prefix,
-			Suffix:     n.Suffix,
-			Precision:  n.Precision,
-			Sensitive:  n.Sensitive,
-			TextColour: n.TextColour,
+			Prefix:    n.Prefix,
+			Suffix:    n.Suffix,
+			Sensitive: n.Sensitive,
+			Mode: func() *toolsproto.NumberFormatConfig_Mode {
+				if n.Mode == nil {
+					return nil
+				}
+				v := toolsproto.NumberFormatConfig_Mode(toolsproto.NumberFormatConfig_Mode_value[*n.Mode])
+				return &v
+			}(),
+			CurrencyCode: n.CurrencyCode,
+			UnitCode:     n.UnitCode,
+			Locale:       n.Locale,
 		}
 	}
 
@@ -170,14 +182,21 @@ func (n *NumberFormatConfig) applyOn(cfg *toolsproto.NumberFormatConfig) *toolsp
 	if n.Suffix != nil {
 		cfg.Suffix = n.Suffix
 	}
-	if n.Precision != nil {
-		cfg.Precision = n.Precision
-	}
 	if n.Sensitive != nil {
 		cfg.Sensitive = n.Sensitive
 	}
-	if n.TextColour != nil {
-		cfg.TextColour = n.TextColour
+	if n.Mode != nil {
+		v := toolsproto.NumberFormatConfig_Mode(toolsproto.NumberFormatConfig_Mode_value[*n.Mode])
+		cfg.Mode = &v
+	}
+	if n.CurrencyCode != nil {
+		cfg.CurrencyCode = n.CurrencyCode
+	}
+	if n.UnitCode != nil {
+		cfg.UnitCode = n.UnitCode
+	}
+	if n.Locale != nil {
+		cfg.Locale = n.Locale
 	}
 
 	return cfg

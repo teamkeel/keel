@@ -40,11 +40,13 @@ func extractNumberFormatConfig(generated, updated *toolsproto.NumberFormatConfig
 	}
 
 	cfg := NumberFormatConfig{
-		Prefix:     diffString(generated.GetPrefix(), updated.GetPrefix()),
-		Suffix:     diffString(generated.GetSuffix(), updated.GetSuffix()),
-		Precision:  diffInt(generated.GetPrecision(), updated.GetPrecision()),
-		Sensitive:  diffBool(generated.GetSensitive(), updated.GetSensitive()),
-		TextColour: diffString(generated.GetTextColour(), updated.GetTextColour()),
+		Prefix:       diffString(generated.GetPrefix(), updated.GetPrefix()),
+		Suffix:       diffString(generated.GetSuffix(), updated.GetSuffix()),
+		Sensitive:    diffBool(generated.GetSensitive(), updated.GetSensitive()),
+		CurrencyCode: diffString(generated.GetCurrencyCode(), updated.GetCurrencyCode()),
+		UnitCode:     diffString(generated.GetUnitCode(), updated.GetUnitCode()),
+		Locale:       diffString(generated.GetLocale(), updated.GetLocale()),
+		Mode:         diffString(generated.GetMode().String(), updated.GetMode().String()),
 	}
 
 	if cfg.hasChanges() {
