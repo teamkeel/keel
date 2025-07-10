@@ -668,7 +668,7 @@ message NumberFormatConfig {
 		UNIT = 4;
 	}
 
-	optional Mode mode = 1;
+	Mode mode = 1;
 	
 	optional string currency_code = 2; // ISO 4217 codes
 	optional string unit_code = 3; // Supports compound units e.g meter-per-second

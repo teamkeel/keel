@@ -163,12 +163,11 @@ func (n *NumberFormatConfig) applyOn(cfg *toolsproto.NumberFormatConfig) *toolsp
 			Prefix:    n.Prefix,
 			Suffix:    n.Suffix,
 			Sensitive: n.Sensitive,
-			Mode: func() *toolsproto.NumberFormatConfig_Mode {
+			Mode: func() toolsproto.NumberFormatConfig_Mode {
 				if n.Mode == nil {
-					return nil
+					return toolsproto.NumberFormatConfig_DECIMAL
 				}
-				v := toolsproto.NumberFormatConfig_Mode(toolsproto.NumberFormatConfig_Mode_value[*n.Mode])
-				return &v
+				return toolsproto.NumberFormatConfig_Mode(toolsproto.NumberFormatConfig_Mode_value[*n.Mode])
 			}(),
 			CurrencyCode: n.CurrencyCode,
 			UnitCode:     n.UnitCode,
@@ -186,8 +185,7 @@ func (n *NumberFormatConfig) applyOn(cfg *toolsproto.NumberFormatConfig) *toolsp
 		cfg.Sensitive = n.Sensitive
 	}
 	if n.Mode != nil {
-		v := toolsproto.NumberFormatConfig_Mode(toolsproto.NumberFormatConfig_Mode_value[*n.Mode])
-		cfg.Mode = &v
+		cfg.Mode = toolsproto.NumberFormatConfig_Mode(toolsproto.NumberFormatConfig_Mode_value[*n.Mode])
 	}
 	if n.CurrencyCode != nil {
 		cfg.CurrencyCode = n.CurrencyCode
