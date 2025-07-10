@@ -660,11 +660,22 @@ message BoolFormatConfig {
 }
 
 message NumberFormatConfig {
-	optional string prefix = 1;
-	optional string suffix = 2;
-	optional int32 precision = 3;
+	enum Mode {
+		DECIMAL = 0; // Default to decimal
+		RAW = 1;
+		PERCENTAGE = 2;
+		CURRENCY = 3;
+		UNIT = 4;
+	}
+
+	optional Mode mode = 1;
+	
+	optional string currency_code = 2; // ISO 4217 codes
+	optional string unit_code = 3; // Supports compound units e.g meter-per-second
 	optional bool sensitive = 4; // hidden by default, hover to show
-	optional string text_colour = 5; 
+	optional string locale = 5; // Set a specific locale code. Otherwise we auto detect
+	optional string prefix = 6;
+	optional string suffix = 7;
 }
 
 message StringFormatConfig {
