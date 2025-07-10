@@ -22,9 +22,10 @@ import (
 )
 
 var testCmd = &cobra.Command{
-	Use:   "test",
-	Short: "Run tests",
-	Args:  cobra.NoArgs,
+	Use:          "test",
+	Short:        "Run tests",
+	Args:         cobra.NoArgs,
+	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// We still need a tracing provider for auditing and events,
 		// even if the data is not being exported.
@@ -83,11 +84,13 @@ var testCmd = &cobra.Command{
 			fmt.Println("⚠️  Cannot run tests when schema contains errors. Run 'keel validate' to see error details.")
 			fmt.Println("")
 			return nil
-		case err != nil && !errors.As(err, &exitError):
+		case errors.As(err, &exitError):
+			// Exit with code 1 and bypass any cobra error handling since we already stdout and stderr from vitest
+			os.Exit(1)
+		case err != nil:
 			return err
-		default:
-			return nil
 		}
+		return nil
 	},
 }
 
