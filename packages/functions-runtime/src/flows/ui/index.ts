@@ -27,7 +27,7 @@ import {
   UiElementDivider,
   UiElementDividerApiResponse,
 } from "./elements/display/divider";
-import { UiPage, UiPageApiResponse } from "./page";
+import { ExtractFormData, UiPage, UiPageApiResponse } from "./page";
 import {
   UiElementImage,
   UiElementImageApiResponse,
@@ -65,12 +65,17 @@ import {
   UiElementInputDataGrid,
   UiElementInputDataGridApiResponse,
 } from "./elements/input/dataGrid";
+import {
+  UiElementIterator,
+  UiElementIteratorApiResponse,
+} from "./elements/iterator";
 
 export interface UI<C extends FlowConfig> {
   page: UiPage<C>;
   display: UiDisplayElements;
   inputs: UiInputsElements;
   select: UiSelectElements;
+  iterator: UiElementIterator;
 }
 
 // Input elements that are named and return values
@@ -118,6 +123,7 @@ export type DisplayElement<TConfig extends any = never> = (
 export type UIElements = (
   | InputElementResponse<string, any>
   | DisplayElementResponse
+  | IteratorElementResponse<string, any>
 )[];
 
 // We create internal _type properties to help identity inputs vs display elements
@@ -134,6 +140,13 @@ export interface InputElementResponse<N extends string, V>
 
 export interface DisplayElementResponse extends UIElementBase {
   _type: "display";
+}
+
+export interface IteratorElementResponse<N extends string, E extends UIElements>
+  extends UIElementBase {
+  _type: "iterator";
+  name: N;
+  contentData: ExtractFormData<E>[];
 }
 
 // Config that applied to all inputs
@@ -186,6 +199,7 @@ export type UIApiResponses = {
     one: UiElementSelectOneApiResponse;
     table: UiElementSelectTableApiResponse;
   };
+  iterator: UiElementIteratorApiResponse;
 };
 
 export type UiElementApiResponses = // Display elements
@@ -210,6 +224,9 @@ export type UiElementApiResponses = // Display elements
     // Select elements
     | UiElementSelectOneApiResponse
     | UiElementSelectTableApiResponse
+
+    // Special
+    | UiElementIteratorApiResponse
   )[];
 
 // The root API response. Used to generate the OpenAPI schema
@@ -234,6 +251,21 @@ export type InputElementImplementationResponse<TApiResponse, TData> = {
   validate?: (data: TData) => Promise<null | string> | string | null;
 };
 
+export type IteratorElementImplementation<
+  TData,
+  TConfig extends (...args: any) => any,
+  TApiResponse,
+> = (
+  ...args: Parameters<TConfig>
+) => IteratorElementImplementationResponse<TApiResponse, TData>;
+
+export type IteratorElementImplementationResponse<TApiResponse, TData> = {
+  __type: "iterator";
+  uiConfig: TApiResponse;
+  getData: (data: TData) => TData;
+  validate?: (data: TData) => Promise<null | string> | string | null;
+};
+
 export type DisplayElementImplementation<
   TConfig extends (...args: any) => any,
   TApiResponse,
@@ -247,4 +279,5 @@ export type DisplayElementImplementationResponse<TApiResponse> = {
 
 export type ImplementationResponse<TApiResponse, TData> =
   | InputElementImplementationResponse<TApiResponse, TData>
-  | DisplayElementImplementationResponse<TApiResponse>;
+  | DisplayElementImplementationResponse<TApiResponse>
+  | IteratorElementImplementationResponse<TApiResponse, TData>;
