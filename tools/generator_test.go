@@ -17,7 +17,7 @@ import (
 
 func TestGenerateTools(t *testing.T) {
 	t.Parallel()
-	testdataDir := "./testdata"
+	testdataDir := "./testdata/generator"
 	testCases, err := os.ReadDir(testdataDir)
 
 	require.NoError(t, err)
