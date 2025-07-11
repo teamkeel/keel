@@ -1,0 +1,3 @@
+flow Iterator {
+    @permission(expression: true)
+}

@@ -24,6 +24,7 @@ import { keyValue } from "./ui/elements/display/keyValue";
 import { selectTable } from "./ui/elements/select/table";
 import { dataGridInput } from "./ui/elements/input/dataGrid";
 import { NonRetriableError } from "./errors";
+import { iterator } from "./ui/elements/iterator";
 
 export const enum STEP_STATUS {
   NEW = "NEW",
@@ -466,6 +467,7 @@ export function createFlowContext<C extends FlowConfig, E, S, I>(
         one: selectOne as any,
         table: selectTable as any,
       },
+      iterator: iterator as any,
     },
   };
 }
