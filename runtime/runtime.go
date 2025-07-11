@@ -25,6 +25,7 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 )
 
 var tracer = otel.Tracer("github.com/teamkeel/keel/runtime")
@@ -361,7 +362,21 @@ func NewRouter(s *proto.Schema) *httprouter.Router {
 			for k := range r.Header {
 				headers[k] = r.Header.Values(k)
 			}
+
 			ctx := runtimectx.WithRequestHeaders(r.Context(), headers)
+
+			span := trace.SpanFromContext(ctx)
+
+			defer func() {
+				// Generate and send any events for this context.
+				// This must run regardless of the action succeeding or failing.
+				// Failure to generate events fail silently.
+				eventsErr := events.SendEvents(ctx, s)
+				if eventsErr != nil {
+					span.RecordError(eventsErr)
+					span.SetStatus(codes.Error, eventsErr.Error())
+				}
+			}()
 
 			resp, _, err := functions.CallRoute(ctx, route.GetHandler(), &functions.RouteRequest{
 				Body:   string(body),
