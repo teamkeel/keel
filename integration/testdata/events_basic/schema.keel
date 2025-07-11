@@ -62,6 +62,10 @@ job CreateRandomPersons {
     @permission(expression: true)
 }
 
+routes {
+    get("/newPersonWebhook", webhookHandler)
+}
+
 api Web {
     models {
         Person
