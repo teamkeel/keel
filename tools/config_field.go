@@ -29,7 +29,6 @@ func (f FieldConfigs) applyOnTool(t *toolsproto.Tool) {
 			}
 		}
 	}
-
 }
 
 // haveChanges checks if the fields have any config changes compared to the generated one.
