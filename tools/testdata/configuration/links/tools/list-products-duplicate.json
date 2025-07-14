@@ -1,0 +1,19 @@
+{
+  "id": "list-products-duplicate",
+  "action_name": "listProducts",
+  "name": "List products - duplicate",
+  "get_entry_action": {
+    "tool_id": "get-product",
+    "deleted": true
+  },
+  "create_entry_action": {
+    "tool_id": "add-product",
+    "deleted": true
+  },
+  "entry_activity_actions": [
+    {
+      "tool_id": "get-product",
+      "deleted": true
+    }
+  ]
+}
