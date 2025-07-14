@@ -17,7 +17,7 @@ import (
 
 func TestService_GetTools(t *testing.T) {
 	t.Parallel()
-	testdataDir := "./testdata/configuration"
+	testdataDir := "./testdata/composition"
 	testCases, err := os.ReadDir(testdataDir)
 
 	require.NoError(t, err)

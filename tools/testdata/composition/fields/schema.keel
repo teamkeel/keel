@@ -8,6 +8,7 @@ model Product {
 
     actions {
         get getProduct(id)
+        get getProductWithHidden(id)
         create createProduct() with (name, price, sku, hidden)
         list listProducts()
     }

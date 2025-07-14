@@ -18,5 +18,12 @@
         "locale": "UK"
       }
     }
+  },
+  {
+    "id": "Product.hidden",
+    "visible": false,
+    "help_text": "this is a help text added in field config",
+    "image_preview": false,
+    "display_name": "field config - hidden"
   }
 ]

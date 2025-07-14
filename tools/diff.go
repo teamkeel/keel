@@ -11,18 +11,30 @@ func extractFieldsConfigs(generated, updated []*toolsproto.Field) FieldConfigs {
 	for _, updatedField := range updated {
 		for _, genField := range generated {
 			if updatedField.GetID() == genField.GetID() {
-				formatCfg := extractFormatConfig(genField.GetFormat(), updatedField.GetFormat())
-				if formatCfg != nil && formatCfg.hasChanges() {
-					cfgs = append(cfgs, &FieldConfig{
-						ID:     updatedField.GetID(),
-						Format: formatCfg,
-					})
+				if c := extractFieldConfig(genField, updatedField); c != nil {
+					cfgs = append(cfgs, c)
 				}
 			}
 		}
 	}
 
 	return cfgs
+}
+
+func extractFieldConfig(generated, updated *toolsproto.Field) *FieldConfig {
+	cfg := FieldConfig{
+		ID:           updated.GetID(),
+		Format:       extractFormatConfig(generated.GetFormat(), updated.GetFormat()),
+		DisplayName:  diffString(generated.GetDisplayName(), updated.GetDisplayName()),
+		Visible:      diffBool(generated.GetVisible(), updated.GetVisible()),
+		ImagePreview: diffBool(generated.GetImagePreview(), updated.GetImagePreview()),
+		HelpText:     diffStringTemplate(generated.GetHelpText(), updated.GetHelpText()),
+	}
+
+	if !cfg.hasChanges() {
+		return nil
+	}
+	return &cfg
 }
 
 func extractFormatConfig(generated, updated *toolsproto.FormatConfig) *FormatConfig {

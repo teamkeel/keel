@@ -712,5 +712,10 @@ message Field {
 	optional string enum_name = 3;
 	optional string model_name = 4;
 	optional string field_name = 5;
+
+	optional string display_name = 6;
+	optional StringTemplate help_text = 7;
+	optional bool visible = 8;
+	optional bool image_preview = 9;
 }
 

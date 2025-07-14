@@ -6,9 +6,6 @@
   "entity_single": "super product",
   "entity_plural": "super products",
   "response": {
-    "$.hidden": {
-      "visible": false
-    },
     "$.name": {
       "help_text": "Help text added at tool level"
     },

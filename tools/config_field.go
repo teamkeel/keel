@@ -6,6 +6,32 @@ import (
 
 type FieldConfigs []*FieldConfig
 
+// applyOnTools will apply all user field configs to the response fields relevant within the given tools.
+func (f FieldConfigs) applyOnTools(tools []*toolsproto.Tool) {
+	for _, t := range tools {
+		f.applyOnTool(t)
+	}
+}
+
+func (f FieldConfigs) applyOnTool(t *toolsproto.Tool) {
+	// skip if the tool is not action based
+	if !t.IsActionBased() {
+		return
+	}
+
+	for _, response := range t.GetActionConfig().GetResponse() {
+		// if this is a model field
+		if modelName := response.GetModelName(); modelName != "" {
+			// .. and we have a field config
+			if fieldCfg := f.find(modelName + "." + response.GetFieldName()); fieldCfg != nil {
+				// .. apply it on the response
+				fieldCfg.applyOnResponseField(response)
+			}
+		}
+	}
+
+}
+
 // haveChanges checks if the fields have any config changes compared to the generated one.
 func (f FieldConfigs) haveChanges() bool {
 	for _, c := range f {
@@ -51,12 +77,20 @@ func (f FieldConfigs) applyOn(fields []*toolsproto.Field) {
 }
 
 type FieldConfig struct {
-	ID     string        `json:"id"`
-	Format *FormatConfig `json:"format,omitempty"`
+	ID           string        `json:"id"`
+	Format       *FormatConfig `json:"format,omitempty"`
+	DisplayName  *string       `json:"display_name,omitempty"`
+	Visible      *bool         `json:"visible,omitempty"`
+	HelpText     *string       `json:"help_text,omitempty"`
+	ImagePreview *bool         `json:"image_preview,omitempty"`
 }
 
 func (f *FieldConfig) hasChanges() bool {
-	return f.Format != nil
+	return f.Format != nil && f.Format.hasChanges() ||
+		f.DisplayName != nil ||
+		f.Visible != nil ||
+		f.HelpText != nil ||
+		f.ImagePreview != nil
 }
 
 func (f *FieldConfig) applyOn(field *toolsproto.Field) {
@@ -64,7 +98,44 @@ func (f *FieldConfig) applyOn(field *toolsproto.Field) {
 		return
 	}
 
-	field.Format = f.Format.applyOn(field.GetFormat())
+	if f.Format != nil {
+		field.Format = f.Format.applyOn(field.GetFormat())
+	}
+	if f.DisplayName != nil {
+		field.DisplayName = f.DisplayName
+	}
+	if f.Visible != nil {
+		field.Visible = f.Visible
+	}
+	if f.HelpText != nil {
+		field.HelpText = makeStringTemplate(f.HelpText)
+	}
+	if f.ImagePreview != nil {
+		field.ImagePreview = f.ImagePreview
+	}
+}
+
+// applyOnResponseField will apply this Field configuration onto a tool's ResponseFieldConfig.
+func (f *FieldConfig) applyOnResponseField(response *toolsproto.ResponseFieldConfig) {
+	if response == nil {
+		return
+	}
+
+	if f.Format != nil {
+		response.Format = f.Format.applyOn(response.GetFormat())
+	}
+	if f.DisplayName != nil {
+		response.DisplayName = *f.DisplayName
+	}
+	if f.Visible != nil {
+		response.Visible = *f.Visible
+	}
+	if f.HelpText != nil {
+		response.HelpText = makeStringTemplate(f.HelpText)
+	}
+	if f.ImagePreview != nil {
+		response.ImagePreview = *f.ImagePreview
+	}
 }
 
 type FormatConfig struct {

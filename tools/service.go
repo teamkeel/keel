@@ -418,7 +418,7 @@ func (s *Service) GetTools(ctx context.Context) (*toolsproto.Tools, error) {
 		return nil, fmt.Errorf("loading tool configs from file: %w", err)
 	}
 
-	// if we have user added or configured tools...
+	// if we have user added tools ...
 	if len(userConfig.Tools) > 0 {
 		// let's see get the user added tools
 		addedIds := tools.DiffIDs(userConfig.Tools.getIDs())
@@ -455,8 +455,15 @@ func (s *Service) GetTools(ctx context.Context) (*toolsproto.Tools, error) {
 
 			tools.Configs = append(tools.Configs, gen)
 		}
+	}
 
-		// now we apply all the configs
+	// if we have user configured field formatting, let's apply them to all the tools
+	if len(userConfig.Fields) > 0 {
+		userConfig.Fields.applyOnTools(tools.GetConfigs())
+	}
+
+	// finally, we now apply all the user configurations to our tools, overwritting any field configs
+	if len(userConfig.Tools) > 0 {
 		for _, cfg := range userConfig.Tools {
 			tool := tools.FindByID(cfg.ID)
 			if tool == nil {
@@ -465,27 +472,6 @@ func (s *Service) GetTools(ctx context.Context) (*toolsproto.Tools, error) {
 
 			// apply config on the given tool
 			cfg.applyOn(tool)
-		}
-	}
-
-	// if we have user configured field formatting, let's apply them to all the tools
-	if len(userConfig.Fields) > 0 {
-		for _, t := range tools.GetConfigs() {
-			// skip any tools that are not action powered
-			if !t.IsActionBased() {
-				continue
-			}
-
-			for _, response := range t.GetActionConfig().GetResponse() {
-				// if this is a model field
-				if modelName := response.GetModelName(); modelName != "" {
-					// .. and we have a field config
-					if fieldCfg := userConfig.Fields.find(modelName + "." + response.GetFieldName()); fieldCfg != nil {
-						// .. apply it on the response
-						response.Format = fieldCfg.Format.applyOn(response.GetFormat())
-					}
-				}
-			}
 		}
 	}
 
@@ -509,6 +495,17 @@ func (s *Service) ConfigureTool(ctx context.Context, updated *toolsproto.Tool) (
 	gen, err := s.getGeneratedTool(ctx, updated.GetOperationName())
 	if err != nil {
 		return nil, fmt.Errorf("retrieving generated tool: %w", err)
+	}
+
+	// load existing configured tools
+	userConfig, err := s.load()
+	if err != nil {
+		return nil, fmt.Errorf("loading tool configs from file: %w", err)
+	}
+
+	// we now apply existing field configuration
+	if len(userConfig.Fields) > 0 {
+		userConfig.Fields.applyOnTool(gen)
 	}
 
 	// we now extract the config from the given tool
