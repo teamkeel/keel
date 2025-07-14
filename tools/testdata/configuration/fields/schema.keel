@@ -1,0 +1,14 @@
+model Product {
+    fields {
+        name Text
+        price Decimal
+        sku Text @sequence("SKU_")
+        hidden Text
+    }
+
+    actions {
+        get getProduct(id)
+        create createProduct() with (name, price, sku, hidden)
+        list listProducts()
+    }
+}

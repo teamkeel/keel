@@ -1,0 +1,19 @@
+{
+  "id": "get-product",
+  "action_name": "getProduct",
+  "title": "Super {{$.name}}",
+  "help_text": "This returns our super product",
+  "entity_single": "super product",
+  "entity_plural": "super products",
+  "response": {
+    "$.hidden": {
+      "visible": false
+    },
+    "$.name": {
+      "help_text": "Help text added at tool level"
+    },
+    "$.price": {
+      "display_name": "Super Price"
+    }
+  }
+}

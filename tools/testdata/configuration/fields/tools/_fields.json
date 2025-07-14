@@ -1,0 +1,22 @@
+[
+  {
+    "id": "Product.sku",
+    "format": {
+      "string_config": {
+        "prefix": "SKU-"
+      }
+    }
+  },
+  {
+    "id": "Product.price",
+    "format": {
+      "number_config": {
+        "prefix": "£",
+        "sensitive": true,
+        "mode": "CURRENCY",
+        "currency_code": "GBP",
+        "locale": "UK"
+      }
+    }
+  }
+]

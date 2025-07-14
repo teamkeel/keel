@@ -1,0 +1,106 @@
+{
+  "id": "get-product",
+  "actionConfig": {
+    "id": "get-product",
+    "name": "Get product",
+    "actionName": "getProduct",
+    "apiNames": ["Api"],
+    "modelName": "Product",
+    "actionType": "ACTION_TYPE_GET",
+    "implementation": "ACTION_IMPLEMENTATION_AUTO",
+    "inputs": [
+      {
+        "fieldLocation": { "path": "$.id" },
+        "fieldType": "TYPE_ID",
+        "displayName": "Id",
+        "visible": true,
+        "lookupAction": { "toolId": "list-products" },
+        "modelName": "Product",
+        "fieldName": "id"
+      }
+    ],
+    "response": [
+      {
+        "fieldLocation": { "path": "$.name" },
+        "fieldType": "TYPE_STRING",
+        "displayName": "Name",
+        "visible": true,
+        "helpText": { "template": "Help text added at tool level" },
+        "modelName": "Product",
+        "fieldName": "name"
+      },
+      {
+        "fieldLocation": { "path": "$.price" },
+        "fieldType": "TYPE_DECIMAL",
+        "displayName": "Super Price",
+        "displayOrder": 1,
+        "visible": true,
+        "modelName": "Product",
+        "fieldName": "price",
+        "format": {
+          "type": "NUMBER",
+          "numberConfig": {
+            "mode": "CURRENCY",
+            "currencyCode": "GBP",
+            "sensitive": true,
+            "locale": "UK",
+            "prefix": "£"
+          }
+        }
+      },
+      {
+        "fieldLocation": { "path": "$.sku" },
+        "fieldType": "TYPE_STRING",
+        "displayName": "Sku",
+        "displayOrder": 2,
+        "visible": true,
+        "modelName": "Product",
+        "fieldName": "sku",
+        "format": { "type": "STRING", "stringConfig": { "prefix": "SKU-" } }
+      },
+      {
+        "fieldLocation": { "path": "$.hidden" },
+        "fieldType": "TYPE_STRING",
+        "displayName": "Hidden",
+        "displayOrder": 3,
+        "modelName": "Product",
+        "fieldName": "hidden"
+      },
+      {
+        "fieldLocation": { "path": "$.id" },
+        "fieldType": "TYPE_ID",
+        "displayName": "Id",
+        "displayOrder": 5,
+        "visible": true,
+        "modelName": "Product",
+        "fieldName": "id"
+      },
+      {
+        "fieldLocation": { "path": "$.createdAt" },
+        "fieldType": "TYPE_DATETIME",
+        "displayName": "Created at",
+        "displayOrder": 6,
+        "visible": true,
+        "modelName": "Product",
+        "fieldName": "createdAt"
+      },
+      {
+        "fieldLocation": { "path": "$.updatedAt" },
+        "fieldType": "TYPE_DATETIME",
+        "displayName": "Updated at",
+        "displayOrder": 7,
+        "visible": true,
+        "modelName": "Product",
+        "fieldName": "updatedAt"
+      }
+    ],
+    "title": { "template": "Super {{$.name}}" },
+    "helpText": { "template": "This returns our super product" },
+    "entitySingle": "super product",
+    "entityPlural": "super products",
+    "capabilities": { "comments": true, "audit": true },
+    "createEntryAction": { "toolId": "create-product" },
+    "displayLayout": { "type": "RECORD", "recordConfig": {} },
+    "filterConfig": {}
+  }
+}

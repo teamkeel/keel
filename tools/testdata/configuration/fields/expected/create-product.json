@@ -1,0 +1,138 @@
+{
+  "id": "create-product",
+  "actionConfig": {
+    "id": "create-product",
+    "name": "Create product",
+    "actionName": "createProduct",
+    "apiNames": ["Api"],
+    "modelName": "Product",
+    "actionType": "ACTION_TYPE_CREATE",
+    "implementation": "ACTION_IMPLEMENTATION_AUTO",
+    "inputs": [
+      {
+        "fieldLocation": { "path": "$.name" },
+        "fieldType": "TYPE_STRING",
+        "displayName": "Product Name",
+        "visible": true,
+        "placeholder": { "template": "placeholder name" },
+        "modelName": "Product",
+        "fieldName": "name",
+        "visibleCondition": "true"
+      },
+      {
+        "fieldLocation": { "path": "$.price" },
+        "fieldType": "TYPE_DECIMAL",
+        "displayName": "Price",
+        "displayOrder": 1,
+        "visible": true,
+        "defaultValue": { "integer": 10 },
+        "modelName": "Product",
+        "fieldName": "price"
+      },
+      {
+        "fieldLocation": { "path": "$.sku" },
+        "fieldType": "TYPE_STRING",
+        "displayName": "SKU",
+        "displayOrder": 2,
+        "visible": true,
+        "helpText": { "template": "Help text for sku input" },
+        "lookupAction": { "toolId": "list-products" },
+        "placeholder": { "template": "Placeholder sku" },
+        "modelName": "Product",
+        "fieldName": "sku"
+      },
+      {
+        "fieldLocation": { "path": "$.hidden" },
+        "fieldType": "TYPE_STRING",
+        "displayName": "Hidden",
+        "displayOrder": 3,
+        "modelName": "Product",
+        "fieldName": "hidden"
+      }
+    ],
+    "response": [
+      {
+        "fieldLocation": { "path": "$.name" },
+        "fieldType": "TYPE_STRING",
+        "displayName": "Name",
+        "visible": true,
+        "modelName": "Product",
+        "fieldName": "name"
+      },
+      {
+        "fieldLocation": { "path": "$.price" },
+        "fieldType": "TYPE_DECIMAL",
+        "displayName": "Price",
+        "displayOrder": 1,
+        "visible": true,
+        "modelName": "Product",
+        "fieldName": "price",
+        "format": {
+          "type": "NUMBER",
+          "numberConfig": {
+            "mode": "CURRENCY",
+            "currencyCode": "GBP",
+            "sensitive": true,
+            "locale": "UK",
+            "prefix": "£"
+          }
+        }
+      },
+      {
+        "fieldLocation": { "path": "$.sku" },
+        "fieldType": "TYPE_STRING",
+        "displayName": "Sku",
+        "displayOrder": 2,
+        "visible": true,
+        "modelName": "Product",
+        "fieldName": "sku",
+        "format": { "type": "STRING", "stringConfig": { "prefix": "SKU-" } }
+      },
+      {
+        "fieldLocation": { "path": "$.hidden" },
+        "fieldType": "TYPE_STRING",
+        "displayName": "Hidden",
+        "displayOrder": 3,
+        "visible": true,
+        "modelName": "Product",
+        "fieldName": "hidden"
+      },
+      {
+        "fieldLocation": { "path": "$.id" },
+        "fieldType": "TYPE_ID",
+        "displayName": "Id",
+        "displayOrder": 5,
+        "visible": true,
+        "modelName": "Product",
+        "fieldName": "id"
+      },
+      {
+        "fieldLocation": { "path": "$.createdAt" },
+        "fieldType": "TYPE_DATETIME",
+        "displayName": "Created at",
+        "displayOrder": 6,
+        "visible": true,
+        "modelName": "Product",
+        "fieldName": "createdAt"
+      },
+      {
+        "fieldLocation": { "path": "$.updatedAt" },
+        "fieldType": "TYPE_DATETIME",
+        "displayName": "Updated at",
+        "displayOrder": 7,
+        "visible": true,
+        "modelName": "Product",
+        "fieldName": "updatedAt"
+      }
+    ],
+    "title": { "template": "Create product" },
+    "entitySingle": "product",
+    "entityPlural": "products",
+    "capabilities": {},
+    "getEntryAction": {
+      "toolId": "get-product",
+      "data": [{ "key": "$.id", "path": { "path": "$.id" } }]
+    },
+    "filterConfig": {}
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "id": "create-product",
+  "action_name": "createProduct",
+  "inputs": {
+    "$.hidden": {
+      "visible": false
+    },
+    "$.name": {
+      "display_name": "Product Name",
+      "placeholder": "placeholder name",
+      "visible_condition": "true"
+    },
+    "$.price": {
+      "default_value": {
+        "int_value": 10
+      }
+    },
+    "$.sku": {
+      "display_name": "SKU",
+      "help_text": "Help text for sku input",
+      "placeholder": "Placeholder sku"
+    }
+  }
+}
