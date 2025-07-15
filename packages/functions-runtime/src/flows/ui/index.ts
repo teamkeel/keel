@@ -165,7 +165,9 @@ export interface BaseInputConfig<T> {
   validate?: ValidateFn<T>;
 }
 
-export type ValidateFn<T> = (data: T) => Promise<null | string> | string | null;
+export type ValidateFn<T> = (
+  data: T
+) => Promise<boolean | string> | boolean | string;
 
 // Base response for all inputs
 export interface BaseUiInputResponse<K, TData> {

@@ -11,9 +11,8 @@ export default ValidationText({}, async (ctx) => {
         placeholder: "e.g. N1 ABC",
         validate(value) {
           if (postcodeRegex.test(value)) {
-            return null;
+            return true;
           }
-
           return "not a valid postcode";
         },
       }),

@@ -5,6 +5,7 @@ import {
   InputElementResponse,
   UiElementApiResponses,
   UIElements,
+  ValidateFn,
 } from ".";
 
 type PageOptions<
@@ -16,9 +17,7 @@ type PageOptions<
   title?: string;
   description?: string;
   content: T;
-  validate?: (
-    data: ExtractFormData<T>
-  ) => Promise<null | string | void> | string | null | void;
+  validate?: ValidateFn<ExtractFormData<T>>;
   actions?: A;
 };
 
