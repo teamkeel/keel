@@ -130,15 +130,18 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, inputs 
 		// call the flow runtime
 		resp, err := o.CallFlow(ctx, run, inputs, data, action)
 		if err != nil {
+			cfg := JSON(nil)
+			if resp != nil {
+				cfg = resp.Config
+			}
 			// failed orchestrating, mark the run as failed and return the error
-			_, _ = updateRun(ctx, run.ID, StatusFailed, resp.Config)
+			_, _ = updateRun(ctx, run.ID, StatusFailed, cfg)
 			return err, nil
 		}
 
 		if resp.RunCompleted {
 			if resp.Error != "" {
 				// run was orchestrated and completed successfully, but with an error (e.g. exhaused retries)
-				// TODO: store error message against the flow run
 				_, err = updateRun(ctx, run.ID, StatusFailed, resp.Config)
 				return err, resp.GetUIComponents()
 			}

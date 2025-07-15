@@ -72,22 +72,31 @@ func generateOperand(ctx context.Context, schema *proto.Schema, model *proto.Mod
 		return nil, err
 	}
 
-	var queryOperand *QueryOperand
 	switch {
 	case len(ident) == 2 && proto.EnumExists(schema.GetEnums(), ident[0]):
 		return Value(ident[1]), nil
 	case model != nil && expressions.IsModelDbColumn(model, ident):
-		var err error
-		queryOperand, err = operandFromFragments(schema, ident)
-		if err != nil {
-			return nil, err
-		}
+		return operandFromFragments(schema, ident)
 	case action != nil && expressions.IsInput(schema, action, ident):
 		value, ok := inputs[ident[0]]
 		if !ok {
 			return nil, fmt.Errorf("implicit or explicit input '%s' does not exist in arguments", ident[0])
 		}
 		return Value(value), nil
+	case expressions.IsContext(ident):
+		return generateOperandForCtx(ctx, schema, ident)
+	}
+
+	return nil, fmt.Errorf("cannot handle fragments: %s", strings.Join(ident, "."))
+}
+
+func generateOperandForCtx(ctx context.Context, schema *proto.Schema, fragments []string) (*QueryOperand, error) {
+	ident, err := NormalisedFragments(schema, fragments)
+	if err != nil {
+		return nil, err
+	}
+
+	switch {
 	case expressions.IsContextDbColumn(ident):
 		// If this is a value from ctx that requires a database read (such as with identity backlinks),
 		// then construct an inline query for this operand.  This is necessary because we can't retrieve this value
@@ -138,33 +147,33 @@ func generateOperand(ctx context.Context, schema *proto.Schema, model *proto.Mod
 			query.Select(selectField)
 		}
 
-		queryOperand = InlineQuery(query, selectField)
+		return InlineQuery(query, selectField), nil
 
 	case expressions.IsContextIdentityId(ident):
 		isAuthenticated := auth.IsAuthenticated(ctx)
 		if !isAuthenticated {
-			queryOperand = Null()
+			return Null(), nil
 		} else {
 			identity, err := auth.GetIdentity(ctx)
 			if err != nil {
 				return nil, err
 			}
-			queryOperand = Value(identity[parser.FieldNameId].(string))
+			return Value(identity[parser.FieldNameId].(string)), nil
 		}
 	case expressions.IsContextIsAuthenticatedField(ident):
 		isAuthenticated := auth.IsAuthenticated(ctx)
-		queryOperand = Value(isAuthenticated)
+		return Value(isAuthenticated), nil
 	case expressions.IsContextNowField(ident):
-		queryOperand = Value(runtimectx.GetNow())
+		return Value(runtimectx.GetNow()), nil
 	case expressions.IsContextEnvField(ident):
 		envVarName := ident[2]
-		queryOperand = Value(os.Getenv(envVarName))
+		return Value(os.Getenv(envVarName)), nil
 	case expressions.IsContextSecretField(ident):
 		secret, err := runtimectx.GetSecret(ctx, ident[2])
 		if err != nil {
 			return nil, err
 		}
-		queryOperand = Value(secret)
+		return Value(secret), nil
 	case expressions.IsContextHeadersField(ident):
 		headerName := ident[2]
 
@@ -180,15 +189,13 @@ func generateOperand(ctx context.Context, schema *proto.Schema, model *proto.Mod
 			return nil, err
 		}
 		if value, ok := headers[canonicalName]; ok {
-			queryOperand = Value(strings.Join(value, ", "))
+			return Value(strings.Join(value, ", ")), nil
 		} else {
-			queryOperand = Value("")
+			return Value(""), nil
 		}
-	default:
-		return nil, fmt.Errorf("cannot handle fragments: %s", strings.Join(ident, "."))
 	}
 
-	return queryOperand, nil
+	return nil, fmt.Errorf("cannot handle ctx fragments: %s", strings.Join(ident, "."))
 }
 
 func NormalisedFragments(schema *proto.Schema, fragments []string) ([]string, error) {

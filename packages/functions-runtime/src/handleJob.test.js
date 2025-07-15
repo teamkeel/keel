@@ -86,7 +86,7 @@ test("when there is no matching job for the path", async () => {
     jsonrpc: "2.0",
     error: {
       code: JSONRPCErrorCode.MethodNotFound,
-      message: "no corresponding job found for 'unknown'",
+      message: "job 'unknown' does not exist or has not been implemented",
     },
   });
 });

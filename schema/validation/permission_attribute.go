@@ -80,18 +80,6 @@ func PermissionsAttribute(asts []*parser.AST, errs *errorhandling.ValidationErro
 				case "expression":
 					hasExpression = true
 
-					// flows cannot handle expression permissions
-					if flow != nil {
-						errs.AppendError(errorhandling.NewValidationErrorWithDetails(
-							errorhandling.AttributeArgumentError,
-							errorhandling.ErrorDetails{
-								Message: "cannot provide 'expression' arguments when using @permission in a flow",
-							},
-							arg.Label,
-						))
-						continue
-					}
-
 					// Extra check for using row-based expression in a read/write function
 					// Ideally this would be done as part of the expression validation, but
 					// if we don't provide the model as context the error is not very helpful.

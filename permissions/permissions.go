@@ -38,15 +38,13 @@ type Value struct {
 type permissionGen struct {
 	schema *proto.Schema
 	model  *proto.Model
-	action *proto.Action
 	stmt   *statement
 }
 
-func gen(schema *proto.Schema, model *proto.Model, action *proto.Action, stmt *statement) resolve.Visitor[*statement] {
+func gen(schema *proto.Schema, model *proto.Model, stmt *statement) resolve.Visitor[*statement] {
 	return &permissionGen{
 		schema: schema,
 		model:  model,
-		action: action,
 		stmt:   stmt,
 	}
 }
@@ -133,7 +131,7 @@ var _ resolve.Visitor[*statement] = new(permissionGen)
 //
 // The returned SQL uses "?" placeholders for values and the returned list of values indicates
 // what values should be provided to the query at runtime.
-func ToSQL(s *proto.Schema, m *proto.Model, action *proto.Action) (sql string, values []*Value, err error) {
+func ToSQL(s *proto.Schema, m *proto.Model, permissions []*proto.PermissionRule) (sql string, values []*Value, err error) {
 	tableName := identifier(m.GetName())
 	pkField := identifier(m.PrimaryKeyFieldName())
 
@@ -141,7 +139,6 @@ func ToSQL(s *proto.Schema, m *proto.Model, action *proto.Action) (sql string, v
 		joins:  []string{},
 		values: []*Value{},
 	}
-	permissions := proto.PermissionsForAction(s, action)
 
 	for _, p := range permissions {
 		if p.GetExpression() == nil {
@@ -158,7 +155,7 @@ func ToSQL(s *proto.Schema, m *proto.Model, action *proto.Action) (sql string, v
 			return sql, values, err
 		}
 
-		stmt, err = resolve.RunCelVisitor(expr, gen(s, m, action, stmt))
+		stmt, err = resolve.RunCelVisitor(expr, gen(s, m, stmt))
 		if err != nil {
 			return "", nil, err
 		}

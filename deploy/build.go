@@ -272,7 +272,7 @@ func buildFunctions(ctx context.Context, args *BuildFunctionsArgs) (*BuildFuncti
 		return nil, err
 	}
 
-	functionsHandler, err := generateFunctionsHandler(args.Schema, args.Config)
+	functionsHandler, err := generateFunctionsHandler(args.Schema, args.Config, args.ProjectRoot)
 	if err != nil {
 		return nil, err
 	}
@@ -416,7 +416,7 @@ func buildCollectorConfig(ctx context.Context, args *BuildCollectorConfigArgs) (
 	return &result, nil
 }
 
-func generateFunctionsHandler(schema *proto.Schema, cfg *config.ProjectConfig) (*codegen.GeneratedFile, error) {
+func generateFunctionsHandler(schema *proto.Schema, cfg *config.ProjectConfig, projectRoot string) (*codegen.GeneratedFile, error) {
 	functions := map[string]string{}
 	jobs := []string{}
 	subscribers := []string{}
@@ -429,8 +429,13 @@ func generateFunctionsHandler(schema *proto.Schema, cfg *config.ProjectConfig) (
 			if op.GetImplementation() != proto.ActionImplementation_ACTION_IMPLEMENTATION_CUSTOM {
 				continue
 			}
-			functions[op.GetName()] = op.GetName()
-			actionTypes[op.GetName()] = op.GetType().String()
+
+			// Check if the file actually exists before requiring it
+			path := filepath.Join(projectRoot, "functions", op.GetName()+".ts")
+			if _, err := os.Stat(path); err == nil {
+				functions[op.GetName()] = op.GetName()
+				actionTypes[op.GetName()] = op.GetType().String()
+			}
 		}
 	}
 
@@ -441,18 +446,33 @@ func generateFunctionsHandler(schema *proto.Schema, cfg *config.ProjectConfig) (
 	}
 
 	for _, job := range schema.GetJobs() {
-		jobName := strcase.ToLowerCamel(job.GetName())
-		jobs = append(jobs, jobName)
+		name := strcase.ToLowerCamel(job.GetName())
+
+		// Check if the file actually exists before requiring it
+		path := filepath.Join(projectRoot, "jobs", name+".ts")
+		if _, err := os.Stat(path); err == nil {
+			jobs = append(jobs, name)
+		}
 	}
 
 	for _, subscriber := range schema.GetSubscribers() {
-		subscriberName := strcase.ToLowerCamel(subscriber.GetName())
-		subscribers = append(subscribers, subscriberName)
+		name := strcase.ToLowerCamel(subscriber.GetName())
+
+		// Check if the file actually exists before requiring it
+		path := filepath.Join(projectRoot, "subscribers", name+".ts")
+		if _, err := os.Stat(path); err == nil {
+			subscribers = append(subscribers, name)
+		}
 	}
 
 	for _, flow := range schema.GetFlows() {
-		flowName := strcase.ToLowerCamel(flow.GetName())
-		flows = append(flows, flowName)
+		name := strcase.ToLowerCamel(flow.GetName())
+
+		// Check if the file actually exists before requiring it
+		path := filepath.Join(projectRoot, "flows", name+".ts")
+		if _, err := os.Stat(path); err == nil {
+			flows = append(flows, name)
+		}
 	}
 
 	for _, route := range schema.GetRoutes() {

@@ -118,10 +118,11 @@ func AttributeArgumentsRules(asts []*parser.AST, errs *errorhandling.ValidationE
 					hint = `the @permission attribute in jobs can accept either an expression or a roles argument, for e.g. @permission(expression: ctx.isAuthenticated)`
 				} else if flow != nil {
 					template = map[string]bool{
-						"roles": false,
+						"expression": false,
+						"roles":      false,
 					}
 
-					hint = `the @permission attribute in flows can accept only a roles argument, for e.g. @permission(roles: [Admin])`
+					hint = `the @permission attribute in flows can accept either an expression or a roles argument, for e.g. @permission(roles: [Admin])`
 				} else {
 					template = map[string]bool{
 						"expression": false,

@@ -22,15 +22,7 @@ flow SingleStep {
     @permission(roles: [Admin])
 }
 
-flow ErrorInStep {
-    @permission(roles: [Admin])
-}
-
 flow ErrorInFlow {
-    @permission(roles: [Admin])
-}
-
-flow TimeoutStep {
     @permission(roles: [Admin])
 }
 
@@ -51,6 +43,10 @@ flow ValidationText {
 }
 
 flow ValidationBoolean {
+    @permission(roles: [Admin])
+}
+
+flow ValidationPage {
     @permission(roles: [Admin])
 }
 
@@ -76,14 +72,6 @@ flow AllInputs {
     @permission(roles: [Admin])
 }
 
-flow DuplicateStepName {
-    @permission(roles: [Admin])
-}
-
-flow DuplicateStepUiName {
-    @permission(roles: [Admin])
-}
-
 flow EnvStep {
     @permission(roles: [Admin])
 }
@@ -102,6 +90,25 @@ flow WithCompletionMinimal {
 
 flow WithReturnedData {
     @permission(roles: [Admin])
+}
+
+flow ExpressionPermissionCtx {
+    @permission(expression: ctx.identity.user.team == "myTeam")
+}
+
+flow ExpressionPermissionEnv {
+    @permission(expression: ctx.identity.user.team == ctx.env.ADMIN_TEAM)
+}
+
+flow ExpressionPermissionIsTrue {
+    @permission(expression: true)
+}
+
+model User {
+    fields {
+        team Text
+        identity Identity @unique
+    }
 }
 
 model Thing {
