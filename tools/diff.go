@@ -38,12 +38,18 @@ func extractFieldConfig(generated, updated *toolsproto.Field) *FieldConfig {
 }
 
 func extractFormatConfig(generated, updated *toolsproto.FormatConfig) *FormatConfig {
-	return &FormatConfig{
+	fmt := &FormatConfig{
 		EnumConfig:   nil, //TODO:
 		NumberConfig: extractNumberFormatConfig(generated.GetNumberConfig(), updated.GetNumberConfig()),
 		StringConfig: extractStringFormatConfig(generated.GetStringConfig(), updated.GetStringConfig()),
 		BoolConfig:   extractBoolFormatConfig(generated.GetBoolConfig(), updated.GetBoolConfig()),
 	}
+
+	if !fmt.hasChanges() {
+		return nil
+	}
+
+	return fmt
 }
 
 func extractNumberFormatConfig(generated, updated *toolsproto.NumberFormatConfig) *NumberFormatConfig {
@@ -686,4 +692,8 @@ func stringPointer(val string) *string {
 	}
 
 	return nil
+}
+
+func boolPointer(val bool) *bool {
+	return &val
 }
