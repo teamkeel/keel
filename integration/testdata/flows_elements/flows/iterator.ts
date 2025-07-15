@@ -25,16 +25,22 @@ export default Iterator(config, async (ctx) => {
               "SOCKS",
               "UNDERWEAR",
             ],
+            optional: false,
           }),
           ctx.ui.inputs.number("quantity", {
             label: "Qty",
+            optional: false,
+            validate: (value) => {
+              if (value < 1) {
+                return "Quantity must be greater than 0";
+              }
+            },
           }),
         ],
         min: 1,
-        max: 5,
       }),
     ],
   });
 
-  return { data: result };
+  return null;
 });

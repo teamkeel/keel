@@ -3,7 +3,7 @@ import { beforeEach, expect, test } from "vitest";
 
 beforeEach(resetDatabase);
 
-test("flows - only pages", async () => {
+test("flows - iterator element", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
   let { status, body } = await startFlow({
@@ -38,10 +38,45 @@ test("flows - only pages", async () => {
         ui: {
           __type: "ui.page",
           content: [
-            { __type: "ui.display.grid", data: [{ title: "A thing" }] },
+            { 
+              __type: "ui.iterator", 
+              content: [
+                {
+                    __type: "ui.display.header",
+                    description: "my description",
+                    level: 1,
+                    title: "my header",
+                },
+                {
+                    __type: "ui.select.one",
+                    disabled: false,
+                    label: "SKU",
+                    name: "sku",
+                    optional: false,
+                    options: [
+                      "SHOES",
+                      "SHIRTS",
+                      "PANTS",
+                      "TIE",
+                      "BELT",
+                      "SOCKS",
+                      "UNDERWEAR",
+                    ],
+                },
+                {
+                    __type: "ui.input.number",
+                    disabled: false,
+                    label: "Qty",
+                    name: "quantity",
+                    optional: false,
+                  },
+              ],
+              max: 5,
+              min: 1,
+              name: "my iterator",
+            },
           ],
           hasValidationErrors: false,
-          title: "Grid of things",
         },
       },
     ],
@@ -52,33 +87,63 @@ test("flows - only pages", async () => {
     },
   });
 
-  // Provide the values for the pending UI step
-  ({ status, body } = await putStepValues({
-    name: "MixedStepTypes",
+   // Provide the values for the pending UI step
+   ({ status, body } = await putStepValues({
+    name: "Iterator",
     runId: body.id,
     stepId: body.steps[0].id,
     token,
-    values: {},
+    values: {
+      "my iterator": [
+        {
+          sku: "SHOES",
+          quantity: 1,
+        },
+        {
+          sku: "SHIRTS",
+          quantity: 5,
+        },
+        {
+          sku: "PANTS",
+          quantity: 3,
+        },
+      ],
+    },
     action: null,
   }));
   expect(status).toEqual(200);
   expect(body).toEqual({
     id: expect.any(String),
     traceId: expect.any(String),
-    status: "AWAITING_INPUT",
-    name: "OnlyPages",
+    status: "COMPLETED",
+    name: "Iterator",
     startedBy: expect.any(String),
     input: {},
     data: null,
     steps: [
       {
         id: expect.any(String),
-        name: "first page",
+        name: "my page",
         runId: expect.any(String),
         stage: null,
         status: "COMPLETED",
         type: "UI",
-        value: {},
+        value: {
+         "my iterator": [
+          {
+            sku: "SHOES",
+            quantity: 1,
+          },
+          {
+            sku: "SHIRTS",
+            quantity: 5,
+          },
+          {
+            sku: "PANTS",
+            quantity: 3,
+          },
+        ],
+        },
         error: null,
         startTime: expect.any(String),
         endTime: expect.any(String),
@@ -86,9 +151,139 @@ test("flows - only pages", async () => {
         updatedAt: expect.any(String),
         ui: null,
       },
+    ],
+    createdAt: expect.any(String),
+    updatedAt: expect.any(String),
+    config: {
+      title: "Iterator",
+    },
+  });
+});
+
+
+test("flows - iterator element - too few items in iterator", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  let { status, body } = await startFlow({
+    name: "Iterator",
+    token,
+    body: {},
+  });
+
+  expect(status).toEqual(200);
+
+   // Provide the values for the pending UI step
+   ({ status, body } = await putStepValues({
+    name: "Iterator",
+    runId: body.id,
+    stepId: body.steps[0].id,
+    token,
+    values: {
+      "my iterator": [
+
+      ],
+    },
+    action: null,
+  }));
+  expect(status).toEqual(200);
+  expect(body).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "COMPLETED",
+    name: "Iterator",
+    startedBy: expect.any(String),
+    input: {},
+    data: null,
+    steps: [
       {
         id: expect.any(String),
-        name: "question",
+        name: "my page",
+        runId: expect.any(String),
+        stage: null,
+        status: "COMPLETED",
+        type: "UI",
+        value: {
+         "my iterator": [
+          {
+            sku: "SHOES",
+            quantity: 1,
+          },
+          {
+            sku: "SHIRTS",
+            quantity: 5,
+          },
+          {
+            sku: "PANTS",
+            quantity: 3,
+          },
+        ],
+        },
+        error: null,
+        startTime: expect.any(String),
+        endTime: expect.any(String),
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        ui: null,
+      },
+    ],
+    createdAt: expect.any(String),
+    updatedAt: expect.any(String),
+    config: {
+      title: "Iterator",
+    },
+  });
+});
+
+
+test.only("flows - iterator element - iterator has element with failed validation", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  let { status, body } = await startFlow({
+    name: "Iterator",
+    token,
+    body: {},
+  });
+
+  expect(status).toEqual(200);
+
+   // Provide the values for the pending UI step
+   ({ status, body } = await putStepValues({
+    name: "Iterator",
+    runId: body.id,
+    stepId: body.steps[0].id,
+    token,
+    values: {
+        "my iterator": [
+         {
+           sku: "SHOES",
+           quantity: 1,
+         },
+         {
+           sku: "SHIRTS",
+           quantity: 0,
+         },
+         {
+           sku: "PANTS",
+           quantity: 3,
+         },
+       ],
+       
+    },
+    action: null,
+  }));
+  expect(status).toEqual(200);
+  expect(body).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "AWAITING_INPUT",
+    name: "Iterator",
+    startedBy: expect.any(String),
+    input: {},
+    data: null,
+    steps: [
+      {
+        id: expect.any(String),
+        name: "my page",
         runId: expect.any(String),
         stage: null,
         status: "PENDING",
@@ -102,80 +297,52 @@ test("flows - only pages", async () => {
         ui: {
           __type: "ui.page",
           content: [
-            {
-              __type: "ui.input.boolean",
-              label: "Did you like the things?",
-              disabled: false,
-              mode: "checkbox",
-              name: "yesno",
-              optional: false,
+            { 
+              __type: "ui.iterator", 
+              content: [
+                {
+                    __type: "ui.display.header",
+                    description: "my description",
+                    level: 1,
+                    title: "my header",
+                },
+                {
+                    __type: "ui.select.one",
+                    disabled: false,
+                    label: "SKU",
+                    name: "sku",
+                    optional: false,
+                    options: [
+                      "SHOES",
+                      "SHIRTS",
+                      "PANTS",
+                      "TIE",
+                      "BELT",
+                      "SOCKS",
+                      "UNDERWEAR",
+                    ],
+                },
+                {
+                    __type: "ui.input.number",
+                    disabled: false,
+                    label: "Qty",
+                    name: "quantity",
+                    optional: false,
+                  },
+              ],
+              max: 5,
+              min: 1,
+              name: "my iterator",
             },
           ],
           hasValidationErrors: false,
-          title: "My flow",
         },
       },
     ],
     createdAt: expect.any(String),
     updatedAt: expect.any(String),
     config: {
-      title: "Only pages",
-    },
-  });
-
-  ({ status, body } = await putStepValues({
-    name: "MixedStepTypes",
-    runId: body.id,
-    stepId: body.steps[1].id,
-    token,
-    values: { yesno: true },
-    action: null,
-  }));
-  expect(status).toEqual(200);
-  expect(body).toEqual({
-    id: expect.any(String),
-    traceId: expect.any(String),
-    status: "COMPLETED",
-    name: "OnlyPages",
-    startedBy: expect.any(String),
-    input: {},
-    data: null,
-    steps: [
-      {
-        id: expect.any(String),
-        name: "first page",
-        runId: expect.any(String),
-        stage: null,
-        status: "COMPLETED",
-        type: "UI",
-        value: {},
-        error: null,
-        startTime: expect.any(String),
-        endTime: expect.any(String),
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
-        ui: null,
-      },
-      {
-        id: expect.any(String),
-        name: "question",
-        runId: expect.any(String),
-        stage: null,
-        status: "COMPLETED",
-        type: "UI",
-        value: { yesno: true },
-        error: null,
-        startTime: expect.any(String),
-        endTime: expect.any(String),
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
-        ui: null,
-      },
-    ],
-    createdAt: expect.any(String),
-    updatedAt: expect.any(String),
-    config: {
-      title: "Only pages",
+      title: "Iterator",
     },
   });
 });

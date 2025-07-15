@@ -68,7 +68,6 @@ export async function page<
     any,
     any
   >[];
-
   let hasValidationErrors = false;
   let validationError: string | undefined;
 
@@ -128,7 +127,6 @@ const recursivelyProcessElements = async (
 ): Promise<[UiElementApiResponses, validationErrors: boolean]> => {
   // Turn these back into the actual response types
   const content = elements as unknown as ImplementationResponse<any, any>[];
-
   let hasValidationErrors = false;
 
   const els = await Promise.all(
@@ -150,19 +148,16 @@ const recursivelyProcessElements = async (
         const isIterator = "__type" in c && c.__type == "iterator";
         if (isIterator) {
           // We want to recursively processes the iterators elements
-
-          // The UI config is still actually in the form of UiElements
-          // TODO figure out where to put the validation errors as we don't have a UI config for each iteration
           const [content, e] = await recursivelyProcessElements(
             c.uiConfig.content as UIElements,
-            c.uiConfig.name in data ? data[c.uiConfig.name] : undefined
+            (data && c.uiConfig.name in data) ? data[c.uiConfig.name] : undefined
           );
 
           if (e) hasValidationErrors = true;
 
           return {
             ...c.uiConfig,
-            content,
+            content: content,
           };
         }
 
