@@ -11,8 +11,7 @@ export default ValidationBoolean({}, async (ctx) => {
           if (!value) {
             return "it must be good";
           }
-
-          return null;
+          return true;
         },
       }),
     ],

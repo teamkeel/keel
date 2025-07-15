@@ -3,12 +3,7 @@ import {
   DisplayElementImplementation,
   DisplayElementResponse,
 } from "../..";
-
-type ImageConfig = {
-  url: string;
-  alt?: string;
-  fit?: "cover" | "contain";
-};
+import { ImageConfig } from "../common";
 
 type ListItem = {
   title?: string;

@@ -5,6 +5,7 @@ import {
   InputElementResponse,
   UiElementApiResponses,
   UIElements,
+  ValidateFn,
 } from ".";
 
 type PageOptions<
@@ -16,9 +17,7 @@ type PageOptions<
   title?: string;
   description?: string;
   content: T;
-  validate?: (
-    data: ExtractFormData<T>
-  ) => Promise<null | string | void> | string | null | void;
+  validate?: ValidateFn<ExtractFormData<T>>;
   actions?: A;
 };
 
@@ -84,10 +83,11 @@ export async function page<
 
   const contentUiConfig = (await Promise.all(
     content
-      .map(async (c) => {
+      .map(async (content) => {
+        let c = await content;
         const isInput = "__type" in c && c.__type == "input";
         const hasData = data && c.uiConfig.name in data;
-        if (isInput && hasData && c.validate) {
+        if (isInput && hasData && "validate" in c && c.validate) {
           const validationError = await c.validate(data[c.uiConfig.name]);
           if (typeof validationError === "string") {
             hasValidationErrors = true;

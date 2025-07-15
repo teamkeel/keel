@@ -13,6 +13,7 @@ export default ValidationPage({}, async (ctx) => {
           if (!emailRegex.test(value)) {
             return "Not a valid email";
           }
+          return true;
         },
       }),
       ctx.ui.inputs.text("phone", {
@@ -22,6 +23,7 @@ export default ValidationPage({}, async (ctx) => {
           if (!phoneRegex.test(value)) {
             return "Not a valid phone number";
           }
+          return true;
         },
       }),
     ],
@@ -29,6 +31,7 @@ export default ValidationPage({}, async (ctx) => {
       if (!data.email && !data.phone) {
         return "Email or phone is required";
       }
+      return true;
     },
   });
 });
