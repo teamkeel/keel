@@ -91,7 +91,7 @@ export const pickList: InputElementImplementation<
         return "Invalid data";
       }
 
-      return options?.validate?.(data) ?? null;
+      return options?.validate?.(data) ?? true;
     },
     getData: (x: any) => x,
   };
