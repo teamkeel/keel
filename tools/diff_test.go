@@ -330,3 +330,135 @@ func Test_extractBoolFormatConfig(t *testing.T) {
 		})
 	}
 }
+
+func Test_extractLinkConfig(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name      string
+		generated *toolsproto.ToolLink
+		updated   *toolsproto.ToolLink
+		want      *LinkConfig
+	}{
+		{
+			name:      "both nil",
+			generated: nil,
+			updated:   nil,
+			want:      nil,
+		},
+		{
+			name: "generated exists, updated nil (deleted)",
+			generated: &toolsproto.ToolLink{
+				ToolId: "tool-1",
+			},
+			updated: nil,
+			want: &LinkConfig{
+				ToolID:  "tool-1",
+				Deleted: boolPointer(true),
+			},
+		},
+		{
+			name:      "generated nil, updated exists (added)",
+			generated: nil,
+			updated: &toolsproto.ToolLink{
+				ToolId:           "tool-id",
+				AsDialog:         boolPointer(true),
+				Title:            &toolsproto.StringTemplate{Template: "New Title"},
+				Description:      &toolsproto.StringTemplate{Template: "New Desc"},
+				DisplayOrder:     2,
+				VisibleCondition: stringPointer("cond"),
+				SkipConfirmation: boolPointer(true),
+				Emphasize:        boolPointer(true),
+			},
+			want: &LinkConfig{
+				ToolID:           "tool-id",
+				AsDialog:         boolPointer(true),
+				Title:            stringPointer("New Title"),
+				Description:      stringPointer("New Desc"),
+				DisplayOrder:     intPointer(2),
+				VisibleCondition: stringPointer("cond"),
+				SkipConfirmation: boolPointer(true),
+				Emphasize:        boolPointer(true),
+				DataMapping:      []any{},
+			},
+		},
+		{
+			name: "tool id changed",
+			generated: &toolsproto.ToolLink{
+				ToolId: "tool-id",
+			},
+			updated: &toolsproto.ToolLink{
+				ToolId: "new-tool-id",
+			},
+			want: &LinkConfig{
+				ToolID:       "new-tool-id",
+				DisplayOrder: intPointer(0),
+				DataMapping:  []any{},
+			},
+		},
+		{
+			name: "fields updated",
+			generated: &toolsproto.ToolLink{
+				ToolId:           "tool-id",
+				AsDialog:         boolPointer(false),
+				Title:            &toolsproto.StringTemplate{Template: "Old Title"},
+				Description:      &toolsproto.StringTemplate{Template: "Old Desc"},
+				DisplayOrder:     1,
+				VisibleCondition: stringPointer("old-cond"),
+				SkipConfirmation: boolPointer(false),
+				Emphasize:        boolPointer(false),
+			},
+			updated: &toolsproto.ToolLink{
+				ToolId:           "tool-id",
+				AsDialog:         boolPointer(true),
+				Title:            &toolsproto.StringTemplate{Template: "New Title"},
+				Description:      &toolsproto.StringTemplate{Template: "New Desc"},
+				DisplayOrder:     2,
+				VisibleCondition: stringPointer("new-cond"),
+				SkipConfirmation: boolPointer(true),
+				Emphasize:        boolPointer(true),
+			},
+			want: &LinkConfig{
+				ToolID:           "tool-id",
+				AsDialog:         boolPointer(true),
+				Title:            stringPointer("New Title"),
+				Description:      stringPointer("New Desc"),
+				DisplayOrder:     intPointer(2),
+				VisibleCondition: stringPointer("new-cond"),
+				SkipConfirmation: boolPointer(true),
+				Emphasize:        boolPointer(true),
+			},
+		},
+		{
+			name: "no changes",
+			generated: &toolsproto.ToolLink{
+				ToolId:           "tool-id",
+				AsDialog:         boolPointer(true),
+				Title:            &toolsproto.StringTemplate{Template: "Title"},
+				Description:      &toolsproto.StringTemplate{Template: "Desc"},
+				DisplayOrder:     3,
+				VisibleCondition: stringPointer("cond"),
+				SkipConfirmation: boolPointer(true),
+				Emphasize:        boolPointer(false),
+			},
+			updated: &toolsproto.ToolLink{
+				ToolId:           "tool-id",
+				AsDialog:         boolPointer(true),
+				Title:            &toolsproto.StringTemplate{Template: "Title"},
+				Description:      &toolsproto.StringTemplate{Template: "Desc"},
+				DisplayOrder:     3,
+				VisibleCondition: stringPointer("cond"),
+				SkipConfirmation: boolPointer(true),
+				Emphasize:        boolPointer(false),
+			},
+			want: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			if got := extractLinkConfig(tt.generated, tt.updated); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("extractLinkConfig() = %+v, want %+v", got, tt.want)
+			}
+		})
+	}
+}

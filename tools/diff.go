@@ -697,3 +697,7 @@ func stringPointer(val string) *string {
 func boolPointer(val bool) *bool {
 	return &val
 }
+
+func intPointer(val int32) *int32 {
+	return &val
+}
