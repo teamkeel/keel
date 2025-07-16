@@ -280,3 +280,12 @@ func (f *Field) GetID() string {
 
 	return ""
 }
+
+func (e *EnumFormatConfig) FindForValue(val string) *EnumFormatConfig_EnumValueFormatConfig {
+	for _, v := range e.GetValues() {
+		if v.GetValue() == val {
+			return v
+		}
+	}
+	return nil
+}

@@ -704,7 +704,7 @@ message EnumFormatConfig {
 		int32 display_order = 6;
 	}
 
-	repeated EnumValueFormatConfig configs = 1;
+	repeated EnumValueFormatConfig values = 1;
 }
 
 // Similar to how Tools wrap config for an action, a Field wraps the formatting config for a model or enum field.

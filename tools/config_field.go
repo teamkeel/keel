@@ -170,17 +170,16 @@ func (f *FormatConfig) applyOn(cfg *toolsproto.FormatConfig) *toolsproto.FormatC
 	if cfg == nil {
 		return &toolsproto.FormatConfig{
 			Type:         f.GetType(),
-			EnumConfig:   nil, //TODO
+			EnumConfig:   f.EnumConfig.applyOn(nil),
 			NumberConfig: f.NumberConfig.applyOn(nil),
 			StringConfig: f.StringConfig.applyOn(nil),
 			BoolConfig:   f.BoolConfig.applyOn(nil),
 		}
 	}
-	// TODO: implement
-	// if f.EnumConfig != nil {
-	// cfg.EnumConfig = f.EnumConfig.applyOn(cfg.EnumConfig)
-	// }
 
+	if f.EnumConfig != nil {
+		cfg.EnumConfig = f.EnumConfig.applyOn(cfg.GetEnumConfig())
+	}
 	if f.NumberConfig != nil {
 		cfg.NumberConfig = f.NumberConfig.applyOn(cfg.GetNumberConfig())
 	}
@@ -195,12 +194,94 @@ func (f *FormatConfig) applyOn(cfg *toolsproto.FormatConfig) *toolsproto.FormatC
 }
 
 type EnumFormatConfig struct {
-	//TODO:
+	Values []*EnumValueFormatConfig `json:"values"`
 }
 
 func (e *EnumFormatConfig) hasChanges() bool {
-	// TODO:
-	return false
+	return len(e.Values) > 0
+}
+
+func (e *EnumFormatConfig) applyOn(cfg *toolsproto.EnumFormatConfig) *toolsproto.EnumFormatConfig {
+	if cfg == nil {
+		newCfg := &toolsproto.EnumFormatConfig{}
+		for _, valCfg := range e.Values {
+			newCfg.Values = append(cfg.Values, valCfg.applyOn(nil))
+		}
+
+		return newCfg
+	}
+
+	for _, valCfg := range e.Values {
+		existing := cfg.FindForValue(valCfg.Value)
+		if existing == nil {
+			cfg.Values = append(cfg.Values, valCfg.applyOn(nil))
+			continue
+		}
+
+		valCfg.applyOn(existing)
+	}
+
+	return cfg
+}
+
+type EnumValueFormatConfig struct {
+	Value            string  `json:"value,omitempty"`
+	Prefix           *string `json:"prefix,omitempty"`
+	Suffix           *string `json:"suffix,omitempty"`
+	TextColour       *string `json:"text_colour,omitempty"`
+	BackgroundColour *string `json:"background_colour,omitempty"`
+	DisplayOrder     *int32  `json:"display_order,omitempty"`
+}
+
+func (e *EnumValueFormatConfig) hasChanges() bool {
+	return e.Prefix != nil ||
+		e.Suffix != nil ||
+		e.TextColour != nil ||
+		e.BackgroundColour != nil ||
+		e.DisplayOrder != nil
+}
+
+func (e *EnumValueFormatConfig) applyOn(cfg *toolsproto.EnumFormatConfig_EnumValueFormatConfig) *toolsproto.EnumFormatConfig_EnumValueFormatConfig {
+	if e == nil {
+		return cfg
+	}
+
+	if cfg == nil {
+		return &toolsproto.EnumFormatConfig_EnumValueFormatConfig{
+			Value:            e.Value,
+			Prefix:           e.Prefix,
+			Suffix:           e.Suffix,
+			TextColour:       e.TextColour,
+			BackgroundColour: e.BackgroundColour,
+			DisplayOrder: func() int32 {
+				if e.DisplayOrder != nil {
+					return *e.DisplayOrder
+				}
+				return 0
+			}(),
+		}
+	}
+
+	if e.Value != "" {
+		cfg.Value = e.Value
+	}
+	if e.Prefix != nil {
+		cfg.Prefix = e.Prefix
+	}
+	if e.Suffix != nil {
+		cfg.Suffix = e.Suffix
+	}
+	if e.TextColour != nil {
+		cfg.TextColour = e.TextColour
+	}
+	if e.BackgroundColour != nil {
+		cfg.BackgroundColour = e.BackgroundColour
+	}
+	if e.DisplayOrder != nil {
+		cfg.DisplayOrder = *e.DisplayOrder
+	}
+
+	return cfg
 }
 
 type NumberFormatConfig struct {

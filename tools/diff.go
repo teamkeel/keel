@@ -39,7 +39,7 @@ func extractFieldConfig(generated, updated *toolsproto.Field) *FieldConfig {
 
 func extractFormatConfig(generated, updated *toolsproto.FormatConfig) *FormatConfig {
 	fmt := &FormatConfig{
-		EnumConfig:   nil, //TODO:
+		EnumConfig:   extractEnumFormatConfig(generated.GetEnumConfig(), updated.GetEnumConfig()),
 		NumberConfig: extractNumberFormatConfig(generated.GetNumberConfig(), updated.GetNumberConfig()),
 		StringConfig: extractStringFormatConfig(generated.GetStringConfig(), updated.GetStringConfig()),
 		BoolConfig:   extractBoolFormatConfig(generated.GetBoolConfig(), updated.GetBoolConfig()),
@@ -50,6 +50,55 @@ func extractFormatConfig(generated, updated *toolsproto.FormatConfig) *FormatCon
 	}
 
 	return fmt
+}
+
+func extractEnumFormatConfig(generated, updated *toolsproto.EnumFormatConfig) *EnumFormatConfig {
+	if updated == nil {
+		return nil
+	}
+
+	if generated == nil {
+		generated = &toolsproto.EnumFormatConfig{}
+	}
+
+	diffs := []*EnumValueFormatConfig{}
+	for _, v := range updated.GetValues() {
+		if d := extractEnumValueFormatConfig(generated.FindForValue(v.GetValue()), v); d != nil {
+			diffs = append(diffs, d)
+		}
+	}
+
+	if len(diffs) > 0 {
+		return &EnumFormatConfig{
+			Values: diffs,
+		}
+	}
+
+	return nil
+}
+
+func extractEnumValueFormatConfig(generated, updated *toolsproto.EnumFormatConfig_EnumValueFormatConfig) *EnumValueFormatConfig {
+	if updated == nil {
+		return nil
+	}
+
+	if generated == nil {
+		generated = &toolsproto.EnumFormatConfig_EnumValueFormatConfig{}
+	}
+	cfg := &EnumValueFormatConfig{
+		Value:            updated.GetValue(),
+		Prefix:           diffString(generated.GetPrefix(), updated.GetPrefix()),
+		Suffix:           diffString(generated.GetSuffix(), updated.GetSuffix()),
+		TextColour:       diffString(generated.GetTextColour(), updated.GetTextColour()),
+		BackgroundColour: diffString(generated.GetBackgroundColour(), updated.GetBackgroundColour()),
+		DisplayOrder:     diffInt(generated.GetDisplayOrder(), updated.GetDisplayOrder()),
+	}
+
+	if cfg.hasChanges() {
+		return cfg
+	}
+
+	return nil
 }
 
 func extractNumberFormatConfig(generated, updated *toolsproto.NumberFormatConfig) *NumberFormatConfig {
