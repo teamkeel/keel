@@ -70,6 +70,7 @@
         "format": {
           "type": "NUMBER",
           "numberConfig": {
+            "colorise": "INVERTED",
             "mode": "CURRENCY",
             "currencyCode": "GBP",
             "sensitive": true,

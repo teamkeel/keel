@@ -15,7 +15,8 @@
         "sensitive": true,
         "mode": "CURRENCY",
         "currency_code": "GBP",
-        "locale": "UK"
+        "locale": "UK",
+        "colorise": "INVERTED"
       }
     }
   },
