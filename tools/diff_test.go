@@ -208,6 +208,7 @@ func Test_extractNumberFormatConfig(t *testing.T) {
 				Locale:       stringPointer("US"),
 				Prefix:       stringPointer("$"),
 				Suffix:       stringPointer("p/w"),
+				Colorise:     toolsproto.ConditionalFormatMode_INVERTED,
 			},
 			want: &NumberFormatConfig{
 				Mode:         stringPointer("CURRENCY"),
@@ -217,6 +218,7 @@ func Test_extractNumberFormatConfig(t *testing.T) {
 				Locale:       stringPointer("US"),
 				Prefix:       stringPointer("$"),
 				Suffix:       stringPointer("p/w"),
+				Colorise:     stringPointer("INVERTED"),
 			},
 		},
 	}

@@ -652,6 +652,13 @@ message FormatConfig {
 
 }
 
+enum ConditionalFormatMode {
+	NONE = 0;
+	NORMAL = 1;
+	INVERTED = 2;
+	CUSTOM = 3;
+}
+
 message BoolFormatConfig {
 	optional string positive_colour = 1;
 	optional string positive_value = 2; // a string to replace the displayed value when the field is true
@@ -676,6 +683,7 @@ message NumberFormatConfig {
 	optional string locale = 5; // Set a specific locale code. Otherwise we auto detect
 	optional string prefix = 6;
 	optional string suffix = 7;
+	ConditionalFormatMode colorise = 8;
 }
 
 message StringFormatConfig {
