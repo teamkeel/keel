@@ -1,6 +1,10 @@
 {
   "id": "get-product-with-hidden",
   "action_name": "getProductWithHidden",
+  "capabilities": {
+    "audit": false,
+    "comments": false
+  },
   "response": {
     "$.hidden": {
       "display_name": "field config - overwritten by tool cfg",

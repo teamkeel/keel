@@ -100,7 +100,7 @@
     "title": { "template": "{{$.name}}" },
     "entitySingle": "product",
     "entityPlural": "products",
-    "capabilities": { "comments": true, "audit": true },
+    "capabilities": {},
     "entryActivityActions": [
       {
         "toolId": "get-product",
