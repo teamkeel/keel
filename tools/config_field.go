@@ -245,7 +245,7 @@ func (n *NumberFormatConfig) applyOn(cfg *toolsproto.NumberFormatConfig) *toolsp
 			UnitCode:     n.UnitCode,
 			Locale:       n.Locale,
 			Colorise: func() toolsproto.ConditionalFormatMode {
-				if n.Mode == nil {
+				if n.Colorise == nil {
 					return toolsproto.ConditionalFormatMode_NONE
 				}
 				return toolsproto.ConditionalFormatMode(toolsproto.ConditionalFormatMode_value[*n.Colorise])
