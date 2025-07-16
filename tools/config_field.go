@@ -20,7 +20,16 @@ func (f FieldConfigs) applyOnTool(t *toolsproto.Tool) {
 	}
 
 	for _, response := range t.GetActionConfig().GetResponse() {
-		// if this is a model field
+		// if this is an enum field...
+		if response.EnumName != nil {
+			// and we have an enum format configured...
+			if fieldCfg := f.find(*response.EnumName); fieldCfg != nil {
+				// .. apply it on the response
+				fieldCfg.applyOnResponseField(response)
+			}
+		}
+
+		// if this is a model field (note: this overrides any enum formattings)
 		if modelName := response.GetModelName(); modelName != "" {
 			// .. and we have a field config
 			if fieldCfg := f.find(modelName + "." + response.GetFieldName()); fieldCfg != nil {
@@ -210,7 +219,7 @@ func (e *EnumFormatConfig) applyOn(cfg *toolsproto.EnumFormatConfig) *toolsproto
 			Values: []*toolsproto.EnumFormatConfig_EnumValueFormatConfig{},
 		}
 		for _, valCfg := range e.Values {
-			newCfg.Values = append(cfg.GetValues(), valCfg.applyOn(nil))
+			newCfg.Values = append(newCfg.Values, valCfg.applyOn(nil))
 		}
 
 		return newCfg

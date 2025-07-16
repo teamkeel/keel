@@ -78,7 +78,16 @@
         "visible": true,
         "enumName": "Status",
         "modelName": "Product",
-        "fieldName": "status"
+        "fieldName": "status",
+        "format": {
+          "type": "ENUM",
+          "enumConfig": {
+            "values": [
+              { "value": "InStock", "backgroundColour": "green" },
+              { "value": "OutOfStock", "backgroundColour": "red" }
+            ]
+          }
+        }
       },
       {
         "fieldLocation": { "path": "$.id" },

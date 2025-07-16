@@ -26,5 +26,22 @@
     "help_text": "this is a help text added in field config",
     "image_preview": false,
     "display_name": "field config - hidden"
+  },
+  {
+    "id": "Status",
+    "format": {
+      "enum_config": {
+        "values": [
+          {
+            "value": "InStock",
+            "background_colour": "green"
+          },
+          {
+            "value": "OutOfStock",
+            "background_colour": "red"
+          }
+        ]
+      }
+    }
   }
 ]
