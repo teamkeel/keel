@@ -203,9 +203,11 @@ func (e *EnumFormatConfig) hasChanges() bool {
 
 func (e *EnumFormatConfig) applyOn(cfg *toolsproto.EnumFormatConfig) *toolsproto.EnumFormatConfig {
 	if cfg == nil {
-		newCfg := &toolsproto.EnumFormatConfig{}
+		newCfg := &toolsproto.EnumFormatConfig{
+			Values: []*toolsproto.EnumFormatConfig_EnumValueFormatConfig{},
+		}
 		for _, valCfg := range e.Values {
-			newCfg.Values = append(cfg.Values, valCfg.applyOn(nil))
+			newCfg.Values = append(cfg.GetValues(), valCfg.applyOn(nil))
 		}
 
 		return newCfg
