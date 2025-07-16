@@ -23,7 +23,7 @@ func (f FieldConfigs) applyOnTool(t *toolsproto.Tool) {
 		// if this is an enum field...
 		if response.EnumName != nil {
 			// and we have an enum format configured...
-			if fieldCfg := f.find(*response.EnumName); fieldCfg != nil {
+			if fieldCfg := f.find(response.GetEnumName()); fieldCfg != nil {
 				// .. apply it on the response
 				fieldCfg.applyOnResponseField(response)
 			}
