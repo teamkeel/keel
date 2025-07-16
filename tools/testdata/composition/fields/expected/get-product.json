@@ -40,12 +40,12 @@
         "format": {
           "type": "NUMBER",
           "numberConfig": {
-            "colorise": "INVERTED",
             "mode": "CURRENCY",
             "currencyCode": "GBP",
             "sensitive": true,
             "locale": "UK",
-            "prefix": "£"
+            "prefix": "£",
+            "colorise": "INVERTED"
           }
         }
       },
@@ -69,10 +69,20 @@
         "fieldName": "hidden"
       },
       {
+        "fieldLocation": { "path": "$.status" },
+        "fieldType": "TYPE_ENUM",
+        "displayName": "Status",
+        "displayOrder": 4,
+        "visible": true,
+        "enumName": "Status",
+        "modelName": "Product",
+        "fieldName": "status"
+      },
+      {
         "fieldLocation": { "path": "$.id" },
         "fieldType": "TYPE_ID",
         "displayName": "Id",
-        "displayOrder": 5,
+        "displayOrder": 6,
         "visible": true,
         "modelName": "Product",
         "fieldName": "id"
@@ -81,7 +91,7 @@
         "fieldLocation": { "path": "$.createdAt" },
         "fieldType": "TYPE_DATETIME",
         "displayName": "Created at",
-        "displayOrder": 6,
+        "displayOrder": 7,
         "visible": true,
         "modelName": "Product",
         "fieldName": "createdAt"
@@ -90,7 +100,7 @@
         "fieldLocation": { "path": "$.updatedAt" },
         "fieldType": "TYPE_DATETIME",
         "displayName": "Updated at",
-        "displayOrder": 7,
+        "displayOrder": 8,
         "visible": true,
         "modelName": "Product",
         "fieldName": "updatedAt"

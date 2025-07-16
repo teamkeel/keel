@@ -4,6 +4,7 @@ model Product {
         price Decimal
         sku Text @sequence("SKU_")
         hidden Text
+        status Status @default(Status.OutOfStock)
     }
 
     actions {
@@ -12,4 +13,9 @@ model Product {
         create createProduct() with (name, price, sku, hidden)
         list listProducts()
     }
+}
+
+enum Status {
+    InStock
+    OutOfStock
 }
