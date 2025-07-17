@@ -9,6 +9,7 @@ import {
   UiElementApiResponses,
   UIElements,
   UIElement,
+  ValidateFn,
 } from ".";
 import { UiElementIteratorApiResponse } from "./elements/iterator";
 
@@ -21,9 +22,7 @@ type PageOptions<
   title?: string;
   description?: string;
   content: T;
-  validate?: (
-    data: ExtractFormData<T>
-  ) => Promise<null | string | void> | string | null | void;
+  validate?: ValidateFn<ExtractFormData<T>>;
   actions?: A;
 };
 
@@ -111,6 +110,7 @@ export async function page<
   }
 
   // If there is page level validation, validate the data
+
   if (data && options.validate) {
     const validationResult = await options.validate(data);
     if (typeof validationResult === "string") {

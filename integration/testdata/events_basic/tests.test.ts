@@ -1,4 +1,5 @@
 import { actions, resetDatabase, models, jobs } from "@teamkeel/testing";
+import process from "process";
 import { beforeEach, expect, test } from "vitest";
 
 beforeEach(resetDatabase);
@@ -140,4 +141,30 @@ test("event previous data bulk", async () => {
   for (const t of trackers) {
     expect(t.verifiedUpdate).toBeTruthy();
   }
+});
+
+async function get(path: string) {
+  return fetch(process.env.KEEL_TESTING_API_URL + path, {
+    method: "GET",
+  });
+}
+
+test("events from route function", async () => {
+  const r = await get("/newPersonWebhook");
+  expect(r.status).toBe(200);
+  const body = await r.json();
+  expect(body).toStrictEqual({
+    createdAt: expect.any(String),
+    email: "test@keel.so",
+    id: expect.any(String),
+    name: "Test User",
+    updatedAt: expect.any(String),
+    verifiedEmail: false,
+    verifiedUpdate: false,
+  });
+
+  const persons = await models.person.findOne({ id: body.id });
+  expect(persons).toBeDefined();
+  expect(persons!.verifiedEmail).toBeTruthy();
+  expect(persons!.verifiedUpdate).toBeTruthy();
 });

@@ -63,6 +63,7 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 	writeAPIFactory(sdk, schema)
 
 	sdk.Writeln("export * from '@teamkeel/functions-runtime';")
+	sdk.Writeln("export { ErrorPresets as errors } from '@teamkeel/functions-runtime';")
 
 	for _, model := range schema.GetModels() {
 		writeTableInterface(sdkTypes, model)

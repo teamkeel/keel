@@ -69,6 +69,13 @@ import {
   UiElementIterator,
   UiElementIteratorApiResponse,
 } from "./elements/iterator";
+  UiElementPrint,
+  UiElementPrintApiResponse,
+} from "./elements/interactive/print";
+import {
+  UiElementPickList,
+  UiElementPickListApiResponse,
+} from "./elements/interactive/pickList";
 
 export interface UI<C extends FlowConfig> {
   page: UiPage<C>;
@@ -76,6 +83,7 @@ export interface UI<C extends FlowConfig> {
   inputs: UiInputsElements;
   select: UiSelectElements;
   iterator: UiElementIterator;
+  interactive: UiInteractiveElements;
 }
 
 // Input elements that are named and return values
@@ -106,6 +114,12 @@ type UiDisplayElements = {
   keyValue: UiElementKeyValue;
 };
 
+// Interactive elements may return values, others do not
+type UiInteractiveElements = {
+  print: UiElementPrint;
+  pickList: UiElementPickList;
+};
+
 // The base input element function. All inputs must be named and can optionally have a config
 export type InputElement<TValueType, TConfig extends any = never> = <
   N extends string,
@@ -119,6 +133,9 @@ export type DisplayElement<TConfig extends any = never> = (
   options?: TConfig
 ) => DisplayElementResponse;
 
+export type DisplayElementWithRequiredConfig<TConfig extends any = never> = (
+  options: TConfig
+) => DisplayElementResponse;
 
 // Union of all element function shapes
 export type UIElement = (
@@ -159,8 +176,12 @@ export interface BaseInputConfig<T> {
   helpText?: string;
   optional?: boolean;
   disabled?: boolean;
-  validate?: (data: T) => Promise<null | string | void> | string | null | void;
+  validate?: ValidateFn<T>;
 }
+
+export type ValidateFn<T> = (
+  data: T
+) => Promise<boolean | string> | boolean | string;
 
 // Base response for all inputs
 export interface BaseUiInputResponse<K, TData> {
@@ -171,6 +192,12 @@ export interface BaseUiInputResponse<K, TData> {
   optional: boolean;
   disabled: boolean;
   helpText?: string;
+  validationError?: string;
+}
+
+export interface BaseUiMinimalInputResponse<K> {
+  __type: K;
+  name: string;
   validationError?: string;
 }
 
@@ -203,6 +230,10 @@ export type UIApiResponses = {
     table: UiElementSelectTableApiResponse;
   };
   iterator: UiElementIteratorApiResponse;
+  interactive: {
+    print: UiElementPrintApiResponse;
+    pickList: UiElementPickListApiResponse;
+  };
 };
 
 export type UiElementApiResponse = 
@@ -231,6 +262,10 @@ export type UiElementApiResponse =
 
     // Special
     | UiElementIteratorApiResponse
+
+    // Interactive elements
+    | UiElementPrintApiResponse
+    | UiElementPickListApiResponse
   );
 
 export type UiElementApiResponses = UiElementApiResponse[];
@@ -254,9 +289,7 @@ export type InputElementImplementationResponse<TApiResponse, TData> = {
   __type: "input";
   uiConfig: TApiResponse;
   getData: (data: TData) => TData;
-  validate?: (
-    data: TData
-  ) => Promise<null | string | void> | string | null | void;
+  validate?: ValidateFn<TData>;
 };
 
 export type IteratorElementImplementation<
@@ -271,7 +304,7 @@ export type IteratorElementImplementationResponse<TApiResponse, TData> = {
   __type: "iterator";
   uiConfig: TApiResponse;
   getData: (data: TData) => TData;
-  validate?: (data: TData) => Promise<null | string> | string | null;
+  validate?: ValidateFn<TData>;
 };
 
 export type DisplayElementImplementation<
@@ -281,9 +314,13 @@ export type DisplayElementImplementation<
   ...args: Parameters<TConfig>
 ) => DisplayElementImplementationResponse<TApiResponse>;
 
-export type DisplayElementImplementationResponse<TApiResponse> = {
-  uiConfig: TApiResponse;
-};
+export type DisplayElementImplementationResponse<TApiResponse> =
+  | {
+      uiConfig: TApiResponse;
+    }
+  | Promise<{
+      uiConfig: TApiResponse;
+    }>;
 
 export type ImplementationResponse<TApiResponse, TData> =
   | InputElementImplementationResponse<TApiResponse, TData>
