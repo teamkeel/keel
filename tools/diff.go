@@ -114,7 +114,7 @@ func extractNumberFormatConfig(generated, updated *toolsproto.NumberFormatConfig
 		UnitCode:     diffString(generated.GetUnitCode(), updated.GetUnitCode()),
 		Locale:       diffString(generated.GetLocale(), updated.GetLocale()),
 		Mode:         diffString(generated.GetMode().String(), updated.GetMode().String()),
-		Colorise:     diffString(generated.GetColorise().String(), updated.GetColorise().String()),
+		Colourise:    diffString(generated.GetColourise().String(), updated.GetColourise().String()),
 	}
 
 	if cfg.hasChanges() {

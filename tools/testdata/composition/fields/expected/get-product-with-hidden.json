@@ -44,7 +44,7 @@
             "sensitive": true,
             "locale": "UK",
             "prefix": "£",
-            "colorise": "INVERTED"
+            "colourise": "INVERTED"
           }
         }
       },

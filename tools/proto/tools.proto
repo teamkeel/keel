@@ -683,7 +683,7 @@ message NumberFormatConfig {
 	optional string locale = 5; // Set a specific locale code. Otherwise we auto detect
 	optional string prefix = 6;
 	optional string suffix = 7;
-	ConditionalFormatMode colorise = 8;
+	ConditionalFormatMode colourise = 8;
 }
 
 message StringFormatConfig {

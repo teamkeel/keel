@@ -306,7 +306,7 @@ type NumberFormatConfig struct {
 	CurrencyCode *string `json:"currency_code,omitempty"`
 	UnitCode     *string `json:"unit_code,omitempty"`
 	Locale       *string `json:"locale,omitempty"`
-	Colorise     *string `json:"colorise,omitempty"`
+	Colourise    *string `json:"colourise,omitempty"`
 }
 
 func (n *NumberFormatConfig) hasChanges() bool {
@@ -317,7 +317,7 @@ func (n *NumberFormatConfig) hasChanges() bool {
 		n.CurrencyCode != nil ||
 		n.UnitCode != nil ||
 		n.Locale != nil ||
-		n.Colorise != nil
+		n.Colourise != nil
 }
 
 func (n *NumberFormatConfig) applyOn(cfg *toolsproto.NumberFormatConfig) *toolsproto.NumberFormatConfig {
@@ -339,11 +339,11 @@ func (n *NumberFormatConfig) applyOn(cfg *toolsproto.NumberFormatConfig) *toolsp
 			CurrencyCode: n.CurrencyCode,
 			UnitCode:     n.UnitCode,
 			Locale:       n.Locale,
-			Colorise: func() toolsproto.ConditionalFormatMode {
-				if n.Colorise == nil {
+			Colourise: func() toolsproto.ConditionalFormatMode {
+				if n.Colourise == nil {
 					return toolsproto.ConditionalFormatMode_NONE
 				}
-				return toolsproto.ConditionalFormatMode(toolsproto.ConditionalFormatMode_value[*n.Colorise])
+				return toolsproto.ConditionalFormatMode(toolsproto.ConditionalFormatMode_value[*n.Colourise])
 			}(),
 		}
 	}
@@ -369,8 +369,8 @@ func (n *NumberFormatConfig) applyOn(cfg *toolsproto.NumberFormatConfig) *toolsp
 	if n.Locale != nil {
 		cfg.Locale = n.Locale
 	}
-	if n.Colorise != nil {
-		cfg.Colorise = toolsproto.ConditionalFormatMode(toolsproto.ConditionalFormatMode_value[*n.Colorise])
+	if n.Colourise != nil {
+		cfg.Colourise = toolsproto.ConditionalFormatMode(toolsproto.ConditionalFormatMode_value[*n.Colourise])
 	}
 
 	return cfg
