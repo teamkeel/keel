@@ -119,12 +119,15 @@ export type DisplayElement<TConfig extends any = never> = (
   options?: TConfig
 ) => DisplayElementResponse;
 
+
 // Union of all element function shapes
-export type UIElements = (
+export type UIElement = (
   | InputElementResponse<string, any>
   | DisplayElementResponse
   | IteratorElementResponse<string, any>
-)[];
+);
+
+export type UIElements = UIElement[];
 
 // We create internal _type properties to help identity inputs vs display elements
 interface UIElementBase {
@@ -202,8 +205,9 @@ export type UIApiResponses = {
   iterator: UiElementIteratorApiResponse;
 };
 
-export type UiElementApiResponses = // Display elements
+export type UiElementApiResponse = 
   (
+    // Display elements
     | UiElementDividerApiResponse
     | UiElementMarkdownApiResponse
     | UiElementHeaderApiResponse
@@ -227,7 +231,9 @@ export type UiElementApiResponses = // Display elements
 
     // Special
     | UiElementIteratorApiResponse
-  )[];
+  );
+
+export type UiElementApiResponses = UiElementApiResponse[];
 
 // The root API response. Used to generate the OpenAPI schema
 export type UiApiUiConfig = UiPageApiResponse | UiCompleteApiResponse;

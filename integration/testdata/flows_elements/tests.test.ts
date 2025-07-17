@@ -41,6 +41,7 @@ test("flows - iterator element", async () => {
             { 
               __type: "ui.iterator", 
               content: [
+                [
                 {
                     __type: "ui.display.header",
                     description: "my description",
@@ -70,8 +71,9 @@ test("flows - iterator element", async () => {
                     name: "quantity",
                     optional: false,
                   },
+                ],
+                
               ],
-              max: 5,
               min: 1,
               name: "my iterator",
             },
@@ -160,7 +162,6 @@ test("flows - iterator element", async () => {
   });
 });
 
-
 test("flows - iterator element - too few items in iterator", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
@@ -204,19 +205,8 @@ test("flows - iterator element - too few items in iterator", async () => {
         type: "UI",
         value: {
          "my iterator": [
-          {
-            sku: "SHOES",
-            quantity: 1,
-          },
-          {
-            sku: "SHIRTS",
-            quantity: 5,
-          },
-          {
-            sku: "PANTS",
-            quantity: 3,
-          },
-        ],
+   
+          ],
         },
         error: null,
         startTime: expect.any(String),
@@ -234,8 +224,7 @@ test("flows - iterator element - too few items in iterator", async () => {
   });
 });
 
-
-test.only("flows - iterator element - iterator has element with failed validation", async () => {
+test("flows - iterator element - iterator has element with failed validation", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
   let { status, body } = await startFlow({
@@ -261,10 +250,6 @@ test.only("flows - iterator element - iterator has element with failed validatio
          {
            sku: "SHIRTS",
            quantity: 0,
-         },
-         {
-           sku: "PANTS",
-           quantity: 3,
          },
        ],
        
@@ -300,42 +285,75 @@ test.only("flows - iterator element - iterator has element with failed validatio
             { 
               __type: "ui.iterator", 
               content: [
-                {
-                    __type: "ui.display.header",
-                    description: "my description",
-                    level: 1,
-                    title: "my header",
-                },
-                {
-                    __type: "ui.select.one",
-                    disabled: false,
-                    label: "SKU",
-                    name: "sku",
-                    optional: false,
-                    options: [
-                      "SHOES",
-                      "SHIRTS",
-                      "PANTS",
-                      "TIE",
-                      "BELT",
-                      "SOCKS",
-                      "UNDERWEAR",
-                    ],
-                },
-                {
-                    __type: "ui.input.number",
-                    disabled: false,
-                    label: "Qty",
-                    name: "quantity",
-                    optional: false,
+                 [
+                    {
+                        __type: "ui.display.header",
+                        description: "my description",
+                        level: 1,
+                        title: "my header",
+                    },
+                    {
+                        __type: "ui.select.one",
+                        disabled: false,
+                        label: "SKU",
+                        name: "sku",
+                        optional: false,
+                        options: [
+                          "SHOES",
+                          "SHIRTS",
+                          "PANTS",
+                          "TIE",
+                          "BELT",
+                          "SOCKS",
+                          "UNDERWEAR",
+                        ],
+                    },
+                    {
+                        __type: "ui.input.number",
+                        disabled: false,
+                        label: "Qty",
+                        name: "quantity",
+                        optional: false,
+                    },
+                ],
+                [
+                  {
+                      __type: "ui.display.header",
+                      description: "my description",
+                      level: 1,
+                      title: "my header",
+                  },
+                  {
+                      __type: "ui.select.one",
+                      disabled: false,
+                      label: "SKU",
+                      name: "sku",
+                      optional: false,
+                      options: [
+                        "SHOES",
+                        "SHIRTS",
+                        "PANTS",
+                        "TIE",
+                        "BELT",
+                        "SOCKS",
+                        "UNDERWEAR",
+                      ],
+                  },
+                  {
+                      __type: "ui.input.number",
+                      disabled: false,
+                      label: "Qty",
+                      name: "quantity",
+                      optional: false,
+                      validationError: "Quantity must be greater than 0",
                   },
               ],
-              max: 5,
+              ],
               min: 1,
               name: "my iterator",
             },
           ],
-          hasValidationErrors: false,
+          hasValidationErrors: true,
         },
       },
     ],

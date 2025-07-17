@@ -5,8 +5,10 @@ import {
   InputElementResponse,
   IteratorElementImplementationResponse,
   IteratorElementResponse,
+  UiElementApiResponse,
   UiElementApiResponses,
   UIElements,
+  UIElement,
 } from ".";
 import { UiElementIteratorApiResponse } from "./elements/iterator";
 
@@ -84,13 +86,31 @@ export async function page<
     }
   }
 
-  const [contentUiConfig, elementValidationErrors] =
-    await recursivelyProcessElements(options.content, data);
+  let elementValidationErrors = false;
+  // 
+  const ret = (await Promise.all(
+    content
+      .map(async (c, index) => {
+        
+
+        const {uiConfig, validationErrors} = await recursivelyProcessElement(c,  data && c.uiConfig.name in data? data[c.uiConfig.name] : undefined);
+
+        if (validationErrors) elementValidationErrors = true;
+
+        return uiConfig;
+        
+        
+      })
+  ));
+
+  // const [contentUiConfig, elementValidationErrors] =
+  //   await recursivelyProcessElements(options.content, data);
 
   if (elementValidationErrors) {
     hasValidationErrors = true;
   }
 
+  // If there is page level validation, validate the data
   if (data && options.validate) {
     const validationResult = await options.validate(data);
     if (typeof validationResult === "string") {
@@ -105,7 +125,7 @@ export async function page<
       stage: options.stage,
       title: options.title,
       description: options.description,
-      content: contentUiConfig,
+      content: ret,
       actions: options.actions?.map((a) => {
         if (typeof a === "string") {
           return { label: a, value: a, mode: "primary" };
@@ -121,6 +141,108 @@ export async function page<
   };
 }
 
+const recursivelyProcessElement = async (
+  c: ImplementationResponse<any, any>,
+  data: any
+): Promise<{uiConfig: UiElementApiResponse, validationErrors: boolean}> => {
+  let hasValidationErrors = false;
+
+  const isInput = "__type" in c && c.__type == "input";
+  const isIterator = "__type" in c && c.__type == "iterator";
+
+
+  if (isInput) {
+    const hasData = data && c.uiConfig.name in data;
+
+    if (hasData && c.validate) {
+      const validationError = await c.validate(data[c.uiConfig.name]);
+
+        hasValidationErrors = typeof validationError === "string";
+        return  {
+          uiConfig: {
+            ...c.uiConfig,
+            validationError: hasValidationErrors ? validationError : undefined,
+          }, 
+          validationErrors: hasValidationErrors
+        };
+      
+    } else {
+     
+      return  {
+        uiConfig: {
+          ...c.uiConfig,
+        }, 
+        validationErrors: false
+      };
+    }
+  }
+
+  if (isIterator) {
+    const elements = c.uiConfig.content as ImplementationResponse<any, any>[];
+    let content: UiElementApiResponse[][] = [];
+
+    const dataArr = data as any[] | undefined;
+
+    if (dataArr && dataArr.length > 0) {
+      for (const d of dataArr) {
+        const row: UiElementApiResponse[] = [];
+        for (const el of elements) {
+
+        //  const hasData = d && el.uiConfig && el.uiConfig.name in d;
+
+          const r = await recursivelyProcessElement(el, d);
+
+          if (r.validationErrors) hasValidationErrors = true;
+          row.push(r.uiConfig);
+
+        }
+        content.push(row);
+      }
+    } else {
+      const row: UiElementApiResponse[] = [];
+      for (const el of elements) {
+        const r = await recursivelyProcessElement(el, undefined);
+
+       // if (r.validationErrors) hasValidationErrors = true;
+
+       row.push(r.uiConfig);
+      }
+      content.push(row);
+    }
+
+
+    // for (const [index, el] of elements.entries()) {
+    //    // We want to recursively process the iterator elements
+    //   const r = await recursivelyProcessElement(
+    //     el,// as UIElement,
+    //     (data && data[index]) ? data[index] : undefined
+    //   );
+
+    //   if (r.validationErrors) hasValidationErrors = true;
+
+    //   iteratorContent.push(r.uiConfig);
+    // }
+
+    return {
+        uiConfig: {
+        ...c.uiConfig,
+         content,
+      }, 
+      validationErrors: hasValidationErrors 
+    };
+  }
+
+  return  {
+    uiConfig: {
+      ...c.uiConfig,
+    }, 
+    validationErrors: false
+  };
+
+
+  //return [c.uiConfig, hasValidationErrors];
+};
+
 const recursivelyProcessElements = async (
   elements: UIElements,
   data: any
@@ -133,19 +255,26 @@ const recursivelyProcessElements = async (
     content
       .map(async (c) => {
         const isInput = "__type" in c && c.__type == "input";
+        const isIterator = "__type" in c && c.__type == "iterator";
+
         const hasData = data && c.uiConfig.name in data;
-        if (isInput && hasData && c.validate) {
-          const validationError = await c.validate(data[c.uiConfig.name]);
-          if (typeof validationError === "string") {
-            hasValidationErrors = true;
-            return {
-              ...c.uiConfig,
-              validationError,
-            };
+
+        if (isInput) {
+          if (hasData && c.validate) {
+            const validationError = await c.validate(data[c.uiConfig.name]);
+
+              hasValidationErrors = typeof validationError === "string";
+              return {
+                ...c.uiConfig,
+                validationError: hasValidationErrors ? validationError : undefined,
+              };
+            
+          } else {
+            return c.uiConfig;
           }
         }
 
-        const isIterator = "__type" in c && c.__type == "iterator";
+        
         if (isIterator) {
           // We want to recursively processes the iterators elements
           const [content, e] = await recursivelyProcessElements(
@@ -158,6 +287,7 @@ const recursivelyProcessElements = async (
           return {
             ...c.uiConfig,
             content: content,
+            
           };
         }
 
