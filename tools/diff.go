@@ -26,8 +26,8 @@ func extractFieldConfig(generated, updated *toolsproto.Field) *FieldConfig {
 		ID:           updated.GetID(),
 		Format:       extractFormatConfig(generated.GetFormat(), updated.GetFormat()),
 		DisplayName:  diffString(generated.GetDisplayName(), updated.GetDisplayName()),
-		Visible:      diffBool(generated.GetVisible(), updated.GetVisible()),
-		ImagePreview: diffBool(generated.GetImagePreview(), updated.GetImagePreview()),
+		Visible:      diffNullableBool(generated.Visible, updated.Visible),
+		ImagePreview: diffNullableBool(generated.ImagePreview, updated.ImagePreview),
 		HelpText:     diffStringTemplate(generated.GetHelpText(), updated.GetHelpText()),
 	}
 
@@ -707,6 +707,18 @@ func diffInt(old, updated int32) *int32 {
 }
 
 func diffNullableInt(old, updated *int32) *int32 {
+	if old != nil && updated != nil && *old == *updated {
+		return nil
+	}
+
+	if old != nil && updated == nil {
+		return updated
+	}
+
+	return updated
+}
+
+func diffNullableBool(old, updated *bool) *bool {
 	if old != nil && updated != nil && *old == *updated {
 		return nil
 	}
