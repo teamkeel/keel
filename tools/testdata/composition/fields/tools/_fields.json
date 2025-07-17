@@ -34,11 +34,14 @@
         "values": [
           {
             "value": "InStock",
-            "background_colour": "green"
+            "display_value": "In Stock",
+            "colour": "green",
+            "display_order": 1
           },
           {
             "value": "OutOfStock",
-            "background_colour": "red"
+            "colour": "red",
+            "display_order": 2
           }
         ]
       }

@@ -83,8 +83,13 @@
           "type": "ENUM",
           "enumConfig": {
             "values": [
-              { "value": "InStock", "backgroundColour": "green" },
-              { "value": "OutOfStock", "backgroundColour": "red" }
+              {
+                "value": "InStock",
+                "displayValue": "In Stock",
+                "colour": "green",
+                "displayOrder": 1
+              },
+              { "value": "OutOfStock", "colour": "red", "displayOrder": 2 }
             ]
           }
         }

@@ -697,11 +697,9 @@ message StringFormatConfig {
 message EnumFormatConfig {
 	message EnumValueFormatConfig {
 		string value = 1; // the value of the enum: e.g. (for an OrderStatus) Pending/Dispatched
-		optional string prefix = 2;
-		optional string suffix = 3;
-		optional string text_colour = 4;
-		optional string background_colour = 5;
-		int32 display_order = 6;
+		optional string display_value = 2;
+		optional string colour = 3;
+		int32 display_order = 4;
 	}
 
 	repeated EnumValueFormatConfig values = 1;

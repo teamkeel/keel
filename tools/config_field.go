@@ -239,19 +239,15 @@ func (e *EnumFormatConfig) applyOn(cfg *toolsproto.EnumFormatConfig) *toolsproto
 }
 
 type EnumValueFormatConfig struct {
-	Value            string  `json:"value,omitempty"`
-	Prefix           *string `json:"prefix,omitempty"`
-	Suffix           *string `json:"suffix,omitempty"`
-	TextColour       *string `json:"text_colour,omitempty"`
-	BackgroundColour *string `json:"background_colour,omitempty"`
-	DisplayOrder     *int32  `json:"display_order,omitempty"`
+	Value        string  `json:"value,omitempty"`
+	DisplayValue *string `json:"display_value,omitempty"`
+	Colour       *string `json:"colour,omitempty"`
+	DisplayOrder *int32  `json:"display_order,omitempty"`
 }
 
 func (e *EnumValueFormatConfig) hasChanges() bool {
-	return e.Prefix != nil ||
-		e.Suffix != nil ||
-		e.TextColour != nil ||
-		e.BackgroundColour != nil ||
+	return e.DisplayValue != nil ||
+		e.Colour != nil ||
 		e.DisplayOrder != nil
 }
 
@@ -262,11 +258,9 @@ func (e *EnumValueFormatConfig) applyOn(cfg *toolsproto.EnumFormatConfig_EnumVal
 
 	if cfg == nil {
 		return &toolsproto.EnumFormatConfig_EnumValueFormatConfig{
-			Value:            e.Value,
-			Prefix:           e.Prefix,
-			Suffix:           e.Suffix,
-			TextColour:       e.TextColour,
-			BackgroundColour: e.BackgroundColour,
+			Value:        e.Value,
+			DisplayValue: e.DisplayValue,
+			Colour:       e.Colour,
 			DisplayOrder: func() int32 {
 				if e.DisplayOrder != nil {
 					return *e.DisplayOrder
@@ -279,17 +273,11 @@ func (e *EnumValueFormatConfig) applyOn(cfg *toolsproto.EnumFormatConfig_EnumVal
 	if e.Value != "" {
 		cfg.Value = e.Value
 	}
-	if e.Prefix != nil {
-		cfg.Prefix = e.Prefix
+	if e.DisplayValue != nil {
+		cfg.DisplayValue = e.DisplayValue
 	}
-	if e.Suffix != nil {
-		cfg.Suffix = e.Suffix
-	}
-	if e.TextColour != nil {
-		cfg.TextColour = e.TextColour
-	}
-	if e.BackgroundColour != nil {
-		cfg.BackgroundColour = e.BackgroundColour
+	if e.Colour != nil {
+		cfg.Colour = e.Colour
 	}
 	if e.DisplayOrder != nil {
 		cfg.DisplayOrder = *e.DisplayOrder

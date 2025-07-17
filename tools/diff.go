@@ -86,12 +86,10 @@ func extractEnumValueFormatConfig(generated, updated *toolsproto.EnumFormatConfi
 		generated = &toolsproto.EnumFormatConfig_EnumValueFormatConfig{}
 	}
 	cfg := &EnumValueFormatConfig{
-		Value:            updated.GetValue(),
-		Prefix:           diffString(generated.GetPrefix(), updated.GetPrefix()),
-		Suffix:           diffString(generated.GetSuffix(), updated.GetSuffix()),
-		TextColour:       diffString(generated.GetTextColour(), updated.GetTextColour()),
-		BackgroundColour: diffString(generated.GetBackgroundColour(), updated.GetBackgroundColour()),
-		DisplayOrder:     diffInt(generated.GetDisplayOrder(), updated.GetDisplayOrder()),
+		Value:        updated.GetValue(),
+		DisplayValue: diffString(generated.GetDisplayValue(), updated.GetDisplayValue()),
+		Colour:       diffString(generated.GetColour(), updated.GetColour()),
+		DisplayOrder: diffInt(generated.GetDisplayOrder(), updated.GetDisplayOrder()),
 	}
 
 	if cfg.hasChanges() {
