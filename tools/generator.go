@@ -106,12 +106,6 @@ func (f *Field) asPB() *toolsproto.Field {
 
 type Fields map[string]*Field
 
-func (f Fields) Find(modelName, fieldName string) *Field {
-	id := modelName + " . " + fieldName
-
-	return f[id]
-}
-
 type Generator struct {
 	Schema     *proto.Schema
 	KeelConfig *config.ProjectConfig
