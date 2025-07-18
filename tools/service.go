@@ -221,7 +221,7 @@ func (s *Service) GetTools(ctx context.Context) (*toolsproto.Tools, error) {
 				}
 			}
 			gen.Id = cfg.ID
-			if gen.GetActionConfig() != nil {
+			if gen.IsActionBased() {
 				gen.ActionConfig.Id = cfg.ID
 			}
 
