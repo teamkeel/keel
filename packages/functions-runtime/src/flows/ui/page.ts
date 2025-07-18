@@ -86,7 +86,7 @@ export async function page<
     }
   }
 
-  const ret = await Promise.all(
+  const contentUiConfig = await Promise.all(
     content.map(async (c) => {
       const resolvedC = await c;
 
@@ -121,7 +121,7 @@ export async function page<
       stage: options.stage,
       title: options.title,
       description: options.description,
-      content: ret,
+      content: contentUiConfig,
       actions: options.actions?.map((a) => {
         if (typeof a === "string") {
           return { label: a, value: a, mode: "primary" };
@@ -251,10 +251,16 @@ const validateIteratorData = async (
     for (const el of elements) {
       const resolvedEl = await el;
 
-      if (isInputElementWithValidation(resolvedEl)) {
+      if (
+        "__type" in resolvedEl &&
+        resolvedEl.__type === "input" &&
+        "validate" in resolvedEl &&
+        resolvedEl.validate &&
+        typeof resolvedEl.validate === "function"
+      ) {
         const fieldName = resolvedEl.uiConfig.name;
 
-        if (hasFieldData(rowData, fieldName)) {
+        if (rowData && typeof rowData === "object" && fieldName in rowData) {
           const validationError = await (resolvedEl as any).validate(
             rowData[fieldName]
           );
@@ -272,20 +278,6 @@ const validateIteratorData = async (
   }
 
   return validationErrors;
-};
-
-const isInputElementWithValidation = (element: any): boolean => {
-  return (
-    "__type" in element &&
-    element.__type === "input" &&
-    "validate" in element &&
-    element.validate &&
-    typeof element.validate === "function"
-  );
-};
-
-const hasFieldData = (rowData: any, fieldName: string): boolean => {
-  return rowData && typeof rowData === "object" && fieldName in rowData;
 };
 
 /* ********************
