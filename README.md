@@ -28,7 +28,7 @@ Keel is the all-in-one platform that solves the backend puzzle by combining all 
 🎟️ Pub/Sub  
 💼 Cron jobs 
 
-Keel is currently in private beta, [join the waiting list](https://keel.so/) for access to the platform. In the meantime you can run your Keel projects locally without an account using the CLI.
+Keel is production-ready - sign up at [https://keel.so/](https://keel.so/) to access the platform or you can run your Keel projects locally without an account using the [CLI](https://www.npmjs.com/package/keel).
 
 ## Getting started
 
