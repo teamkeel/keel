@@ -23,7 +23,6 @@ import { header } from "./ui/elements/display/header";
 import { keyValue } from "./ui/elements/display/keyValue";
 import { selectTable } from "./ui/elements/select/table";
 import { dataGridInput } from "./ui/elements/input/dataGrid";
-import { NonRetriableError } from "./errors";
 import { iterator } from "./ui/elements/iterator";
 import { print } from "./ui/elements/interactive/print";
 import { pickList } from "./ui/elements/interactive/pickList";

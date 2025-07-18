@@ -33,7 +33,10 @@ export default Iterator(config, async (ctx) => {
             validate: (value) => {
               if (value < 1) {
                 return "Quantity must be greater than 0";
+              } else if (value > 10) {
+                return "Quantity must be less than 10";
               }
+              return true;
             },
           }),
         ],

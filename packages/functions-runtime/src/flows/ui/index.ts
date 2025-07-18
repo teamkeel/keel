@@ -69,6 +69,7 @@ import {
   UiElementIterator,
   UiElementIteratorApiResponse,
 } from "./elements/iterator";
+import {
   UiElementPrint,
   UiElementPrintApiResponse,
 } from "./elements/interactive/print";

@@ -92,7 +92,7 @@ export async function page<
       .map(async (c, index) => {
         
 
-        const {uiConfig, validationErrors} = await recursivelyProcessElement(c,  data && c.uiConfig.name in data? data[c.uiConfig.name] : undefined);
+        const {uiConfig, validationErrors} = await recursivelyProcessElement(c,  data && (await c).uiConfig.name in data? data[(await c).uiConfig.name] : undefined);
 
         if (validationErrors) elementValidationErrors = true;
 
@@ -234,7 +234,7 @@ const recursivelyProcessElement = async (
 
   return  {
     uiConfig: {
-      ...c.uiConfig,
+      ...(await c).uiConfig,
     }, 
     validationErrors: false
   };
@@ -243,61 +243,61 @@ const recursivelyProcessElement = async (
   //return [c.uiConfig, hasValidationErrors];
 };
 
-const recursivelyProcessElements = async (
-  elements: UIElements,
-  data: any
-): Promise<[UiElementApiResponses, validationErrors: boolean]> => {
-  // Turn these back into the actual response types
-  const content = elements as unknown as ImplementationResponse<any, any>[];
-  let hasValidationErrors = false;
+// const recursivelyProcessElements = async (
+//   elements: UIElements,
+//   data: any
+// ): Promise<[UiElementApiResponses, validationErrors: boolean]> => {
+//   // Turn these back into the actual response types
+//   const content = elements as unknown as ImplementationResponse<any, any>[];
+//   let hasValidationErrors = false;
 
-  const els = await Promise.all(
-    content
-      .map(async (c) => {
-        const isInput = "__type" in c && c.__type == "input";
-        const isIterator = "__type" in c && c.__type == "iterator";
+//   const els = await Promise.all(
+//     content
+//       .map(async (c) => {
+//         const isInput = "__type" in c && c.__type == "input";
+//         const isIterator = "__type" in c && c.__type == "iterator";
 
-        const hasData = data && c.uiConfig.name in data;
+//         const hasData = data && c.uiConfig.name in data;
 
-        if (isInput) {
-          if (hasData && c.validate) {
-            const validationError = await c.validate(data[c.uiConfig.name]);
+//         if (isInput) {
+//           if (hasData && c.validate) {
+//             const validationError = await c.validate(data[c.uiConfig.name]);
 
-              hasValidationErrors = typeof validationError === "string";
-              return {
-                ...c.uiConfig,
-                validationError: hasValidationErrors ? validationError : undefined,
-              };
+//               hasValidationErrors = typeof validationError === "string";
+//               return {
+//                 ...c.uiConfig,
+//                 validationError: hasValidationErrors ? validationError : undefined,
+//               };
             
-          } else {
-            return c.uiConfig;
-          }
-        }
+//           } else {
+//             return c.uiConfig;
+//           }
+//         }
 
         
-        if (isIterator) {
-          // We want to recursively processes the iterators elements
-          const [content, e] = await recursivelyProcessElements(
-            c.uiConfig.content as UIElements,
-            (data && c.uiConfig.name in data) ? data[c.uiConfig.name] : undefined
-          );
+//         if (isIterator) {
+//           // We want to recursively processes the iterators elements
+//           const [content, e] = await recursivelyProcessElements(
+//             c.uiConfig.content as UIElements,
+//             (data && c.uiConfig.name in data) ? data[c.uiConfig.name] : undefined
+//           );
 
-          if (e) hasValidationErrors = true;
+//           if (e) hasValidationErrors = true;
 
-          return {
-            ...c.uiConfig,
-            content: content,
+//           return {
+//             ...c.uiConfig,
+//             content: content,
             
-          };
-        }
+//           };
+//         }
 
-        return c.uiConfig;
-      })
-      .filter(Boolean)
-  );
+//         return c.uiConfig;
+//       })
+//       .filter(Boolean)
+//   );
 
-  return [els, hasValidationErrors];
-};
+//   return [els, hasValidationErrors];
+// };
 
 /* ********************
  * Helper functions
