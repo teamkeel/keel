@@ -22,65 +22,7 @@
           "type": "string"
         },
         "content": {
-          "type": "array",
-          "items": {
-            "anyOf": [
-              {
-                "$ref": "#/$defs/UiElementDividerApiResponse"
-              },
-              {
-                "$ref": "#/$defs/UiElementMarkdownApiResponse"
-              },
-              {
-                "$ref": "#/$defs/UiElementHeaderApiResponse"
-              },
-              {
-                "$ref": "#/$defs/UiElementBannerApiResponse"
-              },
-              {
-                "$ref": "#/$defs/UiElementImageApiResponse"
-              },
-              {
-                "$ref": "#/$defs/UiElementCodeApiResponse"
-              },
-              {
-                "$ref": "#/$defs/UiElementGridApiResponse"
-              },
-              {
-                "$ref": "#/$defs/UiElementListApiResponse"
-              },
-              {
-                "$ref": "#/$defs/UiElementTableApiResponse"
-              },
-              {
-                "$ref": "#/$defs/UiElementKeyValueApiResponse"
-              },
-              {
-                "$ref": "#/$defs/UiElementInputTextApiResponse"
-              },
-              {
-                "$ref": "#/$defs/UiElementInputNumberApiResponse"
-              },
-              {
-                "$ref": "#/$defs/UiElementInputBooleanApiResponse"
-              },
-              {
-                "$ref": "#/$defs/UiElementInputDataGridApiResponse"
-              },
-              {
-                "$ref": "#/$defs/UiElementSelectOneApiResponse"
-              },
-              {
-                "$ref": "#/$defs/UiElementSelectTableApiResponse"
-              },
-              {
-                "$ref": "#/$defs/UiElementPrintApiResponse"
-              },
-              {
-                "$ref": "#/$defs/UiElementPickListApiResponse"
-              }
-            ]
-          }
+          "$ref": "#/$defs/UiElementApiResponses"
         },
         "autoClose": {
           "type": "boolean"
@@ -94,6 +36,67 @@
       "required": [
         "__type",
         "content"
+      ]
+    },
+    "UiElementApiResponse": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/UiElementDividerApiResponse"
+        },
+        {
+          "$ref": "#/$defs/UiElementMarkdownApiResponse"
+        },
+        {
+          "$ref": "#/$defs/UiElementHeaderApiResponse"
+        },
+        {
+          "$ref": "#/$defs/UiElementBannerApiResponse"
+        },
+        {
+          "$ref": "#/$defs/UiElementImageApiResponse"
+        },
+        {
+          "$ref": "#/$defs/UiElementCodeApiResponse"
+        },
+        {
+          "$ref": "#/$defs/UiElementGridApiResponse"
+        },
+        {
+          "$ref": "#/$defs/UiElementListApiResponse"
+        },
+        {
+          "$ref": "#/$defs/UiElementTableApiResponse"
+        },
+        {
+          "$ref": "#/$defs/UiElementKeyValueApiResponse"
+        },
+        {
+          "$ref": "#/$defs/UiElementInputTextApiResponse"
+        },
+        {
+          "$ref": "#/$defs/UiElementInputNumberApiResponse"
+        },
+        {
+          "$ref": "#/$defs/UiElementInputBooleanApiResponse"
+        },
+        {
+          "$ref": "#/$defs/UiElementInputDataGridApiResponse"
+        },
+        {
+          "$ref": "#/$defs/UiElementSelectOneApiResponse"
+        },
+        {
+          "$ref": "#/$defs/UiElementSelectTableApiResponse"
+        },
+        {
+          "$ref": "#/$defs/UiElementIteratorApiResponse"
+        },
+        {
+          "$ref": "#/$defs/UiElementPrintApiResponse"
+        },
+        {
+          "$ref": "#/$defs/UiElementPickListApiResponse"
+        }
       ]
     },
     "UiElementDividerApiResponse": {
@@ -628,14 +631,14 @@
         "name": {
           "type": "string"
         },
-        "validationError": {
-          "type": "string"
-        },
         "__type": {
           "type": "string",
           "const": "ui.input.dataGrid"
         },
         "helpText": {
+          "type": "string"
+        },
+        "validationError": {
           "type": "string"
         }
       },
@@ -791,8 +794,11 @@
         "name": {
           "type": "string"
         },
-        "validationError": {
-          "type": "string"
+        "optional": {
+          "type": "boolean"
+        },
+        "disabled": {
+          "type": "boolean"
         },
         "__type": {
           "type": "string",
@@ -801,11 +807,8 @@
         "helpText": {
           "type": "string"
         },
-        "optional": {
-          "type": "boolean"
-        },
-        "disabled": {
-          "type": "boolean"
+        "validationError": {
+          "type": "string"
         }
       },
       "additionalProperties": false,
@@ -825,6 +828,65 @@
         "single"
       ],
       "type": "string"
+    },
+    "UiElementIteratorApiResponse": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "content": {
+          "$ref": "#/$defs/UiElementApiResponses"
+        },
+        "max": {
+          "type": "number"
+        },
+        "min": {
+          "type": "number"
+        },
+        "validationError": {
+          "type": "string"
+        },
+        "contentValidationErrors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "index": {
+                "type": "number"
+              },
+              "name": {
+                "type": "string"
+              },
+              "validationError": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "index",
+              "name",
+              "validationError"
+            ]
+          }
+        },
+        "__type": {
+          "type": "string",
+          "const": "ui.iterator"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "__type",
+        "content",
+        "name"
+      ]
+    },
+    "UiElementApiResponses": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/UiElementApiResponse"
+      }
     },
     "UiElementPrintApiResponse": {
       "type": "object",
@@ -994,65 +1056,7 @@
           }
         },
         "content": {
-          "type": "array",
-          "items": {
-            "anyOf": [
-              {
-                "$ref": "#/$defs/UiElementDividerApiResponse"
-              },
-              {
-                "$ref": "#/$defs/UiElementMarkdownApiResponse"
-              },
-              {
-                "$ref": "#/$defs/UiElementHeaderApiResponse"
-              },
-              {
-                "$ref": "#/$defs/UiElementBannerApiResponse"
-              },
-              {
-                "$ref": "#/$defs/UiElementImageApiResponse"
-              },
-              {
-                "$ref": "#/$defs/UiElementCodeApiResponse"
-              },
-              {
-                "$ref": "#/$defs/UiElementGridApiResponse"
-              },
-              {
-                "$ref": "#/$defs/UiElementListApiResponse"
-              },
-              {
-                "$ref": "#/$defs/UiElementTableApiResponse"
-              },
-              {
-                "$ref": "#/$defs/UiElementKeyValueApiResponse"
-              },
-              {
-                "$ref": "#/$defs/UiElementInputTextApiResponse"
-              },
-              {
-                "$ref": "#/$defs/UiElementInputNumberApiResponse"
-              },
-              {
-                "$ref": "#/$defs/UiElementInputBooleanApiResponse"
-              },
-              {
-                "$ref": "#/$defs/UiElementInputDataGridApiResponse"
-              },
-              {
-                "$ref": "#/$defs/UiElementSelectOneApiResponse"
-              },
-              {
-                "$ref": "#/$defs/UiElementSelectTableApiResponse"
-              },
-              {
-                "$ref": "#/$defs/UiElementPrintApiResponse"
-              },
-              {
-                "$ref": "#/$defs/UiElementPickListApiResponse"
-              }
-            ]
-          }
+          "$ref": "#/$defs/UiElementApiResponses"
         },
         "hasValidationErrors": {
           "type": "boolean"
