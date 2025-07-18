@@ -17,16 +17,13 @@ import (
 
 func TestGenerateTools(t *testing.T) {
 	t.Parallel()
-	testdataDir := "./testdata"
+	testdataDir := "./testdata/generator"
 	testCases, err := os.ReadDir(testdataDir)
 
 	require.NoError(t, err)
 
 	for _, tc := range testCases {
 		testCase := tc
-		if testCase.Name() == "generate_testdata.go" {
-			continue
-		}
 
 		if !testCase.IsDir() {
 			t.Errorf("test data directory should only contain directories - file found: %s", testCase.Name())
@@ -44,8 +41,13 @@ func TestGenerateTools(t *testing.T) {
 			schema, err := builder.MakeFromDirectory(testCaseDir)
 			require.NoError(t, err)
 
-			tools, err := GenerateTools(context.Background(), schema, builder.Config)
+			gen, err := NewGenerator(schema, builder.Config)
 			require.NoError(t, err)
+
+			err = gen.Generate(context.Background())
+			require.NoError(t, err)
+
+			tools := gen.GetTools()
 
 			response := &rpc.ListToolsResponse{
 				ToolConfigs: tools,

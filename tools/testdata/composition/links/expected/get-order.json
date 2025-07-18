@@ -1,0 +1,139 @@
+{
+  "id": "get-order",
+  "actionConfig": {
+    "id": "get-order",
+    "name": "Get order",
+    "actionName": "getOrder",
+    "apiNames": ["Api"],
+    "modelName": "Order",
+    "actionType": "ACTION_TYPE_GET",
+    "implementation": "ACTION_IMPLEMENTATION_AUTO",
+    "inputs": [
+      {
+        "fieldLocation": { "path": "$.id" },
+        "fieldType": "TYPE_ID",
+        "displayName": "Id",
+        "visible": true,
+        "lookupAction": { "toolId": "list-orders" },
+        "modelName": "Order",
+        "fieldName": "id"
+      }
+    ],
+    "response": [
+      {
+        "fieldLocation": { "path": "$.orderId" },
+        "fieldType": "TYPE_STRING",
+        "displayName": "Order id",
+        "visible": true,
+        "modelName": "Order",
+        "fieldName": "orderId"
+      },
+      {
+        "fieldLocation": { "path": "$.items" },
+        "fieldType": "TYPE_MODEL",
+        "repeated": true,
+        "displayName": "Items",
+        "displayOrder": 1,
+        "visible": true,
+        "link": {
+          "toolId": "list-order-lines",
+          "data": [
+            { "key": "$.where.order.id.equals", "path": { "path": "$.id" } }
+          ]
+        },
+        "modelName": "Order",
+        "fieldName": "items"
+      },
+      {
+        "fieldLocation": { "path": "$.status" },
+        "fieldType": "TYPE_ENUM",
+        "displayName": "Status",
+        "displayOrder": 2,
+        "visible": true,
+        "enumName": "OrderStatus",
+        "modelName": "Order",
+        "fieldName": "status"
+      },
+      {
+        "fieldLocation": { "path": "$.id" },
+        "fieldType": "TYPE_ID",
+        "displayName": "Id",
+        "displayOrder": 4,
+        "visible": true,
+        "modelName": "Order",
+        "fieldName": "id"
+      },
+      {
+        "fieldLocation": { "path": "$.createdAt" },
+        "fieldType": "TYPE_DATETIME",
+        "displayName": "Created at",
+        "displayOrder": 5,
+        "visible": true,
+        "modelName": "Order",
+        "fieldName": "createdAt"
+      },
+      {
+        "fieldLocation": { "path": "$.updatedAt" },
+        "fieldType": "TYPE_DATETIME",
+        "displayName": "Updated at",
+        "displayOrder": 6,
+        "visible": true,
+        "modelName": "Order",
+        "fieldName": "updatedAt"
+      }
+    ],
+    "title": { "template": "{{$.orderId}}" },
+    "entitySingle": "order",
+    "entityPlural": "orders",
+    "capabilities": { "comments": true, "audit": true },
+    "entryActivityActions": [
+      {
+        "toolId": "place-order",
+        "data": [{ "key": "$.where.id", "path": { "path": "$.id" } }],
+        "asDialog": true
+      },
+      {
+        "toolId": "process-order",
+        "data": [{ "key": "$.orderId", "path": { "path": "$.id" } }],
+        "displayOrder": 1,
+        "asDialog": true,
+        "visibleCondition": "true",
+        "skipConfirmation": true,
+        "title": { "template": "FLOW - Process Order" },
+        "emphasize": true
+      },
+      {
+        "toolId": "delete-order",
+        "data": [{ "key": "$.id", "path": { "path": "$.id" } }],
+        "displayOrder": 2,
+        "asDialog": true,
+        "skipConfirmation": true
+      }
+    ],
+    "createEntryAction": { "toolId": "create-order" },
+    "embeddedTools": [
+      {
+        "id": "items",
+        "title": { "template": "Items" },
+        "displayOrder": 1,
+        "tools": [
+          {
+            "actionLink": {
+              "toolId": "list-order-lines",
+              "data": [
+                { "key": "$.where.order.id.equals", "path": { "path": "$.id" } }
+              ],
+              "title": { "template": "items" }
+            },
+            "responseOverrides": [
+              { "fieldLocation": { "path": "$.results[*].orderId" } }
+            ]
+          }
+        ],
+        "visible": true
+      }
+    ],
+    "displayLayout": { "type": "RECORD", "recordConfig": {} },
+    "filterConfig": {}
+  }
+}

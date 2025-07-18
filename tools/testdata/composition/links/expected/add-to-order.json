@@ -1,0 +1,147 @@
+{
+  "id": "add-to-order",
+  "actionConfig": {
+    "id": "add-to-order",
+    "name": "Add to order",
+    "actionName": "addToOrder",
+    "apiNames": ["Api"],
+    "modelName": "OrderLine",
+    "actionType": "ACTION_TYPE_CREATE",
+    "implementation": "ACTION_IMPLEMENTATION_AUTO",
+    "inputs": [
+      {
+        "fieldLocation": { "path": "$.order" },
+        "fieldType": "TYPE_MESSAGE",
+        "displayName": "Order",
+        "visible": true
+      },
+      {
+        "fieldLocation": { "path": "$.order.id" },
+        "fieldType": "TYPE_ID",
+        "displayName": "Id",
+        "visible": true,
+        "getEntryAction": {
+          "toolId": "get-order",
+          "data": [{ "key": "$.id", "path": { "path": "$.order.id" } }]
+        },
+        "modelName": "Order",
+        "fieldName": "id"
+      },
+      {
+        "fieldLocation": { "path": "$.product" },
+        "fieldType": "TYPE_MESSAGE",
+        "displayName": "Product",
+        "displayOrder": 1,
+        "visible": true
+      },
+      {
+        "fieldLocation": { "path": "$.product.id" },
+        "fieldType": "TYPE_ID",
+        "displayName": "Id",
+        "visible": true,
+        "lookupAction": { "toolId": "list-products-duplicate" },
+        "getEntryAction": {
+          "toolId": "get-product",
+          "data": [{ "key": "$.id", "path": { "path": "$.product.id" } }]
+        },
+        "modelName": "Product",
+        "fieldName": "id"
+      },
+      {
+        "fieldLocation": { "path": "$.qty" },
+        "fieldType": "TYPE_INT",
+        "displayName": "Qty",
+        "displayOrder": 2,
+        "visible": true,
+        "modelName": "OrderLine",
+        "fieldName": "qty"
+      }
+    ],
+    "response": [
+      {
+        "fieldLocation": { "path": "$.orderId" },
+        "fieldType": "TYPE_ID",
+        "displayName": "Order",
+        "visible": true,
+        "link": {
+          "toolId": "get-order",
+          "data": [{ "key": "$.id", "path": { "path": "$.orderId" } }]
+        },
+        "modelName": "OrderLine",
+        "fieldName": "orderId"
+      },
+      {
+        "fieldLocation": { "path": "$.productId" },
+        "fieldType": "TYPE_ID",
+        "displayName": "Product",
+        "displayOrder": 1,
+        "visible": true,
+        "link": {
+          "toolId": "get-product",
+          "data": [{ "key": "$.id", "path": { "path": "$.productId" } }]
+        },
+        "modelName": "OrderLine",
+        "fieldName": "productId"
+      },
+      {
+        "fieldLocation": { "path": "$.qty" },
+        "fieldType": "TYPE_INT",
+        "displayName": "Qty",
+        "displayOrder": 2,
+        "visible": true,
+        "modelName": "OrderLine",
+        "fieldName": "qty"
+      },
+      {
+        "fieldLocation": { "path": "$.price" },
+        "fieldType": "TYPE_DECIMAL",
+        "displayName": "Price",
+        "displayOrder": 3,
+        "visible": true,
+        "modelName": "OrderLine",
+        "fieldName": "price"
+      },
+      {
+        "fieldLocation": { "path": "$.discount" },
+        "fieldType": "TYPE_INT",
+        "displayName": "Discount",
+        "displayOrder": 4,
+        "visible": true,
+        "modelName": "OrderLine",
+        "fieldName": "discount"
+      },
+      {
+        "fieldLocation": { "path": "$.id" },
+        "fieldType": "TYPE_ID",
+        "displayName": "Id",
+        "displayOrder": 8,
+        "visible": true,
+        "modelName": "OrderLine",
+        "fieldName": "id"
+      },
+      {
+        "fieldLocation": { "path": "$.createdAt" },
+        "fieldType": "TYPE_DATETIME",
+        "displayName": "Created at",
+        "displayOrder": 9,
+        "visible": true,
+        "modelName": "OrderLine",
+        "fieldName": "createdAt"
+      },
+      {
+        "fieldLocation": { "path": "$.updatedAt" },
+        "fieldType": "TYPE_DATETIME",
+        "displayName": "Updated at",
+        "displayOrder": 10,
+        "visible": true,
+        "modelName": "OrderLine",
+        "fieldName": "updatedAt"
+      }
+    ],
+    "title": { "template": "Add to order" },
+    "entitySingle": "order line",
+    "entityPlural": "order lines",
+    "capabilities": {},
+    "filterConfig": {}
+  }
+}

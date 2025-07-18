@@ -1,0 +1,20 @@
+{
+  "id": "get-product-duplicate",
+  "action_name": "getProduct",
+  "name": "Get product - duplicate",
+  "embedded_tools": [
+    {
+      "id": "orderLines",
+      "tools": [
+        {
+          "action_link": {
+            "tool_id": "list-order-lines-by-product"
+          },
+          "response_overrides": {
+            "$.results[*].productId": false
+          }
+        }
+      ]
+    }
+  ]
+}

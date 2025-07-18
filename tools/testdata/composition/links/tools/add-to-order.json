@@ -1,0 +1,17 @@
+{
+  "id": "add-to-order",
+  "action_name": "addToOrder",
+  "inputs": {
+    "$.order.id": {
+      "lookup_action": {
+        "tool_id": "list-orders",
+        "deleted": true
+      }
+    },
+    "$.product.id": {
+      "lookup_action": {
+        "tool_id": "list-products-duplicate"
+      }
+    }
+  }
+}

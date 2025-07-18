@@ -1,0 +1,5 @@
+testdata/**/.build
+testdata/**/package.json
+testdata/**/package-lock.json
+testdata/**/pnpm-lock.yaml
+testdata/**/tsconfig.json

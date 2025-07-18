@@ -1,0 +1,141 @@
+{
+  "id": "get-product-with-hidden",
+  "actionConfig": {
+    "id": "get-product-with-hidden",
+    "name": "Get product with hidden",
+    "actionName": "getProductWithHidden",
+    "apiNames": ["Api"],
+    "modelName": "Product",
+    "actionType": "ACTION_TYPE_GET",
+    "implementation": "ACTION_IMPLEMENTATION_AUTO",
+    "inputs": [
+      {
+        "fieldLocation": { "path": "$.id" },
+        "fieldType": "TYPE_ID",
+        "displayName": "Id",
+        "visible": true,
+        "lookupAction": { "toolId": "list-products" },
+        "modelName": "Product",
+        "fieldName": "id"
+      }
+    ],
+    "response": [
+      {
+        "fieldLocation": { "path": "$.name" },
+        "fieldType": "TYPE_STRING",
+        "displayName": "Name",
+        "visible": true,
+        "modelName": "Product",
+        "fieldName": "name"
+      },
+      {
+        "fieldLocation": { "path": "$.price" },
+        "fieldType": "TYPE_DECIMAL",
+        "displayName": "Price",
+        "displayOrder": 1,
+        "visible": true,
+        "modelName": "Product",
+        "fieldName": "price",
+        "format": {
+          "type": "NUMBER",
+          "numberConfig": {
+            "mode": "CURRENCY",
+            "currencyCode": "GBP",
+            "sensitive": true,
+            "locale": "UK",
+            "prefix": "£",
+            "colourise": "INVERTED"
+          }
+        }
+      },
+      {
+        "fieldLocation": { "path": "$.sku" },
+        "fieldType": "TYPE_STRING",
+        "displayName": "Sku",
+        "displayOrder": 2,
+        "visible": true,
+        "modelName": "Product",
+        "fieldName": "sku",
+        "format": { "type": "STRING", "stringConfig": { "prefix": "SKU-" } }
+      },
+      {
+        "fieldLocation": { "path": "$.hidden" },
+        "fieldType": "TYPE_STRING",
+        "displayName": "field config - overwritten by tool cfg",
+        "displayOrder": 3,
+        "visible": true,
+        "helpText": {
+          "template": "This tool cfg is overwritting the field config"
+        },
+        "modelName": "Product",
+        "fieldName": "hidden"
+      },
+      {
+        "fieldLocation": { "path": "$.status" },
+        "fieldType": "TYPE_ENUM",
+        "displayName": "Status",
+        "displayOrder": 4,
+        "visible": true,
+        "enumName": "Status",
+        "modelName": "Product",
+        "fieldName": "status",
+        "format": {
+          "type": "ENUM",
+          "enumConfig": {
+            "values": [
+              {
+                "value": "InStock",
+                "displayValue": "In Stock",
+                "colour": "green",
+                "displayOrder": 1
+              },
+              { "value": "OutOfStock", "colour": "red", "displayOrder": 2 }
+            ]
+          }
+        }
+      },
+      {
+        "fieldLocation": { "path": "$.id" },
+        "fieldType": "TYPE_ID",
+        "displayName": "Id",
+        "displayOrder": 6,
+        "visible": true,
+        "modelName": "Product",
+        "fieldName": "id"
+      },
+      {
+        "fieldLocation": { "path": "$.createdAt" },
+        "fieldType": "TYPE_DATETIME",
+        "displayName": "Created at",
+        "displayOrder": 7,
+        "visible": true,
+        "modelName": "Product",
+        "fieldName": "createdAt"
+      },
+      {
+        "fieldLocation": { "path": "$.updatedAt" },
+        "fieldType": "TYPE_DATETIME",
+        "displayName": "Updated at",
+        "displayOrder": 8,
+        "visible": true,
+        "modelName": "Product",
+        "fieldName": "updatedAt"
+      }
+    ],
+    "title": { "template": "{{$.name}}" },
+    "entitySingle": "product",
+    "entityPlural": "products",
+    "capabilities": {},
+    "entryActivityActions": [
+      {
+        "toolId": "get-product",
+        "data": [{ "key": "$.id", "path": { "path": "$.id" } }],
+        "displayOrder": 1,
+        "asDialog": false
+      }
+    ],
+    "createEntryAction": { "toolId": "create-product" },
+    "displayLayout": { "type": "RECORD", "recordConfig": {} },
+    "filterConfig": {}
+  }
+}

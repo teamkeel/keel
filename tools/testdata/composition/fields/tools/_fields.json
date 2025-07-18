@@ -1,0 +1,50 @@
+[
+  {
+    "id": "Product.sku",
+    "format": {
+      "string_config": {
+        "prefix": "SKU-"
+      }
+    }
+  },
+  {
+    "id": "Product.price",
+    "format": {
+      "number_config": {
+        "prefix": "£",
+        "sensitive": true,
+        "mode": "CURRENCY",
+        "currency_code": "GBP",
+        "locale": "UK",
+        "colourise": "INVERTED"
+      }
+    }
+  },
+  {
+    "id": "Product.hidden",
+    "visible": false,
+    "help_text": "this is a help text added in field config",
+    "image_preview": false,
+    "display_name": "field config - hidden"
+  },
+  {
+    "id": "Status",
+    "format": {
+      "enum_config": {
+        "values": [
+          {
+            "value": "InStock",
+            "display_value": "In Stock",
+            "colour": "green",
+            "display_order": 1
+          },
+          {
+            "value": "OutOfStock",
+            "colour": "red",
+            "display_order": 2
+          }
+        ]
+      }
+    }
+  }
+]

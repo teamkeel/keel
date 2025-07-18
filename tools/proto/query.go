@@ -261,3 +261,31 @@ func (t *FlowConfig) FindInputByPath(location string) *FlowInputConfig {
 
 	return nil
 }
+
+// GetID returns an identifier for this field.
+//
+// In the case of MODEL fields, it will be modelName.fieldName
+// For ENUM fields, it will be enumName.
+func (f *Field) GetID() string {
+	if f == nil {
+		return ""
+	}
+
+	switch f.GetType() {
+	case Field_MODEL:
+		return f.GetModelName() + "." + f.GetFieldName()
+	case Field_ENUM:
+		return f.GetEnumName()
+	}
+
+	return ""
+}
+
+func (e *EnumFormatConfig) FindForValue(val string) *EnumFormatConfig_EnumValueFormatConfig {
+	for _, v := range e.GetValues() {
+		if v.GetValue() == val {
+			return v
+		}
+	}
+	return nil
+}
