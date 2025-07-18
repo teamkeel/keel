@@ -41,8 +41,13 @@ func TestGenerateTools(t *testing.T) {
 			schema, err := builder.MakeFromDirectory(testCaseDir)
 			require.NoError(t, err)
 
-			tools, err := GenerateTools(context.Background(), schema, builder.Config)
+			gen, err := NewGenerator(schema, builder.Config)
 			require.NoError(t, err)
+
+			err = gen.Generate(context.Background())
+			require.NoError(t, err)
+
+			tools := gen.GetTools()
 
 			response := &rpc.ListToolsResponse{
 				ToolConfigs: tools,

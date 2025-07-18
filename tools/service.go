@@ -353,6 +353,41 @@ func (s *Service) updateToProject(cfgs ...*ToolConfig) error {
 	return nil
 }
 
+// generateTools will return a map of tool configurations generated for the given schema.
+func (s *Service) generateTools(ctx context.Context) ([]*toolsproto.Tool, error) {
+	if s.Schema == nil {
+		return nil, nil
+	}
+
+	gen, err := NewGenerator(s.Schema, s.Config)
+	if err != nil {
+		return nil, fmt.Errorf("creating tool generator: %w", err)
+	}
+
+	if err := gen.Generate(ctx); err != nil {
+		return nil, fmt.Errorf("generating tools: %w", err)
+	}
+
+	return gen.GetTools(), nil
+}
+
+// getGeneratedTool will return the generated tool for the given action/flow name.
+func (s *Service) getGeneratedTool(ctx context.Context, name string) (*toolsproto.Tool, error) {
+	// generate tools
+	genTools, err := s.generateTools(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("generating tools from schema: %w", err)
+	}
+
+	for _, t := range genTools {
+		if t.GetOperationName() == name {
+			return t, nil
+		}
+	}
+
+	return nil, fmt.Errorf("tool not found")
+}
+
 // DuplicateTool will take the given tool and duplicate it with a new ID, and then store the changes to files.
 func (s *Service) DuplicateTool(ctx context.Context, toolID string) (*toolsproto.Tool, error) {
 	tools, err := s.GetTools(ctx)
@@ -403,7 +438,7 @@ func (s *Service) GetTools(ctx context.Context) (*toolsproto.Tools, error) {
 	}
 
 	// generate tools
-	genTools, err := GenerateTools(ctx, s.Schema, s.Config)
+	genTools, err := s.generateTools(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("generating tools from schema: %w", err)
 	}
@@ -524,28 +559,6 @@ func (s *Service) ConfigureTool(ctx context.Context, updated *toolsproto.Tool) (
 	}
 
 	return tools.FindByID(updated.GetId()), nil
-}
-
-// getGeneratedTool will return the generated tool for the given action/flow name.
-func (s *Service) getGeneratedTool(ctx context.Context, name string) (*toolsproto.Tool, error) {
-	// if we don't have a schema, return nil
-	if s.Schema == nil {
-		return nil, nil
-	}
-
-	// generate tools
-	genTools, err := GenerateTools(ctx, s.Schema, s.Config)
-	if err != nil {
-		return nil, fmt.Errorf("generating tools from schema: %w", err)
-	}
-
-	for _, t := range genTools {
-		if t.GetOperationName() == name {
-			return t, nil
-		}
-	}
-
-	return nil, fmt.Errorf("tool not found")
 }
 
 // GetFields returns the configured fields for this schema.
