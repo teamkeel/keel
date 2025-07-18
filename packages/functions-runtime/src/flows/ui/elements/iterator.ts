@@ -5,13 +5,15 @@ import {
   IteratorElementResponse,
   UiElementApiResponses,
   UIElements,
+  ValidateFn,
 } from "..";
+import { ExtractFormData } from "../page";
 
 export type UiElementIterator = <N extends string, T extends UIElements>(
   name: N,
   options: {
     content: T;
-    // validate?: (data: ExtractFormData<T>[]) => Promise<null | string> | string | null;
+    validate?: ValidateFn<ExtractFormData<T>[]>;
     max?: number;
     min?: number;
   }
@@ -24,7 +26,8 @@ export interface UiElementIteratorApiResponse
   content: UiElementApiResponses;
   max?: number;
   min?: number;
-  validationErrors?: Array<{
+  validationError?: string;
+  contentValidationErrors?: Array<{
     index: number;
     name: string;
     validationError: string;
@@ -41,11 +44,11 @@ export const iterator: IteratorElementImplementation<
     uiConfig: {
       __type: "ui.iterator",
       name,
-      content: options.content as unknown as UiElementApiResponses, // It's not actually in shape yet but will be transformed by the page
+      content: options.content as unknown as UiElementApiResponses,
       max: options.max,
       min: options.min,
     } satisfies UiElementIteratorApiResponse,
-   // validate: options?.validate,
+    validate: options?.validate,
     getData: (x: any) => x,
   };
 };

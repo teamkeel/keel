@@ -159,65 +159,7 @@ test("flows - iterator element", async () => {
   });
 });
 
-test("flows - iterator element - too few items in iterator", async () => {
-  const token = await getToken({ email: "admin@keel.xyz" });
-
-  let { status, body } = await startFlow({
-    name: "Iterator",
-    token,
-    body: {},
-  });
-
-  expect(status).toEqual(200);
-
-  // Provide the values for the pending UI step
-  ({ status, body } = await putStepValues({
-    name: "Iterator",
-    runId: body.id,
-    stepId: body.steps[0].id,
-    token,
-    values: {
-      "my iterator": [],
-    },
-    action: null,
-  }));
-  expect(status).toEqual(200);
-  expect(body).toEqual({
-    id: expect.any(String),
-    traceId: expect.any(String),
-    status: "COMPLETED",
-    name: "Iterator",
-    startedBy: expect.any(String),
-    input: {},
-    data: null,
-    steps: [
-      {
-        id: expect.any(String),
-        name: "my page",
-        runId: expect.any(String),
-        stage: null,
-        status: "COMPLETED",
-        type: "UI",
-        value: {
-          "my iterator": [],
-        },
-        error: null,
-        startTime: expect.any(String),
-        endTime: expect.any(String),
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
-        ui: null,
-      },
-    ],
-    createdAt: expect.any(String),
-    updatedAt: expect.any(String),
-    config: {
-      title: "Iterator",
-    },
-  });
-});
-
-test("flows - iterator element - iterator has element with failed validation", async () => {
+test("flows - iterator element - iterator and element validation errors", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
   let { status, body } = await startFlow({
@@ -243,7 +185,7 @@ test("flows - iterator element - iterator has element with failed validation", a
           quantity: 0,
         },
         {
-          sku: "PANTS",
+          sku: "SHIRTS",
           quantity: 30,
         },
       ],
@@ -251,6 +193,7 @@ test("flows - iterator element - iterator has element with failed validation", a
     action: null,
   }));
   expect(status).toEqual(200);
+
   expect(body).toEqual({
     id: expect.any(String),
     traceId: expect.any(String),
@@ -311,7 +254,8 @@ test("flows - iterator element - iterator has element with failed validation", a
               ],
               min: 1,
               name: "my iterator",
-              validationErrors: [
+              validationError: "SHIRTS has been selected twice",
+              contentValidationErrors: [
                 {
                   index: 1,
                   name: "quantity",

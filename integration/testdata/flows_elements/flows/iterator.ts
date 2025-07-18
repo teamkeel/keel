@@ -41,6 +41,20 @@ export default Iterator(config, async (ctx) => {
           }),
         ],
         min: 1,
+        validate(data) {
+          const skus = data.map((item) => item.sku);
+          const uniqueSkus = new Set(skus);
+
+          if (skus.length !== uniqueSkus.size) {
+            const duplicates = skus.filter(
+              (sku, index) => skus.indexOf(sku) !== index
+            );
+            const uniqueDuplicates = [...new Set(duplicates)];
+            return `${uniqueDuplicates.join(", ")} has been selected twice`;
+          }
+
+          return true;
+        },
       }),
     ],
     validate: (data) => {

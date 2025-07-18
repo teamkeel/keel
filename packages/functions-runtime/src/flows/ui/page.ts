@@ -113,7 +113,7 @@ export async function page<
   const ret = await Promise.all(
     content.map(async (c) => {
       const resolvedC = await c;
-      
+
       const elementData =
         data && typeof data === "object" && resolvedC.uiConfig.name in data
           ? data[resolvedC.uiConfig.name]
@@ -231,13 +231,25 @@ const processIteratorElement = async (
 
   // Check for validation errors if we have data
   const validationErrors = await validateIteratorData(elements, dataArr);
-  const hasValidationErrors = validationErrors.length > 0;
+  let hasValidationErrors = validationErrors.length > 0;
+
+  let validationError: string | undefined = undefined;
+  if (dataArr && element.validate) {
+    const v = await element.validate(dataArr);
+    if (typeof v === "string") {
+      hasValidationErrors = true;
+      validationError = v;
+    }
+  }
 
   return {
     uiConfig: {
       ...element.uiConfig,
       content: ui,
-      validationErrors: hasValidationErrors ? validationErrors : undefined,
+      validationError: validationError,
+      contentValidationErrors: hasValidationErrors
+        ? validationErrors
+        : undefined,
     },
     validationErrors: hasValidationErrors,
   };
