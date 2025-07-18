@@ -45,4 +45,12 @@ BEGIN
     ) THEN
         CREATE INDEX "flow_run_started_by_idx" ON "keel"."flow_run" USING BTREE ("started_by");
     END IF;
+
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_indexes 
+        WHERE indexname = 'flow_step_run_id_name_idx' 
+        AND schemaname = 'keel'
+    ) THEN
+        CREATE INDEX "flow_step_run_id_name_idx" ON "keel"."flow_step" USING BTREE ("run_id", "name");
+    END IF;
 END $$;
