@@ -1,4 +1,4 @@
-import { ImplementationResponse, UI } from "./ui";
+import { UI } from "./ui";
 import { Complete, CompleteOptions } from "./ui/complete";
 import { useDatabase } from "../database";
 import { textInput } from "./ui/elements/input/text";
@@ -23,6 +23,7 @@ import { header } from "./ui/elements/display/header";
 import { keyValue } from "./ui/elements/display/keyValue";
 import { selectTable } from "./ui/elements/select/table";
 import { dataGridInput } from "./ui/elements/input/dataGrid";
+import { iterator } from "./ui/elements/iterator";
 import { print } from "./ui/elements/interactive/print";
 import { pickList } from "./ui/elements/interactive/pickList";
 import { NonRetriableError } from "./errors";
@@ -468,6 +469,7 @@ export function createFlowContext<C extends FlowConfig, E, S, I>(
         one: selectOne as any,
         table: selectTable as any,
       },
+      iterator: iterator as any,
       interactive: {
         print: print as any,
         pickList: pickList as any,
