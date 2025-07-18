@@ -292,18 +292,9 @@ type ActionValue<T> = T extends string
   : never;
 
 // Extract the data from elements and return a key-value object based on the name of the element
-// Either from extracting directly from input elements or by extracting the already extracted types from an iterator element
 export type ExtractFormData<T extends UIElements> = {
   [K in Extract<T[number], InputElementResponse<string, any>>["name"]]: Extract<
     T[number],
     InputElementResponse<K, any>
   >["valueType"];
-} & {
-  [K in Extract<
-    T[number],
-    IteratorElementResponse<string, any>
-  >["name"]]: Extract<
-    T[number],
-    IteratorElementResponse<K, any>
-  >["contentData"];
 };
