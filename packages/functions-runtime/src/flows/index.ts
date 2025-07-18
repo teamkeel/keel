@@ -1,4 +1,4 @@
-import { ImplementationResponse, UI } from "./ui";
+import { UI } from "./ui";
 import { Complete, CompleteOptions } from "./ui/complete";
 import { useDatabase } from "../database";
 import { textInput } from "./ui/elements/input/text";

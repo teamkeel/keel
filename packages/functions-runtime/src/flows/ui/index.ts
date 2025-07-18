@@ -139,11 +139,10 @@ export type DisplayElementWithRequiredConfig<TConfig extends any = never> = (
 ) => DisplayElementResponse;
 
 // Union of all element function shapes
-export type UIElement = (
+export type UIElement =
   | InputElementResponse<string, any>
   | DisplayElementResponse
-  | IteratorElementResponse<string, any>
-);
+  | IteratorElementResponse<string, any>;
 
 export type UIElements = UIElement[];
 
@@ -237,37 +236,35 @@ export type UIApiResponses = {
   };
 };
 
-export type UiElementApiResponse = 
-  (
-    // Display elements
-    | UiElementDividerApiResponse
-    | UiElementMarkdownApiResponse
-    | UiElementHeaderApiResponse
-    | UiElementBannerApiResponse
-    | UiElementImageApiResponse
-    | UiElementCodeApiResponse
-    | UiElementGridApiResponse
-    | UiElementListApiResponse
-    | UiElementTableApiResponse
-    | UiElementKeyValueApiResponse
+export type UiElementApiResponse =
+  // Display elements
+  | UiElementDividerApiResponse
+  | UiElementMarkdownApiResponse
+  | UiElementHeaderApiResponse
+  | UiElementBannerApiResponse
+  | UiElementImageApiResponse
+  | UiElementCodeApiResponse
+  | UiElementGridApiResponse
+  | UiElementListApiResponse
+  | UiElementTableApiResponse
+  | UiElementKeyValueApiResponse
 
-    // Input elements
-    | UiElementInputTextApiResponse
-    | UiElementInputNumberApiResponse
-    | UiElementInputBooleanApiResponse
-    | UiElementInputDataGridApiResponse
+  // Input elements
+  | UiElementInputTextApiResponse
+  | UiElementInputNumberApiResponse
+  | UiElementInputBooleanApiResponse
+  | UiElementInputDataGridApiResponse
 
-    // Select elements
-    | UiElementSelectOneApiResponse
-    | UiElementSelectTableApiResponse
+  // Select elements
+  | UiElementSelectOneApiResponse
+  | UiElementSelectTableApiResponse
 
-    // Special
-    | UiElementIteratorApiResponse
+  // Special
+  | UiElementIteratorApiResponse
 
-    // Interactive elements
-    | UiElementPrintApiResponse
-    | UiElementPickListApiResponse
-  );
+  // Interactive elements
+  | UiElementPrintApiResponse
+  | UiElementPickListApiResponse;
 
 export type UiElementApiResponses = UiElementApiResponse[];
 

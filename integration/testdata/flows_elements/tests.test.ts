@@ -38,41 +38,38 @@ test("flows - iterator element", async () => {
         ui: {
           __type: "ui.page",
           content: [
-            { 
-              __type: "ui.iterator", 
+            {
+              __type: "ui.iterator",
               content: [
-                [
                 {
-                    __type: "ui.display.header",
-                    description: "my description",
-                    level: 1,
-                    title: "my header",
+                  __type: "ui.display.header",
+                  description: "my description",
+                  level: 1,
+                  title: "my header",
                 },
                 {
-                    __type: "ui.select.one",
-                    disabled: false,
-                    label: "SKU",
-                    name: "sku",
-                    optional: false,
-                    options: [
-                      "SHOES",
-                      "SHIRTS",
-                      "PANTS",
-                      "TIE",
-                      "BELT",
-                      "SOCKS",
-                      "UNDERWEAR",
-                    ],
+                  __type: "ui.select.one",
+                  disabled: false,
+                  label: "SKU",
+                  name: "sku",
+                  optional: false,
+                  options: [
+                    "SHOES",
+                    "SHIRTS",
+                    "PANTS",
+                    "TIE",
+                    "BELT",
+                    "SOCKS",
+                    "UNDERWEAR",
+                  ],
                 },
                 {
-                    __type: "ui.input.number",
-                    disabled: false,
-                    label: "Qty",
-                    name: "quantity",
-                    optional: false,
-                  },
-                ],
-                
+                  __type: "ui.input.number",
+                  disabled: false,
+                  label: "Qty",
+                  name: "quantity",
+                  optional: false,
+                },
               ],
               min: 1,
               name: "my iterator",
@@ -89,8 +86,8 @@ test("flows - iterator element", async () => {
     },
   });
 
-   // Provide the values for the pending UI step
-   ({ status, body } = await putStepValues({
+  // Provide the values for the pending UI step
+  ({ status, body } = await putStepValues({
     name: "Iterator",
     runId: body.id,
     stepId: body.steps[0].id,
@@ -131,20 +128,20 @@ test("flows - iterator element", async () => {
         status: "COMPLETED",
         type: "UI",
         value: {
-         "my iterator": [
-          {
-            sku: "SHOES",
-            quantity: 1,
-          },
-          {
-            sku: "SHIRTS",
-            quantity: 5,
-          },
-          {
-            sku: "PANTS",
-            quantity: 3,
-          },
-        ],
+          "my iterator": [
+            {
+              sku: "SHOES",
+              quantity: 1,
+            },
+            {
+              sku: "SHIRTS",
+              quantity: 5,
+            },
+            {
+              sku: "PANTS",
+              quantity: 3,
+            },
+          ],
         },
         error: null,
         startTime: expect.any(String),
@@ -173,16 +170,14 @@ test("flows - iterator element - too few items in iterator", async () => {
 
   expect(status).toEqual(200);
 
-   // Provide the values for the pending UI step
-   ({ status, body } = await putStepValues({
+  // Provide the values for the pending UI step
+  ({ status, body } = await putStepValues({
     name: "Iterator",
     runId: body.id,
     stepId: body.steps[0].id,
     token,
     values: {
-      "my iterator": [
-
-      ],
+      "my iterator": [],
     },
     action: null,
   }));
@@ -204,9 +199,7 @@ test("flows - iterator element - too few items in iterator", async () => {
         status: "COMPLETED",
         type: "UI",
         value: {
-         "my iterator": [
-   
-          ],
+          "my iterator": [],
         },
         error: null,
         startTime: expect.any(String),
@@ -232,27 +225,28 @@ test("flows - iterator element - iterator has element with failed validation", a
     token,
     body: {},
   });
-
   expect(status).toEqual(200);
 
-   // Provide the values for the pending UI step
-   ({ status, body } = await putStepValues({
+  ({ status, body } = await putStepValues({
     name: "Iterator",
     runId: body.id,
     stepId: body.steps[0].id,
     token,
     values: {
-        "my iterator": [
-         {
-           sku: "SHOES",
-           quantity: 1,
-         },
-         {
-           sku: "SHIRTS",
-           quantity: 0,
-         },
-       ],
-       
+      "my iterator": [
+        {
+          sku: "SHOES",
+          quantity: 1,
+        },
+        {
+          sku: "SHIRTS",
+          quantity: 0,
+        },
+        {
+          sku: "PANTS",
+          quantity: 30,
+        },
+      ],
     },
     action: null,
   }));
@@ -282,78 +276,57 @@ test("flows - iterator element - iterator has element with failed validation", a
         ui: {
           __type: "ui.page",
           content: [
-            { 
-              __type: "ui.iterator", 
+            {
+              __type: "ui.iterator",
               content: [
-                 [
-                    {
-                        __type: "ui.display.header",
-                        description: "my description",
-                        level: 1,
-                        title: "my header",
-                    },
-                    {
-                        __type: "ui.select.one",
-                        disabled: false,
-                        label: "SKU",
-                        name: "sku",
-                        optional: false,
-                        options: [
-                          "SHOES",
-                          "SHIRTS",
-                          "PANTS",
-                          "TIE",
-                          "BELT",
-                          "SOCKS",
-                          "UNDERWEAR",
-                        ],
-                    },
-                    {
-                        __type: "ui.input.number",
-                        disabled: false,
-                        label: "Qty",
-                        name: "quantity",
-                        optional: false,
-                    },
-                ],
-                [
-                  {
-                      __type: "ui.display.header",
-                      description: "my description",
-                      level: 1,
-                      title: "my header",
-                  },
-                  {
-                      __type: "ui.select.one",
-                      disabled: false,
-                      label: "SKU",
-                      name: "sku",
-                      optional: false,
-                      options: [
-                        "SHOES",
-                        "SHIRTS",
-                        "PANTS",
-                        "TIE",
-                        "BELT",
-                        "SOCKS",
-                        "UNDERWEAR",
-                      ],
-                  },
-                  {
-                      __type: "ui.input.number",
-                      disabled: false,
-                      label: "Qty",
-                      name: "quantity",
-                      optional: false,
-                      validationError: "Quantity must be greater than 0",
-                  },
-              ],
+                {
+                  __type: "ui.display.header",
+                  description: "my description",
+                  level: 1,
+                  title: "my header",
+                },
+                {
+                  __type: "ui.select.one",
+                  disabled: false,
+                  label: "SKU",
+                  name: "sku",
+                  optional: false,
+                  options: [
+                    "SHOES",
+                    "SHIRTS",
+                    "PANTS",
+                    "TIE",
+                    "BELT",
+                    "SOCKS",
+                    "UNDERWEAR",
+                  ],
+                },
+                {
+                  __type: "ui.input.number",
+                  disabled: false,
+                  label: "Qty",
+                  name: "quantity",
+                  optional: false,
+                },
               ],
               min: 1,
               name: "my iterator",
+              validationErrors: [
+                {
+                  index: 1,
+                  name: "quantity",
+                  validationError: "Quantity must be greater than 0",
+                },
+                {
+                  index: 2,
+                  name: "quantity",
+                  validationError: "Quantity must be less than 10",
+                },
+              ],
             },
           ],
           hasValidationErrors: true,
+          validationError: "Total quantity must be less than 20",
         },
       },
     ],

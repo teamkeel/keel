@@ -5,7 +5,7 @@ const config = {
 } as const satisfies FlowConfig;
 
 export default Iterator(config, async (ctx) => {
-  const result = await ctx.ui.page("my page", {
+  await ctx.ui.page("my page", {
     content: [
       ctx.ui.iterator("my iterator", {
         content: [
@@ -43,6 +43,16 @@ export default Iterator(config, async (ctx) => {
         min: 1,
       }),
     ],
+    validate: (data) => {
+      let totalQuantity = 0;
+      for (const item of data["my iterator"]) {
+        totalQuantity += item.quantity;
+      }
+      if (totalQuantity > 20) {
+        return "Total quantity must be less than 20";
+      }
+      return true;
+    },
   });
 
   return null;

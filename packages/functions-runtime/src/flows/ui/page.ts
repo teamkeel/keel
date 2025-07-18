@@ -2,6 +2,7 @@ import { FlowConfig, ExtractStageKeys } from "..";
 import {
   BaseUiDisplayResponse,
   ImplementationResponse,
+  InputElementImplementationResponse,
   InputElementResponse,
   IteratorElementImplementationResponse,
   IteratorElementResponse,
@@ -45,6 +46,30 @@ type PageActionConfig = {
   mode?: "primary" | "secondary" | "destructive";
 };
 
+// Extract the key from a custom action, supporting either a string or an object with a value property
+type ActionValue<T> = T extends string
+  ? T
+  : T extends { value: infer V }
+  ? V
+  : never;
+
+// Extract the data from elements and return a key-value object based on the name of the element
+// Either from extracting directly from input elements or by extracting the already extracted types from an iterator element
+export type ExtractFormData<T extends UIElements> = {
+  [K in Extract<T[number], InputElementResponse<string, any>>["name"]]: Extract<
+    T[number],
+    InputElementResponse<K, any>
+  >["valueType"];
+} & {
+  [K in Extract<
+    T[number],
+    IteratorElementResponse<string, any>
+  >["name"]]: Extract<
+    T[number],
+    IteratorElementResponse<K, any>
+  >["contentData"];
+};
+
 export interface UiPageApiResponse extends BaseUiDisplayResponse<"ui.page"> {
   stage?: string;
   title?: string;
@@ -85,32 +110,27 @@ export async function page<
     }
   }
 
-  let elementValidationErrors = false;
-  // 
-  const ret = (await Promise.all(
-    content
-      .map(async (c, index) => {
-        
+  const ret = await Promise.all(
+    content.map(async (c) => {
+      const resolvedC = await c;
+      
+      const elementData =
+        data && typeof data === "object" && resolvedC.uiConfig.name in data
+          ? data[resolvedC.uiConfig.name]
+          : undefined;
 
-        const {uiConfig, validationErrors} = await recursivelyProcessElement(c,  data && (await c).uiConfig.name in data? data[(await c).uiConfig.name] : undefined);
+      const { uiConfig, validationErrors } = await recursivelyProcessElement(
+        c,
+        elementData
+      );
 
-        if (validationErrors) elementValidationErrors = true;
+      if (validationErrors) hasValidationErrors = true;
 
-        return uiConfig;
-        
-        
-      })
-  ));
-
-  // const [contentUiConfig, elementValidationErrors] =
-  //   await recursivelyProcessElements(options.content, data);
-
-  if (elementValidationErrors) {
-    hasValidationErrors = true;
-  }
+      return uiConfig;
+    })
+  );
 
   // If there is page level validation, validate the data
-
   if (data && options.validate) {
     const validationResult = await options.validate(data);
     if (typeof validationResult === "string") {
@@ -144,185 +164,138 @@ export async function page<
 const recursivelyProcessElement = async (
   c: ImplementationResponse<any, any>,
   data: any
-): Promise<{uiConfig: UiElementApiResponse, validationErrors: boolean}> => {
-  let hasValidationErrors = false;
+): Promise<{ uiConfig: UiElementApiResponse; validationErrors: boolean }> => {
+  const resolvedC = await c;
+  const elementType = "__type" in resolvedC ? resolvedC.__type : null;
 
-  const isInput = "__type" in c && c.__type == "input";
-  const isIterator = "__type" in c && c.__type == "iterator";
-
-
-  if (isInput) {
-    const hasData = data && c.uiConfig.name in data;
-
-    if (hasData && c.validate) {
-      const validationError = await c.validate(data[c.uiConfig.name]);
-
-        hasValidationErrors = typeof validationError === "string";
-        return  {
-          uiConfig: {
-            ...c.uiConfig,
-            validationError: hasValidationErrors ? validationError : undefined,
-          }, 
-          validationErrors: hasValidationErrors
-        };
-      
-    } else {
-     
-      return  {
-        uiConfig: {
-          ...c.uiConfig,
-        }, 
-        validationErrors: false
+  switch (elementType) {
+    case "input":
+      return processInputElement(
+        resolvedC as InputElementImplementationResponse<any, any>,
+        data
+      );
+    case "iterator":
+      return processIteratorElement(
+        resolvedC as IteratorElementImplementationResponse<any, any>,
+        data
+      );
+    default:
+      return {
+        uiConfig: { ...resolvedC.uiConfig },
+        validationErrors: false,
       };
-    }
   }
+};
 
-  if (isIterator) {
-    const elements = c.uiConfig.content as ImplementationResponse<any, any>[];
-    let content: UiElementApiResponse[][] = [];
+const processInputElement = async (
+  element: InputElementImplementationResponse<any, any>,
+  data: any
+): Promise<{ uiConfig: UiElementApiResponse; validationErrors: boolean }> => {
+  const hasData = data !== undefined && data !== null;
 
-    const dataArr = data as any[] | undefined;
-
-    if (dataArr && dataArr.length > 0) {
-      for (const d of dataArr) {
-        const row: UiElementApiResponse[] = [];
-        for (const el of elements) {
-
-        //  const hasData = d && el.uiConfig && el.uiConfig.name in d;
-
-          const r = await recursivelyProcessElement(el, d);
-
-          if (r.validationErrors) hasValidationErrors = true;
-          row.push(r.uiConfig);
-
-        }
-        content.push(row);
-      }
-    } else {
-      const row: UiElementApiResponse[] = [];
-      for (const el of elements) {
-        const r = await recursivelyProcessElement(el, undefined);
-
-       // if (r.validationErrors) hasValidationErrors = true;
-
-       row.push(r.uiConfig);
-      }
-      content.push(row);
-    }
-
-
-    // for (const [index, el] of elements.entries()) {
-    //    // We want to recursively process the iterator elements
-    //   const r = await recursivelyProcessElement(
-    //     el,// as UIElement,
-    //     (data && data[index]) ? data[index] : undefined
-    //   );
-
-    //   if (r.validationErrors) hasValidationErrors = true;
-
-    //   iteratorContent.push(r.uiConfig);
-    // }
-
+  if (!hasData || !element.validate) {
     return {
-        uiConfig: {
-        ...c.uiConfig,
-         content,
-      }, 
-      validationErrors: hasValidationErrors 
+      uiConfig: { ...element.uiConfig },
+      validationErrors: false,
     };
   }
 
-  return  {
+  const validationError = await element.validate(data);
+  const hasValidationErrors = typeof validationError === "string";
+
+  return {
     uiConfig: {
-      ...(await c).uiConfig,
-    }, 
-    validationErrors: false
+      ...element.uiConfig,
+      validationError: hasValidationErrors ? validationError : undefined,
+    },
+    validationErrors: hasValidationErrors,
   };
-
-
-  //return [c.uiConfig, hasValidationErrors];
 };
 
-// const recursivelyProcessElements = async (
-//   elements: UIElements,
-//   data: any
-// ): Promise<[UiElementApiResponses, validationErrors: boolean]> => {
-//   // Turn these back into the actual response types
-//   const content = elements as unknown as ImplementationResponse<any, any>[];
-//   let hasValidationErrors = false;
+const processIteratorElement = async (
+  element: any,
+  data: any
+): Promise<{ uiConfig: UiElementApiResponse; validationErrors: boolean }> => {
+  const elements = element.uiConfig.content as ImplementationResponse<
+    any,
+    any
+  >[];
+  const dataArr = data as any[] | undefined;
 
-//   const els = await Promise.all(
-//     content
-//       .map(async (c) => {
-//         const isInput = "__type" in c && c.__type == "input";
-//         const isIterator = "__type" in c && c.__type == "iterator";
+  // Process the UI config content
+  const ui: UiElementApiResponse[] = [];
+  for (const el of elements) {
+    const result = await recursivelyProcessElement(el, undefined);
+    ui.push(result.uiConfig);
+  }
 
-//         const hasData = data && c.uiConfig.name in data;
+  // Check for validation errors if we have data
+  const validationErrors = await validateIteratorData(elements, dataArr);
+  const hasValidationErrors = validationErrors.length > 0;
 
-//         if (isInput) {
-//           if (hasData && c.validate) {
-//             const validationError = await c.validate(data[c.uiConfig.name]);
+  return {
+    uiConfig: {
+      ...element.uiConfig,
+      content: ui,
+      validationErrors: hasValidationErrors ? validationErrors : undefined,
+    },
+    validationErrors: hasValidationErrors,
+  };
+};
 
-//               hasValidationErrors = typeof validationError === "string";
-//               return {
-//                 ...c.uiConfig,
-//                 validationError: hasValidationErrors ? validationError : undefined,
-//               };
-            
-//           } else {
-//             return c.uiConfig;
-//           }
-//         }
+const validateIteratorData = async (
+  elements: ImplementationResponse<any, any>[],
+  dataArr: any[] | undefined
+): Promise<Array<{ index: number; name: string; validationError: string }>> => {
+  const validationErrors: Array<{
+    index: number;
+    name: string;
+    validationError: string;
+  }> = [];
 
-        
-//         if (isIterator) {
-//           // We want to recursively processes the iterators elements
-//           const [content, e] = await recursivelyProcessElements(
-//             c.uiConfig.content as UIElements,
-//             (data && c.uiConfig.name in data) ? data[c.uiConfig.name] : undefined
-//           );
+  if (!dataArr || dataArr.length === 0) {
+    return validationErrors;
+  }
 
-//           if (e) hasValidationErrors = true;
+  for (let i = 0; i < dataArr.length; i++) {
+    const rowData = dataArr[i];
 
-//           return {
-//             ...c.uiConfig,
-//             content: content,
-            
-//           };
-//         }
+    for (const el of elements) {
+      const resolvedEl = await el;
 
-//         return c.uiConfig;
-//       })
-//       .filter(Boolean)
-//   );
+      if (isInputElementWithValidation(resolvedEl)) {
+        const fieldName = resolvedEl.uiConfig.name;
 
-//   return [els, hasValidationErrors];
-// };
+        if (hasFieldData(rowData, fieldName)) {
+          const validationError = await (resolvedEl as any).validate(
+            rowData[fieldName]
+          );
 
-/* ********************
- * Helper functions
- ******************* */
+          if (typeof validationError === "string") {
+            validationErrors.push({
+              index: i,
+              name: fieldName,
+              validationError: validationError,
+            });
+          }
+        }
+      }
+    }
+  }
 
-// Extract the key from a custom action, supporting either a string or an object with a value property
-type ActionValue<T> = T extends string
-  ? T
-  : T extends { value: infer V }
-    ? V
-    : never;
+  return validationErrors;
+};
 
-// Extract the data from elements and return a key-value object based on the name of the element
-// Either from extracting directly from input elements or by extracting the already extracted types from an iterator element
-export type ExtractFormData<T extends UIElements> = {
-  [K in Extract<T[number], InputElementResponse<string, any>>["name"]]: Extract<
-    T[number],
-    InputElementResponse<K, any>
-  >["valueType"];
-} & {
-  [K in Extract<
-    T[number],
-    IteratorElementResponse<string, any>
-  >["name"]]: Extract<
-    T[number],
-    IteratorElementResponse<K, any>
-  >["contentData"];
+const isInputElementWithValidation = (element: any): boolean => {
+  return (
+    "__type" in element &&
+    element.__type === "input" &&
+    "validate" in element &&
+    element.validate &&
+    typeof element.validate === "function"
+  );
+};
+
+const hasFieldData = (rowData: any, fieldName: string): boolean => {
+  return rowData && typeof rowData === "object" && fieldName in rowData;
 };

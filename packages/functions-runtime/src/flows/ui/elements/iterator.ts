@@ -24,6 +24,11 @@ export interface UiElementIteratorApiResponse
   content: UiElementApiResponses;
   max?: number;
   min?: number;
+  validationErrors?: Array<{
+    index: number;
+    name: string;
+    validationError: string;
+  }>;
 }
 
 export const iterator: IteratorElementImplementation<
@@ -40,7 +45,7 @@ export const iterator: IteratorElementImplementation<
       max: options.max,
       min: options.min,
     } satisfies UiElementIteratorApiResponse,
-    // validate: options?.validate,
+   // validate: options?.validate,
     getData: (x: any) => x,
   };
 };
