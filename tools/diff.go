@@ -4,6 +4,163 @@ import (
 	toolsproto "github.com/teamkeel/keel/tools/proto"
 )
 
+// extractFieldsConfigs will diff the updated field based configs against the given generated ones, and return an
+// array of user configurations.
+func extractFieldsConfigs(generated, updated []*toolsproto.Field) FieldConfigs {
+	cfgs := FieldConfigs{}
+	for _, updatedField := range updated {
+		for _, genField := range generated {
+			if updatedField.GetID() == genField.GetID() {
+				if c := extractFieldConfig(genField, updatedField); c != nil {
+					cfgs = append(cfgs, c)
+				}
+			}
+		}
+	}
+
+	return cfgs
+}
+
+func extractFieldConfig(generated, updated *toolsproto.Field) *FieldConfig {
+	cfg := FieldConfig{
+		ID:           updated.GetID(),
+		Format:       extractFormatConfig(generated.GetFormat(), updated.GetFormat()),
+		DisplayName:  diffString(generated.GetDisplayName(), updated.GetDisplayName()),
+		Visible:      diffNullableBool(generated.Visible, updated.Visible),
+		ImagePreview: diffNullableBool(generated.ImagePreview, updated.ImagePreview),
+		HelpText:     diffStringTemplate(generated.GetHelpText(), updated.GetHelpText()),
+	}
+
+	if !cfg.hasChanges() {
+		return nil
+	}
+	return &cfg
+}
+
+func extractFormatConfig(generated, updated *toolsproto.FormatConfig) *FormatConfig {
+	fmt := &FormatConfig{
+		EnumConfig:   extractEnumFormatConfig(generated.GetEnumConfig(), updated.GetEnumConfig()),
+		NumberConfig: extractNumberFormatConfig(generated.GetNumberConfig(), updated.GetNumberConfig()),
+		StringConfig: extractStringFormatConfig(generated.GetStringConfig(), updated.GetStringConfig()),
+		BoolConfig:   extractBoolFormatConfig(generated.GetBoolConfig(), updated.GetBoolConfig()),
+	}
+
+	if !fmt.hasChanges() {
+		return nil
+	}
+
+	return fmt
+}
+
+func extractEnumFormatConfig(generated, updated *toolsproto.EnumFormatConfig) *EnumFormatConfig {
+	if updated == nil {
+		return nil
+	}
+
+	if generated == nil {
+		generated = &toolsproto.EnumFormatConfig{}
+	}
+
+	diffs := []*EnumValueFormatConfig{}
+	for _, v := range updated.GetValues() {
+		if d := extractEnumValueFormatConfig(generated.FindForValue(v.GetValue()), v); d != nil {
+			diffs = append(diffs, d)
+		}
+	}
+
+	if len(diffs) > 0 {
+		return &EnumFormatConfig{
+			Values: diffs,
+		}
+	}
+
+	return nil
+}
+
+func extractEnumValueFormatConfig(generated, updated *toolsproto.EnumFormatConfig_EnumValueFormatConfig) *EnumValueFormatConfig {
+	if updated == nil {
+		return nil
+	}
+
+	if generated == nil {
+		generated = &toolsproto.EnumFormatConfig_EnumValueFormatConfig{}
+	}
+	cfg := &EnumValueFormatConfig{
+		Value:        updated.GetValue(),
+		DisplayValue: diffString(generated.GetDisplayValue(), updated.GetDisplayValue()),
+		Colour:       diffString(generated.GetColour(), updated.GetColour()),
+		DisplayOrder: diffInt(generated.GetDisplayOrder(), updated.GetDisplayOrder()),
+	}
+
+	if cfg.hasChanges() {
+		return cfg
+	}
+
+	return nil
+}
+
+func extractNumberFormatConfig(generated, updated *toolsproto.NumberFormatConfig) *NumberFormatConfig {
+	if updated == nil {
+		return nil
+	}
+
+	cfg := NumberFormatConfig{
+		Prefix:       diffString(generated.GetPrefix(), updated.GetPrefix()),
+		Suffix:       diffString(generated.GetSuffix(), updated.GetSuffix()),
+		Sensitive:    diffBool(generated.GetSensitive(), updated.GetSensitive()),
+		CurrencyCode: diffString(generated.GetCurrencyCode(), updated.GetCurrencyCode()),
+		UnitCode:     diffString(generated.GetUnitCode(), updated.GetUnitCode()),
+		Locale:       diffString(generated.GetLocale(), updated.GetLocale()),
+		Mode:         diffString(generated.GetMode().String(), updated.GetMode().String()),
+		Colourise:    diffString(generated.GetColourise().String(), updated.GetColourise().String()),
+	}
+
+	if cfg.hasChanges() {
+		return &cfg
+	}
+
+	return nil
+}
+
+func extractStringFormatConfig(generated, updated *toolsproto.StringFormatConfig) *StringFormatConfig {
+	if updated == nil {
+		return nil
+	}
+
+	cfg := StringFormatConfig{
+		Prefix:         diffString(generated.GetPrefix(), updated.GetPrefix()),
+		Suffix:         diffString(generated.GetSuffix(), updated.GetSuffix()),
+		ShowURLPreview: diffBool(generated.GetShowUrlPreview(), updated.GetShowUrlPreview()),
+		Sensitive:      diffBool(generated.GetSensitive(), updated.GetSensitive()),
+		TextColour:     diffString(generated.GetTextColour(), updated.GetTextColour()),
+	}
+
+	if cfg.hasChanges() {
+		return &cfg
+	}
+
+	return nil
+}
+
+func extractBoolFormatConfig(generated, updated *toolsproto.BoolFormatConfig) *BoolFormatConfig {
+	if updated == nil {
+		return nil
+	}
+
+	cfg := BoolFormatConfig{
+		PositiveValue:  diffString(generated.GetPositiveValue(), updated.GetPositiveValue()),
+		NegativeValue:  diffString(generated.GetNegativeValue(), updated.GetNegativeValue()),
+		PositiveColour: diffString(generated.GetPositiveColour(), updated.GetPositiveColour()),
+		NegativeColour: diffString(generated.GetNegativeColour(), updated.GetNegativeColour()),
+	}
+
+	if cfg.hasChanges() {
+		return &cfg
+	}
+
+	return nil
+}
+
 func extractConfig(generated, updated *toolsproto.Tool) *ToolConfig {
 	if generated.GetType() != updated.GetType() {
 		return nil
@@ -559,6 +716,18 @@ func diffNullableInt(old, updated *int32) *int32 {
 	return updated
 }
 
+func diffNullableBool(old, updated *bool) *bool {
+	if old != nil && updated != nil && *old == *updated {
+		return nil
+	}
+
+	if old != nil && updated == nil {
+		return updated
+	}
+
+	return updated
+}
+
 func diffBool(old, updated bool) *bool {
 	if old != updated {
 		return &updated
@@ -575,4 +744,20 @@ func diffStringTemplate(old, updated *toolsproto.StringTemplate) *string {
 		return &updated.Template
 	}
 	return nil
+}
+
+func stringPointer(val string) *string {
+	if val != "" {
+		return &val
+	}
+
+	return nil
+}
+
+func boolPointer(val bool) *bool {
+	return &val
+}
+
+func intPointer(val int32) *int32 {
+	return &val
 }

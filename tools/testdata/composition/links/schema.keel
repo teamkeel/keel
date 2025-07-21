@@ -1,0 +1,79 @@
+enum OrderStatus {
+    InProgress
+    Placed
+    Processing
+    Completed
+}
+
+model Order {
+    fields {
+        orderId Text @sequence("ORD_")
+        items OrderLine[]
+        status OrderStatus @default(OrderStatus.InProgress)
+    }
+
+    actions {
+        list listOrders()
+        create createOrder() with () 
+        delete deleteOrder(id)
+        get getOrder(id)
+
+        update placeOrder(id) {
+            @where(order.status == OrderStatus.InProgress)
+            @set(order.status = OrderStatus.Placed)
+        }
+    }
+}
+
+model OrderLine {
+    fields {
+        order Order
+        product Product
+        qty Number
+        price Decimal    
+        discount Number @default(0)
+    }
+
+    @unique([order, product])
+
+    actions {
+        create addToOrder() with (order.id, product.id, qty) {
+            @set(orderLine.price = orderLine.product.price)
+        }
+        delete removeOrderLine(id)
+        list listOrderLines(order.id)
+        list listOrderLinesByProduct(product.id)
+    }
+
+    @permission(
+        expression: true,
+        actions: [get, create, list, delete, update]
+    )
+}
+
+model Product {
+    fields {
+        name Text
+        price Decimal
+        sku Text @sequence("SKU_")
+        orderLines OrderLine[]
+    }
+
+    actions {
+        create addProduct() with (name, price)
+        list listProducts() 
+        list listOrderProducts(orderLines.order.id)
+        get getProduct(id)       
+    }
+
+    @permission(
+        expression: true,
+        actions: [get, create, list, delete, update]
+    )
+}
+
+flow ProcessOrder {
+    inputs {
+        orderId ID
+    }
+}

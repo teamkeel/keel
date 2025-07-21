@@ -89,6 +89,10 @@ service API {
 	rpc ConfigureTool(ConfigureToolRequest) returns (ConfigureToolResponse);
 	// Duplicates the given tool (given by reference) and returns the new tool
 	rpc DuplicateTool(DuplicateToolRequest) returns (DuplicateToolResponse);
+	// List all model & enum fields with their formatting configuration.
+	rpc ListFields(ListFieldsRequest) returns (ListFieldsResponse);
+	// Configure the formatting of all model & enum fields
+	rpc ConfigureFields(ConfigureFieldsRequest) returns (ConfigureFieldsResponse);
 }
 
 message ListToolsRequest {}
@@ -120,4 +124,18 @@ message DuplicateToolRequest {
 
 message DuplicateToolResponse {
 	tools.Tool tool_config = 1;
+}
+
+message ListFieldsRequest {}
+
+message ListFieldsResponse {
+	repeated tools.Field fields = 1;	
+}
+
+message ConfigureFieldsRequest {
+	repeated tools.Field fields = 1;	
+}
+
+message ConfigureFieldsResponse {
+	repeated tools.Field fields = 1;	
 }

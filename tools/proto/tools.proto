@@ -262,6 +262,9 @@ message ResponseFieldConfig {
 
 	// Any validation errors for this field or any child elements of it (e.g. an action link that has an error)
 	bool has_errors = 19;
+
+	// Configuration on how should this field be formatted when displayed
+	optional FormatConfig format = 20;
 }
 
 // A section represents a grouping of fields.
@@ -630,3 +633,95 @@ message FilterConfig {
 	// The field to be used a quick search. e.g. $.name.contains
 	optional JsonPath quick_search_field = 1;
 }
+
+// FormatConfig holds configuration on how a field's value should be formatted when displayed.
+message FormatConfig {
+	enum Type {
+		UNKNOWN = 0;
+		ENUM = 1;
+		NUMBER = 2;
+		STRING = 3;
+		BOOL = 4;
+	}
+	Type type = 1;
+
+	optional EnumFormatConfig enum_config = 2;
+	optional NumberFormatConfig number_config = 3;
+	optional StringFormatConfig string_config = 4;
+	optional BoolFormatConfig bool_config = 5;
+
+}
+
+enum ConditionalFormatMode {
+	NONE = 0;
+	NORMAL = 1;
+	INVERTED = 2;
+	CUSTOM = 3;
+}
+
+message BoolFormatConfig {
+	optional string positive_colour = 1;
+	optional string positive_value = 2; // a string to replace the displayed value when the field is true
+	optional string negative_colour = 3;
+	optional string negative_value = 4; // a string to replace the displayed value when the field is false
+}
+
+message NumberFormatConfig {
+	enum Mode {
+		DECIMAL = 0; // Default to decimal
+		RAW = 1;
+		PERCENTAGE = 2;
+		CURRENCY = 3;
+		UNIT = 4;
+	}
+
+	Mode mode = 1;
+	
+	optional string currency_code = 2; // ISO 4217 codes
+	optional string unit_code = 3; // Supports compound units e.g meter-per-second
+	optional bool sensitive = 4; // hidden by default, hover to show
+	optional string locale = 5; // Set a specific locale code. Otherwise we auto detect
+	optional string prefix = 6;
+	optional string suffix = 7;
+	ConditionalFormatMode colourise = 8;
+}
+
+message StringFormatConfig {
+	optional string prefix = 1;
+	optional string suffix = 2;
+	optional bool show_url_preview = 3; 
+	optional bool sensitive = 4; // hidden by default, hover to show
+	optional string text_colour = 5; 
+}
+
+message EnumFormatConfig {
+	message EnumValueFormatConfig {
+		string value = 1; // the value of the enum: e.g. (for an OrderStatus) Pending/Dispatched
+		optional string display_value = 2;
+		optional string colour = 3;
+		int32 display_order = 4;
+	}
+
+	repeated EnumValueFormatConfig values = 1;
+}
+
+// Similar to how Tools wrap config for an action, a Field wraps the formatting config for a model or enum field.
+message Field {
+	enum Type {
+		MODEL = 0;
+		ENUM = 1;
+	}
+	
+	Type type = 1;
+	FormatConfig format = 2;
+	
+	optional string enum_name = 3;
+	optional string model_name = 4;
+	optional string field_name = 5;
+
+	optional string display_name = 6;
+	optional StringTemplate help_text = 7;
+	optional bool visible = 8;
+	optional bool image_preview = 9;
+}
+

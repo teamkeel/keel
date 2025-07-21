@@ -1,12 +1,9 @@
 package tools
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
 
 	gonanoid "github.com/matoous/go-nanoid/v2"
@@ -18,6 +15,7 @@ import (
 )
 
 const toolsDir = "tools"
+const fieldsFile = "_fields.json"
 
 const (
 	// Alphabet for unique nanoids to be used for tool ids.
@@ -27,10 +25,11 @@ const (
 )
 
 type Service struct {
-	Schema             *proto.Schema
-	Config             *config.ProjectConfig
-	ProjectDir         *string
-	ToolsConfigStorage map[string][]byte
+	Schema              *proto.Schema
+	Config              *config.ProjectConfig
+	ProjectDir          *string
+	ToolsConfigStorage  map[string][]byte
+	FieldsConfigStorage []byte
 }
 
 type ServiceOpt func(s *Service)
@@ -73,6 +72,15 @@ func WithToolsConfig(store map[string][]byte) ServiceOpt {
 	}
 }
 
+// WithFieldsConfig initialises the service with in-memory fields storage and with the given user configuration. This
+// option will invalidate any filebased storage that may have been set with `WithFileStorage`.
+func WithFieldsConfig(store []byte) ServiceOpt {
+	return func(s *Service) {
+		s.FieldsConfigStorage = store
+		s.ProjectDir = nil
+	}
+}
+
 // storageFolder return the path to the tools config storage folder.
 func (s *Service) storageFolder() string {
 	if s.ProjectDir == nil {
@@ -82,195 +90,39 @@ func (s *Service) storageFolder() string {
 	return filepath.Join(*s.ProjectDir, toolsDir)
 }
 
-// hasFileStorage tells us if this service has been initialised with file storage.
-func (s *Service) hasFileStorage() bool {
-	return s.ProjectDir != nil
-}
-
-func (s *Service) initStorageFolder() error {
-	if !s.hasFileStorage() {
-		return nil
+// generateTools will return a map of tool configurations generated for the given schema.
+func (s *Service) generateTools(ctx context.Context) ([]*toolsproto.Tool, error) {
+	if s.Schema == nil {
+		return nil, nil
 	}
 
-	if _, err := os.Stat(s.storageFolder()); err != nil {
-		err := os.Mkdir(s.storageFolder(), os.ModePerm)
-		if err != nil {
-			return fmt.Errorf("initialising tools dir: %w", err)
-		}
-	}
-	return nil
-}
-
-// loadFromFileStorage will load configs from file storage.
-func (s *Service) loadFromFileStorage() (ToolConfigs, error) {
-	if !s.hasFileStorage() {
-		return nil, fmt.Errorf("service does not have file storage enabled")
-	}
-
-	if err := s.initStorageFolder(); err != nil {
-		return nil, fmt.Errorf("initialising tools folder: %w", err)
-	}
-
-	configFiles, err := filepath.Glob(filepath.Join(s.storageFolder(), "*.json"))
+	gen, err := NewGenerator(s.Schema, s.Config)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("creating tool generator: %w", err)
 	}
 
-	cfgs := ToolConfigs{}
-
-	for _, fName := range configFiles {
-		fileBytes, err := os.ReadFile(fName)
-		if err != nil {
-			return nil, err
-		}
-		var cfg ToolConfig
-		if err := json.Unmarshal(fileBytes, &cfg); err != nil {
-			return nil, err
-		}
-		cfgs = append(cfgs, &cfg)
+	if err := gen.Generate(ctx); err != nil {
+		return nil, fmt.Errorf("generating tools: %w", err)
 	}
 
-	return cfgs, nil
+	return gen.GetTools(), nil
 }
 
-// load will read the tools configurations from storage.
-func (s *Service) load() (ToolConfigs, error) {
-	// if we have file storage enabled, load from file
-	if s.hasFileStorage() {
-		return s.loadFromFileStorage()
-	}
-
-	// otherwise load from internal cache
-	cfgs := ToolConfigs{}
-	for _, fileBytes := range s.ToolsConfigStorage {
-		var cfg ToolConfig
-		if err := json.Unmarshal(fileBytes, &cfg); err != nil {
-			return nil, err
-		}
-		cfgs = append(cfgs, &cfg)
-	}
-
-	return cfgs, nil
-}
-
-// clear will remove all the saved tool configs from the project.
-func (s *Service) clear() error {
-	if s.hasFileStorage() {
-		err := os.RemoveAll(s.storageFolder())
-		if err != nil {
-			if errors.Is(err, os.ErrNotExist) {
-				return nil
-			}
-			return err
-		}
-		return nil
-	}
-
-	s.ToolsConfigStorage = map[string][]byte{}
-	return nil
-}
-
-// store will save the given tools configuration to the tools.json file in the project.
-func (s *Service) store(cfgs ToolConfigs) error {
-	if s.hasFileStorage() {
-		if err := s.initStorageFolder(); err != nil {
-			return fmt.Errorf("initialising tools folder: %w", err)
-		}
-
-		for _, cfg := range cfgs {
-			if !cfg.hasChanges() {
-				// no changes to this tool, so remove any existing config for this tool
-				if err := os.Remove(filepath.Join(s.storageFolder(), cfg.ID+".json")); err != nil {
-					if !errors.Is(err, os.ErrNotExist) {
-						return fmt.Errorf("removing config file: %w", err)
-					}
-				}
-
-				continue
-			}
-
-			b, err := json.Marshal(cfg)
-			if err != nil {
-				return err
-			}
-
-			var dest bytes.Buffer
-			if err := json.Indent(&dest, b, "", "  "); err != nil {
-				return fmt.Errorf("formatting tools config: %w", err)
-			}
-
-			err = os.WriteFile(filepath.Join(s.storageFolder(), cfg.ID+".json"), dest.Bytes(), 0666)
-			if err != nil {
-				return err
-			}
-		}
-		return nil
-	}
-
-	// we store in memory
-	storage := map[string][]byte{}
-	for _, cfg := range cfgs {
-		b, err := json.Marshal(cfg)
-		if err != nil {
-			return err
-		}
-
-		var dest bytes.Buffer
-		if err := json.Indent(&dest, b, "", "  "); err != nil {
-			return fmt.Errorf("formatting tools config: %w", err)
-		}
-		storage[cfg.ID+".json"] = dest.Bytes()
-	}
-
-	s.ToolsConfigStorage = storage
-	return nil
-}
-
-// addToProject will add the given tools to the existing project tools config and store them.
-func (s *Service) addToProject(cfgs ...*ToolConfig) error {
-	currentConfigs, err := s.load()
+// getGeneratedTool will return the generated tool for the given action/flow name.
+func (s *Service) getGeneratedTool(ctx context.Context, name string) (*toolsproto.Tool, error) {
+	// generate tools
+	genTools, err := s.generateTools(ctx)
 	if err != nil {
-		return fmt.Errorf("loading tool configs: %w", err)
+		return nil, fmt.Errorf("generating tools from schema: %w", err)
 	}
 
-	for _, toolConfig := range cfgs {
-		if exists := currentConfigs.findByID(toolConfig.ID); exists != nil {
-			return fmt.Errorf("tool config exists: %s", toolConfig.ID)
-		}
-		currentConfigs = append(currentConfigs, toolConfig)
-	}
-
-	if err := s.store(currentConfigs); err != nil {
-		return fmt.Errorf("storing tool config to project: %w", err)
-	}
-
-	return nil
-}
-
-// updateToProject will replace the given tools in the stored config.
-func (s *Service) updateToProject(cfgs ...*ToolConfig) error {
-	currentConfigs, err := s.load()
-	if err != nil {
-		return fmt.Errorf("loading tools from config file: %w", err)
-	}
-
-	for _, updated := range cfgs {
-		if currentConfigs.hasID(updated.ID) {
-			for i := range currentConfigs {
-				if currentConfigs[i].ID == updated.ID {
-					currentConfigs[i] = updated
-				}
-			}
-		} else {
-			currentConfigs = append(currentConfigs, updated)
+	for _, t := range genTools {
+		if t.GetOperationName() == name {
+			return t, nil
 		}
 	}
 
-	if err := s.store(currentConfigs); err != nil {
-		return fmt.Errorf("storing tools to project: %w", err)
-	}
-
-	return nil
+	return nil, fmt.Errorf("tool not found")
 }
 
 // DuplicateTool will take the given tool and duplicate it with a new ID, and then store the changes to files.
@@ -323,7 +175,7 @@ func (s *Service) GetTools(ctx context.Context) (*toolsproto.Tools, error) {
 	}
 
 	// generate tools
-	genTools, err := GenerateTools(ctx, s.Schema, s.Config)
+	genTools, err := s.generateTools(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("generating tools from schema: %w", err)
 	}
@@ -333,18 +185,18 @@ func (s *Service) GetTools(ctx context.Context) (*toolsproto.Tools, error) {
 	}
 
 	// load existing configured tools
-	configs, err := s.load()
+	userConfig, err := s.load()
 	if err != nil {
 		return nil, fmt.Errorf("loading tool configs from file: %w", err)
 	}
 
-	// if we have user added or configured tools...
-	if len(configs) > 0 {
+	// if we have user added tools ...
+	if len(userConfig.Tools) > 0 {
 		// let's see get the user added tools
-		addedIds := tools.DiffIDs(configs.getIDs())
+		addedIds := tools.DiffIDs(userConfig.Tools.getIDs())
 		// for all the added ones, we generate a new tool and add it to our set
 		for _, id := range addedIds {
-			cfg := configs.findByID(id)
+			cfg := userConfig.Tools.findByID(id)
 			if cfg == nil {
 				continue
 			}
@@ -369,15 +221,22 @@ func (s *Service) GetTools(ctx context.Context) (*toolsproto.Tools, error) {
 				}
 			}
 			gen.Id = cfg.ID
-			if gen.GetActionConfig() != nil {
+			if gen.IsActionBased() {
 				gen.ActionConfig.Id = cfg.ID
 			}
 
 			tools.Configs = append(tools.Configs, gen)
 		}
+	}
 
-		// now we apply all the configs
-		for _, cfg := range configs {
+	// if we have user configured field formatting, let's apply them to all the tools
+	if len(userConfig.Fields) > 0 {
+		userConfig.Fields.applyOnTools(tools.GetConfigs())
+	}
+
+	// finally, we now apply all the user configurations to our tools, overwritting any field configs
+	if len(userConfig.Tools) > 0 {
+		for _, cfg := range userConfig.Tools {
 			tool := tools.FindByID(cfg.ID)
 			if tool == nil {
 				continue
@@ -395,7 +254,7 @@ func (s *Service) GetTools(ctx context.Context) (*toolsproto.Tools, error) {
 
 // ResetTools will remove all the saved tool configs and return the schema generated tools.
 func (s *Service) ResetTools(ctx context.Context) (*toolsproto.Tools, error) {
-	if err := s.clear(); err != nil {
+	if err := s.clearTools(); err != nil {
 		return nil, fmt.Errorf("removing saved tools configuration: %w", err)
 	}
 
@@ -408,6 +267,17 @@ func (s *Service) ConfigureTool(ctx context.Context, updated *toolsproto.Tool) (
 	gen, err := s.getGeneratedTool(ctx, updated.GetOperationName())
 	if err != nil {
 		return nil, fmt.Errorf("retrieving generated tool: %w", err)
+	}
+
+	// load existing configured tools
+	userConfig, err := s.load()
+	if err != nil {
+		return nil, fmt.Errorf("loading tool configs from file: %w", err)
+	}
+
+	// we now apply existing field configuration
+	if len(userConfig.Fields) > 0 {
+		userConfig.Fields.applyOnTool(gen)
 	}
 
 	// we now extract the config from the given tool
@@ -428,24 +298,51 @@ func (s *Service) ConfigureTool(ctx context.Context, updated *toolsproto.Tool) (
 	return tools.FindByID(updated.GetId()), nil
 }
 
-// getGeneratedTool will return the generated tool for the given action/flow name.
-func (s *Service) getGeneratedTool(ctx context.Context, name string) (*toolsproto.Tool, error) {
-	// if we don't have a schema, return nil
-	if s.Schema == nil {
-		return nil, nil
-	}
-
-	// generate tools
-	genTools, err := GenerateTools(ctx, s.Schema, s.Config)
+// GetFields returns the configured fields for this schema.
+func (s *Service) GetFields(ctx context.Context) ([]*toolsproto.Field, error) {
+	// generate fields
+	gen, err := NewGenerator(s.Schema, s.Config)
 	if err != nil {
-		return nil, fmt.Errorf("generating tools from schema: %w", err)
+		return nil, fmt.Errorf("creating tool generator: %w", err)
 	}
 
-	for _, t := range genTools {
-		if t.GetOperationName() == name {
-			return t, nil
-		}
+	if err := gen.GenerateFields(ctx); err != nil {
+		return nil, fmt.Errorf("generating fields config: %w", err)
 	}
 
-	return nil, fmt.Errorf("tool not found")
+	fields := gen.GetFields()
+
+	// load existing configured tools
+	userConfig, err := s.load()
+	if err != nil {
+		return nil, fmt.Errorf("loading tool configs from file: %w", err)
+	}
+
+	// now we apply user config from file
+	userConfig.Fields.applyOn(fields)
+
+	return fields, nil
+}
+
+// ConfigureFields will take the given updated fields config and update the existing project config with it.
+func (s *Service) ConfigureFields(ctx context.Context, updated []*toolsproto.Field) ([]*toolsproto.Field, error) {
+	gen, err := NewGenerator(s.Schema, s.Config)
+	if err != nil {
+		return nil, fmt.Errorf("creating tool generator: %w", err)
+	}
+
+	// first we generate fields
+	if err := gen.GenerateFields(ctx); err != nil {
+		return nil, fmt.Errorf("generating fields config: %w", err)
+	}
+
+	// extract user field config by diffing the updated ones with the generated ones
+	cfgs := extractFieldsConfigs(gen.GetFields(), updated)
+
+	if err := s.storeFields(cfgs); err != nil {
+		return nil, err
+	}
+
+	// retrieve newly configured fields
+	return s.GetFields(ctx)
 }

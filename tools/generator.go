@@ -57,10 +57,61 @@ func (t *Tool) asPB() *toolsproto.Tool {
 	return nil
 }
 
+type FieldType string
+
+const (
+	FieldTypeModel FieldType = "MODEL"
+	FieldTypeEnum  FieldType = "ENUM"
+)
+
+// Field represents a model field or an enum. These fields have formatting configuration that is generated and
+// can be configured by users.
+type Field struct {
+	Type      FieldType
+	EnumName  string
+	ModelName string
+	FieldName string
+}
+
+func (f *Field) Path() string {
+	switch f.Type {
+	case FieldTypeEnum:
+		return f.EnumName
+	case FieldTypeModel:
+		return f.ModelName + "." + f.FieldName
+	default:
+		return ""
+	}
+}
+
+func (f *Field) asPB() *toolsproto.Field {
+	if f == nil {
+		return nil
+	}
+
+	return &toolsproto.Field{
+		Type: func() toolsproto.Field_Type {
+			switch f.Type {
+			case FieldTypeEnum:
+				return toolsproto.Field_ENUM
+			default:
+				return toolsproto.Field_MODEL
+			}
+		}(),
+		EnumName:  stringPointer(f.EnumName),
+		ModelName: stringPointer(f.ModelName),
+		FieldName: stringPointer(f.FieldName),
+	}
+}
+
+type Fields map[string]*Field
+
 type Generator struct {
 	Schema     *proto.Schema
 	KeelConfig *config.ProjectConfig
 	Tools      map[string]*Tool
+	// Fields represents the complete set of model fields and enums that are present in the given schema
+	Fields Fields
 }
 
 func (g *Generator) actionTools() map[string]*Tool {
@@ -111,13 +162,29 @@ func (g *Generator) GetTools() []*toolsproto.Tool {
 	return tools
 }
 
+// GetFields returns all the fields that have been generated in alphabetical order.
+func (g *Generator) GetFields() []*toolsproto.Field {
+	fields := []*toolsproto.Field{}
+	ids := []string{}
+	for id := range g.Fields {
+		ids = append(ids, id)
+	}
+	sort.Strings(ids)
+
+	for _, id := range ids {
+		fields = append(fields, g.Fields[id].asPB())
+	}
+
+	return fields
+}
+
 // Generate will generate all the tools for this generator's schema.
 func (g *Generator) Generate(ctx context.Context) error {
 	if g.Schema == nil {
 		return ErrInvalidSchema
 	}
 
-	// reset any previous tools
+	// reset any previous tools & fields
 	g.Tools = map[string]*Tool{}
 
 	// first pass at generating tools;
@@ -126,6 +193,41 @@ func (g *Generator) Generate(ctx context.Context) error {
 	// then decorate the tools with all the relevant options
 	if err := g.decorateTools(); err != nil {
 		return fmt.Errorf("decorating tools: %w", err)
+	}
+
+	return nil
+}
+
+// Generate will generate all the fields for this generator's schema.
+// It will take the current schema and generate the map of all model fields & enums that can be formatted with
+// schema-based config.
+func (g *Generator) GenerateFields(ctx context.Context) error {
+	if g.Schema == nil {
+		return ErrInvalidSchema
+	}
+
+	// reset any previous fields
+	g.Fields = Fields{}
+
+	// generate all the fields
+	for _, model := range g.Schema.GetModels() {
+		for _, field := range model.GetFields() {
+			f := Field{
+				Type:      FieldTypeModel,
+				ModelName: field.GetModelName(),
+				FieldName: field.GetName(),
+				EnumName:  field.GetType().GetEnumName().GetValue(),
+			}
+			g.Fields[f.Path()] = &f
+		}
+	}
+
+	for _, enum := range g.Schema.GetEnums() {
+		f := Field{
+			Type:     FieldTypeEnum,
+			EnumName: enum.GetName(),
+		}
+		g.Fields[f.Path()] = &f
 	}
 
 	return nil

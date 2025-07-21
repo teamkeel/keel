@@ -1,0 +1,46 @@
+{
+  "id": "get-order",
+  "action_name": "getOrder",
+  "entry_activity_actions": [
+    {
+      "tool_id": "place-order",
+      "display_order": 0
+    },
+    {
+      "tool_id": "process-order",
+      "title": "FLOW - Process Order",
+      "as_dialog": true,
+      "display_order": 1,
+      "visible_condition": "true",
+      "data_mapping": [
+        {
+          "key": "$.orderId",
+          "path": {
+            "path": "$.id"
+          }
+        }
+      ],
+      "skip_confirmation": true,
+      "emphasize": true
+    },
+    {
+      "tool_id": "delete-order",
+      "skip_confirmation": true
+    }
+  ],
+  "embedded_tools": [
+    {
+      "id": "items",
+      "tools": [
+        {
+          "action_link": {
+            "tool_id": "list-order-lines"
+          },
+          "response_overrides": {
+            "$.results[*].orderId": false
+          }
+        }
+      ]
+    }
+  ]
+}
