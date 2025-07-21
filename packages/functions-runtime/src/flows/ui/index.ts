@@ -27,7 +27,7 @@ import {
   UiElementDivider,
   UiElementDividerApiResponse,
 } from "./elements/display/divider";
-import { UiPage, UiPageApiResponse } from "./page";
+import { ExtractFormData, UiPage, UiPageApiResponse } from "./page";
 import {
   UiElementImage,
   UiElementImageApiResponse,
@@ -66,6 +66,10 @@ import {
   UiElementInputDataGridApiResponse,
 } from "./elements/input/dataGrid";
 import {
+  UiElementIterator,
+  UiElementIteratorApiResponse,
+} from "./elements/iterator";
+import {
   UiElementPrint,
   UiElementPrintApiResponse,
 } from "./elements/interactive/print";
@@ -79,6 +83,7 @@ export interface UI<C extends FlowConfig> {
   display: UiDisplayElements;
   inputs: UiInputsElements;
   select: UiSelectElements;
+  iterator: UiElementIterator;
   interactive: UiInteractiveElements;
 }
 
@@ -134,10 +139,12 @@ export type DisplayElementWithRequiredConfig<TConfig extends any = never> = (
 ) => DisplayElementResponse;
 
 // Union of all element function shapes
-export type UIElements = (
+export type UIElement =
   | InputElementResponse<string, any>
   | DisplayElementResponse
-)[];
+  | IteratorElementResponse<string, any>;
+
+export type UIElements = UIElement[];
 
 // We create internal _type properties to help identity inputs vs display elements
 interface UIElementBase {
@@ -153,6 +160,13 @@ export interface InputElementResponse<N extends string, V>
 
 export interface DisplayElementResponse extends UIElementBase {
   _type: "display";
+}
+
+export interface IteratorElementResponse<N extends string, E extends UIElements>
+  extends UIElementBase {
+  _type: "iterator";
+  name: N;
+  contentData: ExtractFormData<E>[];
 }
 
 // Config that applied to all inputs
@@ -215,39 +229,44 @@ export type UIApiResponses = {
     one: UiElementSelectOneApiResponse;
     table: UiElementSelectTableApiResponse;
   };
+  iterator: UiElementIteratorApiResponse;
   interactive: {
     print: UiElementPrintApiResponse;
     pickList: UiElementPickListApiResponse;
   };
 };
 
-export type UiElementApiResponses = // Display elements
-  (
-    | UiElementDividerApiResponse
-    | UiElementMarkdownApiResponse
-    | UiElementHeaderApiResponse
-    | UiElementBannerApiResponse
-    | UiElementImageApiResponse
-    | UiElementCodeApiResponse
-    | UiElementGridApiResponse
-    | UiElementListApiResponse
-    | UiElementTableApiResponse
-    | UiElementKeyValueApiResponse
+export type UiElementApiResponse =
+  // Display elements
+  | UiElementDividerApiResponse
+  | UiElementMarkdownApiResponse
+  | UiElementHeaderApiResponse
+  | UiElementBannerApiResponse
+  | UiElementImageApiResponse
+  | UiElementCodeApiResponse
+  | UiElementGridApiResponse
+  | UiElementListApiResponse
+  | UiElementTableApiResponse
+  | UiElementKeyValueApiResponse
 
-    // Input elements
-    | UiElementInputTextApiResponse
-    | UiElementInputNumberApiResponse
-    | UiElementInputBooleanApiResponse
-    | UiElementInputDataGridApiResponse
+  // Input elements
+  | UiElementInputTextApiResponse
+  | UiElementInputNumberApiResponse
+  | UiElementInputBooleanApiResponse
+  | UiElementInputDataGridApiResponse
 
-    // Select elements
-    | UiElementSelectOneApiResponse
-    | UiElementSelectTableApiResponse
+  // Select elements
+  | UiElementSelectOneApiResponse
+  | UiElementSelectTableApiResponse
 
-    // Interactive elements
-    | UiElementPrintApiResponse
-    | UiElementPickListApiResponse
-  )[];
+  // Special
+  | UiElementIteratorApiResponse
+
+  // Interactive elements
+  | UiElementPrintApiResponse
+  | UiElementPickListApiResponse;
+
+export type UiElementApiResponses = UiElementApiResponse[];
 
 // The root API response. Used to generate the OpenAPI schema
 export type UiApiUiConfig = UiPageApiResponse | UiCompleteApiResponse;
@@ -271,6 +290,21 @@ export type InputElementImplementationResponse<TApiResponse, TData> = {
   validate?: ValidateFn<TData>;
 };
 
+export type IteratorElementImplementation<
+  TData,
+  TConfig extends (...args: any) => any,
+  TApiResponse,
+> = (
+  ...args: Parameters<TConfig>
+) => IteratorElementImplementationResponse<TApiResponse, TData>;
+
+export type IteratorElementImplementationResponse<TApiResponse, TData> = {
+  __type: "iterator";
+  uiConfig: TApiResponse;
+  getData: (data: TData) => TData;
+  validate?: ValidateFn<TData>;
+};
+
 export type DisplayElementImplementation<
   TConfig extends (...args: any) => any,
   TApiResponse,
@@ -288,4 +322,5 @@ export type DisplayElementImplementationResponse<TApiResponse> =
 
 export type ImplementationResponse<TApiResponse, TData> =
   | InputElementImplementationResponse<TApiResponse, TData>
-  | DisplayElementImplementationResponse<TApiResponse>;
+  | DisplayElementImplementationResponse<TApiResponse>
+  | IteratorElementImplementationResponse<TApiResponse, TData>;
