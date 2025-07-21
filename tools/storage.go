@@ -9,6 +9,15 @@ import (
 	"path/filepath"
 )
 
+// storageFolder return the path to the tools config storage folder.
+func (s *Service) storageFolder() string {
+	if s.ProjectDir == nil {
+		return ""
+	}
+
+	return filepath.Join(*s.ProjectDir, ToolsDir)
+}
+
 // hasFileStorage tells us if this service has been initialised with file storage.
 func (s *Service) hasFileStorage() bool {
 	return s.ProjectDir != nil
@@ -51,7 +60,7 @@ func (s *Service) loadFromFileStorage() (UserConfig, error) {
 			return UserConfig{}, err
 		}
 
-		if filepath.Base(fName) == fieldsFile {
+		if filepath.Base(fName) == FieldsFile {
 			// read fields config
 			var fCfg FieldConfigs
 			if err := json.Unmarshal(fileBytes, &fCfg); err != nil {
@@ -106,7 +115,7 @@ func (s *Service) clearTools() error {
 			return err
 		}
 		for _, file := range files {
-			if file.Name() == fieldsFile {
+			if file.Name() == FieldsFile {
 				continue
 			}
 			err := os.Remove(filepath.Join(s.storageFolder(), file.Name()))
@@ -126,7 +135,7 @@ func (s *Service) clearTools() error {
 // clearFields will remove all the saved fields configs from the project.
 func (s *Service) clearFields() error {
 	if s.hasFileStorage() {
-		err := os.Remove(filepath.Join(s.storageFolder(), fieldsFile))
+		err := os.Remove(filepath.Join(s.storageFolder(), FieldsFile))
 		if err != nil && !errors.Is(err, os.ErrNotExist) {
 			return err
 		}
@@ -155,7 +164,7 @@ func (s *Service) storeFields(cfgs FieldConfigs) error {
 	}
 
 	if s.hasFileStorage() {
-		err = os.WriteFile(filepath.Join(s.storageFolder(), fieldsFile), dest.Bytes(), 0666)
+		err = os.WriteFile(filepath.Join(s.storageFolder(), FieldsFile), dest.Bytes(), 0666)
 		if err != nil {
 			return err
 		}
