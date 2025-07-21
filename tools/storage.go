@@ -100,8 +100,10 @@ func (s *Service) load() (UserConfig, error) {
 	}
 
 	// read fields config
-	if err := json.Unmarshal(s.FieldsConfigStorage, &userConfig.Fields); err != nil {
-		return UserConfig{}, err
+	if len(s.FieldsConfigStorage) > 0 {
+		if err := json.Unmarshal(s.FieldsConfigStorage, &userConfig.Fields); err != nil {
+			return UserConfig{}, err
+		}
 	}
 
 	return userConfig, nil
