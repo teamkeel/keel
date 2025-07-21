@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"path/filepath"
 
 	gonanoid "github.com/matoous/go-nanoid/v2"
 
@@ -14,8 +13,11 @@ import (
 	toolsproto "github.com/teamkeel/keel/tools/proto"
 )
 
-const toolsDir = "tools"
-const fieldsFile = "_fields.json"
+// ToolsDir is the name of the folder in which tools user config is stored.
+const ToolsDir = "tools"
+
+// FieldsFile is the name of the file that holds the user fields configuration for model based config.
+const FieldsFile = "_fields.json"
 
 const (
 	// Alphabet for unique nanoids to be used for tool ids.
@@ -79,15 +81,6 @@ func WithFieldsConfig(store []byte) ServiceOpt {
 		s.FieldsConfigStorage = store
 		s.ProjectDir = nil
 	}
-}
-
-// storageFolder return the path to the tools config storage folder.
-func (s *Service) storageFolder() string {
-	if s.ProjectDir == nil {
-		return ""
-	}
-
-	return filepath.Join(*s.ProjectDir, toolsDir)
 }
 
 // generateTools will return a map of tool configurations generated for the given schema.
