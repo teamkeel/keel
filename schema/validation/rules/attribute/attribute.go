@@ -91,6 +91,7 @@ var attributeLocations = map[string][]string{
 	},
 	parser.KeywordFlow: {
 		parser.AttributePermission,
+		parser.AttributeSchedule,
 	},
 }
 
