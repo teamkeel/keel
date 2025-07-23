@@ -472,4 +472,7 @@ message Flow {
 
     // A permission rule which need to be satisfied in order to run the flow.
     repeated PermissionRule permissions = 3;
+
+    // The schedule as an crontab expression.
+    Schedule schedule = 4;
 }

@@ -13,9 +13,11 @@ func Jobs(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 	jobInputs := []string{}
 	hasSchedule := false
 	hasPermission := false
+	var currentJob *parser.JobNode
 
 	return Visitor{
 		EnterJob: func(job *parser.JobNode) {
+			currentJob = job
 			hasSchedule = false
 			hasPermission = false
 			jobInputs = []string{}
@@ -40,6 +42,7 @@ func Jobs(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 					n.Name,
 				))
 			}
+			currentJob = nil
 		},
 		EnterJobInput: func(input *parser.JobInputNode) {
 			if !parser.IsBuiltInFieldType(input.Type.Value) && !query.IsEnum(asts, input.Type.Value) {
@@ -65,6 +68,10 @@ func Jobs(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 			jobInputs = append(jobInputs, input.Name.Value)
 		},
 		EnterAttribute: func(n *parser.AttributeNode) {
+			if currentJob == nil {
+				return
+			}
+
 			if n.Name.Value == "schedule" {
 				if hasSchedule {
 					errs.AppendError(errorhandling.NewValidationErrorWithDetails(

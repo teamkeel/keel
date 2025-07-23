@@ -7,6 +7,14 @@ flow MyFlow1 {
         duplicate Text
     }
 }
-    
+
+//expect-error:6:13:FlowDefinitionError:Flow 'MyFlow2' is scheduled and so cannot also have inputs
+flow MyFlow2 {
+    inputs {
+        myField Text
+    }
+    @schedule("* * * * *")
+}
+
 model Thing {
 }

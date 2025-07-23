@@ -1,0 +1,7 @@
+flow MyFlow1 {
+    @schedule("* * * * *")
+}
+
+flow MyFlow2 {
+    @schedule("every weekday at 9am")
+}

@@ -2373,6 +2373,15 @@ func (scm *Builder) applyFlowAttribute(protoFlow *proto.Flow, attribute *parser.
 	switch attribute.Name.Value {
 	case parser.AttributePermission:
 		protoFlow.Permissions = append(protoFlow.Permissions, scm.permissionAttributeToProtoPermission(attribute))
+	case parser.AttributeSchedule:
+		val, _, _ := resolve.ToValue[string](attribute.Arguments[0].Expression)
+		src := strings.Trim(val, `"`)
+
+		c, _ := cron.Parse(src)
+
+		protoFlow.Schedule = &proto.Schedule{
+			Expression: c.String(),
+		}
 	}
 }
 

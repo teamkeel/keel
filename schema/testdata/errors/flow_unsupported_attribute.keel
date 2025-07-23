@@ -1,4 +1,11 @@
 flow MyFlow {
     //expect-error:5:16:E011:flow 'MyFlow' has an unrecognised attribute @whatisthis
     @whatisthis
+    @schedule("* * * * *")
+}
+
+flow MyFlow2 {
+    @schedule("* * * * *")
+    //expect-error:5:14:AttributeNotAllowedError:A flow cannot have more than one @schedule attribute
+    @schedule("* * * * *")
 }
