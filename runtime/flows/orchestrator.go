@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
@@ -42,19 +41,29 @@ func GetOrchestrator(ctx context.Context) (*Orchestrator, error) {
 
 type OrchestratorOpt func(o *Orchestrator)
 
-func WithAsyncQueue(queueURL string, client *sqs.Client) OrchestratorOpt {
+// WithEventSender initialises the orchestrator with the given EventSender.
+func WithEventSender(es EventSender) OrchestratorOpt {
 	return func(o *Orchestrator) {
-		o.sqsClient = client
-		o.sqsQueueURL = queueURL
+		o.eventSender = es
+	}
+}
+
+// WithAsyncQueue sets a SQSEventSender on the orchestrator with the given options (queue URL and sqs Client).
+func WithAsyncQueue(queueURL string, client *sqs.Client) OrchestratorOpt {
+	es := NewSQSEventSender(queueURL, client)
+	return WithEventSender(es)
+}
+
+// WithNoQueueEventSender initialises the orchestrator with a simulated async queue.
+func WithNoQueueEventSender() OrchestratorOpt {
+	return func(o *Orchestrator) {
+		o.eventSender = NewNoQueueEventSender(o)
 	}
 }
 
 type Orchestrator struct {
-	schema *proto.Schema
-	// Client for sqs messages sent to the flows runtime
-	sqsClient *sqs.Client
-	// The Flows runtime queue used to trigger the execution of a flow
-	sqsQueueURL string
+	schema      *proto.Schema
+	eventSender EventSender
 }
 
 func NewOrchestrator(s *proto.Schema, opts ...OrchestratorOpt) *Orchestrator {
@@ -175,7 +184,7 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, inputs 
 			return err, nil
 		}
 
-		return o.SendEvent(ctx, wrap), resp.GetUIComponents()
+		return o.sendEvent(ctx, wrap), resp.GetUIComponents()
 	case StatusFailed, StatusCompleted, StatusCancelled:
 		// Do nothing
 		return nil, nil
@@ -226,11 +235,15 @@ func (o *Orchestrator) HandleEvent(ctx context.Context, event *EventWrapper) err
 	return nil
 }
 
-// SendEvent sends the given event to the flow runtime's queue or directly invokes the function depending on the
+// sendEvent sends the given event to the flow runtime's queue or directly invokes the function depending on the
 // orchestrator's settings.
-func (o *Orchestrator) SendEvent(ctx context.Context, payload *EventWrapper) error {
+func (o *Orchestrator) sendEvent(ctx context.Context, payload *EventWrapper) error {
 	if payload == nil {
 		return fmt.Errorf("invalid event payload")
+	}
+
+	if o.eventSender == nil {
+		return fmt.Errorf("no event sender available for orchestrator")
 	}
 
 	// get the traceparent from context, and pass it through to the event if applicable
@@ -240,24 +253,8 @@ func (o *Orchestrator) SendEvent(ctx context.Context, payload *EventWrapper) err
 		payload.Traceparent = traceparent
 	}
 
-	// if a sqs queue hasn't been set, we continue executing
-	if o.sqsClient == nil || o.sqsQueueURL == "" {
-		go o.HandleEvent(ctx, payload) //nolint we're "simulating" an async queue
-		return nil
-	}
-
-	bodyBytes, err := json.Marshal(payload)
-	if err != nil {
-		return err
-	}
-
-	input := &sqs.SendMessageInput{
-		MessageBody: aws.String(string(bodyBytes)),
-		QueueUrl:    aws.String(o.sqsQueueURL),
-	}
-
-	_, err = o.sqsClient.SendMessage(ctx, input)
-	return err
+	// send event
+	return o.eventSender.Send(ctx, payload)
 }
 
 // CallFlow is a helper function to call the flows runtime and retrieve the Response Payload.
