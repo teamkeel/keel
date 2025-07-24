@@ -4,8 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
+	"github.com/robfig/cron/v3"
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
@@ -55,9 +57,9 @@ func WithAsyncQueue(queueURL string, client *sqs.Client) OrchestratorOpt {
 }
 
 // WithNoQueueEventSender initialises the orchestrator with a simulated async queue.
-func WithNoQueueEventSender() OrchestratorOpt {
+func WithNoQueueEventSender(c *cron.Cron) OrchestratorOpt {
 	return func(o *Orchestrator) {
-		o.eventSender = NewNoQueueEventSender(o)
+		o.eventSender = NewNoQueueEventSender(o, c)
 	}
 }
 
@@ -76,6 +78,36 @@ func NewOrchestrator(s *proto.Schema, opts ...OrchestratorOpt) *Orchestrator {
 	}
 
 	return o
+}
+
+// ScheduleFlows will schedule flows to run according to the schema definition.
+func (o *Orchestrator) ScheduleFlows(ctx context.Context) error {
+	if !o.schema.HasScheduledFlows() {
+		// no scheduled flows
+		return nil
+	}
+	if o.eventSender == nil {
+		return fmt.Errorf("no event sender set for orchestrator")
+	}
+
+	for _, f := range o.schema.ScheduledFlows() {
+		// make the event payload
+		ev := FlowRunStarted{Name: f.GetName(), Inputs: map[string]any{}}
+
+		payload, err := ev.Wrap()
+		if err != nil {
+			return fmt.Errorf("wrapping event: %w", err)
+		}
+
+		// The protobuf cron expressions for schedules include year, which is not relevant to our use case.
+		cronExpr := strings.TrimSuffix(f.GetSchedule().GetExpression(), " *")
+
+		if err := o.eventSender.Schedule(ctx, cronExpr, payload); err != nil {
+			return fmt.Errorf("scheduling flow: %w", err)
+		}
+	}
+
+	return nil
 }
 
 type FunctionsResponsePayload struct {

@@ -21,6 +21,7 @@ import (
 	"github.com/Masterminds/semver/v3"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/fsnotify/fsnotify"
+	"github.com/robfig/cron/v3"
 	"github.com/teamkeel/keel/cmd/cliconfig"
 	"github.com/teamkeel/keel/cmd/database"
 	"github.com/teamkeel/keel/cmd/localTraceExporter"
@@ -28,9 +29,12 @@ import (
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/deploy"
+	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/migrations"
 	"github.com/teamkeel/keel/node"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/flows"
+	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/schema/reader"
 	v1 "go.opentelemetry.io/proto/otlp/trace/v1"
@@ -873,5 +877,35 @@ func SnapshotDatabase(dir string, schema *proto.Schema, database db.Database) te
 		}
 
 		return SnapshotDatabaseMsg{}
+	}
+}
+
+type CronRunnerMsg struct {
+	Err error
+}
+
+func SetupCron(schema *proto.Schema, database db.Database, functionsServer *node.DevelopmentServer, cronRunner *cron.Cron, secrets map[string]string) tea.Cmd {
+	return func() tea.Msg {
+		cronRunner.Stop()
+		// restart cron jobs
+		for _, e := range cronRunner.Entries() {
+			cronRunner.Remove(e.ID)
+		}
+
+		ctx := context.Background()
+		ctx = db.WithDatabase(ctx, database)
+		ctx = functions.WithFunctionsTransport(ctx, functions.NewHttpTransport(functionsServer.URL))
+		ctx = runtimectx.WithSecrets(ctx, secrets)
+
+		o := flows.NewOrchestrator(schema, flows.WithNoQueueEventSender(cronRunner))
+		if err := o.ScheduleFlows(ctx); err != nil {
+			return CronRunnerMsg{
+				Err: err,
+			}
+		}
+
+		cronRunner.Start()
+
+		return CronRunnerMsg{}
 	}
 }

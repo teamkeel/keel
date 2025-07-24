@@ -15,6 +15,7 @@ import (
 	"github.com/Masterminds/semver/v3"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/robfig/cron/v3"
 	"github.com/rs/cors"
 	"github.com/sirupsen/logrus"
 	"github.com/teamkeel/keel/cmd/database"
@@ -191,6 +192,7 @@ type Model struct {
 	RuntimeRequests   []*RuntimeRequest
 	FunctionsLog      []*FunctionLog
 	Storage           storage.Storer
+	CronRunner        *cron.Cron
 	TestOutput        string
 	Secrets           map[string]string
 	Environment       string
@@ -235,6 +237,7 @@ func (m *Model) Init() tea.Cmd {
 	m.RpcHandler = rpc.NewAPIServer(&rpcApi.Server{}, twirp.WithServerPathPrefix("/rpc"))
 	m.RpcPort = "34087"
 	m.TracePort = "4318"
+	m.CronRunner = cron.New()
 
 	m.Status = StatusCheckingDependencies
 
@@ -462,7 +465,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.FunctionsServer != nil {
 			_ = m.FunctionsServer.Rebuild()
 			m.Status = StatusRunning
-			return m, nil
+			return m, SetupCron(m.Schema, m.Database, m.FunctionsServer, m.CronRunner, m.Secrets)
 		}
 
 		// Start functions if needed
@@ -482,6 +485,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		if msg.Err == nil {
 			m.Status = StatusRunning
+			return m, SetupCron(m.Schema, m.Database, m.FunctionsServer, m.CronRunner, m.Secrets)
 		}
 
 		return m, nil
@@ -591,7 +595,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		// Setting the flows orchestrator
-		ctx = flows.WithOrchestrator(ctx, flows.NewOrchestrator(m.Schema, flows.WithNoQueueEventSender()))
+		ctx = flows.WithOrchestrator(ctx, flows.NewOrchestrator(m.Schema, flows.WithNoQueueEventSender(m.CronRunner)))
 
 		r = msg.r.WithContext(ctx)
 		m.RuntimeHandler.ServeHTTP(msg.w, r)
@@ -651,6 +655,10 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			NextMsgCommand(m.watcherCh),
 			LoadSchema(m.ProjectDir, m.Environment),
 		)
+
+	case CronRunnerMsg:
+		m.Err = msg.Err
+		return m, nil
 	}
 
 	return m, nil
