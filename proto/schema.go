@@ -214,6 +214,30 @@ func (s *Schema) HasFlows() bool {
 	return len(s.GetFlows()) > 0
 }
 
+// HasScheduledFlows checks if there are any scheduled flows defined.
+func (s *Schema) HasScheduledFlows() bool {
+	for _, f := range s.GetFlows() {
+		if f.GetSchedule() != nil {
+			return true
+		}
+	}
+
+	return false
+}
+
+// ScheduledFlows returns a slice of Flows that have schedules defined.
+func (s *Schema) ScheduledFlows() []*Flow {
+	flows := []*Flow{}
+
+	for _, f := range s.GetFlows() {
+		if f.GetSchedule() != nil {
+			flows = append(flows, f)
+		}
+	}
+
+	return flows
+}
+
 // GetFlowModelInputs returns a map of model names that are used as inputs to the given flow. The boolean
 // value represents whether the input is required or not.
 func (s *Schema) GetFlowModelInputs(f *Flow) map[string]bool {

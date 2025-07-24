@@ -55,6 +55,7 @@ require (
 	github.com/pulumi/pulumi-aws/sdk/v6 v6.83.0
 	github.com/pulumi/pulumi/sdk/v3 v3.184.0
 	github.com/relvacode/iso8601 v1.6.0
+	github.com/robfig/cron/v3 v3.0.1
 	github.com/rs/cors v1.11.1
 	github.com/samber/lo v1.51.0
 	github.com/sanity-io/litter v1.5.5
