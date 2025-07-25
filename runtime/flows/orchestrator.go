@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strings"
 
+	"github.com/aws/aws-sdk-go-v2/service/eventbridge"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/robfig/cron/v3"
 	"github.com/teamkeel/keel/functions"
@@ -51,8 +51,8 @@ func WithEventSender(es EventSender) OrchestratorOpt {
 }
 
 // WithAsyncQueue sets a SQSEventSender on the orchestrator with the given options (queue URL and sqs Client).
-func WithAsyncQueue(queueURL string, client *sqs.Client) OrchestratorOpt {
-	es := NewSQSEventSender(queueURL, client)
+func WithAsyncQueue(queueURL string, sqsClient *sqs.Client, ebClient *eventbridge.Client) OrchestratorOpt {
+	es := NewSQSEventSender(queueURL, sqsClient, ebClient)
 	return WithEventSender(es)
 }
 
@@ -99,10 +99,7 @@ func (o *Orchestrator) ScheduleFlows(ctx context.Context) error {
 			return fmt.Errorf("wrapping event: %w", err)
 		}
 
-		// The protobuf cron expressions for schedules include year, which is not relevant to our use case.
-		cronExpr := strings.TrimSuffix(f.GetSchedule().GetExpression(), " *")
-
-		if err := o.eventSender.Schedule(ctx, cronExpr, payload); err != nil {
+		if err := o.eventSender.Schedule(ctx, f.GetSchedule().GetExpression(), payload); err != nil {
 			return fmt.Errorf("scheduling flow: %w", err)
 		}
 	}
