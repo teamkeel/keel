@@ -201,7 +201,7 @@ var computedTestCases = []computedTestCase{
 		expectedSql: `(SELECT COALESCE(SUM("item$product"."price"), 0) FROM "item" LEFT JOIN "product" AS "item$product" ON "item$product"."id" = "item"."product_id" WHERE "item"."invoice_id" IS NOT DISTINCT FROM r."id")`,
 	},
 	{
-		name: "sumif function",
+		name: "sumif",
 		keelSchema: `
 			model Invoice {
 				fields {
@@ -242,9 +242,6 @@ var computedTestCases = []computedTestCase{
 func TestGeneratedComputed(t *testing.T) {
 	t.Parallel()
 	for _, testCase := range computedTestCases {
-		if testCase.name != "sumif function" {
-			continue
-		}
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 			raw := strings.Replace(testCase.keelSchema, "#placeholder#", testCase.field, 1)
