@@ -15,6 +15,126 @@
         },
         {
           "modelName": "Invoice",
+          "name": "total",
+          "type": {
+            "type": "TYPE_DECIMAL"
+          },
+          "computedExpression": {
+            "source": "SUM(invoice.items.total)"
+          }
+        },
+        {
+          "modelName": "Invoice",
+          "name": "totalNotDeleted",
+          "type": {
+            "type": "TYPE_DECIMAL"
+          },
+          "computedExpression": {
+            "source": "SUMIF(invoice.items.total, !invoice.items.isDeleted)"
+          }
+        },
+        {
+          "modelName": "Invoice",
+          "name": "count",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "computedExpression": {
+            "source": "COUNT(invoice.items)"
+          }
+        },
+        {
+          "modelName": "Invoice",
+          "name": "countNotDeleted",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "computedExpression": {
+            "source": "COUNTIF(invoice.items, !invoice.items.isDeleted && invoice.items.price > 0)"
+          }
+        },
+        {
+          "modelName": "Invoice",
+          "name": "avg",
+          "type": {
+            "type": "TYPE_DECIMAL"
+          },
+          "computedExpression": {
+            "source": "AVG(invoice.items.total)"
+          }
+        },
+        {
+          "modelName": "Invoice",
+          "name": "avgNotDeleted",
+          "type": {
+            "type": "TYPE_DECIMAL"
+          },
+          "computedExpression": {
+            "source": "AVGIF(invoice.items.total, !invoice.items.isDeleted && invoice.items.price > 0)"
+          }
+        },
+        {
+          "modelName": "Invoice",
+          "name": "median",
+          "type": {
+            "type": "TYPE_DECIMAL"
+          },
+          "computedExpression": {
+            "source": "MEDIAN(invoice.items.total)"
+          }
+        },
+        {
+          "modelName": "Invoice",
+          "name": "medianNotDeleted",
+          "type": {
+            "type": "TYPE_DECIMAL"
+          },
+          "computedExpression": {
+            "source": "MEDIANIF(invoice.items.total, !invoice.items.isDeleted && invoice.items.price > 0)"
+          }
+        },
+        {
+          "modelName": "Invoice",
+          "name": "min",
+          "type": {
+            "type": "TYPE_DECIMAL"
+          },
+          "computedExpression": {
+            "source": "MIN(invoice.items.total)"
+          }
+        },
+        {
+          "modelName": "Invoice",
+          "name": "minNotDeleted",
+          "type": {
+            "type": "TYPE_DECIMAL"
+          },
+          "computedExpression": {
+            "source": "MINIF(invoice.items.total, !invoice.items.isDeleted && invoice.items.price > 0)"
+          }
+        },
+        {
+          "modelName": "Invoice",
+          "name": "max",
+          "type": {
+            "type": "TYPE_DECIMAL"
+          },
+          "computedExpression": {
+            "source": "MAX(invoice.items.total)"
+          }
+        },
+        {
+          "modelName": "Invoice",
+          "name": "maxNotDeleted",
+          "type": {
+            "type": "TYPE_DECIMAL"
+          },
+          "computedExpression": {
+            "source": "MAXIF(invoice.items.total, !invoice.items.isDeleted && invoice.items.price > 0)"
+          }
+        },
+        {
+          "modelName": "Invoice",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -104,6 +224,13 @@
         },
         {
           "modelName": "Item",
+          "name": "isDeleted",
+          "type": {
+            "type": "TYPE_BOOL"
+          }
+        },
+        {
+          "modelName": "Item",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -155,7 +282,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -192,7 +321,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
           "modelName": "Identity",
@@ -550,7 +681,9 @@
             "type": "TYPE_MESSAGE",
             "messageName": "DecimalQueryInput"
           },
-          "target": ["price"]
+          "target": [
+            "price"
+          ]
         },
         {
           "messageName": "ListItemsWhere",
@@ -559,7 +692,9 @@
             "type": "TYPE_MESSAGE",
             "messageName": "IntQueryInput"
           },
-          "target": ["quantity"]
+          "target": [
+            "quantity"
+          ]
         },
         {
           "messageName": "ListItemsWhere",
@@ -568,7 +703,9 @@
             "type": "TYPE_MESSAGE",
             "messageName": "DecimalQueryInput"
           },
-          "target": ["total"]
+          "target": [
+            "total"
+          ]
         }
       ]
     },
