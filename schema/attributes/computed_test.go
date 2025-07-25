@@ -40,12 +40,13 @@ func TestComputed_SumFunction(t *testing.T) {
 	require.Len(t, issues, 0)
 }
 
-func TestComputed_AggregatedSumFunction(t *testing.T) {
+func TestComputed_ConditionalSumFunction(t *testing.T) {
 	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
 		model Invoice {
 			fields {
 				items Item[]
-				total Decimal @computed(SUM(invoice.items.total, item.isDeleted == false))
+				total Decimal @computed(SUMIF(invoice.items.total, invoice.items.isDeleted == false))
+
 			}
 		}
 		model Item {
@@ -61,6 +62,7 @@ func TestComputed_AggregatedSumFunction(t *testing.T) {
 			fields {
 				price Decimal
 				items Item[]
+				isDeleted Boolean @default(false)
 			}
 		}`})
 

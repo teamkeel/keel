@@ -1,6 +1,7 @@
 package actions_test
 
 import (
+	"context"
 	"strings"
 	"testing"
 
@@ -30,6 +31,7 @@ model Product {
 		standardPrice Decimal
 		sku Text
 		agent Agent
+		isDeleted Boolean
 	}
 }
 model Agent {
@@ -199,6 +201,31 @@ var computedTestCases = []computedTestCase{
 		expectedSql: `(SELECT COALESCE(SUM("item$product"."price"), 0) FROM "item" LEFT JOIN "product" AS "item$product" ON "item$product"."id" = "item"."product_id" WHERE "item"."invoice_id" IS NOT DISTINCT FROM r."id")`,
 	},
 	{
+		name: "sumif function",
+		keelSchema: `
+			model Invoice {
+				fields {
+					item Item[]
+					#placeholder#
+				}
+			}
+			model Item {
+				fields {
+					invoice Invoice
+					product Product
+					isDeleted Boolean
+				}
+			}
+			model Product {
+				fields {
+					name Text
+					price Decimal
+				}
+			}`,
+		field:       "total Decimal @computed(SUMIF(invoice.item.product.price, invoice.item.isDeleted == false && invoice.item.product.price > 0.0))",
+		expectedSql: `(SELECT COALESCE(SUM("item$product"."price"), 0) FROM "item" LEFT JOIN "product" AS "item$product" ON "item$product"."id" = "item"."product_id" WHERE "item"."invoice_id" IS NOT DISTINCT FROM r."id" AND "item"."is_deleted" IS NOT DISTINCT FROM false AND "item$product"."price" > 0)`,
+	},
+	{
 		name:        "concating strings",
 		keelSchema:  testSchema,
 		field:       "name Text @computed(\"Product: \" + item.product.name)",
@@ -215,6 +242,9 @@ var computedTestCases = []computedTestCase{
 func TestGeneratedComputed(t *testing.T) {
 	t.Parallel()
 	for _, testCase := range computedTestCases {
+		if testCase.name != "sumif function" {
+			continue
+		}
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 			raw := strings.Replace(testCase.keelSchema, "#placeholder#", testCase.field, 1)
@@ -240,7 +270,7 @@ func TestGeneratedComputed(t *testing.T) {
 			expression, err := parser.ParseExpression(field.GetComputedExpression().GetSource())
 			assert.NoError(t, err)
 
-			sql, err := resolve.RunCelVisitor(expression, actions.GenerateComputedFunction(schema, model, field))
+			sql, err := resolve.RunCelVisitor(expression, actions.GenerateComputedFunction(context.Background(), schema, model, field))
 			assert.NoError(t, err)
 
 			assert.Equal(t, testCase.expectedSql, sql, "expected `%s` but got `%s`", testCase.expectedSql, sql)

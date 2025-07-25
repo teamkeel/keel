@@ -25,13 +25,17 @@ type Visitor[T any] interface {
 	StartFunction(name string) error
 	// EndFunction is called when a function is finished
 	EndFunction() error
+	// StartArgument is called when an argument is started
+	StartArgument(num int) error
+	// EndArgument is called when an argument is finished
+	EndArgument() error
 	// VisitAnd is called when an 'and' operator is visited between conditions
 	VisitAnd() error
 	// VisitAnd is called when an 'or' operator is visited between conditions
 	VisitOr() error
 	// VisitNot is called when a logical not '!' is visited before a condition
 	VisitNot() error
-	// VisitLiteral is called when a literal operand is visited (e.g. "Keel")
+	// VisitLiteral is called when a literal operand is visited (e.g. "Keel" or 123)
 	VisitLiteral(value any) error
 	// VisitIdent is called when a field operand, variable or enum value is visited (e.g. post.name)
 	VisitIdent(ident *parser.ExpressionIdent) error
@@ -199,8 +203,19 @@ func (w *CelVisitor[T]) functionCall(expr *exprpb.Expr) error {
 			return err
 		}
 	}
-	for _, arg := range args {
-		err := w.eval(arg, false, false)
+
+	for i, arg := range args {
+		err := w.visitor.StartArgument(i)
+		if err != nil {
+			return err
+		}
+
+		err = w.eval(arg, false, false)
+		if err != nil {
+			return err
+		}
+
+		err = w.visitor.EndArgument()
 		if err != nil {
 			return err
 		}

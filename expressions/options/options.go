@@ -412,6 +412,23 @@ func WithComparisonOperators() expressions.Option {
 				cel.Overload("equals_Number[]_Number", argTypes(typing.TypeNumberArray, typing.TypeNumber), types.BoolType),
 				cel.Overload("equals_Number[]_int", argTypes(typing.TypeNumberArray, types.IntType), types.BoolType),
 				cel.Overload("equals_Number_Number[]", argTypes(typing.TypeNumber, typing.TypeNumberArray), types.BoolType),
+
+				cel.Overload("equals_Decimal[]_Decimal", argTypes(typing.TypeDecimalArray, typing.TypeDecimal), types.BoolType),
+				cel.Overload("equals_Decimal[]_double", argTypes(typing.TypeDecimalArray, types.DoubleType), types.BoolType),
+				cel.Overload("equals_Decimal_Decimal[]", argTypes(typing.TypeDecimal, typing.TypeDecimalArray), types.BoolType),
+
+				cel.Overload("equals_Boolean[]_Boolean", argTypes(typing.TypeBooleanArray, typing.TypeBoolean), types.BoolType),
+				cel.Overload("equals_Boolean[]_bool", argTypes(typing.TypeBooleanArray, types.BoolType), types.BoolType),
+				cel.Overload("equals_Boolean_Boolean[]", argTypes(typing.TypeBoolean, typing.TypeBooleanArray), types.BoolType),
+			),
+			cel.Function(operators.Greater,
+				cel.Overload("greater_Decimal[]_Decimal", argTypes(typing.TypeDecimalArray, typing.TypeDecimal), types.BoolType),
+				cel.Overload("greater_Decimal[]_double", argTypes(typing.TypeDecimalArray, types.DoubleType), types.BoolType),
+				cel.Overload("greater_Decimal_Decimal[]", argTypes(typing.TypeDecimal, typing.TypeDecimalArray), types.BoolType),
+
+				cel.Overload("greater_Number[]_Number", argTypes(typing.TypeNumberArray, typing.TypeNumber), types.BoolType),
+				cel.Overload("greater_Number[]_int", argTypes(typing.TypeNumberArray, types.IntType), types.BoolType),
+				cel.Overload("greater_Number_Number[]", argTypes(typing.TypeNumber, typing.TypeNumberArray), types.BoolType),
 			),
 		)
 		if err != nil {
@@ -458,7 +475,15 @@ func WithFunctions() expressions.Option {
 		p.CelEnv, err = p.CelEnv.Extend(
 			cel.Function(typing.FunctionCount, cel.Overload("count", []*types.Type{typeParamA}, typing.TypeNumber)),
 			cel.Function(typing.FunctionSum, cel.Overload("sum_decimal", []*types.Type{typing.TypeDecimalArray}, typing.TypeDecimal)),
-			cel.Function(typing.FunctionSum, cel.Overload("conditional_sum_decimal", []*types.Type{typing.TypeDecimalArray, types.BoolType}, typing.TypeDecimal)),
+
+			//cel.Function("SUMIF", cel.Overload("sumif_decimal", []*types.Type{types.NewObjectType("Item[]"), cel.TypeParamType("d"), cel.DynType}, typing.TypeDecimal)),
+			// cel.Macros(cel.GlobalMacro("SUMIF", 3, func(meh cel.MacroExprFactory, _ ast.Expr, args []ast.Expr) (ast.Expr, *cel.Error) {
+
+			// 	return sumIfMacro(meh, nil, args)
+			// })),
+			cel.Function(typing.FunctionSumIf, cel.Overload("sumif_decimal", []*types.Type{typing.TypeDecimalArray, types.BoolType}, typing.TypeDecimal)),
+			cel.Function(typing.FunctionCountIf, cel.Overload("countif_decimal", []*types.Type{typing.TypeDecimalArray, types.BoolType}, typing.TypeDecimal)),
+			cel.Function(typing.FunctionSumIf, cel.Overload("sumif_decimal_d", []*types.Type{typing.TypeDecimalArray, typing.TypeBooleanArray}, typing.TypeDecimal)),
 
 			cel.Function(typing.FunctionSum, cel.Overload("sum_number", []*types.Type{typing.TypeNumberArray}, typing.TypeNumber)),
 			cel.Function(typing.FunctionSum, cel.Overload("conditional_sum_number", []*types.Type{typing.TypeNumberArray, types.BoolType}, typing.TypeNumber)),
@@ -477,6 +502,58 @@ func WithFunctions() expressions.Option {
 		return err
 	}
 }
+
+// sortByMacro transforms an expression like:
+//
+//	mylistExpr.sortBy(e, -math.abs(e))
+//
+// into something equivalent to:
+//
+//	cel.bind(
+//	   __sortBy_input__,
+//	   myListExpr,
+//	   __sortBy_input__.@sortByAssociatedKeys(__sortBy_input__.map(e, -math.abs(e))
+//	)
+
+// func sumIfMacro(meh cel.MacroExprFactory, _ ast.Expr, args []ast.Expr) (ast.Expr, *cel.Error) {
+// 	//varIdent := meh.NewIdent("@__sortBy_input__")
+
+// 	//ident := meh.NewIdent("total")
+// 	targetIdent := args[0]
+// 	targetKind := targetIdent.Kind()
+// 	if targetKind != ast.SelectKind && targetKind != ast.IdentKind {
+// 		return nil, meh.NewError(targetIdent.ID(), "SUMIF can only be applied to a select expression or identifier")
+// 	}
+
+// 	fieldIdent := args[1]
+// 	fieldKind := fieldIdent.Kind()
+// 	if fieldKind != ast.IdentKind {
+// 		return nil, meh.NewError(fieldIdent.ID(), "SUMIF requires a field name as the second argument")
+// 	}
+
+// 	fieldSelect := meh.NewSelect(targetIdent, fieldIdent.AsIdent())
+
+// 	filterIdent := args[2]
+// 	filterKind := filterIdent.Kind()
+// 	if filterKind != ast.CallKind {
+// 		return nil, meh.NewError(filterIdent.ID(), "SUMIF requires a filter expression as the third argument")
+// 	}
+
+// 	operand := filterIdent.AsCall().Args()[0]
+// 	operandSelect := meh.NewSelect(targetIdent, operand.AsIdent())
+
+// 	filterCallArgs := filterIdent.AsCall().Args()
+// 	filterCallArgs[0] = operandSelect
+// 	reconstructedFilter := meh.NewCall(filterIdent.AsCall().FunctionName(), filterCallArgs...)
+
+// 	callExpr := meh.NewCall("sumifBy",
+// 		targetIdent,
+// 		fieldSelect,
+// 		reconstructedFilter,
+// 	)
+
+// 	return callExpr, nil
+// }
 
 // WithReturnTypeAssertion will check that the expression evaluates to a specific type.
 func WithReturnTypeAssertion(returnType string, asArray bool) expressions.Option {

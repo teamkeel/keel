@@ -3,6 +3,9 @@ model Invoice {
         items Item[]
         shipping Number 
         total Decimal @computed(SUM(invoice.items.product.price) + invoice.shipping)
+        numberOfItems Decimal @computed(COUNT(invoice.items.product))
+        totalActive Decimal @computed(SUMIF(invoice.items.product.price, invoice.items.isDeleted == false) + invoice.shipping)
+        numberOfActiveItems Decimal @computed(COUNTIF(invoice.items.product.price, invoice.items.isDeleted == false && invoice.items.product.price > 0))
     }
     actions {
         get getInvoice(id) {
@@ -21,12 +24,17 @@ model Item {
     fields {
         invoice Invoice
         product Product
+        isDeleted Boolean @default(false)
     }
     actions {
         get getItem(id) {
             @permission(expression: true)
         }
         create createItem() with (product.id, invoice.id) {
+            @permission(expression: true)
+        }
+        update removeItem(id) {
+            @set(item.isDeleted = true)
             @permission(expression: true)
         }
     }

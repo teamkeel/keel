@@ -45,6 +45,14 @@ func (v *identArrayGen) EndFunction() error {
 	return nil
 }
 
+func (v *identArrayGen) StartArgument(num int) error {
+	return nil
+}
+
+func (v *identArrayGen) EndArgument() error {
+	return nil
+}
+
 func (v *identArrayGen) VisitAnd() error {
 	return ErrExpressionNotValidIdentArray
 }

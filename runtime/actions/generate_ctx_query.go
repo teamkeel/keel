@@ -101,6 +101,14 @@ func (v *ctxQueryGen) EndFunction() error {
 	return nil
 }
 
+func (v *ctxQueryGen) StartArgument(num int) error {
+	return nil
+}
+
+func (v *ctxQueryGen) EndArgument() error {
+	return nil
+}
+
 func (v *ctxQueryGen) VisitAnd() error {
 	v.query.And()
 	return nil

@@ -66,6 +66,14 @@ func (v *fieldLookupsGen) EndFunction() error {
 	return nil
 }
 
+func (v *fieldLookupsGen) StartArgument(num int) error {
+	return nil
+}
+
+func (v *fieldLookupsGen) EndArgument() error {
+	return nil
+}
+
 func (v *fieldLookupsGen) VisitAnd() error {
 	return nil
 }

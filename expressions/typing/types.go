@@ -54,6 +54,13 @@ var (
 	FunctionMedian = "MEDIAN"
 	FunctionMin    = "MIN"
 	FunctionMax    = "MAX"
+
+	FunctionSumIf    = "SUMIF"
+	FunctionCountIf  = "COUNTIF"
+	FunctionAvgIf    = "AVGIF"
+	FunctionMedianIf = "MEDIANIF"
+	FunctionMinIf    = "MINIF"
+	FunctionMaxIf    = "MAXIF"
 )
 
 var (

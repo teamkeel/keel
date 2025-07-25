@@ -50,6 +50,14 @@ func (v *setQueryGen) EndFunction() error {
 	return nil
 }
 
+func (v *setQueryGen) StartArgument(num int) error {
+	return nil
+}
+
+func (v *setQueryGen) EndArgument() error {
+	return nil
+}
+
 func (v *setQueryGen) VisitAnd() error {
 	return errors.New("and operator not supported with set")
 }
