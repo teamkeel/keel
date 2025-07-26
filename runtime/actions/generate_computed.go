@@ -27,9 +27,6 @@ func GenerateComputedFunction(ctx context.Context, schema *proto.Schema, model *
 		sql:       "",
 		functions: arraystack.New(),
 		arguments: arraystack.New(),
-
-		// operators: arraystack.New(),
-		// operands:  arraystack.New(),
 	}
 }
 
@@ -43,11 +40,7 @@ type computedQueryGen struct {
 	sql       string
 	functions *arraystack.Stack
 	arguments *arraystack.Stack
-
-	//query     *QueryBuilder
-	filter resolve.Visitor[*QueryBuilder]
-	//operators *arraystack.Stack
-	//operands  *arraystack.Stack
+	filter    resolve.Visitor[*QueryBuilder]
 }
 
 func (v *computedQueryGen) StartTerm(nested bool) error {
@@ -232,7 +225,6 @@ func (v *computedQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
 		}
 
 		if isToMany {
-
 			arg, has := v.arguments.Peek()
 			if !has {
 				return errors.New("argument stack is empty")

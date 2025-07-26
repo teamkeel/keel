@@ -363,7 +363,7 @@ func WithTimezone(tz string) QueryBuilderOption {
 	}
 }
 
-// EmbedLiterals will embed the literal values in the sql query (replacing the ? placeholders)
+// EmbedLiterals will embed the literal values in the sql query (replacing the ? placeholders).
 func EmbedLiterals() QueryBuilderOption {
 	return func(qb *QueryBuilder) {
 		qb.embedLiterals = true
