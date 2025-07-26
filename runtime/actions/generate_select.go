@@ -50,6 +50,14 @@ func (v *setQueryGen) EndFunction() error {
 	return nil
 }
 
+func (v *setQueryGen) StartArgument(num int) error {
+	return nil
+}
+
+func (v *setQueryGen) EndArgument() error {
+	return nil
+}
+
 func (v *setQueryGen) VisitAnd() error {
 	return errors.New("and operator not supported with set")
 }
@@ -78,7 +86,7 @@ func (v *setQueryGen) VisitLiteral(value any) error {
 func (v *setQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
 	model := v.schema.FindModel(strcase.ToCamel(ident.Fragments[0]))
 
-	normalised, err := NormalisedFragments(v.schema, ident.Fragments)
+	normalised, err := NormaliseFragments(v.schema, ident.Fragments)
 	if err != nil {
 		return err
 	}

@@ -30,7 +30,7 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 			return err
 		}
 
-		ident, err := NormalisedFragments(scope.Schema, target.Fragments)
+		ident, err := NormaliseFragments(scope.Schema, target.Fragments)
 		if err != nil {
 			return err
 		}

@@ -44,6 +44,14 @@ func (v *identGen) EndFunction() error {
 	return nil
 }
 
+func (v *identGen) StartArgument(num int) error {
+	return nil
+}
+
+func (v *identGen) EndArgument() error {
+	return nil
+}
+
 func (v *identGen) VisitAnd() error {
 	return ErrExpressionNotValidIdent
 }

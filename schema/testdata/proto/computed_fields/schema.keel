@@ -1,6 +1,18 @@
 model Invoice {
     fields {
         items Item[]
+        total Decimal @computed(SUM(invoice.items.total))
+        totalNotDeleted Decimal @computed(SUMIF(invoice.items.total, !invoice.items.isDeleted))
+        count Number @computed(COUNT(invoice.items))
+        countNotDeleted Number @computed(COUNTIF(invoice.items, !invoice.items.isDeleted && invoice.items.price > 0))
+        avg Decimal @computed(AVG(invoice.items.total))
+        avgNotDeleted Decimal @computed(AVGIF(invoice.items.total, !invoice.items.isDeleted && invoice.items.price > 0))
+        median Decimal @computed(MEDIAN(invoice.items.total))
+        medianNotDeleted Decimal @computed(MEDIANIF(invoice.items.total, !invoice.items.isDeleted && invoice.items.price > 0))
+        min Decimal @computed(MIN(invoice.items.total))
+        minNotDeleted Decimal @computed(MINIF(invoice.items.total, !invoice.items.isDeleted && invoice.items.price > 0))
+        max Decimal @computed(MAX(invoice.items.total))
+        maxNotDeleted Decimal @computed(MAXIF(invoice.items.total, !invoice.items.isDeleted && invoice.items.price > 0))
     }
 }
 
@@ -11,6 +23,7 @@ model Item {
         price Decimal
         quantity Number
         total Decimal @computed(item.price * item.quantity)
+        isDeleted Boolean
     }
 
     actions {

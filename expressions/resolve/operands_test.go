@@ -54,3 +54,16 @@ func TestOperands_Functions(t *testing.T) {
 	assert.Equal(t, "isPublic", ident[0].String())
 	assert.Equal(t, "account.transactions.amount", ident[1].String())
 }
+
+func TestOperands_FunctionsMultipleArgs(t *testing.T) {
+	expression, err := parser.ParseExpression(`isPublic == true && SUMIF(account.transactions.amount, account.transactions.isDeleted == false && account.transactions.amount > 0) > 100`)
+	assert.NoError(t, err)
+
+	ident, err := resolve.IdentOperands(expression)
+	assert.NoError(t, err)
+
+	assert.Len(t, ident, 3)
+	assert.Equal(t, "isPublic", ident[0].String())
+	assert.Equal(t, "account.transactions.amount", ident[1].String())
+	assert.Equal(t, "account.transactions.isDeleted", ident[2].String())
+}

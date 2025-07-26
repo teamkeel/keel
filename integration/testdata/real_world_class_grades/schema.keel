@@ -1,0 +1,92 @@
+model Class {
+    fields {
+        name Text
+        teacher Teacher
+        enrollments Enrollment[]
+        numberOfEnrollments Number @computed(COUNTIF(class.enrollments, class.enrollments.student.isActive))
+        averageGrade Decimal @computed(AVGIF(class.enrollments.grade, class.enrollments.student.isActive))
+        medianGrade Decimal @computed(MEDIANIF(class.enrollments.grade, class.enrollments.student.isActive))
+        lowestGrade Decimal @computed(MINIF(class.enrollments.grade, class.enrollments.student.isActive))
+        highestGrade Decimal @computed(MAXIF(class.enrollments.grade, class.enrollments.student.isActive))
+    }
+    actions {
+        get getClass(id) {
+            @permission(expression: true)
+        }
+        create createClass() with (name, teacher.id) {
+            @permission(expression: true)
+        }
+        list listClasses() {
+            @permission(expression: true)
+        }
+    }
+}
+
+model Teacher {
+    fields {
+        name Text
+        classes Class[]
+        gradeAverage Decimal @computed(AVGIF(teacher.classes.enrollments.grade, teacher.classes.enrollments.student.isActive))
+    }
+    actions {
+        get getTeacher(id) {
+            @permission(expression: true)
+        }
+        create createTeacher() with (name) {
+            @permission(expression: true)
+        }
+        list listTeachers() {
+            @permission(expression: true)
+        }
+    }
+}
+
+model Student {
+    fields {
+        name Text
+        enrollments Enrollment[]
+        isActive Boolean @default(true)
+        result Decimal @computed(AVG(student.enrollments.grade))
+    }
+    actions {
+        get getStudent(id) {
+            @permission(expression: true)
+        }
+        create createStudent() with (name, isActive?) {
+            @permission(expression: true)
+        }
+        list listStudents() {
+            @permission(expression: true)
+        }
+        update updateStudent(id) with (name?, isActive?) {
+            @permission(expression: true)
+        }
+    }
+}
+
+model Enrollment {
+    fields {
+        student Student
+        class Class
+        grade Decimal? 
+    }
+
+    @unique([student, class])
+    
+    actions {
+        get getEnrollment(id) {
+            @permission(expression: true)
+        }
+        create createEnrollment() with (student.id, class.id, grade?) {
+            @permission(expression: true)
+        }
+        update updateEnrollment(id) with (grade?) {
+            @permission(expression: true)
+        }
+        list listEnrollments() {
+            @permission(expression: true)
+        }
+    }
+}
+
+

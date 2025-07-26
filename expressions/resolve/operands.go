@@ -40,6 +40,14 @@ func (v *operandsResolver) EndFunction() error {
 	return nil
 }
 
+func (v *operandsResolver) StartArgument(num int) error {
+	return nil
+}
+
+func (v *operandsResolver) EndArgument() error {
+	return nil
+}
+
 func (v *operandsResolver) VisitAnd() error {
 	return nil
 }
@@ -61,6 +69,13 @@ func (v *operandsResolver) VisitLiteral(value any) error {
 }
 
 func (v *operandsResolver) VisitIdent(ident *parser.ExpressionIdent) error {
+	for _, id := range v.idents {
+		if id.String() == ident.String() {
+			// if the ident is already in the list, we don't need to add it again
+			return nil
+		}
+	}
+
 	v.idents = append(v.idents, ident)
 
 	return nil

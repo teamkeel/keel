@@ -71,6 +71,14 @@ func (v *permissionGen) EndFunction() error {
 	return nil
 }
 
+func (v *permissionGen) StartArgument(num int) error {
+	return nil
+}
+
+func (v *permissionGen) EndArgument() error {
+	return nil
+}
+
 func (v *permissionGen) VisitAnd() error {
 	v.stmt.expression += " and "
 	return nil

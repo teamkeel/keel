@@ -31,7 +31,7 @@ func defaultComputed(schema []*parser.AST) (*expressions.Parser, error) {
 		options.WithComparisonOperators(),
 		options.WithLogicalOperators(),
 		options.WithArithmeticOperators(),
-		options.WithFunctions(),
+		options.WithAggregateFunctions(),
 	}
 
 	parser, err := expressions.NewParser(opts...)
