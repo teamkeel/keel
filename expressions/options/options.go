@@ -586,58 +586,6 @@ func WithAggregateFunctions() expressions.Option {
 	}
 }
 
-// sortByMacro transforms an expression like:
-//
-//	mylistExpr.sortBy(e, -math.abs(e))
-//
-// into something equivalent to:
-//
-//	cel.bind(
-//	   __sortBy_input__,
-//	   myListExpr,
-//	   __sortBy_input__.@sortByAssociatedKeys(__sortBy_input__.map(e, -math.abs(e))
-//	)
-
-// func sumIfMacro(meh cel.MacroExprFactory, _ ast.Expr, args []ast.Expr) (ast.Expr, *cel.Error) {
-// 	//varIdent := meh.NewIdent("@__sortBy_input__")
-
-// 	//ident := meh.NewIdent("total")
-// 	targetIdent := args[0]
-// 	targetKind := targetIdent.Kind()
-// 	if targetKind != ast.SelectKind && targetKind != ast.IdentKind {
-// 		return nil, meh.NewError(targetIdent.ID(), "SUMIF can only be applied to a select expression or identifier")
-// 	}
-
-// 	fieldIdent := args[1]
-// 	fieldKind := fieldIdent.Kind()
-// 	if fieldKind != ast.IdentKind {
-// 		return nil, meh.NewError(fieldIdent.ID(), "SUMIF requires a field name as the second argument")
-// 	}
-
-// 	fieldSelect := meh.NewSelect(targetIdent, fieldIdent.AsIdent())
-
-// 	filterIdent := args[2]
-// 	filterKind := filterIdent.Kind()
-// 	if filterKind != ast.CallKind {
-// 		return nil, meh.NewError(filterIdent.ID(), "SUMIF requires a filter expression as the third argument")
-// 	}
-
-// 	operand := filterIdent.AsCall().Args()[0]
-// 	operandSelect := meh.NewSelect(targetIdent, operand.AsIdent())
-
-// 	filterCallArgs := filterIdent.AsCall().Args()
-// 	filterCallArgs[0] = operandSelect
-// 	reconstructedFilter := meh.NewCall(filterIdent.AsCall().FunctionName(), filterCallArgs...)
-
-// 	callExpr := meh.NewCall("sumifBy",
-// 		targetIdent,
-// 		fieldSelect,
-// 		reconstructedFilter,
-// 	)
-
-// 	return callExpr, nil
-// }
-
 // WithReturnTypeAssertion will check that the expression evaluates to a specific type.
 func WithReturnTypeAssertion(returnType string, asArray bool) expressions.Option {
 	return func(p *expressions.Parser) error {
