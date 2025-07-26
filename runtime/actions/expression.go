@@ -23,7 +23,7 @@ func (query *QueryBuilder) AddJoinFromFragments(schema *proto.Schema, fragments 
 		return nil
 	}
 
-	fragments, err := NormalisedFragments(schema, fragments)
+	fragments, err := NormaliseFragments(schema, fragments)
 	if err != nil {
 		return err
 	}
@@ -67,7 +67,7 @@ func (query *QueryBuilder) AddJoinFromFragments(schema *proto.Schema, fragments 
 }
 
 func generateOperand(ctx context.Context, schema *proto.Schema, model *proto.Model, action *proto.Action, inputs map[string]any, fragments []string) (*QueryOperand, error) {
-	ident, err := NormalisedFragments(schema, fragments)
+	ident, err := NormaliseFragments(schema, fragments)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +91,7 @@ func generateOperand(ctx context.Context, schema *proto.Schema, model *proto.Mod
 }
 
 func generateOperandForCtx(ctx context.Context, schema *proto.Schema, fragments []string) (*QueryOperand, error) {
-	ident, err := NormalisedFragments(schema, fragments)
+	ident, err := NormaliseFragments(schema, fragments)
 	if err != nil {
 		return nil, err
 	}
@@ -198,7 +198,7 @@ func generateOperandForCtx(ctx context.Context, schema *proto.Schema, fragments 
 	return nil, fmt.Errorf("cannot handle ctx fragments: %s", strings.Join(ident, "."))
 }
 
-func NormalisedFragments(schema *proto.Schema, fragments []string) ([]string, error) {
+func NormaliseFragments(schema *proto.Schema, fragments []string) ([]string, error) {
 	isModelField := false
 	isCtx := fragments[0] == "ctx"
 
@@ -282,7 +282,7 @@ func NormalisedFragments(schema *proto.Schema, fragments []string) ([]string, er
 // Constructs a QueryOperand from a splice of fragments, representing an expression operand or implicit input.
 // The fragment slice must include the base model as the first fragment, for example: post.author.publisher.isActive.
 func operandFromFragments(schema *proto.Schema, fragments []string) (*QueryOperand, error) {
-	fragments, err := NormalisedFragments(schema, fragments)
+	fragments, err := NormaliseFragments(schema, fragments)
 	if err != nil {
 		return nil, err
 	}

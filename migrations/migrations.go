@@ -754,7 +754,7 @@ func computedFieldsStmts(ctx context.Context, schema *proto.Schema, existingComp
 				continue
 			}
 
-			fragments, err := actions.NormalisedFragments(schema, dep.ident.Fragments)
+			fragments, err := actions.NormaliseFragments(schema, dep.ident.Fragments)
 			if err != nil {
 				return nil, nil, err
 			}

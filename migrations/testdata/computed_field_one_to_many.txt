@@ -1,0 +1,172 @@
+===
+
+model Invoice {
+    fields {
+        total Decimal @computed(SUMIF(invoice.items.total, !invoice.items.isDeleted && !invoice.items.product.isDeleted))
+        items Item[]
+    }
+}
+
+model Item {
+    fields {
+        invoice Invoice
+        product Product
+        total Decimal 
+        isDeleted Boolean
+    }
+}
+
+model Product {
+    fields {
+        price Decimal
+        isDeleted Boolean
+    }
+}
+
+===
+
+CREATE TABLE "identity" (
+"email" TEXT,
+"email_verified" BOOL NOT NULL DEFAULT false,
+"password" TEXT,
+"external_id" TEXT,
+"issuer" TEXT,
+"name" TEXT,
+"given_name" TEXT,
+"family_name" TEXT,
+"middle_name" TEXT,
+"nick_name" TEXT,
+"profile" TEXT,
+"picture" TEXT,
+"website" TEXT,
+"gender" TEXT,
+"zone_info" TEXT,
+"locale" TEXT,
+"id" TEXT NOT NULL DEFAULT ksuid(),
+"created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+"updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE "identity" ADD CONSTRAINT identity_id_pkey PRIMARY KEY ("id");
+ALTER TABLE "identity" ADD CONSTRAINT identity_email_issuer_udx UNIQUE ("email", "issuer");
+CREATE TABLE "invoice" (
+"total" NUMERIC,
+"id" TEXT NOT NULL DEFAULT ksuid(),
+"created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+"updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE "invoice" ADD CONSTRAINT invoice_id_pkey PRIMARY KEY ("id");
+CREATE TABLE "item" (
+"invoice_id" TEXT NOT NULL,
+"product_id" TEXT NOT NULL,
+"total" NUMERIC NOT NULL,
+"is_deleted" BOOL NOT NULL,
+"id" TEXT NOT NULL DEFAULT ksuid(),
+"created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+"updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE "item" ADD CONSTRAINT item_id_pkey PRIMARY KEY ("id");
+CREATE TABLE "keel_audit" (
+"id" TEXT NOT NULL DEFAULT ksuid(),
+"table_name" TEXT NOT NULL,
+"op" TEXT NOT NULL,
+"data" jsonb NOT NULL,
+"created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+"identity_id" TEXT,
+"trace_id" TEXT,
+"event_processed_at" TIMESTAMPTZ
+);
+ALTER TABLE "keel_audit" ADD CONSTRAINT keel_audit_id_pkey PRIMARY KEY ("id");
+CREATE TABLE "product" (
+"price" NUMERIC NOT NULL,
+"is_deleted" BOOL NOT NULL,
+"id" TEXT NOT NULL DEFAULT ksuid(),
+"created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+"updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE "product" ADD CONSTRAINT product_id_pkey PRIMARY KEY ("id");
+ALTER TABLE "item" ADD FOREIGN KEY ("invoice_id") REFERENCES "invoice"("id") ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE;
+ALTER TABLE "item" ADD FOREIGN KEY ("product_id") REFERENCES "product"("id") ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE;
+CREATE TRIGGER invoice_create AFTER INSERT ON "invoice" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER invoice_update AFTER UPDATE ON "invoice" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER invoice_delete AFTER DELETE ON "invoice" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER invoice_updated_at BEFORE UPDATE ON "invoice" FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
+CREATE TRIGGER item_create AFTER INSERT ON "item" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER item_update AFTER UPDATE ON "item" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER item_delete AFTER DELETE ON "item" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER item_updated_at BEFORE UPDATE ON "item" FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
+CREATE TRIGGER product_create AFTER INSERT ON "product" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER product_update AFTER UPDATE ON "product" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER product_delete AFTER DELETE ON "product" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER product_updated_at BEFORE UPDATE ON "product" FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
+CREATE TRIGGER identity_create AFTER INSERT ON "identity" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER identity_update AFTER UPDATE ON "identity" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER identity_delete AFTER DELETE ON "identity" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER identity_updated_at BEFORE UPDATE ON "identity" FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
+CREATE FUNCTION "invoice__total__d6ea5ced__comp"(r "invoice") RETURNS NUMERIC AS $$ BEGIN
+	RETURN (SELECT COALESCE(SUM("item"."total"), 0) FROM "item" LEFT JOIN "product" AS "item$product" ON "item$product"."id" = "item"."product_id" WHERE "item"."invoice_id" IS NOT DISTINCT FROM r."id" AND NOT "item"."is_deleted" IS NOT DISTINCT FROM true AND NOT "item$product"."is_deleted" IS NOT DISTINCT FROM true);
+END; $$ LANGUAGE plpgsql;
+CREATE OR REPLACE FUNCTION "invoice__exec_comp_fns"() RETURNS TRIGGER AS $$ BEGIN
+	NEW."total" := invoice__total__d6ea5ced__comp(NEW);
+	RETURN NEW;
+END; $$ LANGUAGE plpgsql;
+CREATE OR REPLACE TRIGGER "invoice__comp" BEFORE INSERT OR UPDATE ON "invoice" FOR EACH ROW EXECUTE PROCEDURE "invoice__exec_comp_fns"();
+CREATE OR REPLACE FUNCTION "item__to__invoice__5a94ac45__comp_dep"() RETURNS TRIGGER AS $$
+BEGIN
+	UPDATE "invoice" SET id = id WHERE id IN (NEW."invoice_id", OLD."invoice_id");
+	RETURN NULL;
+END; $$ LANGUAGE plpgsql;
+CREATE OR REPLACE TRIGGER "item__to__invoice__5a94ac45__comp_dep" AFTER INSERT OR DELETE ON "item" FOR EACH ROW EXECUTE PROCEDURE "item__to__invoice__5a94ac45__comp_dep"();
+CREATE OR REPLACE TRIGGER "item__to__invoice__5a94ac45__comp_dep_update" AFTER UPDATE ON "item" FOR EACH ROW WHEN(NEW."total" IS DISTINCT FROM OLD."total" OR NEW."invoice_id" IS DISTINCT FROM OLD."invoice_id") EXECUTE PROCEDURE "item__to__invoice__5a94ac45__comp_dep"();
+CREATE OR REPLACE FUNCTION "item__to__invoice__9b571554__comp_dep"() RETURNS TRIGGER AS $$
+BEGIN
+	UPDATE "invoice" SET id = id WHERE id IN (NEW."invoice_id", OLD."invoice_id");
+	RETURN NULL;
+END; $$ LANGUAGE plpgsql;
+CREATE OR REPLACE TRIGGER "item__to__invoice__9b571554__comp_dep" AFTER INSERT OR DELETE ON "item" FOR EACH ROW EXECUTE PROCEDURE "item__to__invoice__9b571554__comp_dep"();
+CREATE OR REPLACE TRIGGER "item__to__invoice__9b571554__comp_dep_update" AFTER UPDATE ON "item" FOR EACH ROW WHEN(TRUE) EXECUTE PROCEDURE "item__to__invoice__9b571554__comp_dep"();
+CREATE OR REPLACE FUNCTION "item__to__invoice__fb246d5a__comp_dep"() RETURNS TRIGGER AS $$
+BEGIN
+	UPDATE "invoice" SET id = id WHERE id IN (NEW."invoice_id", OLD."invoice_id");
+	RETURN NULL;
+END; $$ LANGUAGE plpgsql;
+CREATE OR REPLACE TRIGGER "item__to__invoice__fb246d5a__comp_dep" AFTER INSERT OR DELETE ON "item" FOR EACH ROW EXECUTE PROCEDURE "item__to__invoice__fb246d5a__comp_dep"();
+CREATE OR REPLACE TRIGGER "item__to__invoice__fb246d5a__comp_dep_update" AFTER UPDATE ON "item" FOR EACH ROW WHEN(NEW."is_deleted" IS DISTINCT FROM OLD."is_deleted" OR NEW."invoice_id" IS DISTINCT FROM OLD."invoice_id") EXECUTE PROCEDURE "item__to__invoice__fb246d5a__comp_dep"();
+CREATE OR REPLACE FUNCTION "product__to__item__9b571554__comp_dep"() RETURNS TRIGGER AS $$
+BEGIN
+	UPDATE "item" SET id = id WHERE "product_id" IN (NEW.id, OLD.id);
+	RETURN NULL;
+END; $$ LANGUAGE plpgsql;
+CREATE OR REPLACE TRIGGER "product__to__item__9b571554__comp_dep" AFTER INSERT OR DELETE ON "product" FOR EACH ROW EXECUTE PROCEDURE "product__to__item__9b571554__comp_dep"();
+CREATE OR REPLACE TRIGGER "product__to__item__9b571554__comp_dep_update" AFTER UPDATE ON "product" FOR EACH ROW WHEN(NEW."is_deleted" IS DISTINCT FROM OLD."is_deleted") EXECUTE PROCEDURE "product__to__item__9b571554__comp_dep"();
+UPDATE "invoice" SET id = id;
+ALTER TABLE "invoice" ALTER COLUMN "total" SET NOT NULL;
+
+===
+
+[
+    {
+        "Field": "",
+        "Model": "Identity",
+        "Type": "ADDED"
+    },
+    {
+        "Field": "",
+        "Model": "Invoice",
+        "Type": "ADDED"
+    },
+    {
+        "Field": "",
+        "Model": "Item",
+        "Type": "ADDED"
+    },
+    {
+        "Field": "",
+        "Model": "KeelAudit",
+        "Type": "ADDED"
+    },
+    {
+        "Field": "",
+        "Model": "Product",
+        "Type": "ADDED"
+    }
+]

@@ -21,7 +21,7 @@ type OperandResolver struct {
 func (a *OperandResolver) ResolveName(name string) (any, bool) {
 	fragments := strings.Split(name, ".")
 
-	fragments, err := NormalisedFragments(a.schema, fragments)
+	fragments, err := NormaliseFragments(a.schema, fragments)
 	if err != nil {
 		return nil, false
 	}

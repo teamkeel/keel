@@ -552,6 +552,7 @@ func WithAggregateFunctions() expressions.Option {
 			cel.Function(typing.FunctionMedian, cel.Overload("median_decimal", []*types.Type{typing.TypeDecimalArray}, typing.TypeDecimal)),
 			cel.Function(typing.FunctionMedian, cel.Overload("median_number", []*types.Type{typing.TypeNumberArray}, typing.TypeNumber)),
 
+			// These are necessary for expressions like: SUMIF(class.enrollments.grade, class.enrollments.student.isActive == true)
 			cel.Function(typing.FunctionSumIf, cel.Overload("sumif_decimal", []*types.Type{typing.TypeDecimalArray, types.BoolType}, typing.TypeDecimal)),
 			cel.Function(typing.FunctionSumIf, cel.Overload("sumif_number", []*types.Type{typing.TypeNumberArray, types.BoolType}, typing.TypeNumber)),
 			cel.Function(typing.FunctionCountIf, cel.Overload("countif_decimal", []*types.Type{types.AnyType, types.BoolType}, typing.TypeNumber)),
@@ -563,6 +564,19 @@ func WithAggregateFunctions() expressions.Option {
 			cel.Function(typing.FunctionMinIf, cel.Overload("minif_number", []*types.Type{typing.TypeNumberArray, types.BoolType}, typing.TypeDecimal)),
 			cel.Function(typing.FunctionMaxIf, cel.Overload("maxif_decimal", []*types.Type{typing.TypeDecimalArray, types.BoolType}, typing.TypeDecimal)),
 			cel.Function(typing.FunctionMaxIf, cel.Overload("maxif_number", []*types.Type{typing.TypeNumberArray, types.BoolType}, typing.TypeDecimal)),
+
+			// These are necessary for expressions like: AVGIF(class.enrollments.grade, class.enrollments.student.isActive)
+			cel.Function(typing.FunctionSumIf, cel.Overload("sumif_decimal_booleanarray", []*types.Type{typing.TypeDecimalArray, typing.TypeBooleanArray}, typing.TypeDecimal)),
+			cel.Function(typing.FunctionSumIf, cel.Overload("sumif_number_booleanarray", []*types.Type{typing.TypeNumberArray, typing.TypeBooleanArray}, typing.TypeNumber)),
+			cel.Function(typing.FunctionCountIf, cel.Overload("countif_booleanarray", []*types.Type{types.AnyType, typing.TypeBooleanArray}, typing.TypeNumber)),
+			cel.Function(typing.FunctionAvgIf, cel.Overload("avgif_decimal_booleanarray", []*types.Type{typing.TypeDecimalArray, typing.TypeBooleanArray}, typing.TypeDecimal)),
+			cel.Function(typing.FunctionAvgIf, cel.Overload("avgif_number_booleanarray", []*types.Type{typing.TypeNumberArray, typing.TypeBooleanArray}, typing.TypeDecimal)),
+			cel.Function(typing.FunctionMedianIf, cel.Overload("medianif_decimal_booleanarray", []*types.Type{typing.TypeDecimalArray, typing.TypeBooleanArray}, typing.TypeDecimal)),
+			cel.Function(typing.FunctionMedianIf, cel.Overload("medianif_number_booleanarray", []*types.Type{typing.TypeNumberArray, typing.TypeBooleanArray}, typing.TypeDecimal)),
+			cel.Function(typing.FunctionMinIf, cel.Overload("minif_decimal_booleanarray", []*types.Type{typing.TypeDecimalArray, typing.TypeBooleanArray}, typing.TypeDecimal)),
+			cel.Function(typing.FunctionMinIf, cel.Overload("minif_number_booleanarray", []*types.Type{typing.TypeNumberArray, typing.TypeBooleanArray}, typing.TypeDecimal)),
+			cel.Function(typing.FunctionMaxIf, cel.Overload("maxif_decimal_booleanarray", []*types.Type{typing.TypeDecimalArray, typing.TypeBooleanArray}, typing.TypeDecimal)),
+			cel.Function(typing.FunctionMaxIf, cel.Overload("maxif_number_booleanarray", []*types.Type{typing.TypeNumberArray, typing.TypeBooleanArray}, typing.TypeDecimal)),
 		)
 		if err != nil {
 			return err

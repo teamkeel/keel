@@ -28,8 +28,8 @@ func GenerateComputedFunction(ctx context.Context, schema *proto.Schema, model *
 		functions: arraystack.New(),
 		arguments: arraystack.New(),
 
-		operators: arraystack.New(),
-		operands:  arraystack.New(),
+		// operators: arraystack.New(),
+		// operands:  arraystack.New(),
 	}
 }
 
@@ -44,24 +44,15 @@ type computedQueryGen struct {
 	functions *arraystack.Stack
 	arguments *arraystack.Stack
 
-	query     *QueryBuilder
-	operators *arraystack.Stack
-	operands  *arraystack.Stack
+	//query     *QueryBuilder
+	filter resolve.Visitor[*QueryBuilder]
+	//operators *arraystack.Stack
+	//operands  *arraystack.Stack
 }
 
 func (v *computedQueryGen) StartTerm(nested bool) error {
-	if v.functions.Size() > 0 {
-		if op, ok := v.operators.Peek(); ok && op == Not {
-			_, _ = v.operators.Pop()
-			v.query.Not()
-		}
-
-		// Only add parenthesis if we're in a nested condition
-		if nested {
-			v.query.OpenParenthesis()
-		}
-
-		return nil
+	if v.functions.Size() > 0 && v.filter != nil {
+		return v.filter.StartTerm(nested)
 	}
 
 	if nested {
@@ -73,42 +64,7 @@ func (v *computedQueryGen) StartTerm(nested bool) error {
 
 func (v *computedQueryGen) EndTerm(nested bool) error {
 	if v.functions.Size() > 0 {
-		if _, ok := v.operators.Peek(); ok && v.operands.Size() == 2 {
-			operator, _ := v.operators.Pop()
-
-			r, ok := v.operands.Pop()
-			if !ok {
-				return errors.New("expected rhs operand")
-			}
-			l, ok := v.operands.Pop()
-			if !ok {
-				return errors.New("expected lhs operand")
-			}
-
-			lhs := l.(*QueryOperand)
-			rhs := r.(*QueryOperand)
-
-			err := v.query.Where(lhs, operator.(ActionOperator), rhs)
-			if err != nil {
-				return err
-			}
-		} else if _, ok := v.operators.Peek(); !ok {
-			l, hasOperand := v.operands.Pop()
-			if hasOperand {
-				lhs := l.(*QueryOperand)
-				err := v.query.Where(lhs, Equals, Value(true))
-				if err != nil {
-					return err
-				}
-			}
-		}
-
-		// Only close parenthesis if we're nested
-		if nested {
-			v.query.CloseParenthesis()
-		}
-
-		return nil
+		return v.filter.EndTerm(nested)
 	}
 
 	if nested {
@@ -128,8 +84,12 @@ func (v *computedQueryGen) EndFunction() error {
 	v.functions.Pop()
 	v.arguments.Pop()
 
-	stmt := v.query.SelectStatement()
-	v.sql += fmt.Sprintf("(%s)", stmt.SqlTemplate())
+	query, err := v.filter.Result()
+	if err != nil {
+		return err
+	}
+
+	v.sql += fmt.Sprintf("(%s)", query.SelectStatement().SqlTemplate())
 
 	return nil
 }
@@ -150,8 +110,8 @@ func (v *computedQueryGen) EndArgument() error {
 
 func (v *computedQueryGen) VisitAnd() error {
 	if v.functions.Size() > 0 {
-		v.query.And()
-		return nil
+		return v.filter.VisitAnd()
+
 	}
 
 	v.sql += " AND "
@@ -160,8 +120,7 @@ func (v *computedQueryGen) VisitAnd() error {
 
 func (v *computedQueryGen) VisitOr() error {
 	if v.functions.Size() > 0 {
-		v.query.Or()
-		return nil
+		return v.filter.VisitOr()
 	}
 
 	v.sql += " OR "
@@ -170,8 +129,7 @@ func (v *computedQueryGen) VisitOr() error {
 
 func (v *computedQueryGen) VisitNot() error {
 	if v.functions.Size() > 0 {
-		v.operators.Push(Not)
-		return nil
+		return v.filter.VisitNot()
 	}
 
 	v.sql += " NOT "
@@ -180,13 +138,7 @@ func (v *computedQueryGen) VisitNot() error {
 
 func (v *computedQueryGen) VisitOperator(op string) error {
 	if v.functions.Size() > 0 {
-		operator, err := toActionOperator(op)
-		if err != nil {
-			return err
-		}
-
-		v.operators.Push(operator)
-		return nil
+		return v.filter.VisitOperator(op)
 	}
 
 	// Map CEL operators to SQL operators
@@ -219,12 +171,7 @@ func (v *computedQueryGen) VisitOperator(op string) error {
 
 func (v *computedQueryGen) VisitLiteral(value any) error {
 	if v.functions.Size() > 0 {
-		if value == nil {
-			v.operands.Push(Null())
-		} else {
-			v.operands.Push(Value(value))
-		}
-		return nil
+		return v.filter.VisitLiteral(value)
 	}
 
 	switch val := value.(type) {
@@ -271,7 +218,7 @@ func (v *computedQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
 
 	field := proto.FindField(v.schema.GetModels(), model.GetName(), ident.Fragments[1])
 
-	normalised, err := NormalisedFragments(v.schema, ident.Fragments)
+	normalised, err := NormaliseFragments(v.schema, ident.Fragments)
 	if err != nil {
 		return err
 	}
@@ -295,8 +242,7 @@ func (v *computedQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
 
 			switch arg.(int) {
 			case 1: //the first arg sets the SELECT
-				model = v.schema.FindModel(field.GetType().GetModelName().GetValue())
-				v.query = NewQuery(model, EmbedLiterals())
+				query := NewQuery(model, EmbedLiterals())
 
 				relatedModelField := proto.FindField(v.schema.GetModels(), v.model.GetName(), normalised[1])
 				foreignKeyField := proto.GetForeignKeyFieldName(v.schema.GetModels(), relatedModelField)
@@ -305,7 +251,7 @@ func (v *computedQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
 				subFragments := normalised[1:]
 				subFragments[0] = strcase.ToLowerCamel(r.GetType().GetModelName().GetValue())
 
-				err := v.query.AddJoinFromFragments(v.schema, subFragments)
+				err := query.AddJoinFromFragments(v.schema, subFragments)
 				if err != nil {
 					return err
 				}
@@ -335,34 +281,29 @@ func (v *computedQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
 					raw += fmt.Sprintf("COALESCE(MAX(%s), 0)", selectField)
 				}
 
-				v.query.Select(Raw(raw))
+				query.Select(Raw(raw))
 
 				// Filter by this model's row's ID
 				fk := fmt.Sprintf("r.\"%s\"", parser.FieldNameId)
-				err = v.query.Where(Field(foreignKeyField), Equals, Raw(fk))
+				err = query.Where(Field(foreignKeyField), Equals, Raw(fk))
 				if err != nil {
 					return err
 				}
-				v.query.And()
+				query.And()
+
+				v.filter = GenerateFilterQuery(v.ctx, query, v.schema, model, nil, map[string]any{})
 
 			case 2: // the second arg sets the WHERE
-				model = v.schema.FindModel(field.GetType().GetModelName().GetValue())
 
 				r := proto.FindField(v.schema.GetModels(), v.model.GetName(), normalised[1])
 				subFragments := normalised[1:]
 				subFragments[0] = strcase.ToLowerCamel(r.GetType().GetModelName().GetValue())
 
-				operand, err := generateOperand(v.ctx, v.schema, model, nil, map[string]any{}, subFragments)
-				if err != nil {
-					return err
+				newIdent := &parser.ExpressionIdent{
+					Fragments: subFragments,
 				}
 
-				err = v.query.AddJoinFromFragments(v.schema, subFragments)
-				if err != nil {
-					return err
-				}
-
-				v.operands.Push(operand)
+				return v.filter.VisitIdent(newIdent)
 			}
 
 		} else {
@@ -404,7 +345,7 @@ func (v *computedQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
 func (v *computedQueryGen) isToManyLookup(idents *parser.ExpressionIdent) (bool, error) {
 	model := v.schema.FindModel(strcase.ToCamel(idents.Fragments[0]))
 
-	fragments, err := NormalisedFragments(v.schema, idents.Fragments)
+	fragments, err := NormaliseFragments(v.schema, idents.Fragments)
 	if err != nil {
 		return false, err
 	}
