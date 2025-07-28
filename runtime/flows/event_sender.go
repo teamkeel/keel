@@ -9,7 +9,7 @@ import (
 )
 
 type EventSender interface {
-	// Send sends the given payload onto the flwos queue.
+	// Send sends the given payload onto the flows queue.
 	Send(ctx context.Context, payload *EventWrapper) error
 }
 
