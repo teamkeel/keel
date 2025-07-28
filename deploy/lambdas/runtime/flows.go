@@ -7,7 +7,6 @@ import (
 
 	lambdaevents "github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/service/eventbridge"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/sirupsen/logrus"
 	"github.com/teamkeel/keel/proto"
@@ -32,9 +31,8 @@ func initOrchestrator(ctx context.Context, queueURL string, awsEndpoint string, 
 	}
 
 	sqsClient := sqs.NewFromConfig(cfg, opts...)
-	ebClient := eventbridge.NewFromConfig(cfg)
 
-	return flows.NewOrchestrator(schema, flows.WithAsyncQueue(queueURL, sqsClient, ebClient)), nil
+	return flows.NewOrchestrator(schema, flows.WithAsyncQueue(queueURL, sqsClient)), nil
 }
 
 func (h *Handler) FlowHandler(ctx context.Context, event lambdaevents.SQSEvent) error {
