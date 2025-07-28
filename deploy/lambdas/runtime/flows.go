@@ -30,9 +30,9 @@ func initOrchestrator(ctx context.Context, queueURL string, awsEndpoint string, 
 		})
 	}
 
-	client := sqs.NewFromConfig(cfg, opts...)
+	sqsClient := sqs.NewFromConfig(cfg, opts...)
 
-	return flows.NewOrchestrator(schema, flows.WithAsyncQueue(queueURL, client)), nil
+	return flows.NewOrchestrator(schema, flows.WithAsyncQueue(queueURL, sqsClient)), nil
 }
 
 func (h *Handler) FlowHandler(ctx context.Context, event lambdaevents.SQSEvent) error {

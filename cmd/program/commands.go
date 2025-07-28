@@ -892,15 +892,35 @@ func SetupCron(schema *proto.Schema, database db.Database, functionsServer *node
 			cronRunner.Remove(e.ID)
 		}
 
+		if !schema.HasScheduledFlows() {
+			// no scheduled flows
+			return nil
+		}
 		ctx := context.Background()
 		ctx = db.WithDatabase(ctx, database)
 		ctx = functions.WithFunctionsTransport(ctx, functions.NewHttpTransport(functionsServer.URL))
 		ctx = runtimectx.WithSecrets(ctx, secrets)
 
-		o := flows.NewOrchestrator(schema, flows.WithNoQueueEventSender(cronRunner))
-		if err := o.ScheduleFlows(ctx); err != nil {
-			return CronRunnerMsg{
-				Err: err,
+		o := flows.NewOrchestrator(schema, flows.WithNoQueueEventSender())
+
+		for _, f := range schema.ScheduledFlows() {
+			// make the event payload
+			ev := flows.FlowRunStarted{Name: f.GetName(), Inputs: map[string]any{}}
+
+			payload, err := ev.Wrap()
+			if err != nil {
+				return fmt.Errorf("wrapping event: %w", err)
+			}
+
+			// Our cron expressions for schedules include the year, which is not relevant to our use case.
+			schedule := strings.TrimSuffix(f.GetSchedule().GetExpression(), " *")
+
+			if _, err := cronRunner.AddFunc(schedule, func() {
+				o.HandleEvent(ctx, payload) //nolint
+			}); err != nil {
+				return CronRunnerMsg{
+					Err: fmt.Errorf("scheduling flow: %w", err),
+				}
 			}
 		}
 

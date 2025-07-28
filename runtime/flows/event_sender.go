@@ -6,14 +6,11 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/robfig/cron/v3"
 )
 
 type EventSender interface {
 	// Send sends the given payload onto the flwos queue.
 	Send(ctx context.Context, payload *EventWrapper) error
-	// Schedule will schedule sending the payload according to the given cron expression.
-	Schedule(ctx context.Context, cronExpr string, payload *EventWrapper) error
 }
 
 type SQSEventSender struct {
@@ -26,9 +23,9 @@ type SQSEventSender struct {
 // compile time check that SQSEventSender implement the EventSender interface.
 var _ EventSender = &SQSEventSender{}
 
-func NewSQSEventSender(queueURL string, client *sqs.Client) *SQSEventSender {
+func NewSQSEventSender(queueURL string, sqsClient *sqs.Client) *SQSEventSender {
 	return &SQSEventSender{
-		sqsClient:   client,
+		sqsClient:   sqsClient,
 		sqsQueueURL: queueURL,
 	}
 }
@@ -48,23 +45,16 @@ func (s *SQSEventSender) Send(ctx context.Context, payload *EventWrapper) error 
 	return err
 }
 
-func (s *SQSEventSender) Schedule(ctx context.Context, cronExpr string, payload *EventWrapper) error {
-	// TODO: implement via eventbridge
-	return nil
-}
-
 type NoQueueEventSender struct {
 	orchestrator *Orchestrator
-	cronRunner   *cron.Cron
 }
 
 // compile time check that NoQueueEventSender implement the EventSender interface.
 var _ EventSender = &NoQueueEventSender{}
 
-func NewNoQueueEventSender(o *Orchestrator, c *cron.Cron) *NoQueueEventSender {
+func NewNoQueueEventSender(o *Orchestrator) *NoQueueEventSender {
 	return &NoQueueEventSender{
 		orchestrator: o,
-		cronRunner:   c,
 	}
 }
 
@@ -72,12 +62,4 @@ func (s *NoQueueEventSender) Send(ctx context.Context, payload *EventWrapper) er
 	go s.orchestrator.HandleEvent(ctx, payload) //nolint we're "simulating" an async queue
 
 	return nil
-}
-
-func (s *NoQueueEventSender) Schedule(ctx context.Context, cronExpr string, payload *EventWrapper) error {
-	_, err := s.cronRunner.AddFunc(cronExpr, func() {
-		s.orchestrator.HandleEvent(ctx, payload) //nolint
-	})
-
-	return err
 }
