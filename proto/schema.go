@@ -209,6 +209,16 @@ func (s *Schema) FlowNames() []string {
 	return names
 }
 
+// ScheduledFlowNames returns an array with the names of all scheduled flows defined in this schema.
+func (s *Schema) ScheduledFlowNames() []string {
+	names := []string{}
+	for _, f := range s.ScheduledFlows() {
+		names = append(names, f.GetName())
+	}
+
+	return names
+}
+
 // HasFlows indicates if the schema has any flows defined.
 func (s *Schema) HasFlows() bool {
 	return len(s.GetFlows()) > 0
