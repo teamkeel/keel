@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go-v2/service/eventbridge"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/proto"
@@ -50,8 +49,8 @@ func WithEventSender(es EventSender) OrchestratorOpt {
 }
 
 // WithAsyncQueue sets a SQSEventSender on the orchestrator with the given options (queue URL and sqs Client).
-func WithAsyncQueue(queueURL string, sqsClient *sqs.Client, ebClient *eventbridge.Client) OrchestratorOpt {
-	es := NewSQSEventSender(queueURL, sqsClient, ebClient)
+func WithAsyncQueue(queueURL string, sqsClient *sqs.Client) OrchestratorOpt {
+	es := NewSQSEventSender(queueURL, sqsClient)
 	return WithEventSender(es)
 }
 

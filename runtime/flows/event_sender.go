@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/aws/aws-sdk-go-v2/service/eventbridge"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/aws/aws-sdk-go/aws"
 )
@@ -17,8 +16,6 @@ type EventSender interface {
 type SQSEventSender struct {
 	// Client for sqs messages sent to the flows runtime.
 	sqsClient *sqs.Client
-	// Client for eventbridge
-	ebClient *eventbridge.Client
 	// The Flows runtime queue used to trigger the execution of a flow
 	sqsQueueURL string
 }
@@ -26,11 +23,10 @@ type SQSEventSender struct {
 // compile time check that SQSEventSender implement the EventSender interface.
 var _ EventSender = &SQSEventSender{}
 
-func NewSQSEventSender(queueURL string, sqsClient *sqs.Client, ebClient *eventbridge.Client) *SQSEventSender {
+func NewSQSEventSender(queueURL string, sqsClient *sqs.Client) *SQSEventSender {
 	return &SQSEventSender{
 		sqsClient:   sqsClient,
 		sqsQueueURL: queueURL,
-		ebClient:    ebClient,
 	}
 }
 
