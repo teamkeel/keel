@@ -104,7 +104,6 @@ func (v *computedQueryGen) EndArgument() error {
 func (v *computedQueryGen) VisitAnd() error {
 	if v.functions.Size() > 0 {
 		return v.filter.VisitAnd()
-
 	}
 
 	v.sql += " AND "
@@ -297,7 +296,6 @@ func (v *computedQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
 
 				return v.filter.VisitIdent(newIdent)
 			}
-
 		} else {
 			// Join together all the tables based on the ident fragments
 			model = v.schema.FindModel(field.GetType().GetModelName().GetValue())
