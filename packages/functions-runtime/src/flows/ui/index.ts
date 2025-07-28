@@ -73,6 +73,10 @@ import {
   UiElementPickList,
   UiElementPickListApiResponse,
 } from "./elements/interactive/pickList";
+import {
+  UiElementSelectMany,
+  UiElementSelectManyApiResponse,
+} from "./elements/select/many";
 
 export interface UI<C extends FlowConfig> {
   page: UiPage<C>;
@@ -93,6 +97,7 @@ type UiInputsElements = {
 // Select elements that are named and return values
 type UiSelectElements = {
   one: UiElementSelectOne;
+  many: UiElementSelectMany;
   table: UiElementSelectTable;
 };
 
@@ -213,6 +218,7 @@ export type UIApiResponses = {
   };
   select: {
     one: UiElementSelectOneApiResponse;
+    many: UiElementSelectManyApiResponse;
     table: UiElementSelectTableApiResponse;
   };
   interactive: {

@@ -32,6 +32,7 @@ func FromDir(dirName string) (*Inputs, error) {
 	patterns := []string{
 		filepath.Join(dirName, "*.keel"),
 		filepath.Join(dirName, "schemas", "*.keel"),
+		filepath.Join(dirName, "modules", "*/schemas/*.keel"),
 	}
 
 	for _, pattern := range patterns {

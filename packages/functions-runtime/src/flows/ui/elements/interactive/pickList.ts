@@ -40,12 +40,14 @@ type ListOptions<T> = {
   data: T[];
   render: (data: T) => PickListItem;
   validate?: ValidateFn<PickListResponseItem>;
+  allowIncomplete?: boolean;
 };
 
 // The shape of the response over the API
 export interface UiElementPickListApiResponse
   extends BaseUiMinimalInputResponse<"ui.interactive.pickList"> {
   data: PickListItem[];
+  allowIncomplete: boolean;
 }
 
 export const pickList: InputElementImplementation<
@@ -69,6 +71,7 @@ export const pickList: InputElementImplementation<
           barcodes: rendered.barcodes ?? undefined,
         } satisfies PickListItem;
       }),
+      allowIncomplete: options.allowIncomplete ?? false,
     } satisfies UiElementPickListApiResponse,
     validate: async (data) => {
       // Ensure the response is an object with an items array
