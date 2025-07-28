@@ -595,7 +595,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		// Setting the flows orchestrator
-		ctx = flows.WithOrchestrator(ctx, flows.NewOrchestrator(m.Schema, flows.WithNoQueueEventSender(m.CronRunner)))
+		ctx = flows.WithOrchestrator(ctx, flows.NewOrchestrator(m.Schema, flows.WithNoQueueEventSender()))
 
 		r = msg.r.WithContext(ctx)
 		m.RuntimeHandler.ServeHTTP(msg.w, r)
