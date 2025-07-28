@@ -76,8 +76,6 @@ github.com/aws/aws-sdk-go-v2/internal/v4a v1.3.37 h1:XTZZ0I3SZUHAtBLBU6395ad+VOb
 github.com/aws/aws-sdk-go-v2/internal/v4a v1.3.37/go.mod h1:Pi6ksbniAWVwu2S8pEzcYPyhUkAcLaufxN7PfAUQjBk=
 github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.53.1 h1:RXmXjIIZEb37O9INIV1SXNya5U8xj/6tDWtKQitpvNQ=
 github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.53.1/go.mod h1:sJpy0akDxor5AnHCgbRP+qUmwb8HPsyCzKuZUFqz+sQ=
-github.com/aws/aws-sdk-go-v2/service/eventbridge v1.41.1 h1:E7rsoY+ZcujLWpder3LKcCJX4MCapR2U/jEPudGpkOg=
-github.com/aws/aws-sdk-go-v2/service/eventbridge v1.41.1/go.mod h1:G2/vwz55d4XvOhhbZuUr+jWH64fdYT8LeIBxaHcxooY=
 github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.12.4 h1:CXV68E2dNqhuynZJPB80bhPQwAKqBWVer887figW6Jc=
 github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.12.4/go.mod h1:/xFi9KtvBXP97ppCz1TAEvU1Uf66qvid89rbem3wCzQ=
 github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.7.5 h1:M5/B8JUaCI8+9QD+u3S/f4YHpvqE9RpSkV3rf0Iks2w=
