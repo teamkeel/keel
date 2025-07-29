@@ -9,6 +9,7 @@ import (
 )
 
 type EventSender interface {
+	// Send sends the given payload onto the flows queue.
 	Send(ctx context.Context, payload *EventWrapper) error
 }
 
@@ -22,9 +23,9 @@ type SQSEventSender struct {
 // compile time check that SQSEventSender implement the EventSender interface.
 var _ EventSender = &SQSEventSender{}
 
-func NewSQSEventSender(queueURL string, client *sqs.Client) *SQSEventSender {
+func NewSQSEventSender(queueURL string, sqsClient *sqs.Client) *SQSEventSender {
 	return &SQSEventSender{
-		sqsClient:   client,
+		sqsClient:   sqsClient,
 		sqsQueueURL: queueURL,
 	}
 }

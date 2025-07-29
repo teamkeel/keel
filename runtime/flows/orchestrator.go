@@ -49,8 +49,8 @@ func WithEventSender(es EventSender) OrchestratorOpt {
 }
 
 // WithAsyncQueue sets a SQSEventSender on the orchestrator with the given options (queue URL and sqs Client).
-func WithAsyncQueue(queueURL string, client *sqs.Client) OrchestratorOpt {
-	es := NewSQSEventSender(queueURL, client)
+func WithAsyncQueue(queueURL string, sqsClient *sqs.Client) OrchestratorOpt {
+	es := NewSQSEventSender(queueURL, sqsClient)
 	return WithEventSender(es)
 }
 
@@ -223,8 +223,15 @@ func (o *Orchestrator) HandleEvent(ctx context.Context, event *EventWrapper) err
 			return fmt.Errorf("unknown flow: %s", ev.Name)
 		}
 
-		traceID := util.ParseTraceparent(event.Traceparent).TraceID().String()
-		run, err := createRun(ctx, flow, ev.Inputs, traceID, nil)
+		traceparent := event.Traceparent
+		if traceparent == "" {
+			var span trace.Span
+			ctx, span = tracer.Start(ctx, "StartFlow")
+			defer span.End()
+			traceparent = util.GetTraceparent(span.SpanContext())
+		}
+
+		run, err := createRun(ctx, flow, ev.Inputs, traceparent, nil)
 		if err != nil {
 			return err
 		}
