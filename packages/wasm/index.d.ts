@@ -10,6 +10,10 @@ export function getDefinition(
   req: GetDefinitionRequest
 ): Promise<DefinitionResult>;
 
+export function generateActions(
+  req: GenerateActionsRequest
+): Promise<GenerateActionsResult>;
+
 export interface DefinitionResult {
   schema?: Position;
   function?: { name: string };
@@ -69,4 +73,14 @@ export interface ValidationError {
 export interface ValidationResult {
   errors: ValidationError[];
   warnings?: ValidationError[];
+}
+
+export interface GenerateActionsRequest {
+  schemaFiles: SchemaFile[];
+  config?: string;
+  modelName: string;
+}
+
+export interface GenerateActionsResult {
+  actions: string[];
 }

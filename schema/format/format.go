@@ -36,9 +36,9 @@ func Format(ast *parser.AST) string {
 
 	for i, decl := range ast.Declarations {
 		if i > 0 {
-			writer.writeLine("")
+			writer.WriteLine("")
 		}
-		writer.comments(decl, func() {
+		writer.Comments(decl, func() {
 			switch {
 			case decl.Model != nil:
 				printModel(writer, decl.Model)
@@ -60,30 +60,30 @@ func Format(ast *parser.AST) string {
 		})
 	}
 
-	return writer.string()
+	return writer.String()
 }
 
 func printMessage(writer *Writer, message *parser.MessageNode) {
-	writer.comments(message, func() {
-		writer.write("message %s", camel(message.Name.Value))
-		writer.block(func() {
+	writer.Comments(message, func() {
+		writer.Write("message %s", camel(message.Name.Value))
+		writer.Block(func() {
 			for _, field := range message.Fields {
-				writer.comments(field, func() {
-					writer.write(
+				writer.Comments(field, func() {
+					writer.Write(
 						"%s %s",
 						lowerCamel(field.Name.Value),
 						field.Type.Value,
 					)
 
 					if field.Optional {
-						writer.write("?")
+						writer.Write("?")
 					}
 
 					if field.Repeated {
-						writer.write("[]")
+						writer.Write("[]")
 					}
 
-					writer.writeLine("")
+					writer.WriteLine("")
 				})
 			}
 		})
@@ -91,37 +91,37 @@ func printMessage(writer *Writer, message *parser.MessageNode) {
 }
 
 func printJob(writer *Writer, job *parser.JobNode) {
-	writer.comments(job, func() {
-		writer.write("job %s", camel(job.Name.Value))
-		writer.block(func() {
+	writer.Comments(job, func() {
+		writer.Write("job %s", camel(job.Name.Value))
+		writer.Block(func() {
 			for _, section := range job.Sections {
-				writer.comments(section, func() {
+				writer.Comments(section, func() {
 					switch {
 					case len(section.Inputs) > 0:
-						writer.write("inputs")
-						writer.block(func() {
+						writer.Write("inputs")
+						writer.Block(func() {
 							for _, input := range section.Inputs {
-								writer.comments(input, func() {
+								writer.Comments(input, func() {
 									// CamelCase input types except for ID
 									inputType := input.Type.Value
 									if inputType != parser.FieldTypeID {
 										inputType = camel(inputType)
 									}
-									writer.write(
+									writer.Write(
 										"%s %s",
 										lowerCamel(input.Name.Value),
 										inputType,
 									)
 									if input.Optional {
-										writer.write("?")
+										writer.Write("?")
 									}
-									writer.writeLine("")
+									writer.WriteLine("")
 								})
 							}
 						},
 						)
 						if len(section.Inputs) > 0 {
-							writer.writeLine("")
+							writer.WriteLine("")
 						}
 					case section.Attribute != nil:
 						printAttributes(writer, []*parser.AttributeNode{section.Attribute})
@@ -133,31 +133,31 @@ func printJob(writer *Writer, job *parser.JobNode) {
 }
 
 func printFlow(writer *Writer, flow *parser.FlowNode) {
-	writer.comments(flow, func() {
-		writer.write("flow %s", camel(flow.Name.Value))
-		writer.block(func() {
+	writer.Comments(flow, func() {
+		writer.Write("flow %s", camel(flow.Name.Value))
+		writer.Block(func() {
 			for _, section := range flow.Sections {
-				writer.comments(section, func() {
+				writer.Comments(section, func() {
 					switch {
 					case len(section.Inputs) > 0:
-						writer.write("inputs")
-						writer.block(func() {
+						writer.Write("inputs")
+						writer.Block(func() {
 							for _, input := range section.Inputs {
-								writer.comments(input, func() {
+								writer.Comments(input, func() {
 									// CamelCase input types except for ID
 									inputType := input.Type.Value
 									if inputType != parser.FieldTypeID {
 										inputType = camel(inputType)
 									}
-									writer.write(
+									writer.Write(
 										"%s %s",
 										lowerCamel(input.Name.Value),
 										inputType,
 									)
 									if input.Optional {
-										writer.write("?")
+										writer.Write("?")
 									}
-									writer.writeLine("")
+									writer.WriteLine("")
 								})
 							}
 						},
@@ -172,9 +172,9 @@ func printFlow(writer *Writer, flow *parser.FlowNode) {
 }
 
 func printModel(writer *Writer, model *parser.ModelNode) {
-	writer.comments(model, func() {
-		writer.write("model %s", camel(model.Name.Value))
-		writer.block(func() {
+	writer.Comments(model, func() {
+		writer.Write("model %s", camel(model.Name.Value))
+		writer.Block(func() {
 			fieldSections := []*parser.ModelSectionNode{}
 			actionSections := []*parser.ModelSectionNode{}
 			attributeSections := []*parser.ModelSectionNode{}
@@ -195,9 +195,9 @@ func printModel(writer *Writer, model *parser.ModelNode) {
 
 			for _, section := range fieldSections {
 				fields := section.Fields
-				writer.comments(section, func() {
-					writer.write("fields")
-					writer.block(func() {
+				writer.Comments(section, func() {
+					writer.Write("fields")
+					writer.Block(func() {
 						for _, field := range fields {
 							if field.BuiltIn {
 								continue
@@ -219,8 +219,8 @@ func printModel(writer *Writer, model *parser.ModelNode) {
 								fieldType += "?"
 							}
 
-							writer.comments(field, func() {
-								writer.write(
+							writer.Comments(field, func() {
+								writer.Write(
 									"%s %s",
 									lowerCamel(field.Name.Value),
 									fieldType,
@@ -238,7 +238,7 @@ func printModel(writer *Writer, model *parser.ModelNode) {
 								// attribute and no comments, otherwise the attributes
 								// get wrapper in a block
 								if len(field.Attributes) == 1 && !hasComments {
-									writer.write(" ")
+									writer.Write(" ")
 									printAttributes(writer, field.Attributes)
 								} else {
 									printAttributesBlock(writer, field.Attributes)
@@ -252,7 +252,7 @@ func printModel(writer *Writer, model *parser.ModelNode) {
 
 			for _, section := range actionSections {
 				if sections > 0 {
-					writer.writeLine("")
+					writer.WriteLine("")
 				}
 				printActionsBlock(writer, section)
 				sections++
@@ -260,9 +260,9 @@ func printModel(writer *Writer, model *parser.ModelNode) {
 
 			for _, section := range attributeSections {
 				if sections > 0 {
-					writer.writeLine("")
+					writer.WriteLine("")
 				}
-				writer.comments(section, func() {
+				writer.Comments(section, func() {
 					printAttributes(writer, []*parser.AttributeNode{section.Attribute})
 				})
 				sections++
@@ -272,17 +272,17 @@ func printModel(writer *Writer, model *parser.ModelNode) {
 }
 
 func printActionsBlock(writer *Writer, section *parser.ModelSectionNode) {
-	writer.comments(section, func() {
+	writer.Comments(section, func() {
 		actions := []*parser.ActionNode{}
 		if section.Actions != nil {
 			actions = section.Actions
-			writer.write(parser.KeywordActions)
+			writer.Write(parser.KeywordActions)
 		}
 
-		writer.block(func() {
+		writer.Block(func() {
 			for _, op := range actions {
-				writer.comments(op, func() {
-					writer.write(
+				writer.Comments(op, func() {
+					writer.Write(
 						"%s %s",
 						lowerCamel(op.Type.Value),
 						lowerCamel(op.Name.Value),
@@ -291,12 +291,12 @@ func printActionsBlock(writer *Writer, section *parser.ModelSectionNode) {
 					printActionInputs(writer, op.Inputs, op.IsArbitraryFunction())
 
 					if len(op.With) > 0 {
-						writer.write(" with ")
+						writer.Write(" with ")
 						printActionInputs(writer, op.With, op.IsArbitraryFunction())
 					}
 
 					if len(op.Returns) > 0 {
-						writer.write(" returns ")
+						writer.Write(" returns ")
 						printActionInputs(writer, op.Returns, op.IsArbitraryFunction())
 					}
 
@@ -308,8 +308,8 @@ func printActionsBlock(writer *Writer, section *parser.ModelSectionNode) {
 }
 
 func printActionInputs(writer *Writer, inputs []*parser.ActionInputNode, isArbitraryFunction bool) {
-	writer.write("(")
-	writer.indent()
+	writer.Write("(")
+	writer.Indent()
 
 	// If there any comments in the action inputs then we need to print
 	// each input on it's own line, to allow space for the comments
@@ -319,7 +319,7 @@ func printActionInputs(writer *Writer, inputs []*parser.ActionInputNode, isArbit
 
 	// TODO: find a more generic way to do line-wrapping
 	if !isMultiline {
-		length := writer.lineLength()
+		length := writer.LineLength()
 		for _, arg := range inputs {
 			if arg.Label != nil {
 				length += len(arg.Label.Value)
@@ -344,67 +344,67 @@ func printActionInputs(writer *Writer, inputs []*parser.ActionInputNode, isArbit
 
 	for i, arg := range inputs {
 		if isMultiline {
-			writer.writeLine("")
+			writer.WriteLine("")
 		}
 
-		writer.comments(arg, func() {
+		writer.Comments(arg, func() {
 			if arg.Label != nil {
 				// explicit input
-				writer.write("%s: %s", arg.Label.Value, arg.Type.Fragments[0].Fragment)
+				writer.Write("%s: %s", arg.Label.Value, arg.Type.Fragments[0].Fragment)
 			} else {
 				// Note: not using arg.Type.ToString() here as we want to try
 				// and fix any casing issues
 				for i, fragment := range arg.Type.Fragments {
 					if i > 0 {
-						writer.write(".")
+						writer.Write(".")
 					}
 
 					// if its an arbitrary function, then we dont want to automatically lowercase the input names
 					if isArbitraryFunction {
-						writer.write(fragment.Fragment)
+						writer.Write(fragment.Fragment)
 					} else {
-						writer.write(lowerCamel(fragment.Fragment))
+						writer.Write(lowerCamel(fragment.Fragment))
 					}
 				}
 			}
 
 			if arg.Optional {
-				writer.write("?")
+				writer.Write("?")
 			}
 		})
 
 		if len(inputs) > 1 {
 			if isMultiline {
-				writer.write(",")
+				writer.Write(",")
 			} else if i < len(inputs)-1 {
-				writer.write(", ")
+				writer.Write(", ")
 			}
 		}
 	}
 
 	if isMultiline {
-		writer.writeLine("")
+		writer.WriteLine("")
 	}
 
-	writer.dedent()
-	writer.write(")")
+	writer.Dedent()
+	writer.Write(")")
 }
 
 func printRole(writer *Writer, role *parser.RoleNode) {
-	writer.comments(role, func() {
-		writer.write("role %s", camel(role.Name.Value))
-		writer.block(func() {
+	writer.Comments(role, func() {
+		writer.Write("role %s", camel(role.Name.Value))
+		writer.Block(func() {
 			sections := 0
 			// domains
 			for _, section := range role.Sections {
 				if len(section.Domains) > 0 {
 					sections++
-					writer.comments(section, func() {
-						writer.write("domains")
-						writer.block((func() {
+					writer.Comments(section, func() {
+						writer.Write("domains")
+						writer.Block((func() {
 							for _, domain := range section.Domains {
-								writer.comments(domain, func() {
-									writer.writeLine(domain.Domain)
+								writer.Comments(domain, func() {
+									writer.WriteLine(domain.Domain)
 								})
 							}
 						}))
@@ -416,14 +416,14 @@ func printRole(writer *Writer, role *parser.RoleNode) {
 			for _, section := range role.Sections {
 				if len(section.Emails) > 0 {
 					if sections > 0 {
-						writer.writeLine("")
+						writer.WriteLine("")
 					}
-					writer.comments(section, func() {
-						writer.write("emails")
-						writer.block(func() {
+					writer.Comments(section, func() {
+						writer.Write("emails")
+						writer.Block(func() {
 							for _, email := range section.Emails {
-								writer.comments(email, func() {
-									writer.writeLine(email.Email)
+								writer.Comments(email, func() {
+									writer.WriteLine(email.Email)
 								})
 							}
 						})
@@ -435,38 +435,38 @@ func printRole(writer *Writer, role *parser.RoleNode) {
 }
 
 func printApi(writer *Writer, api *parser.APINode) {
-	writer.comments(api, func() {
-		writer.write("api %s", camel(api.Name.Value))
-		writer.block(func() {
+	writer.Comments(api, func() {
+		writer.Write("api %s", camel(api.Name.Value))
+		writer.Block(func() {
 			for i, section := range api.Sections {
 				if i > 0 {
-					writer.writeLine("")
+					writer.WriteLine("")
 				}
-				writer.comments(section, func() {
+				writer.Comments(section, func() {
 					switch {
 					case len(section.Models) > 0:
-						writer.write("models")
-						writer.block(func() {
+						writer.Write("models")
+						writer.Block(func() {
 							for _, model := range section.Models {
-								writer.comments(model, func() {
-									writer.write(camel(model.Name.Value))
+								writer.Comments(model, func() {
+									writer.Write(camel(model.Name.Value))
 									if len(model.Sections) == 1 {
-										writer.block(func() {
-											writer.write("actions")
-											writer.block(func() {
+										writer.Block(func() {
+											writer.Write("actions")
+											writer.Block(func() {
 												for j, action := range model.Sections[0].Actions {
 													if j > 0 {
-														writer.writeLine("")
+														writer.WriteLine("")
 													}
-													writer.comments(action, func() {
-														writer.write(action.Name.Value)
+													writer.Comments(action, func() {
+														writer.Write(action.Name.Value)
 													})
 												}
-												writer.writeLine("")
+												writer.WriteLine("")
 											})
 										})
 									} else {
-										writer.writeLine("")
+										writer.WriteLine("")
 									}
 								})
 							}
@@ -483,62 +483,62 @@ func printApi(writer *Writer, api *parser.APINode) {
 
 func printAttributesBlock(writer *Writer, attributes []*parser.AttributeNode) {
 	if len(attributes) == 0 {
-		writer.writeLine("")
+		writer.WriteLine("")
 		return
 	}
 
 	if len(attributes) == 1 && attributes[0].Name.Value == parser.AttributeFunction {
-		writer.write(" ")
+		writer.Write(" ")
 		printAttributes(writer, attributes)
 
 		return
 	}
 
-	writer.block(func() {
+	writer.Block(func() {
 		printAttributes(writer, attributes)
 	})
 }
 
 func printAttributes(writer *Writer, attributes []*parser.AttributeNode) {
 	for _, attr := range attributes {
-		writer.comments(attr, func() {
-			writer.write("@%s", lowerCamel(attr.Name.Value))
+		writer.Comments(attr, func() {
+			writer.Write("@%s", lowerCamel(attr.Name.Value))
 
 			if len(attr.Arguments) > 0 {
-				writer.write("(")
+				writer.Write("(")
 
 				isMultiline := len(attr.Arguments) > 1
 				if isMultiline {
-					writer.writeLine("")
-					writer.indent()
+					writer.WriteLine("")
+					writer.Indent()
 				}
 
 				for i, arg := range attr.Arguments {
 					if i > 0 {
 						if isMultiline {
-							writer.writeLine(",")
+							writer.WriteLine(",")
 						} else {
-							writer.write(", ")
+							writer.Write(", ")
 						}
 					}
-					writer.comments(arg, func() {
+					writer.Comments(arg, func() {
 						if arg.Label != nil {
-							writer.write("%s: ", lowerCamel(arg.Label.Value))
+							writer.Write("%s: ", lowerCamel(arg.Label.Value))
 						}
 						expr := arg.Expression.CleanString()
-						writer.write(expr)
+						writer.Write(expr)
 					})
 				}
 
 				if isMultiline {
-					writer.writeLine("")
-					writer.dedent()
+					writer.WriteLine("")
+					writer.Dedent()
 				}
 
-				writer.write(")")
+				writer.Write(")")
 			}
 
-			writer.writeLine("")
+			writer.WriteLine("")
 		})
 	}
 }
@@ -566,12 +566,12 @@ func lowerCamel(s string) string {
 }
 
 func printEnum(writer *Writer, enum *parser.EnumNode) {
-	writer.comments(enum, func() {
-		writer.write("enum %s", camel(enum.Name.Value))
-		writer.block(func() {
+	writer.Comments(enum, func() {
+		writer.Write("enum %s", camel(enum.Name.Value))
+		writer.Block(func() {
 			for _, v := range enum.Values {
-				writer.comments(v, func() {
-					writer.writeLine(v.Name.Value)
+				writer.Comments(v, func() {
+					writer.WriteLine(v.Name.Value)
 				})
 			}
 		})
@@ -579,17 +579,17 @@ func printEnum(writer *Writer, enum *parser.EnumNode) {
 }
 
 func printRoute(writer *Writer, routes *parser.RoutesNode) {
-	writer.write("routes")
-	writer.block(func() {
-		writer.comments(routes, func() {
+	writer.Write("routes")
+	writer.Block(func() {
+		writer.Comments(routes, func() {
 			for _, route := range routes.Routes {
-				writer.comments(route, func() {
-					writer.write(strings.ToLower(route.Method.Value))
-					writer.write("(")
-					writer.write(route.Pattern.Value)
-					writer.write(", ")
-					writer.write(route.Handler.Value)
-					writer.writeLine(")")
+				writer.Comments(route, func() {
+					writer.Write(strings.ToLower(route.Method.Value))
+					writer.Write("(")
+					writer.Write(route.Pattern.Value)
+					writer.Write(", ")
+					writer.Write(route.Handler.Value)
+					writer.WriteLine(")")
 				})
 			}
 		})

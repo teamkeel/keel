@@ -35,9 +35,15 @@ async function getDefinition() {
   return api.getDefinition(...arguments);
 }
 
+async function generateActions() {
+  const api = await keel();
+  return api.generateActions(...arguments);
+}
+
 module.exports = {
   format,
   validate,
   completions,
   getDefinition,
+  generateActions,
 };

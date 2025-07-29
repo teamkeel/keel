@@ -4,6 +4,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"syscall/js"
 
 	"github.com/teamkeel/keel/config"
@@ -11,6 +12,7 @@ import (
 	"github.com/teamkeel/keel/schema/completions"
 	"github.com/teamkeel/keel/schema/definitions"
 	"github.com/teamkeel/keel/schema/format"
+	"github.com/teamkeel/keel/schema/generate"
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/reader"
@@ -21,10 +23,11 @@ func init() {
 	// we have to declare our functions in an init func otherwise they aren't
 	// available in JS land at the call time.
 	js.Global().Set("keel", js.ValueOf(map[string]any{
-		"validate":      js.FuncOf(validate),
-		"format":        js.FuncOf(formatSchema),
-		"completions":   js.FuncOf(provideCompletions),
-		"getDefinition": js.FuncOf(getDefinition),
+		"validate":        js.FuncOf(validate),
+		"format":          js.FuncOf(formatSchema),
+		"generateActions": js.FuncOf(generateActions),
+		"completions":     js.FuncOf(provideCompletions),
+		"getDefinition":   js.FuncOf(getDefinition),
 	}))
 }
 
@@ -187,6 +190,62 @@ func formatSchema(this js.Value, args []js.Value) any {
 		}
 
 		return format.Format(ast), nil
+	})
+}
+
+// Expected argument to validate API:
+//
+//	{
+//		schemaFiles: [
+//			{
+//				filename: "",
+//				contents: "",
+//			},
+//		],
+//		config: "<YAML config file>",
+//		modelName: "ModelName"
+//	}
+func generateActions(this js.Value, args []js.Value) any {
+	return newPromise(func() (any, error) {
+		schemaFilesArg := args[0].Get("schemaFiles")
+		schemaFiles := []*reader.SchemaFile{}
+		for i := 0; i < schemaFilesArg.Length(); i++ {
+			f := schemaFilesArg.Index(i)
+			schemaFiles = append(schemaFiles, &reader.SchemaFile{
+				FileName: f.Get("filename").String(),
+				Contents: f.Get("contents").String(),
+			})
+		}
+
+		// Parse schema files and populate ASTs
+		asts := []*parser.AST{}
+		for _, f := range schemaFiles {
+			ast, _ := parser.Parse(f)
+			if ast != nil {
+				asts = append(asts, ast)
+			}
+		}
+
+		modelName := args[0].Get("modelName").String()
+
+		if len(asts) == 0 {
+			return nil, errors.New("Failed to parse schema files")
+		}
+
+		if modelName == "" {
+			return nil, errors.New("Model name is required")
+		}
+
+		actions := generate.GenerateDefaultActionsAsStrings(asts, modelName)
+
+		untypedActions := make([]any, len(actions))
+		for i, action := range actions {
+			untypedActions[i] = action
+		}
+
+		return map[string]any{
+			"actions": untypedActions,
+		}, nil
 	})
 }
 
