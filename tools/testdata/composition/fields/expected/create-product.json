@@ -36,7 +36,6 @@
         "displayOrder": 2,
         "visible": true,
         "helpText": { "template": "Help text for sku input" },
-        "lookupAction": { "toolId": "list-products" },
         "placeholder": { "template": "Placeholder sku" },
         "modelName": "Product",
         "fieldName": "sku"
