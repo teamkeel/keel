@@ -794,10 +794,12 @@ func (g *Generator) makeInputsForMessage(
 		}
 
 		if f.GetType().GetModelName() != nil && f.GetType().GetFieldName() != nil && proto.FindField(g.Schema.GetModels(), f.GetType().GetModelName().GetValue(), f.GetType().GetFieldName().GetValue()).GetUnique() {
-			// generate action link placeholders
-			if lookupToolsIDs := g.findListTools(f.GetType().GetModelName().GetValue()); len(lookupToolsIDs) > 0 {
-				config.LookupAction = &toolsproto.ToolLink{
-					ToolId: lookupToolsIDs[0],
+			// generate lookup action only for ID inputs
+			if f.GetType().GetFieldName().GetValue() == fieldNameID {
+				if lookupToolsIDs := g.findListTools(f.GetType().GetModelName().GetValue()); len(lookupToolsIDs) > 0 {
+					config.LookupAction = &toolsproto.ToolLink{
+						ToolId: lookupToolsIDs[0],
+					}
 				}
 			}
 

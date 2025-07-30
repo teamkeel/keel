@@ -39,12 +39,17 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		tools, err := tools.GenerateTools(context.Background(), schema, builder.Config)
+
+		gen, err := tools.NewGenerator(schema, builder.Config)
 		if err != nil {
 			panic(err)
 		}
 
-		response := &rpc.ListToolsResponse{ToolConfigs: tools}
+		if err := gen.Generate(context.Background()); err != nil {
+			panic(err)
+		}
+
+		response := &rpc.ListToolsResponse{ToolConfigs: gen.GetTools()}
 		opts := protojson.MarshalOptions{Indent: "  "}
 		b, err := opts.Marshal(response)
 		if err != nil {
