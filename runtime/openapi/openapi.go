@@ -401,9 +401,8 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 				Items: &jsonschema.JSONSchema{
 					Type: "object",
 					Properties: map[string]jsonschema.JSONSchema{
-						"name": {
-							Type: "string",
-						},
+						"name":     {Type: "string"},
+						"schedule": {Type: []string{"string", "null"}},
 					},
 				},
 			},
