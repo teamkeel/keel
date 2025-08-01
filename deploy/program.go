@@ -20,6 +20,7 @@ import (
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/deploy/lambdas/runtime"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/flows"
 )
 
 // https://github.com/open-telemetry/opentelemetry-lambda/releases/tag/layer-collector%2F0.12.0
@@ -400,6 +401,11 @@ func createProgram(args *NewProgramArgs) pulumi.RunFunc {
 				FunctionName:   flow.Arn,
 				Tags:           baseTags,
 			})
+			if err != nil {
+				return err
+			}
+
+			err = createEventBridgeSchedulesForFlows(ctx, flowsQueue, args.Schema, baseTags)
 			if err != nil {
 				return err
 			}
@@ -791,6 +797,101 @@ func createEventBridgeSchedules(ctx *pulumi.Context, jobsLambda *lambda.Function
 				Arn:     jobsLambda.Arn,
 				RoleArn: role.Arn,
 				Input:   pulumi.StringPtr(string(jobJson)),
+			},
+			// Start immediately
+			StartDate: pulumi.StringPtr(time.Now().UTC().Format(time.RFC3339)),
+		})
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func createEventBridgeSchedulesForFlows(ctx *pulumi.Context, flowsQueue *sqs.Queue, protoSchema *proto.Schema, tags pulumi.StringMap) error {
+	if !protoSchema.HasScheduledFlows() {
+		return nil
+	}
+
+	scheduledFlows := protoSchema.ScheduledFlows()
+
+	// The role the EventBridge scheduler will assume to put events on the sqs queue
+	role, err := iam.NewRole(ctx, "flows-scheduler-role", &iam.RoleArgs{
+		AssumeRolePolicy: pulumi.String(`{
+			"Version": "2012-10-17",
+			"Statement": [
+				{
+					"Action": "sts:AssumeRole",
+					"Principal": {
+						"Service": "scheduler.amazonaws.com"
+					},
+					"Effect": "Allow"
+				}
+			]
+		}`),
+		Tags: tags,
+	})
+	if err != nil {
+		return err
+	}
+
+	// Add permissions for EventBridge to actually send messages on the queue
+	policy, err := iam.NewPolicy(ctx, "flows-scheduler-policy", &iam.PolicyArgs{
+		Policy: iam.GetPolicyDocumentOutput(ctx, iam.GetPolicyDocumentOutputArgs{
+			Statements: iam.GetPolicyDocumentStatementArray{
+				iam.GetPolicyDocumentStatementInput(iam.GetPolicyDocumentStatementArgs{
+					Actions: pulumi.ToStringArray([]string{
+						"sqs:SendMessage",
+						"sqs:GetQueueUrl",
+						"sqs:DeleteMessage",
+						"sqs:ReceiveMessage",
+						"sqs:GetQueueAttributes",
+					}),
+					Resources: pulumi.StringArray{
+						flowsQueue.Arn,
+					},
+				}),
+			},
+		}).Json(),
+		Tags: tags,
+	})
+	if err != nil {
+		return err
+	}
+
+	_, err = iam.NewRolePolicyAttachment(ctx, "flows-scheduler-policy-attachment", &iam.RolePolicyAttachmentArgs{
+		Role:      role.Name,
+		PolicyArn: policy.Arn,
+	})
+	if err != nil {
+		return err
+	}
+
+	for _, flow := range scheduledFlows {
+		expression := fmt.Sprintf("cron(%s)", strings.ReplaceAll(flow.GetSchedule().GetExpression(), "\"", ""))
+		ev := flows.FlowRunStarted{Name: flow.GetName(), Inputs: map[string]any{}}
+
+		payload, err := ev.Wrap()
+		if err != nil {
+			return fmt.Errorf("wrapping event: %w", err)
+		}
+
+		sqsMessage, err := json.Marshal(payload)
+		if err != nil {
+			return err
+		}
+
+		_, err = scheduler.NewSchedule(ctx, fmt.Sprintf("scheduled-flow-%s", flow.GetName()), &scheduler.ScheduleArgs{
+			ScheduleExpression: pulumi.String(expression),
+			FlexibleTimeWindow: scheduler.ScheduleFlexibleTimeWindowArgs{
+				Mode: pulumi.String("OFF"),
+			},
+			// This is "templated target" - https://docs.aws.amazon.com/scheduler/latest/UserGuide/managing-targets-templated.html
+			Target: &scheduler.ScheduleTargetArgs{
+				Arn:     flowsQueue.Arn,
+				RoleArn: role.Arn,
+				Input:   pulumi.StringPtr(string(sqsMessage)),
 			},
 			// Start immediately
 			StartDate: pulumi.StringPtr(time.Now().UTC().Format(time.RFC3339)),
