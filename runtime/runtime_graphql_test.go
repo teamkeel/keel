@@ -507,9 +507,9 @@ var testCases = []testCase{
 		},
 		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
 			require.Len(t, errors, 1)
-			require.Equal(t, "not authorized to access this action", errors[0].Message)
+			require.Equal(t, "not authorized to access", errors[0].Message)
 			require.Equal(t, "ERR_PERMISSION_DENIED", errors[0].Extensions["code"])
-			require.Equal(t, "not authorized to access this action", errors[0].Extensions["message"])
+			require.Equal(t, "not authorized to access", errors[0].Extensions["message"])
 		},
 	},
 	{
@@ -2471,7 +2471,7 @@ var testCases = []testCase{
 		},
 		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
 			require.Len(t, errors, 1)
-			require.Equal(t, "not authorized to access this action", errors[0].Message)
+			require.Equal(t, "not authorized to access", errors[0].Message)
 		},
 	},
 	{
@@ -2558,7 +2558,7 @@ var testCases = []testCase{
 			}`,
 		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
 			require.Len(t, errors, 1)
-			require.Equal(t, "not authorized to access this action", errors[0].Message)
+			require.Equal(t, "not authorized to access", errors[0].Message)
 		},
 	},
 	{
@@ -2640,7 +2640,7 @@ var testCases = []testCase{
 		},
 		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
 			require.Len(t, errors, 1)
-			require.Equal(t, "not authorized to access this action", errors[0].Message)
+			require.Equal(t, "not authorized to access", errors[0].Message)
 		},
 	},
 	{
@@ -2723,7 +2723,7 @@ var testCases = []testCase{
 			}`,
 		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
 			require.Len(t, errors, 1)
-			require.Equal(t, "not authorized to access this action", errors[0].Message)
+			require.Equal(t, "not authorized to access", errors[0].Message)
 		},
 	},
 	{
