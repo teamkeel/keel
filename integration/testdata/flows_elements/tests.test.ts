@@ -1,24 +1,17 @@
-import { resetDatabase, models } from "@teamkeel/testing";
+import { resetDatabase, models, flows } from "@teamkeel/testing";
 import { beforeEach, expect, test } from "vitest";
 
 beforeEach(resetDatabase);
 
 test("flows - iterator element", async () => {
-  const token = await getToken({ email: "admin@keel.xyz" });
+  let flow = await flows.iterator.start({});
 
-  let { status, body } = await startFlow({
-    name: "Iterator",
-    token,
-    body: {},
-  });
-
-  expect(status).toEqual(200);
-  expect(body).toEqual({
+  expect(flow).toEqual({
     id: expect.any(String),
     traceId: expect.any(String),
     status: "AWAITING_INPUT",
     name: "Iterator",
-    startedBy: expect.any(String),
+    startedBy: null,
     input: {},
     data: null,
     steps: [
@@ -31,10 +24,10 @@ test("flows - iterator element", async () => {
         type: "UI",
         value: null,
         error: null,
-        startTime: expect.any(String),
+        startTime: expect.any(Date),
         endTime: null,
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
         ui: {
           __type: "ui.page",
           content: [
@@ -79,20 +72,19 @@ test("flows - iterator element", async () => {
         },
       },
     ],
-    createdAt: expect.any(String),
-    updatedAt: expect.any(String),
+    createdAt: expect.any(Date),
+    updatedAt: expect.any(Date),
     config: {
       title: "Iterator",
     },
   });
 
   // Provide the values for the pending UI step
-  ({ status, body } = await putStepValues({
-    name: "Iterator",
-    runId: body.id,
-    stepId: body.steps[0].id,
-    token,
-    values: {
+  flow = await flows.iterator.putStepValues(
+    flow.id,
+    flow.steps[0].id,
+
+    {
       "my iterator": [
         {
           sku: "SHOES",
@@ -107,16 +99,14 @@ test("flows - iterator element", async () => {
           quantity: 3,
         },
       ],
-    },
-    action: null,
-  }));
-  expect(status).toEqual(200);
-  expect(body).toEqual({
+    }
+  );
+  expect(flow).toEqual({
     id: expect.any(String),
     traceId: expect.any(String),
     status: "COMPLETED",
     name: "Iterator",
-    startedBy: expect.any(String),
+    startedBy: null,
     input: {},
     data: null,
     steps: [
@@ -144,15 +134,15 @@ test("flows - iterator element", async () => {
           ],
         },
         error: null,
-        startTime: expect.any(String),
-        endTime: expect.any(String),
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
         ui: null,
       },
     ],
-    createdAt: expect.any(String),
-    updatedAt: expect.any(String),
+    createdAt: expect.any(Date),
+    updatedAt: expect.any(Date),
     config: {
       title: "Iterator",
     },
@@ -160,46 +150,31 @@ test("flows - iterator element", async () => {
 });
 
 test("flows - iterator element - iterator and element validation errors", async () => {
-  const token = await getToken({ email: "admin@keel.xyz" });
+  let flow = await flows.iterator.start({});
 
-  let { status, body } = await startFlow({
-    name: "Iterator",
-    token,
-    body: {},
+  flow = await flows.iterator.putStepValues(flow.id, flow.steps[0].id, {
+    "my iterator": [
+      {
+        sku: "SHOES",
+        quantity: 1,
+      },
+      {
+        sku: "SHIRTS",
+        quantity: 0,
+      },
+      {
+        sku: "SHIRTS",
+        quantity: 30,
+      },
+    ],
   });
-  expect(status).toEqual(200);
 
-  ({ status, body } = await putStepValues({
-    name: "Iterator",
-    runId: body.id,
-    stepId: body.steps[0].id,
-    token,
-    values: {
-      "my iterator": [
-        {
-          sku: "SHOES",
-          quantity: 1,
-        },
-        {
-          sku: "SHIRTS",
-          quantity: 0,
-        },
-        {
-          sku: "SHIRTS",
-          quantity: 30,
-        },
-      ],
-    },
-    action: null,
-  }));
-  expect(status).toEqual(200);
-
-  expect(body).toEqual({
+  expect(flow).toEqual({
     id: expect.any(String),
     traceId: expect.any(String),
     status: "AWAITING_INPUT",
     name: "Iterator",
-    startedBy: expect.any(String),
+    startedBy: null,
     input: {},
     data: null,
     steps: [
@@ -212,10 +187,10 @@ test("flows - iterator element - iterator and element validation errors", async 
         type: "UI",
         value: null,
         error: null,
-        startTime: expect.any(String),
+        startTime: expect.any(Date),
         endTime: null,
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
         ui: {
           __type: "ui.page",
           content: [
@@ -274,222 +249,10 @@ test("flows - iterator element - iterator and element validation errors", async 
         },
       },
     ],
-    createdAt: expect.any(String),
-    updatedAt: expect.any(String),
+    createdAt: expect.any(Date),
+    updatedAt: expect.any(Date),
     config: {
       title: "Iterator",
     },
   });
 });
-
-async function getToken({ email }) {
-  const response = await fetch(
-    process.env.KEEL_TESTING_AUTH_API_URL + "/token",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        grant_type: "password",
-        username: email,
-        password: "1234",
-      }),
-    }
-  );
-  expect(response.status).toEqual(200);
-
-  const token = (await response.json()).access_token;
-  await models.identity.update(
-    {
-      email: email,
-      issuer: "https://keel.so",
-    },
-    {
-      emailVerified: true,
-    }
-  );
-
-  return token;
-}
-
-async function startFlow({ name, token, body }) {
-  const res = await fetch(
-    `${process.env.KEEL_TESTING_API_URL}/flows/json/${name}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + token,
-      },
-      body: JSON.stringify(body),
-    }
-  );
-
-  return {
-    status: res.status,
-    body: await res.json(),
-  };
-}
-
-async function getFlowRun({ name, id, token }) {
-  const res = await fetch(
-    `${process.env.KEEL_TESTING_API_URL}/flows/json/${name}/${id}`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + token,
-      },
-    }
-  );
-
-  return {
-    status: res.status,
-    body: await res.json(),
-  };
-}
-
-async function listFlows({ token }) {
-  const res = await fetch(`${process.env.KEEL_TESTING_API_URL}/flows/json`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: "Bearer " + token,
-    },
-  });
-
-  return {
-    status: res.status,
-    body: await res.json(),
-  };
-}
-
-async function listMyRuns({ token, params }) {
-  const queryString = new URLSearchParams(params).toString();
-  const url = `${process.env.KEEL_TESTING_API_URL}/flows/json/myRuns?${queryString}`;
-
-  const res = await fetch(url, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: "Bearer " + token,
-    },
-  });
-
-  return {
-    status: res.status,
-    body: await res.json(),
-  };
-}
-
-async function listStats({ token, params }) {
-  const queryString = new URLSearchParams(params).toString();
-  const url = `${process.env.KEEL_TESTING_API_URL}/flows/json/stats?${queryString}`;
-
-  const res = await fetch(url, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: "Bearer " + token,
-    },
-  });
-
-  return {
-    status: res.status,
-    body: await res.json(),
-  };
-}
-
-async function putStepValues({ name, runId, stepId, values, token, action }) {
-  let url = `${process.env.KEEL_TESTING_API_URL}/flows/json/${name}/${runId}/${stepId}`;
-  if (action) {
-    const queryString = new URLSearchParams({ action }).toString();
-    url = `${url}?${queryString}`;
-  }
-
-  const res = await fetch(url, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: "Bearer " + token,
-    },
-    body: JSON.stringify(values),
-  });
-
-  return {
-    status: res.status,
-    body: await res.json(),
-  };
-}
-
-async function cancelFlow({ name, runId, token }) {
-  const res = await fetch(
-    `${process.env.KEEL_TESTING_API_URL}/flows/json/${name}/${runId}/cancel`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + token,
-      },
-    }
-  );
-
-  return {
-    status: res.status,
-    body: await res.json(),
-  };
-}
-
-async function untilFlowAwaitingInput({ name, id, token }) {
-  const startTime = Date.now();
-  const timeout = 5000; // We'll wait up to 5 seconds
-
-  while (true) {
-    if (Date.now() - startTime > timeout) {
-      throw new Error(
-        `timed out waiting for flow run to reach AWAITING_INPUT state after ${timeout}ms`
-      );
-    }
-
-    const { status, body } = await getFlowRun({ name, id, token });
-    expect(status).toEqual(200);
-
-    if (body.status === "AWAITING_INPUT") {
-      const lastStep = body.steps[body.steps.length - 1];
-      expect(lastStep.status).toBe("PENDING");
-      expect(lastStep.type).toBe("UI");
-      return body;
-    }
-
-    await new Promise((resolve) => setTimeout(resolve, 100));
-  }
-}
-
-async function untilFlowFinished({ name, id, token }) {
-  const startTime = Date.now();
-  const timeout = 1000; // 1 seconds timeout on polling
-
-  while (true) {
-    if (Date.now() - startTime > timeout) {
-      throw new Error(
-        `timed out waiting for flow run to reach a completed state after ${timeout}ms`
-      );
-    }
-
-    const { status, body } = await getFlowRun({ name, id, token });
-    expect(status).toEqual(200);
-
-    if (body.status === "COMPLETED" || body.status === "FAILED") {
-      for (const step of body.steps) {
-        // Steps can only be COMPLETED or FAILED when flow has finished
-        expect(step.status === "COMPLETED" || step.status === "FAILED").toBe(
-          true
-        );
-      }
-      return body;
-    }
-
-    await new Promise((resolve) => setTimeout(resolve, 100));
-  }
-}

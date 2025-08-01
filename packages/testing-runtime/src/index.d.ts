@@ -19,19 +19,24 @@ declare module "vitest" {
 }
 
 // Flow Status Types
-export type FlowStatus = 
-  | "NEW" 
-  | "RUNNING" 
-  | "AWAITING_INPUT" 
-  | "FAILED" 
-  | "COMPLETED" 
+export type FlowStatus =
+  | "NEW"
+  | "RUNNING"
+  | "AWAITING_INPUT"
+  | "FAILED"
+  | "COMPLETED"
   | "CANCELLED";
 
 // Step Types
 export type StepType = "FUNCTION" | "UI" | "COMPLETE";
 
 // Step Status Types
-export type StepStatus = "NEW" | "PENDING" | "FAILED" | "COMPLETED" | "CANCELLED";
+export type StepStatus =
+  | "NEW"
+  | "PENDING"
+  | "FAILED"
+  | "COMPLETED"
+  | "CANCELLED";
 
 // Stage Configuration
 export interface FlowStage {
@@ -122,12 +127,12 @@ export interface UIPage {
 }
 
 // Union type for all UI elements
-export type UIElement = 
-  | UITextInput 
-  | UINumberInput 
-  | UIBooleanInput 
-  | UIDivider 
-  | UIMarkdown 
+export type UIElement =
+  | UITextInput
+  | UINumberInput
+  | UIBooleanInput
+  | UIDivider
+  | UIMarkdown
   | UIGrid;
 
 // Union type for UI configurations
@@ -139,7 +144,12 @@ declare class FlowExecutor<Input = {}> {
   start(inputs: Input): Promise<FlowRun<Input>>;
   get(id: string): Promise<FlowRun<Input>>;
   cancel(id: string): Promise<FlowRun<Input>>;
-  putStepValues(id: string, stepId: string, values: Record<string, any>): Promise<FlowRun<Input>>;
+  putStepValues(
+    id: string,
+    stepId: string,
+    values: Record<string, any>,
+    action?: string
+  ): Promise<FlowRun<Input>>;
   untilAwaitingInput(id: string): Promise<FlowRun<Input>>;
   untilFinished(id: string): Promise<FlowRun<Input>>;
 }
@@ -199,4 +209,3 @@ export interface GetFlowRequest {
   id: string;
   token: string;
 }
-

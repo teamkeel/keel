@@ -100,7 +100,9 @@ test("flows - only functions with config", async () => {
     },
   });
 
-  const flow = await flows.onlyFunctions.withAuthToken(token).untilFinished(f.id);
+  const flow = await flows.onlyFunctions
+    .withAuthToken(token)
+    .untilFinished(f.id);
 
   expect(flow).toEqual({
     id: expect.any(String),
@@ -214,8 +216,10 @@ test("flows - only pages", async () => {
   });
 
   // Provide the values for the pending UI step
-  const updatedFlow = await flows.onlyPages.withAuthToken(token).putStepValues(f.id, f.steps[0].id, {});
-  
+  const updatedFlow = await flows.onlyPages
+    .withAuthToken(token)
+    .putStepValues(f.id, f.steps[0].id, {});
+
   expect(updatedFlow).toEqual({
     id: expect.any(String),
     traceId: expect.any(String),
@@ -277,8 +281,10 @@ test("flows - only pages", async () => {
     },
   });
 
-  const finalFlow = await flows.onlyPages.withAuthToken(token).putStepValues(updatedFlow.id, updatedFlow.steps[1].id, { yesno: true });
-  
+  const finalFlow = await flows.onlyPages
+    .withAuthToken(token)
+    .putStepValues(updatedFlow.id, updatedFlow.steps[1].id, { yesno: true });
+
   expect(finalFlow).toEqual({
     id: expect.any(String),
     traceId: expect.any(String),
@@ -482,7 +488,9 @@ test("flows - alternating step types", async () => {
   let step1 = f.steps[0];
 
   // The second step is a page with UI so we wait until the flow has reached that point
-  const body = await flows.mixedStepTypes.withAuthToken(token).untilAwaitingInput(runId);
+  const body = await flows.mixedStepTypes
+    .withAuthToken(token)
+    .untilAwaitingInput(runId);
   expect(body).toEqual({
     id: runId,
     name: "MixedStepTypes",
@@ -574,11 +582,13 @@ test("flows - alternating step types", async () => {
   expect(thing!.age).toBe(23);
 
   // Provide the values for the pending UI step
-  const updatedFlow = await flows.mixedStepTypes.withAuthToken(token).putStepValues(runId, step2.id, {
-    name: "Keelson updated",
-    age: 32,
-  });
-  
+  const updatedFlow = await flows.mixedStepTypes
+    .withAuthToken(token)
+    .putStepValues(runId, step2.id, {
+      name: "Keelson updated",
+      age: 32,
+    });
+
   expect(updatedFlow).toEqual({
     id: runId,
     name: "MixedStepTypes",
@@ -632,7 +642,9 @@ test("flows - alternating step types", async () => {
   step2 = updatedFlow.steps[1];
   let step3 = updatedFlow.steps[2];
 
-  const finalFlow = await flows.mixedStepTypes.withAuthToken(token).untilFinished(runId);
+  const finalFlow = await flows.mixedStepTypes
+    .withAuthToken(token)
+    .untilFinished(runId);
   expect(finalFlow.status).toBe("COMPLETED");
   expect(finalFlow.steps[2]).toEqual({
     // The final step is now complete and will contain the result
@@ -671,9 +683,11 @@ test("flows - text input validation", async () => {
   const runId = f.id;
   let stepId = f.steps[0].id;
 
-  f = await flows.validationText.withAuthToken(token).putStepValues(runId, stepId, {
-    postcode: "blah blah blah",
-  });
+  f = await flows.validationText
+    .withAuthToken(token)
+    .putStepValues(runId, stepId, {
+      postcode: "blah blah blah",
+    });
 
   expect(f.steps[0].ui).toEqual({
     __type: "ui.page",
@@ -692,9 +706,11 @@ test("flows - text input validation", async () => {
     title: "Your postcode",
   });
 
-  f = await flows.validationText.withAuthToken(token).putStepValues(runId, stepId, {
-    postcode: "E4 6ED",
-  });
+  f = await flows.validationText
+    .withAuthToken(token)
+    .putStepValues(runId, stepId, {
+      postcode: "E4 6ED",
+    });
 
   expect(f.steps[0].status).toBe("COMPLETED");
   expect(f.steps[0].value).toEqual({
@@ -711,9 +727,11 @@ test("flows - boolean input validation", async () => {
   const runId = f.id;
   let stepId = f.steps[0].id;
 
-  f = await flows.validationBoolean.withAuthToken(token).putStepValues(runId, stepId, {
-    good: false,
-  });
+  f = await flows.validationBoolean
+    .withAuthToken(token)
+    .putStepValues(runId, stepId, {
+      good: false,
+    });
 
   expect(f.steps[0].ui).toEqual({
     __type: "ui.page",
@@ -732,9 +750,11 @@ test("flows - boolean input validation", async () => {
     title: "Important question",
   });
 
-  f = await flows.validationBoolean.withAuthToken(token).putStepValues(runId, stepId, {
-    good: true,
-  });
+  f = await flows.validationBoolean
+    .withAuthToken(token)
+    .putStepValues(runId, stepId, {
+      good: true,
+    });
 
   expect(f.steps[0].status).toBe("COMPLETED");
   expect(f.steps[0].value).toEqual({
@@ -751,7 +771,9 @@ test("flows - page validation", async () => {
   const runId = f.id;
   let stepId = f.steps[0].id;
 
-  f = await flows.validationPage.withAuthToken(token).putStepValues(runId, stepId, {});
+  f = await flows.validationPage
+    .withAuthToken(token)
+    .putStepValues(runId, stepId, {});
 
   expect(f.steps[0].ui).toEqual({
     __type: "ui.page",
@@ -775,9 +797,11 @@ test("flows - page validation", async () => {
     validationError: "Email or phone is required",
   });
 
-  f = await flows.validationPage.withAuthToken(token).putStepValues(runId, stepId, {
-    email: "keelson.keel.xyz",
-  });
+  f = await flows.validationPage
+    .withAuthToken(token)
+    .putStepValues(runId, stepId, {
+      email: "keelson.keel.xyz",
+    });
 
   expect(f.steps[0].ui).toEqual({
     __type: "ui.page",
@@ -801,9 +825,11 @@ test("flows - page validation", async () => {
     hasValidationErrors: true,
   });
 
-  f = await flows.validationPage.withAuthToken(token).putStepValues(runId, stepId, {
-    email: "keelson@keel.xyz",
-  });
+  f = await flows.validationPage
+    .withAuthToken(token)
+    .putStepValues(runId, stepId, {
+      email: "keelson@keel.xyz",
+    });
 
   expect(f.steps[0].status).toBe("COMPLETED");
   expect(f.steps[0].value).toEqual({
@@ -901,7 +927,9 @@ test("flows - with completion", async () => {
     },
   });
 
-  const flow = await flows.withCompletion.withAuthToken(token).untilFinished(res.id);
+  const flow = await flows.withCompletion
+    .withAuthToken(token)
+    .untilFinished(res.id);
 
   expect(flow).toEqual({
     id: res.id,
@@ -1012,7 +1040,9 @@ test("flows - with completion - no contents and no returns", async () => {
     },
   });
 
-  const flow = await flows.withCompletionMinimal.withAuthToken(token).get(res.id);
+  const flow = await flows.withCompletionMinimal
+    .withAuthToken(token)
+    .get(res.id);
 
   expect(flow).toEqual({
     id: res.id,
@@ -1086,7 +1116,9 @@ test("flows - with returned data", async () => {
     },
   });
 
-  const flow = await flows.withReturnedData.withAuthToken(token).untilFinished(res.id);
+  const flow = await flows.withReturnedData
+    .withAuthToken(token)
+    .untilFinished(res.id);
 
   expect(flow).toEqual({
     id: res.id,
@@ -1187,14 +1219,12 @@ test("flows - authorised listing flows", async () => {
 test("flows - unauthorised starting flow", async () => {
   const token = await getToken({ email: "user@gmail.com" });
   await expect(
-     flows.stepless.withAuthToken(token).start({})
+    flows.stepless.withAuthToken(token).start({})
   ).toHaveAuthorizationError();
 });
 
 test("flows - unauthenticated starting flow", async () => {
-  await expect(
-    flows.stepless.start({})
-  ).toHaveAuthorizationError();
+  await expect(flows.stepless.start({})).toHaveAuthorizationError();
 });
 
 test("flows - unauthorised getting flow", async () => {
@@ -1202,7 +1232,7 @@ test("flows - unauthorised getting flow", async () => {
   const resStart = await flows.stepless.withAuthToken(adminToken).start({});
 
   const userToken = await getToken({ email: "user@gmail.com" });
-  await expect( 
+  await expect(
     flows.stepless.withAuthToken(userToken).get(resStart.id)
   ).toHaveAuthorizationError();
 });
@@ -1211,26 +1241,27 @@ test("flows - unauthenticated getting flow", async () => {
   const adminToken = await getToken({ email: "admin@keel.xyz" });
   const resStart = await flows.stepless.withAuthToken(adminToken).start({});
 
-  await expect( 
-     flows.stepless.get(resStart.id)
-    ).toHaveAuthorizationError();
+  await expect(flows.stepless.get(resStart.id)).toHaveAuthorizationError();
 });
 
 test("flows - unauthenticated listing flows", async () => {
-  const res = await listFlows({ token: null })
+  const res = await listFlows({ token: null });
   expect(res.status).toBe(401);
 });
 
 test("flows - authorised starting flow with true expression", async () => {
   const token = await getToken({ email: "user@gmail.com" });
-  const res = await flows.expressionPermissionIsTrue.withAuthToken(token).start({});
+  const res = await flows.expressionPermissionIsTrue
+    .withAuthToken(token)
+    .start({});
   expect(res).not.toHaveAuthorizationError();
 });
 
 test("flows - not authorised starting flow with backlink expression", async () => {
   const token = await getToken({ email: "user@gmail.com" });
-  await expect( flows.expressionPermissionCtx.withAuthToken(token).start({})
-).toHaveAuthorizationError();
+  await expect(
+    flows.expressionPermissionCtx.withAuthToken(token).start({})
+  ).toHaveAuthorizationError();
 });
 
 test("flows - unauthorised (wrong team) starting flow with backlink expression", async () => {
@@ -1247,8 +1278,8 @@ test("flows - unauthorised (wrong team) starting flow with backlink expression",
   });
 
   await expect(
-     flows.expressionPermissionCtx.withAuthToken(token).start({})
-).toHaveAuthorizationError();
+    flows.expressionPermissionCtx.withAuthToken(token).start({})
+  ).toHaveAuthorizationError();
 });
 
 test("flows - authorised starting flow with backlink expression", async () => {
@@ -1264,7 +1295,9 @@ test("flows - authorised starting flow with backlink expression", async () => {
     identityId: identity!.id,
   });
 
-    const res = await flows.expressionPermissionCtx.withAuthToken(token).start({});
+  const res = await flows.expressionPermissionCtx
+    .withAuthToken(token)
+    .start({});
   expect(res).not.toHaveAuthorizationError();
 });
 
@@ -1281,7 +1314,9 @@ test("flows - authorised starting flow with env var expression", async () => {
     identityId: identity!.id,
   });
 
-  const res = await flows.expressionPermissionEnv.withAuthToken(token).start({});
+  const res = await flows.expressionPermissionEnv
+    .withAuthToken(token)
+    .start({});
   expect(res).not.toHaveAuthorizationError();
 });
 
@@ -1426,7 +1461,9 @@ test("flows - multiple actions - finish", async () => {
     },
   });
 
-  f = await flows.multipleActions.withAuthToken(token).putStepValues(f.id, f.steps[0].id, { yesno: true });
+  f = await flows.multipleActions
+    .withAuthToken(token)
+    .putStepValues(f.id, f.steps[0].id, { yesno: true }, "finish");
   expect(f).toEqual({
     id: expect.any(String),
     traceId: expect.any(String),
@@ -1507,8 +1544,10 @@ test("flows - multiple actions - continue", async () => {
   });
 
   // Provide the values for the pending UI step
-  f = await flows.multipleActions.withAuthToken(token).putStepValues(f.id, f.steps[0].id, {});
-  
+  f = await flows.multipleActions
+    .withAuthToken(token)
+    .putStepValues(f.id, f.steps[0].id, {}, "continue");
+
   expect(f).toEqual({
     id: expect.any(String),
     traceId: expect.any(String),
@@ -1569,7 +1608,9 @@ test("flows - multiple actions - continue", async () => {
     },
   });
 
-  f = await flows.multipleActions.withAuthToken(token).putStepValues(f.id, f.steps[1].id, { name: "test" });
+  f = await flows.multipleActions
+    .withAuthToken(token)
+    .putStepValues(f.id, f.steps[1].id, { name: "test" });
 
   expect(f).toEqual({
     id: expect.any(String),
@@ -1797,8 +1838,10 @@ test("flows - multiple actions - invalid action", async () => {
   });
 
   // Provide the values for the pending UI step
-  f = await flows.multipleActions.withAuthToken(token).putStepValues(f.id, f.steps[0].id, {});
-  
+  f = await flows.multipleActions
+    .withAuthToken(token)
+    .putStepValues(f.id, f.steps[0].id, {});
+
   expect(f).toEqual({
     id: expect.any(String),
     traceId: expect.any(String),
@@ -1939,43 +1982,6 @@ async function getToken({ email }) {
   return token;
 }
 
-// async function startFlow({ name, token, body }) {
-//   const res = await fetch(
-//     `${process.env.KEEL_TESTING_API_URL}/flows/json/${name}`,
-//     {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json",
-//         Authorization: "Bearer " + token,
-//       },
-//       body: JSON.stringify(body),
-//     }
-//   );
-
-//   return {
-//     status: res.status,
-//     body: await res.json(),
-//   };
-// }
-
-// async function getFlowRun({ name, id, token }) {
-//   const res = await fetch(
-//     `${process.env.KEEL_TESTING_API_URL}/flows/json/${name}/${id}`,
-//     {
-//       method: "GET",
-//       headers: {
-//         "Content-Type": "application/json",
-//         Authorization: "Bearer " + token,
-//       },
-//     }
-//   );
-
-//   return {
-//     status: res.status,
-//     body: await res.json(),
-//   };
-// }
-
 async function listFlows({ token }) {
   const res = await fetch(`${process.env.KEEL_TESTING_API_URL}/flows/json`, {
     method: "GET",
@@ -2026,43 +2032,3 @@ async function listStats({ token, params }) {
     body: await res.json(),
   };
 }
-
-// async function putStepValues({ name, runId, stepId, values, token, action }) {
-//   let url = `${process.env.KEEL_TESTING_API_URL}/flows/json/${name}/${runId}/${stepId}`;
-//   if (action) {
-//     const queryString = new URLSearchParams({ action }).toString();
-//     url = `${url}?${queryString}`;
-//   }
-
-//   const res = await fetch(url, {
-//     method: "PUT",
-//     headers: {
-//       "Content-Type": "application/json",
-//       Authorization: "Bearer " + token,
-//     },
-//     body: JSON.stringify(values),
-//   });
-
-//   return {
-//     status: res.status,
-//     body: await res.json(),
-//   };
-// }
-
-// async function cancelFlow({ name, runId, token }) {
-//   const res = await fetch(
-//     `${process.env.KEEL_TESTING_API_URL}/flows/json/${name}/${runId}/cancel`,
-//     {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json",
-//         Authorization: "Bearer " + token,
-//       },
-//     }
-//   );
-
-//   return {
-//     status: res.status,
-//     body: await res.json(),
-//   };
-// }

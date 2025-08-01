@@ -1,8 +1,8 @@
-import { reviver, parseInputs, parseOutputs } from "./Executor.mjs";
+import { parseInputs, parseOutputs, reviver } from "./parsing.mjs";
 
 export class FlowExecutor {
   constructor(props) {
-    this._flowUrl = process.env.KEEL_TESTING_FLOWS_API_URL +  "/" + props.name;
+    this._flowUrl = process.env.KEEL_TESTING_FLOWS_API_URL + "/" + props.name;
     this._name = props.name;
     this._identity = props.identity || null;
     this._authToken = props.authToken || null;
@@ -25,40 +25,37 @@ export class FlowExecutor {
     });
   }
 
-headers() {
-  const headers = { "Content-Type": "application/json" };
+  headers() {
+    const headers = { "Content-Type": "application/json" };
 
-  // An Identity instance is provided make a JWT
-  if (this._identity !== null) {
-    const base64pk = process.env.KEEL_DEFAULT_PK;
-    let privateKey = undefined;
+    // An Identity instance is provided make a JWT
+    if (this._identity !== null) {
+      const base64pk = process.env.KEEL_DEFAULT_PK;
+      let privateKey = undefined;
 
-    if (base64pk) {
-      privateKey = Buffer.from(base64pk, "base64").toString("utf8");
+      if (base64pk) {
+        privateKey = Buffer.from(base64pk, "base64").toString("utf8");
+      }
+
+      headers["Authorization"] =
+        "Bearer " +
+        jwt.sign({}, privateKey, {
+          algorithm: privateKey ? "RS256" : "none",
+          expiresIn: 60 * 60 * 24,
+          subject: this._identity.id,
+          issuer: "https://keel.so",
+        });
     }
 
-    headers["Authorization"] =
-      "Bearer " +
-      jwt.sign({}, privateKey, {
-        algorithm: privateKey ? "RS256" : "none",
-        expiresIn: 60 * 60 * 24,
-        subject: this._identity.id,
-        issuer: "https://keel.so",
-      });
+    // If an auth token is provided that can be sent as-is
+    if (this._authToken !== null) {
+      headers["Authorization"] = "Bearer " + this._authToken;
+    }
+
+    return headers;
   }
 
-  // If an auth token is provided that can be sent as-is
-  if (this._authToken !== null) {
-    headers["Authorization"] = "Bearer " + this._authToken;
-  }
-
-  return headers;
-}
-
-
-
-async start(inputs) {
-    
+  async start(inputs) {
     return parseInputs(inputs).then((parsed) => {
       // Use the HTTP JSON API as that returns more friendly errors than
       // the JSON-RPC API.
@@ -102,16 +99,16 @@ async start(inputs) {
 
   async untilFinished(id, timeout = 5000) {
     const startTime = Date.now();
-  
+
     while (true) {
       if (Date.now() - startTime > timeout) {
         throw new Error(
           `timed out waiting for flow run to reach a completed state after ${timeout}ms`
         );
       }
-  
+
       const flow = await this.get(id);
-  
+
       if (flow.status === "COMPLETED" || flow.status === "FAILED") {
         return flow;
       }
@@ -120,29 +117,25 @@ async start(inputs) {
     }
   }
 
-  
   async untilAwaitingInput(id, timeout = 5000) {
     const startTime = Date.now();
-    
-      while (true) {
-        if (Date.now() - startTime > timeout) {
-          throw new Error(
-            `timed out waiting for flow run to reach a completed state after ${timeout}ms`
-          );
-        }
-    
-        const flow = await this.get(id);
-    
-        if (flow.status === "AWAITING_INPUT") {
 
-          return flow;
-        }
-  
-        await new Promise((resolve) => setTimeout(resolve, 100));
+    while (true) {
+      if (Date.now() - startTime > timeout) {
+        throw new Error(
+          `timed out waiting for flow run to reach a completed state after ${timeout}ms`
+        );
       }
+
+      const flow = await this.get(id);
+
+      if (flow.status === "AWAITING_INPUT") {
+        return flow;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
-  
-  
+  }
 }
 
 function handleResponse(r) {
