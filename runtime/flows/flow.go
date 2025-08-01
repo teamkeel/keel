@@ -378,20 +378,20 @@ func listRuns(ctx context.Context, filters *filterFields, page *paginationFields
 
 	if page != nil {
 		if page.IsBackwards() {
-			q = q.Order("id ASC")
+			q = q.Order("created_at ASC")
 		} else {
-			q = q.Order("id DESC")
+			q = q.Order("created_at DESC")
 		}
 
 		if page.Before != nil {
-			q.Where("id > ?", *page.Before)
+			q.Where("created_at > (?)", database.GetDB().Model(&Run{}).Select("created_at").Where("id = ?", *page.Before))
 		}
 		if page.After != nil {
-			q.Where("id < ?", *page.After)
+			q.Where("created_at < (?)", database.GetDB().Model(&Run{}).Select("created_at").Where("id = ?", *page.After))
 		}
 	} else {
 		// default order
-		q = q.Order("id DESC")
+		q = q.Order("created_at DESC")
 	}
 
 	result := q.Find(&runs)
