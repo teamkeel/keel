@@ -1695,7 +1695,6 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("export type Flows = {")
 	w.Indent()
 	for _, flow := range schema.GetFlows() {
-
 		input := flow.GetInputMessageName()
 		if input == "" {
 			w.Writef("%s: FlowExecutor<{}>;", casing.ToLowerCamel(flow.GetName()))
