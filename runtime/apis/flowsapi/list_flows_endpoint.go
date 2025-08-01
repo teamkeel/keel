@@ -62,10 +62,17 @@ func ListFlowsHandler(p *proto.Schema) common.HandlerFunc {
 					})
 				}
 			}
-			flowsData = append(flowsData, map[string]any{
+
+			flowData := map[string]any{
 				"name":   f.GetName(),
 				"inputs": inputFields,
-			})
+			}
+
+			if f.GetSchedule() != nil {
+				flowData["schedule"] = f.GetSchedule().GetExpression()
+			}
+
+			flowsData = append(flowsData, flowData)
 		}
 		return common.NewJsonResponse(http.StatusOK, map[string]any{"flows": flowsData}, nil)
 	}
