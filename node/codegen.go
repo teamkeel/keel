@@ -1488,12 +1488,21 @@ func generateTestingPackage(schema *proto.Schema) codegen.GeneratedFiles {
 	// The testing package uses ES modules as it only used in the context of running tests
 	// with Vitest
 	js.Writeln(`import { useDatabase, models } from "@teamkeel/sdk"`)
-	js.Writeln(`import { ActionExecutor, JobExecutor, SubscriberExecutor, sql } from "@teamkeel/testing-runtime";`)
+	js.Writeln(`import { ActionExecutor, JobExecutor, SubscriberExecutor, Flows, FlowExecutor, sql } from "@teamkeel/testing-runtime";`)
 	js.Writeln("")
 	js.Writeln("export { models };")
 	js.Writeln("export const actions = new ActionExecutor({});")
 	js.Writeln("export const jobs = new JobExecutor({});")
 	js.Writeln("export const subscribers = new SubscriberExecutor({});")
+	js.Writeln("export const flows = {")
+	js.Indent()
+	for _, flow := range schema.GetFlows() {
+		js.Writef("%s: new FlowExecutor({ name: \"%s\" }),", casing.ToLowerCamel(flow.GetName()), flow.GetName())
+		js.Writeln("")
+	}
+	js.Writeln("")
+	js.Dedent()
+	js.Writeln("};")
 	js.Writeln("export async function resetDatabase() {")
 	js.Indent()
 	js.Writeln("const db = useDatabase();")
@@ -1582,6 +1591,7 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 	// We need to import the testing-runtime package to get
 	// the types for the extended vitest matchers e.g. expect(v).toHaveAuthorizationError()
 	w.Writeln(`import "@teamkeel/testing-runtime";`)
+	w.Writeln(`import { FlowRun, FlowExecutor } from "@teamkeel/testing-runtime";`)
 	w.Writeln("")
 
 	// For the testing package we need input and response types for all actions
@@ -1682,6 +1692,22 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 		w.Writeln("export declare const subscribers: SubscriberExecutor;")
 	}
 
+	w.Writeln("export type Flows = {")
+	w.Indent()
+	for _, flow := range schema.GetFlows() {
+
+		input := flow.GetInputMessageName()
+		if input == "" {
+			w.Writef("%s: FlowExecutor<{}>;", casing.ToLowerCamel(flow.GetName()))
+		} else {
+			w.Writef("%s: FlowExecutor<%s>;", casing.ToLowerCamel(flow.GetName()), input)
+		}
+
+		w.Writeln("")
+	}
+	w.Dedent()
+	w.Writeln("}")
+
 	for _, model := range schema.GetModels() {
 		for _, action := range model.GetActions() {
 			if action.GetType() == proto.ActionType_ACTION_TYPE_LIST {
@@ -1691,6 +1717,7 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 	}
 
 	w.Writeln("export declare const actions: ActionExecutor;")
+	w.Writeln("export declare const flows: Flows;")
 	w.Writeln("export declare const models: sdk.ModelsAPI;")
 	w.Writeln("export declare function resetDatabase(): Promise<void>;")
 }
@@ -1765,7 +1792,11 @@ func toTypeScriptType(t *proto.TypeInfo, includeCompatibleTypes bool, isTestingP
 			ret = "runtime.Duration"
 		}
 	case proto.Type_TYPE_ENUM:
-		ret = t.GetEnumName().GetValue()
+		if isTestingPackage {
+			ret = "sdk." + t.GetEnumName().GetValue()
+		} else {
+			ret = t.GetEnumName().GetValue()
+		}
 	case proto.Type_TYPE_MESSAGE:
 		ret = t.GetMessageName().GetValue()
 	case proto.Type_TYPE_MODEL:

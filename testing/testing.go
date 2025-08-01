@@ -38,6 +38,7 @@ import (
 const (
 	AuthPath        = "auth"
 	ActionApiPath   = "testingactionsapi"
+	FlowApiPath     = "flows"
 	JobPath         = "testingjobs"
 	SubscriberPath  = "testingsubscribers"
 	JobsWebhookPath = "/webhooks/jobs"
@@ -368,10 +369,11 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 	cmd.Env = append(os.Environ(), []string{
 		fmt.Sprintf("KEEL_TESTING_API_URL=%s", serverURL),
 		fmt.Sprintf("KEEL_TESTING_ACTIONS_API_URL=%s/%s/json", serverURL, ActionApiPath),
+		fmt.Sprintf("KEEL_TESTING_FLOWS_API_URL=%s/%s/json", serverURL, FlowApiPath),
 		fmt.Sprintf("KEEL_TESTING_JOBS_URL=%s/%s/json", serverURL, JobPath),
 		fmt.Sprintf("KEEL_TESTING_SUBSCRIBERS_URL=%s/%s/json", serverURL, SubscriberPath),
 		fmt.Sprintf("KEEL_TESTING_CLIENT_API_URL=%s/%s", serverURL, ActionApiPath),
-		fmt.Sprintf("KEEL_TESTING_AUTH_API_URL=%s/auth", serverURL),
+		fmt.Sprintf("KEEL_TESTING_AUTH_API_URL=%s/%s", serverURL, AuthPath),
 		"KEEL_DB_CONN_TYPE=pg",
 		fmt.Sprintf("KEEL_DB_CONN=%s", dbConnString),
 		// Disables experimental fetch warning that pollutes console experience when running tests

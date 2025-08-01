@@ -61,7 +61,7 @@ func FlowHandler(s *proto.Schema) common.HandlerFunc {
 				}
 
 				inputsMap, ok := inputs.(map[string]any)
-				if !ok {
+				if !ok && inputs != nil {
 					return httpjson.NewErrorResponse(ctx, common.NewInputMalformedError("data not correctly formatted"), nil)
 				}
 

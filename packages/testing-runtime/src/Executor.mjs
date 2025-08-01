@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { InlineFile, File, Duration } from "@teamkeel/functions-runtime";
+import { File } from "@teamkeel/functions-runtime";
 
 export class Executor {
   constructor(props) {
@@ -124,7 +124,7 @@ export class Executor {
   }
 }
 
-async function parseInputs(inputs) {
+export async function parseInputs(inputs) {
   if (inputs != null && typeof inputs === "object") {
     for (const keys of Object.keys(inputs)) {
       if (inputs[keys] !== null && typeof inputs[keys] === "object") {
@@ -156,7 +156,7 @@ function isDuration(obj) {
   return obj && typeof obj === "object" && obj.constructor.name === "Duration";
 }
 
-function parseOutputs(data) {
+export function parseOutputs(data) {
   if (!data) {
     return null;
   }
@@ -204,7 +204,7 @@ function isPlainObject(obj) {
 const dateFormat =
   /^\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?)?$/;
 
-function reviver(key, value) {
+export function reviver(key, value) {
   // Handle date strings
   if (typeof value === "string") {
     if (dateFormat.test(value)) {
