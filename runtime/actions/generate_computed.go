@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -17,34 +18,48 @@ import (
 )
 
 // GenerateComputedFunction visits the expression and generates a SQL expression.
-func GenerateComputedFunction(schema *proto.Schema, model *proto.Model, field *proto.Field) resolve.Visitor[string] {
+func GenerateComputedFunction(ctx context.Context, schema *proto.Schema, model *proto.Model, field *proto.Field) resolve.Visitor[string] {
 	return &computedQueryGen{
+		ctx:       ctx,
 		schema:    schema,
 		model:     model,
 		field:     field,
 		sql:       "",
 		functions: arraystack.New(),
+		arguments: arraystack.New(),
 	}
 }
 
 var _ resolve.Visitor[string] = new(computedQueryGen)
 
 type computedQueryGen struct {
+	ctx       context.Context
 	schema    *proto.Schema
 	model     *proto.Model
 	field     *proto.Field
 	sql       string
 	functions *arraystack.Stack
+	arguments *arraystack.Stack
+	filter    resolve.Visitor[*QueryBuilder]
 }
 
 func (v *computedQueryGen) StartTerm(nested bool) error {
+	if v.functions.Size() > 0 && v.filter != nil {
+		return v.filter.StartTerm(nested)
+	}
+
 	if nested {
 		v.sql += "("
 	}
+
 	return nil
 }
 
 func (v *computedQueryGen) EndTerm(nested bool) error {
+	if v.functions.Size() > 0 {
+		return v.filter.EndTerm(nested)
+	}
+
 	if nested {
 		v.sql += ")"
 	}
@@ -53,29 +68,71 @@ func (v *computedQueryGen) EndTerm(nested bool) error {
 
 func (v *computedQueryGen) StartFunction(name string) error {
 	v.functions.Push(name)
+	v.arguments.Push(0)
+
 	return nil
 }
 
 func (v *computedQueryGen) EndFunction() error {
+	v.functions.Pop()
+	v.arguments.Pop()
+
+	query, err := v.filter.Result()
+	if err != nil {
+		return err
+	}
+
+	v.sql += fmt.Sprintf("(%s)", query.SelectStatement().SqlTemplate())
+
+	return nil
+}
+
+func (v *computedQueryGen) StartArgument(num int) error {
+	arg, has := v.arguments.Pop()
+	if !has {
+		return errors.New("argument stack is empty")
+	}
+
+	v.arguments.Push(arg.(int) + 1)
+	return nil
+}
+
+func (v *computedQueryGen) EndArgument() error {
 	return nil
 }
 
 func (v *computedQueryGen) VisitAnd() error {
+	if v.functions.Size() > 0 {
+		return v.filter.VisitAnd()
+	}
+
 	v.sql += " AND "
 	return nil
 }
 
 func (v *computedQueryGen) VisitOr() error {
+	if v.functions.Size() > 0 {
+		return v.filter.VisitOr()
+	}
+
 	v.sql += " OR "
 	return nil
 }
 
 func (v *computedQueryGen) VisitNot() error {
+	if v.functions.Size() > 0 {
+		return v.filter.VisitNot()
+	}
+
 	v.sql += " NOT "
 	return nil
 }
 
 func (v *computedQueryGen) VisitOperator(op string) error {
+	if v.functions.Size() > 0 {
+		return v.filter.VisitOperator(op)
+	}
+
 	// Map CEL operators to SQL operators
 	sqlOp := map[string]string{
 		operators.Add:           "+",
@@ -90,6 +147,7 @@ func (v *computedQueryGen) VisitOperator(op string) error {
 		operators.LessEquals:    "<=",
 	}[op]
 
+	// Handle string concatenation
 	if v.field.GetType().GetType() == proto.Type_TYPE_STRING && op == operators.Add {
 		sqlOp = "||"
 	}
@@ -98,11 +156,16 @@ func (v *computedQueryGen) VisitOperator(op string) error {
 		return fmt.Errorf("unsupported operator: %s", op)
 	}
 
-	v.sql += " " + sqlOp + " "
+	v.sql += fmt.Sprintf(" %s ", sqlOp)
+
 	return nil
 }
 
 func (v *computedQueryGen) VisitLiteral(value any) error {
+	if v.functions.Size() > 0 {
+		return v.filter.VisitLiteral(value)
+	}
+
 	switch val := value.(type) {
 	case int64:
 		v.sql += fmt.Sprintf("%v", val)
@@ -147,7 +210,7 @@ func (v *computedQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
 
 	field := proto.FindField(v.schema.GetModels(), model.GetName(), ident.Fragments[1])
 
-	normalised, err := NormalisedFragments(v.schema, ident.Fragments)
+	normalised, err := NormaliseFragments(v.schema, ident.Fragments)
 	if err != nil {
 		return err
 	}
@@ -161,57 +224,78 @@ func (v *computedQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
 		}
 
 		if isToMany {
-			model = v.schema.FindModel(field.GetType().GetModelName().GetValue())
-			query := NewQuery(model)
-
-			relatedModelField := proto.FindField(v.schema.GetModels(), v.model.GetName(), normalised[1])
-			foreignKeyField := proto.GetForeignKeyFieldName(v.schema.GetModels(), relatedModelField)
-
-			r := proto.FindField(v.schema.GetModels(), v.model.GetName(), normalised[1])
-			subFragments := normalised[1:]
-			subFragments[0] = strcase.ToLowerCamel(r.GetType().GetModelName().GetValue())
-
-			err := query.AddJoinFromFragments(v.schema, subFragments)
-			if err != nil {
-				return err
-			}
-
-			funcBegin, has := v.functions.Pop()
+			arg, has := v.arguments.Peek()
 			if !has {
-				return errors.New("no function found for 1:M lookup")
+				return errors.New("argument stack is empty")
 			}
 
-			fieldName := normalised[len(normalised)-1]
-			fragments := normalised[1 : len(normalised)-1]
+			model = v.schema.FindModel(field.GetType().GetModelName().GetValue())
 
-			raw := ""
-			selectField := sqlQuote(casing.ToSnake(strings.Join(fragments, "$"))) + "." + sqlQuote(casing.ToSnake(fieldName))
-			switch funcBegin {
-			case typing.FunctionSum:
-				raw += fmt.Sprintf("COALESCE(SUM(%s), 0)", selectField)
-			case typing.FunctionCount:
-				raw += fmt.Sprintf("COALESCE(COUNT(%s), 0)", selectField)
-			case typing.FunctionAvg:
-				raw += fmt.Sprintf("COALESCE(AVG(%s), 0)", selectField)
-			case typing.FunctionMedian:
-				raw += fmt.Sprintf("COALESCE(percentile_cont(0.5) WITHIN GROUP (ORDER BY %s), 0)", selectField)
-			case typing.FunctionMin:
-				raw += fmt.Sprintf("COALESCE(MIN(%s), 0)", selectField)
-			case typing.FunctionMax:
-				raw += fmt.Sprintf("COALESCE(MAX(%s), 0)", selectField)
+			switch arg.(int) {
+			case 1: //the first arg sets the SELECT
+				query := NewQuery(model, EmbedLiterals())
+
+				relatedModelField := proto.FindField(v.schema.GetModels(), v.model.GetName(), normalised[1])
+				foreignKeyField := proto.GetForeignKeyFieldName(v.schema.GetModels(), relatedModelField)
+
+				r := proto.FindField(v.schema.GetModels(), v.model.GetName(), normalised[1])
+				subFragments := normalised[1:]
+				subFragments[0] = strcase.ToLowerCamel(r.GetType().GetModelName().GetValue())
+
+				err := query.AddJoinFromFragments(v.schema, subFragments)
+				if err != nil {
+					return err
+				}
+
+				funcBegin, has := v.functions.Peek()
+				if !has {
+					return errors.New("no function found for 1:M lookup")
+				}
+
+				fieldName := normalised[len(normalised)-1]
+				fragments := normalised[1 : len(normalised)-1]
+
+				raw := ""
+				selectField := sqlQuote(casing.ToSnake(strings.Join(fragments, "$"))) + "." + sqlQuote(casing.ToSnake(fieldName))
+				switch funcBegin {
+				case typing.FunctionSum, typing.FunctionSumIf:
+					raw += fmt.Sprintf("COALESCE(SUM(%s), 0)", selectField)
+				case typing.FunctionCount, typing.FunctionCountIf:
+					raw += fmt.Sprintf("COALESCE(COUNT(%s), 0)", selectField)
+				case typing.FunctionAvg, typing.FunctionAvgIf:
+					raw += fmt.Sprintf("COALESCE(AVG(%s), 0)", selectField)
+				case typing.FunctionMedian, typing.FunctionMedianIf:
+					raw += fmt.Sprintf("COALESCE(percentile_cont(0.5) WITHIN GROUP (ORDER BY %s), 0)", selectField)
+				case typing.FunctionMin, typing.FunctionMinIf:
+					raw += fmt.Sprintf("COALESCE(MIN(%s), 0)", selectField)
+				case typing.FunctionMax, typing.FunctionMaxIf:
+					raw += fmt.Sprintf("COALESCE(MAX(%s), 0)", selectField)
+				}
+
+				query.Select(Raw(raw))
+
+				// Filter by this model's row's ID
+				fk := fmt.Sprintf("r.\"%s\"", parser.FieldNameId)
+				err = query.Where(Field(foreignKeyField), Equals, Raw(fk))
+				if err != nil {
+					return err
+				}
+				query.And()
+
+				v.filter = GenerateFilterQuery(v.ctx, query, v.schema, model, nil, map[string]any{})
+
+			case 2: // the second arg sets the WHERE
+
+				r := proto.FindField(v.schema.GetModels(), v.model.GetName(), normalised[1])
+				subFragments := normalised[1:]
+				subFragments[0] = strcase.ToLowerCamel(r.GetType().GetModelName().GetValue())
+
+				newIdent := &parser.ExpressionIdent{
+					Fragments: subFragments,
+				}
+
+				return v.filter.VisitIdent(newIdent)
 			}
-
-			query.Select(Raw(raw))
-
-			// Filter by this model's row's ID
-			fk := fmt.Sprintf("r.\"%s\"", parser.FieldNameId)
-			err = query.Where(Field(foreignKeyField), Equals, Raw(fk))
-			if err != nil {
-				return err
-			}
-
-			stmt := query.SelectStatement()
-			v.sql += fmt.Sprintf("(%s)", stmt.SqlTemplate())
 		} else {
 			// Join together all the tables based on the ident fragments
 			model = v.schema.FindModel(field.GetType().GetModelName().GetValue())
@@ -251,7 +335,7 @@ func (v *computedQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
 func (v *computedQueryGen) isToManyLookup(idents *parser.ExpressionIdent) (bool, error) {
 	model := v.schema.FindModel(strcase.ToCamel(idents.Fragments[0]))
 
-	fragments, err := NormalisedFragments(v.schema, idents.Fragments)
+	fragments, err := NormaliseFragments(v.schema, idents.Fragments)
 	if err != nil {
 		return false, err
 	}

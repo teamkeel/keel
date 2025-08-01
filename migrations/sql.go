@@ -1,6 +1,7 @@
 package migrations
 
 import (
+	"context"
 	"crypto/sha256"
 	"fmt"
 	"regexp"
@@ -301,7 +302,7 @@ func fieldFromComputedFnName(schema *proto.Schema, fn string) *proto.Field {
 }
 
 // addComputedFieldFuncStmt generates the function for a computed field.
-func addComputedFieldFuncStmt(schema *proto.Schema, model *proto.Model, field *proto.Field) (string, string, error) {
+func addComputedFieldFuncStmt(ctx context.Context, schema *proto.Schema, model *proto.Model, field *proto.Field) (string, string, error) {
 	var sqlType string
 	switch field.GetType().GetType() {
 	case proto.Type_TYPE_DECIMAL, proto.Type_TYPE_INT, proto.Type_TYPE_BOOL, proto.Type_TYPE_STRING, proto.Type_TYPE_DURATION:
@@ -318,7 +319,7 @@ func addComputedFieldFuncStmt(schema *proto.Schema, model *proto.Model, field *p
 	}
 
 	// Generate SQL from the computed attribute expression to set this field
-	stmt, err := resolve.RunCelVisitor(expression, actions.GenerateComputedFunction(schema, model, field))
+	stmt, err := resolve.RunCelVisitor(expression, actions.GenerateComputedFunction(ctx, schema, model, field))
 	if err != nil {
 		return "", "", err
 	}

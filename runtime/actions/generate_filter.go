@@ -100,6 +100,14 @@ func (v *whereQueryGen) EndFunction() error {
 	return nil
 }
 
+func (v *whereQueryGen) StartArgument(num int) error {
+	return nil
+}
+
+func (v *whereQueryGen) EndArgument() error {
+	return nil
+}
+
 func (v *whereQueryGen) VisitAnd() error {
 	v.query.And()
 	return nil

@@ -26,6 +26,27 @@ var typeCompatibilityMapping = map[string][][]*types.Type{
 		{types.NewListType(types.StringType), typing.TypeTextArray, typing.TypeIDArray, typing.TypeMarkdownArray},
 		{types.NewListType(types.IntType), types.NewListType(types.DoubleType), typing.TypeNumberArray, typing.TypeDecimalArray},
 		{typing.TypeDuration},
+
+		// The following are needed to support our special 1-M filtering expressions, such as invoice.items.isActive == true
+		{typing.TypeDecimalArray, types.IntType},
+		{typing.TypeDecimalArray, types.DoubleType},
+		{typing.TypeDecimalArray, typing.TypeNumber},
+		{typing.TypeDecimalArray, typing.TypeDecimal},
+		{typing.TypeNumberArray, types.IntType},
+		{typing.TypeNumberArray, types.DoubleType},
+		{typing.TypeNumberArray, typing.TypeNumber},
+		{typing.TypeNumberArray, typing.TypeDecimal},
+		{typing.TypeTextArray, types.StringType},
+		{typing.TypeTextArray, typing.TypeText},
+		{typing.TypeIDArray, types.StringType},
+		{typing.TypeIDArray, typing.TypeText},
+		{typing.TypeBooleanArray, types.BoolType},
+		{typing.TypeBooleanArray, typing.TypeBoolean},
+		{typing.TypeDateArray, typing.TypeDate},
+		{typing.TypeDateArray, typing.TypeTimestamp},
+		{typing.TypeTimestampArray, typing.TypeDate},
+		{typing.TypeTimestampArray, typing.TypeTimestamp},
+		{typing.TypeDurationArray, typing.TypeDuration},
 	},
 	operators.NotEquals: {
 		{types.StringType, typing.TypeText, typing.TypeID, typing.TypeMarkdown},
@@ -35,26 +56,108 @@ var typeCompatibilityMapping = map[string][][]*types.Type{
 		{types.NewListType(types.StringType), typing.TypeTextArray, typing.TypeIDArray, typing.TypeMarkdownArray},
 		{types.NewListType(types.IntType), types.NewListType(types.DoubleType), typing.TypeNumberArray, typing.TypeDecimalArray},
 		{typing.TypeDuration},
+
+		// The following are needed to support our special 1-M filtering expressions, such as invoice.items.price != 0
+		{typing.TypeDecimalArray, types.IntType},
+		{typing.TypeDecimalArray, types.DoubleType},
+		{typing.TypeDecimalArray, typing.TypeNumber},
+		{typing.TypeDecimalArray, typing.TypeDecimal},
+		{typing.TypeNumberArray, types.IntType},
+		{typing.TypeNumberArray, types.DoubleType},
+		{typing.TypeNumberArray, typing.TypeNumber},
+		{typing.TypeNumberArray, typing.TypeDecimal},
+		{typing.TypeTextArray, types.StringType},
+		{typing.TypeTextArray, typing.TypeText},
+		{typing.TypeIDArray, types.StringType},
+		{typing.TypeIDArray, typing.TypeText},
+		{typing.TypeBooleanArray, types.BoolType},
+		{typing.TypeBooleanArray, typing.TypeBoolean},
+		{typing.TypeDateArray, typing.TypeDate},
+		{typing.TypeDateArray, typing.TypeTimestamp},
+		{typing.TypeTimestampArray, typing.TypeDate},
+		{typing.TypeTimestampArray, typing.TypeTimestamp},
+		{typing.TypeDurationArray, typing.TypeDuration},
 	},
 	operators.Greater: {
 		{types.IntType, types.DoubleType, typing.TypeNumber, typing.TypeDecimal},
+		{typing.TypeDecimal, typing.TypeNumber},
 		{typing.TypeDate, typing.TypeTimestamp, types.TimestampType},
 		{typing.TypeDuration},
+
+		// The following are needed to support our special 1-M filtering expressions, such as invoice.items.price > 0
+		{typing.TypeDecimalArray, types.IntType},
+		{typing.TypeDecimalArray, types.DoubleType},
+		{typing.TypeDecimalArray, typing.TypeNumber},
+		{typing.TypeDecimalArray, typing.TypeDecimal},
+		{typing.TypeNumberArray, types.IntType},
+		{typing.TypeNumberArray, types.DoubleType},
+		{typing.TypeNumberArray, typing.TypeNumber},
+		{typing.TypeNumberArray, typing.TypeDecimal},
+		{typing.TypeDateArray, typing.TypeDate},
+		{typing.TypeDateArray, typing.TypeTimestamp},
+		{typing.TypeTimestampArray, typing.TypeDate},
+		{typing.TypeTimestampArray, typing.TypeTimestamp},
+		{typing.TypeDurationArray, typing.TypeDuration},
 	},
 	operators.GreaterEquals: {
 		{types.IntType, types.DoubleType, typing.TypeNumber, typing.TypeDecimal},
 		{typing.TypeDate, typing.TypeTimestamp, types.TimestampType},
 		{typing.TypeDuration},
+
+		// The following are needed to support our special 1-M filtering expressions, such as invoice.items.price >= 0
+		{typing.TypeDecimalArray, types.IntType},
+		{typing.TypeDecimalArray, types.DoubleType},
+		{typing.TypeDecimalArray, typing.TypeNumber},
+		{typing.TypeDecimalArray, typing.TypeDecimal},
+		{typing.TypeNumberArray, types.IntType},
+		{typing.TypeNumberArray, types.DoubleType},
+		{typing.TypeNumberArray, typing.TypeNumber},
+		{typing.TypeNumberArray, typing.TypeDecimal},
+		{typing.TypeDateArray, typing.TypeDate},
+		{typing.TypeDateArray, typing.TypeTimestamp},
+		{typing.TypeTimestampArray, typing.TypeDate},
+		{typing.TypeTimestampArray, typing.TypeTimestamp},
+		{typing.TypeDurationArray, typing.TypeDuration},
 	},
 	operators.Less: {
 		{types.IntType, types.DoubleType, typing.TypeNumber, typing.TypeDecimal},
 		{typing.TypeDate, typing.TypeTimestamp, types.TimestampType},
 		{typing.TypeDuration},
+
+		// The following are needed to support our special 1-M filtering expressions, such as invoice.items.price < 0
+		{typing.TypeDecimalArray, types.IntType},
+		{typing.TypeDecimalArray, types.DoubleType},
+		{typing.TypeDecimalArray, typing.TypeNumber},
+		{typing.TypeDecimalArray, typing.TypeDecimal},
+		{typing.TypeNumberArray, types.IntType},
+		{typing.TypeNumberArray, types.DoubleType},
+		{typing.TypeNumberArray, typing.TypeNumber},
+		{typing.TypeNumberArray, typing.TypeDecimal},
+		{typing.TypeDateArray, typing.TypeDate},
+		{typing.TypeDateArray, typing.TypeTimestamp},
+		{typing.TypeTimestampArray, typing.TypeDate},
+		{typing.TypeTimestampArray, typing.TypeTimestamp},
+		{typing.TypeDurationArray, typing.TypeDuration},
 	},
 	operators.LessEquals: {
 		{types.IntType, types.DoubleType, typing.TypeNumber, typing.TypeDecimal},
 		{typing.TypeDate, typing.TypeTimestamp, types.TimestampType},
 		{typing.TypeDuration},
+
+		// The following are needed to support our special 1-M filtering expressions, such as invoice.items.price <= 0
+		{typing.TypeDecimalArray, types.IntType},
+		{typing.TypeDecimalArray, types.DoubleType},
+		{typing.TypeDecimalArray, typing.TypeNumber},
+		{typing.TypeDecimalArray, typing.TypeDecimal},
+		{typing.TypeNumberArray, types.IntType},
+		{typing.TypeNumberArray, types.DoubleType},
+		{typing.TypeNumberArray, typing.TypeNumber},
+		{typing.TypeNumberArray, typing.TypeDecimal},
+		{typing.TypeDateArray, typing.TypeDate},
+		{typing.TypeDateArray, typing.TypeTimestamp},
+		{typing.TypeTimestampArray, typing.TypeDate},
+		{typing.TypeTimestampArray, typing.TypeTimestamp},
+		{typing.TypeDurationArray, typing.TypeDuration},
 	},
 	operators.Add: {
 		{types.IntType, types.DoubleType, typing.TypeNumber, typing.TypeDecimal},
@@ -259,7 +362,9 @@ func WithLogicalOperators() expressions.Option {
 			cel.Function(operators.LogicalOr,
 				cel.Overload(overloads.LogicalOr, []*types.Type{types.BoolType, types.BoolType}, types.BoolType)),
 			cel.Function(operators.LogicalNot,
-				cel.Overload(overloads.LogicalNot, []*types.Type{types.BoolType}, types.BoolType)))
+				cel.Overload(overloads.LogicalNot, []*types.Type{types.BoolType}, types.BoolType),
+				cel.Overload("logical_not_boolean", []*types.Type{typing.TypeBoolean}, types.BoolType),
+				cel.Overload("logical_not_boolean_array", []*types.Type{typing.TypeBooleanArray}, types.BoolType)))
 		if err != nil {
 			return err
 		}
@@ -397,27 +502,6 @@ func WithComparisonOperators() expressions.Option {
 			return err
 		}
 
-		// Backwards compatibility for relationships expressions like `organisation.people.name == "Keel"` which is actually performing an "ANY" query
-		// To be deprecated in favour of functions
-		p.CelEnv, err = p.CelEnv.Extend(
-			cel.Function(operators.Equals,
-				cel.Overload("equals_Text[]_Text", argTypes(typing.TypeTextArray, typing.TypeText), types.BoolType),
-				cel.Overload("equals_Text[]_string", argTypes(typing.TypeTextArray, types.StringType), types.BoolType),
-				cel.Overload("equals_Text_Text[]", argTypes(typing.TypeText, typing.TypeTextArray), types.BoolType),
-
-				cel.Overload("equals_ID[]_ID", argTypes(typing.TypeIDArray, typing.TypeID), types.BoolType),
-				cel.Overload("equals_ID[]_string", argTypes(typing.TypeIDArray, types.StringType), types.BoolType),
-				cel.Overload("equals_ID_ID[]", argTypes(typing.TypeID, typing.TypeIDArray), types.BoolType),
-
-				cel.Overload("equals_Number[]_Number", argTypes(typing.TypeNumberArray, typing.TypeNumber), types.BoolType),
-				cel.Overload("equals_Number[]_int", argTypes(typing.TypeNumberArray, types.IntType), types.BoolType),
-				cel.Overload("equals_Number_Number[]", argTypes(typing.TypeNumber, typing.TypeNumberArray), types.BoolType),
-			),
-		)
-		if err != nil {
-			return err
-		}
-
 		return nil
 	}
 }
@@ -451,7 +535,7 @@ func WithArithmeticOperators() expressions.Option {
 	}
 }
 
-func WithFunctions() expressions.Option {
+func WithAggregateFunctions() expressions.Option {
 	return func(p *expressions.Parser) error {
 		typeParamA := cel.TypeParamType("A")
 		var err error
@@ -466,7 +550,34 @@ func WithFunctions() expressions.Option {
 			cel.Function(typing.FunctionMax, cel.Overload("max_decimal", []*types.Type{typing.TypeDecimalArray}, typing.TypeDecimal)),
 			cel.Function(typing.FunctionMax, cel.Overload("max_number", []*types.Type{typing.TypeNumberArray}, typing.TypeNumber)),
 			cel.Function(typing.FunctionMedian, cel.Overload("median_decimal", []*types.Type{typing.TypeDecimalArray}, typing.TypeDecimal)),
-			cel.Function(typing.FunctionMedian, cel.Overload("median_number", []*types.Type{typing.TypeNumberArray}, typing.TypeNumber)))
+			cel.Function(typing.FunctionMedian, cel.Overload("median_number", []*types.Type{typing.TypeNumberArray}, typing.TypeNumber)),
+
+			// These are necessary for expressions like: SUMIF(class.enrollments.grade, class.enrollments.student.isActive == true)
+			cel.Function(typing.FunctionSumIf, cel.Overload("sumif_decimal", []*types.Type{typing.TypeDecimalArray, types.BoolType}, typing.TypeDecimal)),
+			cel.Function(typing.FunctionSumIf, cel.Overload("sumif_number", []*types.Type{typing.TypeNumberArray, types.BoolType}, typing.TypeNumber)),
+			cel.Function(typing.FunctionCountIf, cel.Overload("countif_decimal", []*types.Type{types.AnyType, types.BoolType}, typing.TypeNumber)),
+			cel.Function(typing.FunctionAvgIf, cel.Overload("avgif_decimal", []*types.Type{typing.TypeDecimalArray, types.BoolType}, typing.TypeDecimal)),
+			cel.Function(typing.FunctionAvgIf, cel.Overload("avgif_number", []*types.Type{typing.TypeNumberArray, types.BoolType}, typing.TypeDecimal)),
+			cel.Function(typing.FunctionMedianIf, cel.Overload("medianif_decimal", []*types.Type{typing.TypeDecimalArray, types.BoolType}, typing.TypeDecimal)),
+			cel.Function(typing.FunctionMedianIf, cel.Overload("medianif_number", []*types.Type{typing.TypeNumberArray, types.BoolType}, typing.TypeDecimal)),
+			cel.Function(typing.FunctionMinIf, cel.Overload("minif_decimal", []*types.Type{typing.TypeDecimalArray, types.BoolType}, typing.TypeDecimal)),
+			cel.Function(typing.FunctionMinIf, cel.Overload("minif_number", []*types.Type{typing.TypeNumberArray, types.BoolType}, typing.TypeDecimal)),
+			cel.Function(typing.FunctionMaxIf, cel.Overload("maxif_decimal", []*types.Type{typing.TypeDecimalArray, types.BoolType}, typing.TypeDecimal)),
+			cel.Function(typing.FunctionMaxIf, cel.Overload("maxif_number", []*types.Type{typing.TypeNumberArray, types.BoolType}, typing.TypeDecimal)),
+
+			// These are necessary for expressions like: AVGIF(class.enrollments.grade, class.enrollments.student.isActive)
+			cel.Function(typing.FunctionSumIf, cel.Overload("sumif_decimal_booleanarray", []*types.Type{typing.TypeDecimalArray, typing.TypeBooleanArray}, typing.TypeDecimal)),
+			cel.Function(typing.FunctionSumIf, cel.Overload("sumif_number_booleanarray", []*types.Type{typing.TypeNumberArray, typing.TypeBooleanArray}, typing.TypeNumber)),
+			cel.Function(typing.FunctionCountIf, cel.Overload("countif_booleanarray", []*types.Type{types.AnyType, typing.TypeBooleanArray}, typing.TypeNumber)),
+			cel.Function(typing.FunctionAvgIf, cel.Overload("avgif_decimal_booleanarray", []*types.Type{typing.TypeDecimalArray, typing.TypeBooleanArray}, typing.TypeDecimal)),
+			cel.Function(typing.FunctionAvgIf, cel.Overload("avgif_number_booleanarray", []*types.Type{typing.TypeNumberArray, typing.TypeBooleanArray}, typing.TypeDecimal)),
+			cel.Function(typing.FunctionMedianIf, cel.Overload("medianif_decimal_booleanarray", []*types.Type{typing.TypeDecimalArray, typing.TypeBooleanArray}, typing.TypeDecimal)),
+			cel.Function(typing.FunctionMedianIf, cel.Overload("medianif_number_booleanarray", []*types.Type{typing.TypeNumberArray, typing.TypeBooleanArray}, typing.TypeDecimal)),
+			cel.Function(typing.FunctionMinIf, cel.Overload("minif_decimal_booleanarray", []*types.Type{typing.TypeDecimalArray, typing.TypeBooleanArray}, typing.TypeDecimal)),
+			cel.Function(typing.FunctionMinIf, cel.Overload("minif_number_booleanarray", []*types.Type{typing.TypeNumberArray, typing.TypeBooleanArray}, typing.TypeDecimal)),
+			cel.Function(typing.FunctionMaxIf, cel.Overload("maxif_decimal_booleanarray", []*types.Type{typing.TypeDecimalArray, typing.TypeBooleanArray}, typing.TypeDecimal)),
+			cel.Function(typing.FunctionMaxIf, cel.Overload("maxif_number_booleanarray", []*types.Type{typing.TypeNumberArray, typing.TypeBooleanArray}, typing.TypeDecimal)),
+		)
 		if err != nil {
 			return err
 		}
