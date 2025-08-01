@@ -2011,12 +2011,18 @@ model Person {
 			@function
 		}
 	}
+}
+flow OnboardPerson {
+	inputs {
+		name Text
+	}
 }`
 
 	expected := `
 import * as sdk from "@teamkeel/sdk";
 import * as runtime from "@teamkeel/functions-runtime";
 import "@teamkeel/testing-runtime";
+import { FlowRun, FlowExecutor } from "@teamkeel/testing-runtime";
 
 export interface RequestPasswordResetInput {
 	email: string;
@@ -2041,6 +2047,9 @@ export interface ListPeopleInput {
 	limit?: number;
 	offset?: number;
 }
+export interface OnboardPersonMessage {
+	name: string;
+}
 declare class ActionExecutor {
 	withIdentity(identity: sdk.Identity): ActionExecutor;
 	withAuthToken(token: string): ActionExecutor;
@@ -2053,7 +2062,11 @@ declare class ActionExecutor {
 	requestPasswordReset(i: RequestPasswordResetInput): Promise<RequestPasswordResetResponse>;
 	resetPassword(i: ResetPasswordInput): Promise<ResetPasswordResponse>;
 }
+export type Flows = {
+	onboardPerson: FlowExecutor<OnboardPersonMessage>;
+}
 export declare const actions: ActionExecutor;
+export declare const flows: Flows;
 export declare const models: sdk.ModelsAPI;
 export declare function resetDatabase(): Promise<void>;`
 
@@ -2081,22 +2094,6 @@ job AdHocJobWithoutInputs {
 role Admin {}`
 
 	expected := `
-import * as sdk from "@teamkeel/sdk";
-import * as runtime from "@teamkeel/functions-runtime";
-import "@teamkeel/testing-runtime";
-
-export interface RequestPasswordResetInput {
-	email: string;
-	redirectUrl: string;
-}
-export interface RequestPasswordResetResponse {
-}
-export interface ResetPasswordInput {
-	token: string;
-	password: string;
-}
-export interface ResetPasswordResponse {
-}
 export interface AdHocJobWithInputsMessage {
 	nameField: string;
 	someBool?: boolean;
@@ -2117,7 +2114,10 @@ declare class JobExecutor {
 	adHocJobWithoutInputs(o?: JobOptions): Promise<void>;
 }
 export declare const jobs: JobExecutor;
+export type Flows = {
+}
 export declare const actions: ActionExecutor;
+export declare const flows: Flows;
 export declare const models: sdk.ModelsAPI;
 export declare function resetDatabase(): Promise<void>;`
 
@@ -2169,7 +2169,10 @@ declare class SubscriberExecutor {
 	verifyEmail(e: VerifyEmailEvent): Promise<void>;
 }
 export declare const subscribers: SubscriberExecutor;
+export type Flows = {
+}
 export declare const actions: ActionExecutor;
+export declare const flows: Flows;
 export declare const models: sdk.ModelsAPI;
 export declare function resetDatabase(): Promise<void>;`
 
@@ -2256,9 +2259,9 @@ model Person {
 	`
 	expected := `
 export interface HobbyQueryInput {
-	equals?: Hobby | null;
-	notEquals?: Hobby | null;
-	oneOf?: Hobby[];
+	equals?: sdk.Hobby | null;
+	notEquals?: sdk.Hobby | null;
+	oneOf?: sdk.Hobby[];
 }
 export interface PeopleByHobbyWhere {
 	hobby: HobbyQueryInput;
@@ -2317,6 +2320,8 @@ declare class ActionExecutor {
 	peopleByHobby(i: PeopleByHobbyInput): Promise<{results: sdk.Person[], resultInfo: PeopleByHobbyResultInfo, pageInfo: runtime.PageInfo}>;
 	requestPasswordReset(i: RequestPasswordResetInput): Promise<RequestPasswordResetResponse>;
 	resetPassword(i: ResetPasswordInput): Promise<ResetPasswordResponse>;
+}
+export type Flows = {
 }
 export interface PeopleByHobbyResultInfo {
 	id: [ { value: string, count: number } ];

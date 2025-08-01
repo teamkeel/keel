@@ -1,13 +1,14 @@
-import { resetDatabase, models } from "@teamkeel/testing";
+import { resetDatabase, models, flows } from "@teamkeel/testing";
+import { isDate } from "node:util/types";
 import { beforeEach, expect, test } from "vitest";
 
 beforeEach(resetDatabase);
 
 test("flows - error in step with retries", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
-  const res = await startFlow({ name: "ErrorInStep", token, body: {} });
-  expect(res.status).toBe(200);
-  expect(res.body).toEqual({
+  let flow = await flows.errorInStep.withAuthToken(token).start({});
+
+  expect(flow).toEqual({
     id: expect.any(String),
     traceId: expect.any(String),
     status: "RUNNING",
@@ -25,30 +26,28 @@ test("flows - error in step with retries", async () => {
         type: "FUNCTION",
         value: null,
         error: null,
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
         startTime: null,
         endTime: null,
         ui: null,
       },
     ],
-    createdAt: expect.any(String),
-    updatedAt: expect.any(String),
+    createdAt: expect.any(Date),
+    updatedAt: expect.any(Date),
     config: {
       title: "Error in step",
     },
   });
 
-  const flow = await untilFlowFinished({
-    name: "ErrorInStep",
-    id: res.body.id,
-    token,
-  });
+  const updatedFlow = await flows.errorInStep
+    .withAuthToken(token)
+    .untilFinished(flow.id);
 
   // We are expecting 3 steps (the initial step + 2 retries)
-  expect(flow).toEqual({
-    id: res.body.id,
-    traceId: res.body.traceId,
+  expect(updatedFlow).toEqual({
+    id: flow.id,
+    traceId: flow.traceId,
     status: "FAILED",
     name: "ErrorInStep",
     startedBy: expect.any(String),
@@ -56,53 +55,53 @@ test("flows - error in step with retries", async () => {
     data: null,
     steps: [
       {
-        id: res.body.steps[0].id,
+        id: flow.steps[0].id,
         name: "erroring step",
-        runId: res.body.id,
+        runId: flow.id,
         stage: null,
         status: "FAILED",
         type: "FUNCTION",
         value: null,
         error: "Error in step",
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
-        startTime: expect.any(String),
-        endTime: expect.any(String),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
         ui: null,
       },
       {
         id: expect.any(String),
         name: "erroring step",
-        runId: res.body.id,
+        runId: flow.id,
         stage: null,
         status: "FAILED",
         type: "FUNCTION",
         value: null,
         error: "Error in step",
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
-        startTime: expect.any(String),
-        endTime: expect.any(String),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
         ui: null,
       },
       {
         id: expect.any(String),
         name: "erroring step",
-        runId: res.body.id,
+        runId: flow.id,
         stage: null,
         status: "FAILED",
         type: "FUNCTION",
         value: null,
         error: "Error in step",
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
-        startTime: expect.any(String),
-        endTime: expect.any(String),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
         ui: null,
       },
     ],
-    createdAt: res.body.createdAt,
-    updatedAt: expect.any(String),
+    createdAt: flow.createdAt,
+    updatedAt: expect.any(Date),
     config: {
       title: "Error in step",
     },
@@ -111,9 +110,9 @@ test("flows - error in step with retries", async () => {
 
 test("flows - on failure callback", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
-  const res = await startFlow({ name: "OnFailureCallback", token, body: {} });
-  expect(res.status).toBe(200);
-  expect(res.body).toEqual({
+  let flow = await flows.onFailureCallback.withAuthToken(token).start({});
+
+  expect(flow).toEqual({
     id: expect.any(String),
     traceId: expect.any(String),
     status: "RUNNING",
@@ -131,30 +130,28 @@ test("flows - on failure callback", async () => {
         type: "FUNCTION",
         value: null,
         error: null,
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
         startTime: null,
         endTime: null,
         ui: null,
       },
     ],
-    createdAt: expect.any(String),
-    updatedAt: expect.any(String),
+    createdAt: expect.any(Date),
+    updatedAt: expect.any(Date),
     config: {
       title: "On failure callback",
     },
   });
 
-  const flow = await untilFlowFinished({
-    name: "OnFailureCallback",
-    id: res.body.id,
-    token,
-  });
+  const updatedFlow = await flows.onFailureCallback
+    .withAuthToken(token)
+    .untilFinished(flow.id);
 
   // We are expecting 2 steps (the initial step + 1 retry)
-  expect(flow).toEqual({
-    id: res.body.id,
-    traceId: res.body.traceId,
+  expect(updatedFlow).toEqual({
+    id: flow.id,
+    traceId: flow.traceId,
     status: "FAILED",
     name: "OnFailureCallback",
     startedBy: expect.any(String),
@@ -162,53 +159,53 @@ test("flows - on failure callback", async () => {
     data: null,
     steps: [
       {
-        id: res.body.steps[0].id,
+        id: flow.steps[0].id,
         name: "erroring step",
-        runId: res.body.id,
+        runId: flow.id,
         stage: null,
         status: "FAILED",
         type: "FUNCTION",
         value: null,
         error: "1 exists",
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
-        startTime: expect.any(String),
-        endTime: expect.any(String),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
         ui: null,
       },
       {
         id: expect.any(String),
         name: "erroring step",
-        runId: res.body.id,
+        runId: flow.id,
         stage: null,
         status: "FAILED",
         type: "FUNCTION",
         value: null,
         error: "2 exists",
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
-        startTime: expect.any(String),
-        endTime: expect.any(String),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
         ui: null,
       },
       {
         id: expect.any(String),
         name: "erroring step",
-        runId: res.body.id,
+        runId: flow.id,
         stage: null,
         status: "FAILED",
         type: "FUNCTION",
         value: null,
         error: "3 exists",
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
-        startTime: expect.any(String),
-        endTime: expect.any(String),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
         ui: null,
       },
     ],
-    createdAt: res.body.createdAt,
-    updatedAt: expect.any(String),
+    createdAt: flow.createdAt,
+    updatedAt: expect.any(Date),
     config: {
       title: "On failure callback",
     },
@@ -219,9 +216,9 @@ test("flows - on failure callback", async () => {
 
 test("flows - do not retry", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
-  const res = await startFlow({ name: "DoNotRetry", token, body: {} });
-  expect(res.status).toBe(200);
-  expect(res.body).toEqual({
+  let flow = await flows.doNotRetry.withAuthToken(token).start({});
+
+  expect(flow).toEqual({
     id: expect.any(String),
     traceId: expect.any(String),
     status: "RUNNING",
@@ -239,30 +236,28 @@ test("flows - do not retry", async () => {
         type: "FUNCTION",
         value: null,
         error: null,
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
         startTime: null,
         endTime: null,
         ui: null,
       },
     ],
-    createdAt: expect.any(String),
-    updatedAt: expect.any(String),
+    createdAt: expect.any(Date),
+    updatedAt: expect.any(Date),
     config: {
       title: "Do not retry",
     },
   });
 
-  const flow = await untilFlowFinished({
-    name: "DoNotRetry",
-    id: res.body.id,
-    token,
-  });
+  const updatedFlow = await flows.doNotRetry
+    .withAuthToken(token)
+    .untilFinished(flow.id);
 
   // We are expecting 2 steps (the initial step + 1 retry)
-  expect(flow).toEqual({
-    id: res.body.id,
-    traceId: res.body.traceId,
+  expect(updatedFlow).toEqual({
+    id: flow.id,
+    traceId: flow.traceId,
     status: "FAILED",
     name: "DoNotRetry",
     startedBy: expect.any(String),
@@ -270,23 +265,23 @@ test("flows - do not retry", async () => {
     data: null,
     steps: [
       {
-        id: res.body.steps[0].id,
+        id: flow.steps[0].id,
         name: "erroring step",
-        runId: res.body.id,
+        runId: flow.id,
         stage: null,
         status: "FAILED",
         type: "FUNCTION",
         value: null,
         error: "do not retry!",
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
-        startTime: expect.any(String),
-        endTime: expect.any(String),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
         ui: null,
       },
     ],
-    createdAt: res.body.createdAt,
-    updatedAt: expect.any(String),
+    createdAt: flow.createdAt,
+    updatedAt: expect.any(Date),
     config: {
       title: "Do not retry",
     },
@@ -297,9 +292,9 @@ test("flows - do not retry", async () => {
 
 test("flows - eventual step success", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
-  const res = await startFlow({ name: "EventualStepSuccess", token, body: {} });
-  expect(res.status).toBe(200);
-  expect(res.body).toEqual({
+  let flow = await flows.eventualStepSuccess.withAuthToken(token).start({});
+
+  expect(flow).toEqual({
     id: expect.any(String),
     traceId: expect.any(String),
     status: "RUNNING",
@@ -317,29 +312,27 @@ test("flows - eventual step success", async () => {
         type: "FUNCTION",
         value: null,
         error: null,
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
         startTime: null,
         endTime: null,
         ui: null,
       },
     ],
-    createdAt: expect.any(String),
-    updatedAt: expect.any(String),
+    createdAt: expect.any(Date),
+    updatedAt: expect.any(Date),
     config: {
       title: "Eventual step success",
     },
   });
 
-  const flow = await untilFlowFinished({
-    name: "EventualStepSuccess",
-    id: res.body.id,
-    token,
-  });
+  const updatedFlow = await flows.eventualStepSuccess
+    .withAuthToken(token)
+    .untilFinished(flow.id);
 
-  expect(flow).toEqual({
-    id: res.body.id,
-    traceId: res.body.traceId,
+  expect(updatedFlow).toEqual({
+    id: flow.id,
+    traceId: flow.traceId,
     status: "COMPLETED",
     name: "EventualStepSuccess",
     startedBy: expect.any(String),
@@ -347,83 +340,83 @@ test("flows - eventual step success", async () => {
     data: null,
     steps: [
       {
-        id: res.body.steps[0].id,
+        id: flow.steps[0].id,
         name: "erroring step",
-        runId: res.body.id,
+        runId: flow.id,
         stage: null,
         status: "FAILED",
         type: "FUNCTION",
         value: null,
         error: "Error at attempt 1 of 4",
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
-        startTime: expect.any(String),
-        endTime: expect.any(String),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
         ui: null,
       },
       {
         id: expect.any(String),
         name: "erroring step",
-        runId: res.body.id,
+        runId: flow.id,
         stage: null,
         status: "FAILED",
         type: "FUNCTION",
         value: null,
         error: "Error at attempt 2 of 4",
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
-        startTime: expect.any(String),
-        endTime: expect.any(String),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
         ui: null,
       },
       {
         id: expect.any(String),
         name: "erroring step",
-        runId: res.body.id,
+        runId: flow.id,
         stage: null,
         status: "FAILED",
         type: "FUNCTION",
         value: null,
         error: "Error at attempt 3 of 4",
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
-        startTime: expect.any(String),
-        endTime: expect.any(String),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
         ui: null,
       },
       {
         id: expect.any(String),
         name: "erroring step",
-        runId: res.body.id,
+        runId: flow.id,
         stage: null,
         status: "FAILED",
         type: "FUNCTION",
         value: null,
         error: "Error at attempt 4 of 4",
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
-        startTime: expect.any(String),
-        endTime: expect.any(String),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
         ui: null,
       },
       {
         id: expect.any(String),
         name: "erroring step",
-        runId: res.body.id,
+        runId: flow.id,
         stage: null,
         status: "COMPLETED",
         type: "FUNCTION",
         value: "Success at attempt 5",
         error: null,
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
-        startTime: expect.any(String),
-        endTime: expect.any(String),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
         ui: null,
       },
     ],
-    createdAt: res.body.createdAt,
-    updatedAt: expect.any(String),
+    createdAt: flow.createdAt,
+    updatedAt: expect.any(Date),
     config: {
       title: "Eventual step success",
     },
@@ -432,9 +425,9 @@ test("flows - eventual step success", async () => {
 
 test("flows - error in flow", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
-  const res = await startFlow({ name: "ErrorInFlow", token, body: {} });
-  expect(res.status).toBe(200);
-  expect(res.body).toEqual({
+  let flow = await flows.errorInFlow.withAuthToken(token).start({});
+
+  expect(flow).toEqual({
     id: expect.any(String),
     traceId: expect.any(String),
     status: "FAILED",
@@ -443,8 +436,8 @@ test("flows - error in flow", async () => {
     input: {},
     data: null,
     steps: [],
-    createdAt: expect.any(String),
-    updatedAt: expect.any(String),
+    createdAt: expect.any(Date),
+    updatedAt: expect.any(Date),
     config: {
       title: "Error in flow",
     },
@@ -453,9 +446,9 @@ test("flows - error in flow", async () => {
 
 test("flows - timeout step", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
-  const res = await startFlow({ name: "TimeoutStep", token, body: {} });
-  expect(res.status).toBe(200);
-  expect(res.body).toEqual({
+  let flow = await flows.timeoutStep.withAuthToken(token).start({});
+
+  expect(flow).toEqual({
     id: expect.any(String),
     traceId: expect.any(String),
     status: "RUNNING",
@@ -473,30 +466,28 @@ test("flows - timeout step", async () => {
         type: "FUNCTION",
         value: null,
         error: null,
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
         ui: null,
         startTime: null,
         endTime: null,
       },
     ],
-    createdAt: expect.any(String),
-    updatedAt: expect.any(String),
+    createdAt: expect.any(Date),
+    updatedAt: expect.any(Date),
     config: {
       title: "Timeout step",
     },
   });
 
-  const flow = await untilFlowFinished({
-    name: "TimeoutStep",
-    id: res.body.id,
-    token,
-  });
+  const updatedFlow = await flows.timeoutStep
+    .withAuthToken(token)
+    .untilFinished(flow.id);
 
   // We are expecting 5 steps (the default)
-  expect(flow).toEqual({
-    id: res.body.id,
-    traceId: res.body.traceId,
+  expect(updatedFlow).toEqual({
+    id: flow.id,
+    traceId: flow.traceId,
     status: "FAILED",
     name: "TimeoutStep",
     startedBy: expect.any(String),
@@ -504,83 +495,83 @@ test("flows - timeout step", async () => {
     data: null,
     steps: [
       {
-        id: res.body.steps[0].id,
+        id: flow.steps[0].id,
         name: "timeout step",
-        runId: res.body.id,
+        runId: flow.id,
         stage: null,
         status: "FAILED",
         type: "FUNCTION",
         value: null,
         error: "Step function timed out after 10ms",
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
-        startTime: expect.any(String),
-        endTime: expect.any(String),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
         ui: null,
       },
       {
         id: expect.any(String),
         name: "timeout step",
-        runId: res.body.id,
+        runId: flow.id,
         stage: null,
         status: "FAILED",
         type: "FUNCTION",
         value: null,
         error: "Step function timed out after 10ms",
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
-        startTime: expect.any(String),
-        endTime: expect.any(String),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
         ui: null,
       },
       {
         id: expect.any(String),
         name: "timeout step",
-        runId: res.body.id,
+        runId: flow.id,
         stage: null,
         status: "FAILED",
         type: "FUNCTION",
         value: null,
         error: "Step function timed out after 10ms",
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
-        startTime: expect.any(String),
-        endTime: expect.any(String),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
         ui: null,
       },
       {
         id: expect.any(String),
         name: "timeout step",
-        runId: res.body.id,
+        runId: flow.id,
         stage: null,
         status: "FAILED",
         type: "FUNCTION",
         value: null,
         error: "Step function timed out after 10ms",
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
-        startTime: expect.any(String),
-        endTime: expect.any(String),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
         ui: null,
       },
       {
         id: expect.any(String),
         name: "timeout step",
-        runId: res.body.id,
+        runId: flow.id,
         stage: null,
         status: "FAILED",
         type: "FUNCTION",
         value: null,
         error: "Step function timed out after 10ms",
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
-        startTime: expect.any(String),
-        endTime: expect.any(String),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
         ui: null,
       },
     ],
-    createdAt: res.body.createdAt,
-    updatedAt: expect.any(String),
+    createdAt: flow.createdAt,
+    updatedAt: expect.any(Date),
     config: {
       title: "Timeout step",
     },
@@ -589,30 +580,16 @@ test("flows - timeout step", async () => {
 
 test("flows - error in validation", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
-  let { status, body } = await startFlow({
-    name: "ErrorInValidation",
-    token,
-    body: {},
-  });
+  let flow = await flows.errorInValidation.withAuthToken(token).start({});
 
-  expect(status).toBe(200);
-  expect(body.steps[0].status).toBe("PENDING");
+  expect(flow.steps[0].status).toBe("PENDING");
 
-  const runId = body.id;
-  let stepId = body.steps[0].id;
+  flow = await flows.errorInValidation
+    .withAuthToken(token)
+    .putStepValues(flow.id, flow.steps[0].id, {});
 
-  ({ status, body } = await putStepValues({
-    name: "ErrorInValidation",
-    runId,
-    stepId,
-    token,
-    values: {},
-    action: null,
-  }));
-
-  expect(status).toBe(200);
-  expect(body).toEqual({
-    createdAt: expect.any(String),
+  expect(flow).toEqual({
+    createdAt: expect.any(Date),
     data: null,
     id: expect.any(String),
     input: {},
@@ -621,23 +598,23 @@ test("flows - error in validation", async () => {
     status: "FAILED",
     steps: [
       {
-        createdAt: expect.any(String),
-        endTime: expect.any(String),
+        createdAt: expect.any(Date),
+        endTime: expect.any(Date),
         error: "something has gone wrong",
         id: expect.any(String),
         name: "first page",
         runId: expect.any(String),
         stage: null,
-        startTime: expect.any(String),
+        startTime: expect.any(Date),
         status: "FAILED",
         type: "UI",
-        updatedAt: expect.any(String),
+        updatedAt: expect.any(Date),
         value: null,
         ui: null,
       },
     ],
     traceId: expect.any(String),
-    updatedAt: expect.any(String),
+    updatedAt: expect.any(Date),
     config: {
       title: "Error in validation",
     },
@@ -646,9 +623,9 @@ test("flows - error in validation", async () => {
 
 test("flows - duplicate step name", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
-  const res = await startFlow({ name: "DuplicateStepName", token, body: {} });
-  expect(res.status).toBe(200);
-  expect(res.body).toEqual({
+  let flow = await flows.duplicateStepName.withAuthToken(token).start({});
+
+  expect(flow).toEqual({
     id: expect.any(String),
     traceId: expect.any(String),
     status: "RUNNING",
@@ -667,28 +644,26 @@ test("flows - duplicate step name", async () => {
         value: null,
         error: null,
         ui: null,
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
         endTime: null,
         startTime: null,
       },
     ],
-    createdAt: expect.any(String),
-    updatedAt: expect.any(String),
+    createdAt: expect.any(Date),
+    updatedAt: expect.any(Date),
     config: {
       title: "Duplicate step name",
     },
   });
 
-  const flow = await untilFlowFinished({
-    name: "DuplicateStepName",
-    id: res.body.id,
-    token,
-  });
+  const updatedFlow = await flows.duplicateStepName
+    .withAuthToken(token)
+    .untilFinished(flow.id);
 
-  expect(flow).toEqual({
-    id: res.body.id,
-    traceId: res.body.traceId,
+  expect(updatedFlow).toEqual({
+    id: flow.id,
+    traceId: flow.traceId,
     status: "FAILED",
     name: "DuplicateStepName",
     startedBy: expect.any(String),
@@ -696,38 +671,38 @@ test("flows - duplicate step name", async () => {
     data: null,
     steps: [
       {
-        id: res.body.steps[0].id,
+        id: flow.steps[0].id,
         name: "my step",
-        runId: res.body.id,
+        runId: flow.id,
         stage: null,
         status: "COMPLETED",
         type: "FUNCTION",
         value: null,
         error: null,
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
-        startTime: expect.any(String),
-        endTime: expect.any(String),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
         ui: null,
       },
       {
         id: expect.any(String),
         name: "my step",
-        runId: res.body.id,
+        runId: flow.id,
         stage: null,
         status: "FAILED",
         type: "FUNCTION",
         value: null,
         error: "Duplicate step name: my step",
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
-        startTime: expect.any(String),
-        endTime: expect.any(String),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
         ui: null,
       },
     ],
-    createdAt: res.body.createdAt,
-    updatedAt: expect.any(String),
+    createdAt: flow.createdAt,
+    updatedAt: expect.any(Date),
     config: {
       title: "Duplicate step name",
     },
@@ -736,13 +711,9 @@ test("flows - duplicate step name", async () => {
 
 test("flows - duplicate step name and UI name", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
-  const res = await startFlow({
-    name: "DuplicateStepUiName",
-    token,
-    body: {},
-  });
-  expect(res.status).toBe(200);
-  expect(res.body).toEqual({
+  let flow = await flows.duplicateStepUiName.withAuthToken(token).start({});
+
+  expect(flow).toEqual({
     id: expect.any(String),
     traceId: expect.any(String),
     status: "RUNNING",
@@ -761,28 +732,26 @@ test("flows - duplicate step name and UI name", async () => {
         value: null,
         error: null,
         ui: null,
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
         endTime: null,
         startTime: null,
       },
     ],
-    createdAt: expect.any(String),
-    updatedAt: expect.any(String),
+    createdAt: expect.any(Date),
+    updatedAt: expect.any(Date),
     config: {
       title: "Duplicate step ui name",
     },
   });
 
-  const flow = await untilFlowFinished({
-    name: "DuplicateStepUiName",
-    id: res.body.id,
-    token,
-  });
+  const updatedFlow = await flows.duplicateStepUiName
+    .withAuthToken(token)
+    .untilFinished(flow.id);
 
-  expect(flow).toEqual({
-    id: res.body.id,
-    traceId: res.body.traceId,
+  expect(updatedFlow).toEqual({
+    id: flow.id,
+    traceId: flow.traceId,
     status: "FAILED",
     name: "DuplicateStepUiName",
     startedBy: expect.any(String),
@@ -790,38 +759,38 @@ test("flows - duplicate step name and UI name", async () => {
     data: null,
     steps: [
       {
-        id: res.body.steps[0].id,
+        id: flow.steps[0].id,
         name: "my step",
-        runId: res.body.id,
+        runId: flow.id,
         stage: null,
         status: "COMPLETED",
         type: "FUNCTION",
         value: null,
         error: null,
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
-        startTime: expect.any(String),
-        endTime: expect.any(String),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
         ui: null,
       },
       {
         id: expect.any(String),
         name: "my step",
-        runId: res.body.id,
+        runId: flow.id,
         stage: null,
         status: "FAILED",
         type: "UI",
         value: null,
         error: "Duplicate step name: my step",
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
-        startTime: expect.any(String),
-        endTime: expect.any(String),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
         ui: null,
       },
     ],
-    createdAt: res.body.createdAt,
-    updatedAt: expect.any(String),
+    createdAt: flow.createdAt,
+    updatedAt: expect.any(Date),
     config: {
       title: "Duplicate step ui name",
     },
@@ -857,91 +826,4 @@ async function getToken({ email }) {
   );
 
   return token;
-}
-
-async function startFlow({ name, token, body }) {
-  const res = await fetch(
-    `${process.env.KEEL_TESTING_API_URL}/flows/json/${name}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + token,
-      },
-      body: JSON.stringify(body),
-    }
-  );
-
-  return {
-    status: res.status,
-    body: await res.json(),
-  };
-}
-
-async function getFlowRun({ name, id, token }) {
-  const res = await fetch(
-    `${process.env.KEEL_TESTING_API_URL}/flows/json/${name}/${id}`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + token,
-      },
-    }
-  );
-
-  return {
-    status: res.status,
-    body: await res.json(),
-  };
-}
-
-async function untilFlowFinished({ name, id, token }) {
-  const startTime = Date.now();
-  const timeout = 1000; // 1 seconds timeout on polling
-
-  while (true) {
-    if (Date.now() - startTime > timeout) {
-      throw new Error(
-        `timed out waiting for flow run to reach a completed state after ${timeout}ms`
-      );
-    }
-
-    const { status, body } = await getFlowRun({ name, id, token });
-    expect(status).toEqual(200);
-
-    if (body.status === "COMPLETED" || body.status === "FAILED") {
-      for (const step of body.steps) {
-        // Steps can only be COMPLETED or FAILED when flow has finished
-        expect(step.status === "COMPLETED" || step.status === "FAILED").toBe(
-          true
-        );
-      }
-      return body;
-    }
-
-    await new Promise((resolve) => setTimeout(resolve, 100));
-  }
-}
-
-async function putStepValues({ name, runId, stepId, values, token, action }) {
-  let url = `${process.env.KEEL_TESTING_API_URL}/flows/json/${name}/${runId}/${stepId}`;
-  if (action) {
-    const queryString = new URLSearchParams({ action }).toString();
-    url = `${url}?${queryString}`;
-  }
-
-  const res = await fetch(url, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: "Bearer " + token,
-    },
-    body: JSON.stringify(values),
-  });
-
-  return {
-    status: res.status,
-    body: await res.json(),
-  };
 }

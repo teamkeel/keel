@@ -231,7 +231,7 @@ var rpcTestCases = []rpcTestCase{
 		assertError: func(t *testing.T, data map[string]any, statusCode int) {
 			assert.Equal(t, statusCode, http.StatusForbidden)
 			assert.Equal(t, "ERR_PERMISSION_DENIED", data["code"])
-			assert.Equal(t, "not authorized to access this action", data["message"])
+			assert.Equal(t, "not authorized to access", data["message"])
 		},
 	},
 	{

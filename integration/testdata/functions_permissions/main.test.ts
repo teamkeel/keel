@@ -168,7 +168,7 @@ test("boolean condition / multiple joins / >= condition", async () => {
   // Kim cannot watch Pulp Fiction because although she is a critic she works for the Daily Mail
   await expect(createAdmission(kim, pulpFiction)).rejects.toEqual({
     code: "ERR_PERMISSION_DENIED",
-    message: "not authorized to access this action",
+    message: "not authorized to access",
   });
 
   // Kim can watch Barbie because she is old enough
@@ -180,6 +180,6 @@ test("boolean condition / multiple joins / >= condition", async () => {
   // Mike cannot watch Barbie because he is too young
   await expect(createAdmission(mike, barbie)).rejects.toEqual({
     code: "ERR_PERMISSION_DENIED",
-    message: "not authorized to access this action",
+    message: "not authorized to access",
   });
 });

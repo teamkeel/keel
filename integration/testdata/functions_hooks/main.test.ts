@@ -251,7 +251,7 @@ test("get afterQuery - permission denied", async () => {
     })
   ).rejects.toEqual({
     code: "ERR_PERMISSION_DENIED",
-    message: "not authorized to access this action",
+    message: "not authorized to access",
   });
 });
 
@@ -361,7 +361,7 @@ test("list afterQuery - permission denied", async () => {
     })
   ).rejects.toEqual({
     code: "ERR_PERMISSION_DENIED",
-    message: "not authorized to access this action",
+    message: "not authorized to access",
   });
 });
 
@@ -445,7 +445,7 @@ test("update beforeWrite - permission denied", async () => {
     })
   ).rejects.toEqual({
     code: "ERR_PERMISSION_DENIED",
-    message: "not authorized to access this action",
+    message: "not authorized to access",
   });
 });
 
@@ -550,7 +550,7 @@ test("delete beforeWrite - permission denied", async () => {
     })
   ).rejects.toEqual({
     code: "ERR_PERMISSION_DENIED",
-    message: "not authorized to access this action",
+    message: "not authorized to access",
   });
 
   const dbBook2 = await models.book.findOne({
