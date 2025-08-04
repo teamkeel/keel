@@ -22,14 +22,14 @@ model Thing {
         }
 
         // This won't be validated against until we deprecate '==' acting as an ANY query for relationships
-        //list listThings4() {
+        // list listThings4() {
         //    @where(thing.texts == "science")
-        //}
+        // }
 
-        list listThings5() {
-            //expect-error:30:32:AttributeExpressionError:cannot use operator '==' with types Text and Text[]
-            @where("science" == thing.texts)
-        }
+        // This won't be validated against until we deprecate '==' acting as an ANY query for relationships
+        // list listThings5() {
+        //     @where("science" == thing.texts)
+        // }
     }
 }
 

@@ -3,6 +3,14 @@ model Invoice {
         items Item[]
         //expect-error:36:42:AttributeExpressionError:unknown identifier 'items2'
         total Number @computed(SUM(items2.price))
+        //expect-error:42:43:AttributeExpressionError:Decimal[] not supported as an argument for the function 'SUMIF'
+        missingArg Number @computed(SUMIF(invoice.items.price))
+        //expect-error:43:44:AttributeExpressionError:Text[] not supported as an argument for the function 'SUM'
+        wrongArgType1 Number @computed(SUM(invoice.items.description))
+        //expect-error:45:46:AttributeExpressionError:cannot use operator 'SUMIF' with types Decimal[] and Invoice
+        wrongArgType2 Number @computed(SUMIF(invoice.items.price, invoice))
+        //expect-error:39:90:AttributeExpressionError:expression expected to resolve to type Text but it is Decimal
+        wrongFieldType Text @computed(SUMIF(invoice.items.price, invoice.items.price > 0))
     }
 }
 

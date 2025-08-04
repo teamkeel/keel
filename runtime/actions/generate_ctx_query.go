@@ -101,6 +101,14 @@ func (v *ctxQueryGen) EndFunction() error {
 	return nil
 }
 
+func (v *ctxQueryGen) StartArgument(num int) error {
+	return nil
+}
+
+func (v *ctxQueryGen) EndArgument() error {
+	return nil
+}
+
 func (v *ctxQueryGen) VisitAnd() error {
 	v.query.And()
 	return nil
@@ -186,7 +194,7 @@ func (v *ctxQueryGen) Result() (*QueryBuilder, error) {
 }
 
 func generateOperandForCtxQuery(ctx context.Context, schema *proto.Schema, fragments []string) (*QueryOperand, error) {
-	ident, err := NormalisedFragments(schema, fragments)
+	ident, err := NormaliseFragments(schema, fragments)
 	if err != nil {
 		return nil, err
 	}

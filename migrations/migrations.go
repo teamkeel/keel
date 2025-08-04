@@ -404,7 +404,7 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 	}
 
 	// Computed fields functions and triggers
-	computedChanges, stmts, err := computedFieldsStmts(schema, existingComputedFns)
+	computedChanges, stmts, err := computedFieldsStmts(ctx, schema, existingComputedFns)
 	if err != nil {
 		return nil, err
 	}
@@ -587,7 +587,7 @@ func computedFieldDependencies(schema *proto.Schema) (map[*proto.Field][]*depPai
 }
 
 // computedFieldsStmts generates SQL statements for dropping or creating functions and triggers for computed fields.
-func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRow) (changes []*DatabaseChange, statements []string, err error) {
+func computedFieldsStmts(ctx context.Context, schema *proto.Schema, existingComputedFns []*FunctionRow) (changes []*DatabaseChange, statements []string, err error) {
 	existingComputedFnNames := lo.Map(existingComputedFns, func(f *FunctionRow, _ int) string {
 		return f.RoutineName
 	})
@@ -603,7 +603,7 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 
 		for _, field := range model.GetComputedFields() {
 			changedFields[field] = false
-			fnName, computedFuncStmt, err := addComputedFieldFuncStmt(schema, model, field)
+			fnName, computedFuncStmt, err := addComputedFieldFuncStmt(ctx, schema, model, field)
 			if err != nil {
 				return nil, nil, err
 			}
@@ -754,7 +754,7 @@ func computedFieldsStmts(schema *proto.Schema, existingComputedFns []*FunctionRo
 				continue
 			}
 
-			fragments, err := actions.NormalisedFragments(schema, dep.ident.Fragments)
+			fragments, err := actions.NormaliseFragments(schema, dep.ident.Fragments)
 			if err != nil {
 				return nil, nil, err
 			}

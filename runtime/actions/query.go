@@ -171,6 +171,10 @@ func (o *QueryOperand) toSqlOperandString(query *QueryBuilder) string {
 			return sql
 		}
 
+		if query.embedLiterals {
+			return fmt.Sprintf("%v", o.value)
+		}
+
 		return "?"
 	case o.IsValue() && o.IsArrayValue():
 		operands := []string{}
@@ -297,6 +301,8 @@ type QueryBuilder struct {
 	joinType JoinType
 	// The timezone to be used if we're dealing with relative dates (e.g. DATE_TRUNC("day", NOW()))
 	timezone string
+	// Whether to embed literals in the query
+	embedLiterals bool
 }
 
 type JoinType string
@@ -357,6 +363,13 @@ func WithTimezone(tz string) QueryBuilderOption {
 	}
 }
 
+// EmbedLiterals will embed the literal values in the sql query (replacing the ? placeholders).
+func EmbedLiterals() QueryBuilderOption {
+	return func(qb *QueryBuilder) {
+		qb.embedLiterals = true
+	}
+}
+
 func NewQuery(model *proto.Model, opts ...QueryBuilderOption) *QueryBuilder {
 	qb := &QueryBuilder{
 		Model:      model,
@@ -377,7 +390,8 @@ func NewQuery(model *proto.Model, opts ...QueryBuilderOption) *QueryBuilder {
 			referencedBy: []*Relationship{},
 			references:   []*Relationship{},
 		},
-		joinType: JoinTypeLeft,
+		joinType:      JoinTypeLeft,
+		embedLiterals: false,
 	}
 
 	if len(opts) > 0 {
