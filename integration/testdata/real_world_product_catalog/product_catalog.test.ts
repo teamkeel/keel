@@ -199,7 +199,7 @@ test("create product without brand permissions - permission error", async () => 
     })
   ).toHaveError({
     code: "ERR_PERMISSION_DENIED",
-    message: "not authorized to access this action",
+    message: "not authorized to access",
   });
 });
 

@@ -223,7 +223,7 @@ func NewForeignKeyConstraintError(column string) RuntimeError {
 func NewPermissionError() RuntimeError {
 	return RuntimeError{
 		Code:    ErrPermissionDenied,
-		Message: "not authorized to access this action",
+		Message: "not authorized to access",
 	}
 }
 
