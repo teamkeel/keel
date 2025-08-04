@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
@@ -50,7 +51,7 @@ func (s *SQSEventSender) Send(ctx context.Context, payload *EventWrapper, schedu
 		if delaySeconds := time.Until(*scheduledAfter).Seconds(); delaySeconds > 0 {
 			if delaySeconds < maxDelaySeconds {
 				// sqs message can be delayed
-				input.DelaySeconds = int32(delaySeconds)
+				input.DelaySeconds = int32(math.Ceil(delaySeconds))
 			} else {
 				return fmt.Errorf("delay exceeds maximum supported period of %d seconds", maxDelaySeconds)
 			}

@@ -106,7 +106,7 @@ async function handleFlow(request: any, config: any) {
               runId: runId,
               runCompleted: false,
               config: flowConfig,
-              executeAfter: e.executeAfter
+              executeAfter: e.executeAfter,
             });
           }
 

@@ -42,7 +42,7 @@ test("flows - error in step with retries", async () => {
 
   const updatedFlow = await flows.errorInStep
     .withAuthToken(token)
-    .untilFinished(flow.id);
+    .untilFinished(flow.id, 20000);
 
   // We are expecting 3 steps (the initial step + 2 retries)
   expect(updatedFlow).toEqual({
@@ -106,6 +106,16 @@ test("flows - error in step with retries", async () => {
       title: "Error in step",
     },
   });
+
+  // we have a retryDelay of 3s defined on the flow, thus, we expect the second and third steps to have been created 3 seconds before they were executed
+  let timeDiffMs =
+    new Date(updatedFlow.steps[1].startTime as string).getTime() -
+    new Date(updatedFlow.steps[1].createdAt as string).getTime();
+  expect(timeDiffMs).toBeGreaterThan(3000);
+  timeDiffMs =
+    new Date(updatedFlow.steps[2].startTime as string).getTime() -
+    new Date(updatedFlow.steps[2].createdAt as string).getTime();
+  expect(timeDiffMs).toBeGreaterThan(3000);
 });
 
 test("flows - on failure callback", async () => {

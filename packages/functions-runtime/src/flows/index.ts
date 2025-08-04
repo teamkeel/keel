@@ -75,6 +75,8 @@ type StepOptions<C extends FlowConfig> = {
   stage?: ExtractStageKeys<C>;
   /** Number of times to retry the step after it fails. Defaults to 4. */
   retries?: number;
+  /** Time in milliseconds to wait before retrying a step. By default steps will be retried immediately. */
+  retryDelay?: number;
   /** Maximum time in milliseconds to wait for the step to complete. Defaults to 60000 (1 minute). */
   timeout?: number;
   /** A function to call if the step fails after it exhausts all retries. */
@@ -300,7 +302,11 @@ export function createFlowContext<C extends FlowConfig, E, S, I>(
             .returningAll()
             .executeTakeFirst();
 
-          throw new StepCreatedDisrupt();
+          throw new StepCreatedDisrupt(
+            options.retryDelay
+              ? new Date(Date.now() + options.retryDelay)
+              : undefined
+          );
         }
 
         // Store the result in the database
