@@ -4,8 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
+	"github.com/relvacode/iso8601"
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
@@ -85,9 +87,10 @@ type FunctionsResponsePayload struct {
 	Config       JSON   `json:"config"`
 	UI           JSON   `json:"ui"` // UI component for the current step, if applicable
 	Error        string `json:"error"`
+	ExecuteAfter string `json:"executeAfter"` // If the execution is to be deferred
 }
 
-func (r *FunctionsResponsePayload) GetUIComponents() *FlowUIComponents {
+func (r *FunctionsResponsePayload) getUIComponents() *FlowUIComponents {
 	if r.Config != nil || r.UI != nil {
 		return &FlowUIComponents{
 			Config: r.Config,
@@ -96,6 +99,10 @@ func (r *FunctionsResponsePayload) GetUIComponents() *FlowUIComponents {
 	}
 
 	return nil
+}
+
+func (r *FunctionsResponsePayload) isDeferred() bool {
+	return r.ExecuteAfter != ""
 }
 
 // FlowUIComponents contains data returned from the functions runtime which is used for frontend rendering.
@@ -152,11 +159,11 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, inputs 
 			if resp.Error != "" {
 				// run was orchestrated and completed successfully, but with an error (e.g. exhaused retries)
 				_, err = updateRun(ctx, run.ID, StatusFailed, resp.Config)
-				return err, resp.GetUIComponents()
+				return err, resp.getUIComponents()
 			}
 
 			_, err = completeRun(ctx, run.ID, resp.Config, resp.Data)
-			return err, resp.GetUIComponents()
+			return err, resp.getUIComponents()
 		}
 
 		// reload state from db
@@ -168,7 +175,7 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, inputs 
 		// Check to see if we're in a Pending UI step, break orchestration
 		if run.HasPendingUIStep() {
 			_, err = updateRun(ctx, run.ID, StatusAwaitingInput, resp.Config)
-			return err, resp.GetUIComponents()
+			return err, resp.getUIComponents()
 		}
 
 		// Set the config
@@ -184,7 +191,16 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, inputs 
 			return err, nil
 		}
 
-		return o.sendEvent(ctx, wrap), resp.GetUIComponents()
+		var scheduledAfter time.Time
+
+		if resp.isDeferred() {
+			scheduledAfter, err = iso8601.ParseString(resp.ExecuteAfter)
+			if err != nil {
+				return err, nil
+			}
+		}
+
+		return o.sendEvent(ctx, wrap, &scheduledAfter), resp.getUIComponents()
 	case StatusFailed, StatusCompleted, StatusCancelled:
 		// Do nothing
 		return nil, nil
@@ -244,7 +260,7 @@ func (o *Orchestrator) HandleEvent(ctx context.Context, event *EventWrapper) err
 
 // sendEvent sends the given event to the flow runtime's queue or directly invokes the function depending on the
 // orchestrator's settings.
-func (o *Orchestrator) sendEvent(ctx context.Context, payload *EventWrapper) error {
+func (o *Orchestrator) sendEvent(ctx context.Context, payload *EventWrapper, scheduledAfter *time.Time) error {
 	if payload == nil {
 		return fmt.Errorf("invalid event payload")
 	}
@@ -261,7 +277,7 @@ func (o *Orchestrator) sendEvent(ctx context.Context, payload *EventWrapper) err
 	}
 
 	// send event
-	return o.eventSender.Send(ctx, payload)
+	return o.eventSender.Send(ctx, payload, scheduledAfter)
 }
 
 // CallFlow is a helper function to call the flows runtime and retrieve the Response Payload.
@@ -313,6 +329,7 @@ func (o *Orchestrator) CallFlow(ctx context.Context, run *Run, inputs map[string
 	if err := json.Unmarshal(b, &respBody); err != nil {
 		return nil, err
 	}
+	span.SetAttributes(attribute.String("response.body", string(b)))
 
 	if meta != nil {
 		span.SetAttributes(attribute.Int("response.code", meta.Status))

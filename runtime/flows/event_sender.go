@@ -3,14 +3,16 @@ package flows
 import (
 	"context"
 	"encoding/json"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/aws/aws-sdk-go/aws"
 )
 
 type EventSender interface {
-	// Send sends the given payload onto the flows queue.
-	Send(ctx context.Context, payload *EventWrapper) error
+	// Send sends the given payload onto the flows queue. Optionally, the payload can be deferred to be sent after the
+	// given scheduledAfter time.
+	Send(ctx context.Context, payload *EventWrapper, scheduledAfter *time.Time) error
 }
 
 type SQSEventSender struct {
@@ -30,7 +32,9 @@ func NewSQSEventSender(queueURL string, sqsClient *sqs.Client) *SQSEventSender {
 	}
 }
 
-func (s *SQSEventSender) Send(ctx context.Context, payload *EventWrapper) error {
+func (s *SQSEventSender) Send(ctx context.Context, payload *EventWrapper, scheduledAfter *time.Time) error {
+	// todo: Handle scheduledAfter
+
 	bodyBytes, err := json.Marshal(payload)
 	if err != nil {
 		return err
@@ -58,8 +62,14 @@ func NewNoQueueEventSender(o *Orchestrator) *NoQueueEventSender {
 	}
 }
 
-func (s *NoQueueEventSender) Send(ctx context.Context, payload *EventWrapper) error {
-	go s.orchestrator.HandleEvent(ctx, payload) //nolint we're "simulating" an async queue
+func (s *NoQueueEventSender) Send(ctx context.Context, payload *EventWrapper, scheduledAfter *time.Time) error {
+	go func() {
+		if scheduledAfter != nil {
+			time.Sleep(time.Until(*scheduledAfter))
+		}
+
+		s.orchestrator.HandleEvent(ctx, payload) //nolint we're "simulating" an async queue
+	}()
 
 	return nil
 }
