@@ -150,8 +150,8 @@ declare class FlowExecutor<Input = {}> {
     values: Record<string, any>,
     action?: string
   ): Promise<FlowRun<Input>>;
-  untilAwaitingInput(id: string): Promise<FlowRun<Input>>;
-  untilFinished(id: string): Promise<FlowRun<Input>>;
+  untilAwaitingInput(id: string, timeout?: number): Promise<FlowRun<Input>>;
+  untilFinished(id: string, timeout?: number): Promise<FlowRun<Input>>;
 }
 
 // Step Definition
