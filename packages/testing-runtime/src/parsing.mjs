@@ -1,3 +1,5 @@
+import { File } from "@teamkeel/functions-runtime";
+
 export async function parseInputs(inputs) {
   if (inputs != null && typeof inputs === "object") {
     for (const keys of Object.keys(inputs)) {
