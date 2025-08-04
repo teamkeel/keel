@@ -318,6 +318,7 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 			},
 			"name":      {Type: "string"},
 			"traceId":   {Type: "string"},
+			"startTime": {Type: "string", Format: "date-time"},
 			"createdAt": {Type: "string", Format: "date-time"},
 			"updatedAt": {Type: "string", Format: "date-time"},
 			"steps":     {Type: "array", Items: &jsonschema.JSONSchema{Ref: "#/components/schemas/Step"}},

@@ -658,6 +658,7 @@
             "required": ["title"]
           },
           "createdAt": { "type": "string", "format": "date-time" },
+          "startTime": { "type": "string", "format": "date-time" },
           "data": { "type": ["object", "null"] },
           "id": { "type": "string" },
           "input": { "type": ["object", "null"], "additionalProperties": true },
