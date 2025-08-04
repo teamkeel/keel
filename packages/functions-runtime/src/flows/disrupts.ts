@@ -19,7 +19,9 @@ export class StepErrorDisrupt extends FlowDisrupt {
 }
 
 export class StepCreatedDisrupt extends FlowDisrupt {
-  constructor(public readonly executeAfter?: Date) {
+  constructor(
+    public readonly executeAfter?: Date,
+  ) {
     super();
   }
 }
