@@ -3,11 +3,14 @@ package flows
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/aws/aws-sdk-go/aws"
 )
+
+const maxDelaySeconds = 900
 
 type EventSender interface {
 	// Send sends the given payload onto the flows queue. Optionally, the payload can be deferred to be sent after the
@@ -33,8 +36,6 @@ func NewSQSEventSender(queueURL string, sqsClient *sqs.Client) *SQSEventSender {
 }
 
 func (s *SQSEventSender) Send(ctx context.Context, payload *EventWrapper, scheduledAfter *time.Time) error {
-	// todo: Handle scheduledAfter
-
 	bodyBytes, err := json.Marshal(payload)
 	if err != nil {
 		return err
@@ -43,6 +44,17 @@ func (s *SQSEventSender) Send(ctx context.Context, payload *EventWrapper, schedu
 	input := &sqs.SendMessageInput{
 		MessageBody: aws.String(string(bodyBytes)),
 		QueueUrl:    aws.String(s.sqsQueueURL),
+	}
+
+	if scheduledAfter != nil {
+		if delaySeconds := time.Until(*scheduledAfter).Seconds(); delaySeconds > 0 {
+			if delaySeconds < maxDelaySeconds {
+				// sqs message can be delayed
+				input.DelaySeconds = int32(delaySeconds)
+			} else {
+				return fmt.Errorf("delay exceeds maximum supported period of %d seconds", maxDelaySeconds)
+			}
+		}
 	}
 
 	_, err = s.sqsClient.SendMessage(ctx, input)
