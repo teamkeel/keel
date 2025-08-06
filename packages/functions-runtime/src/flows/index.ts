@@ -71,12 +71,31 @@ type JsonSerializable =
   | JsonSerializable[]
   | { [key: string]: JsonSerializable };
 
+/** A function used to calculate the delay between attempting a retry. The returned value is the number of ms of delay. */
+type RetryDelayFn = (attempt: number) => number;
+
+/**
+ * Returns a linear backoff retry delay.
+ * @param intervalS duration in seconds before the first retry. The second retry will double it, the third triple it and so on.
+ */
+export const RetryBackoffLinear = (intervalS: number): RetryDelayFn => {
+  return (attempt: number) => Math.max(intervalS * (attempt - 1), intervalS) * 1000;
+};
+
+/**
+ * Retuns a constant retry delay.
+ * @param intervalS duration in seconds between retries.
+ */
+export const RetryConstant = (intervalS: number): RetryDelayFn => {
+  return (attempt: number) => intervalS * 1000;
+};
+
 type StepOptions<C extends FlowConfig> = {
   stage?: ExtractStageKeys<C>;
   /** Number of times to retry the step after it fails. Defaults to 4. */
   retries?: number;
-  /** Time in milliseconds to wait before retrying a step. By default steps will be retried immediately. */
-  retryDelay?: number;
+  /** Function to calculate the delay before retrying this step. By default steps will be retried immediately. */
+  retryDelay?: RetryDelayFn;
   /** Maximum time in milliseconds to wait for the step to complete. Defaults to 60000 (1 minute). */
   timeout?: number;
   /** A function to call if the step fails after it exhausts all retries. */
@@ -304,7 +323,7 @@ export function createFlowContext<C extends FlowConfig, E, S, I>(
 
           throw new StepCreatedDisrupt(
             options.retryDelay
-              ? new Date(Date.now() + options.retryDelay)
+              ? new Date(Date.now() + options.retryDelay(failedSteps.length + 1))
               : undefined
           );
         }
