@@ -1,4 +1,7 @@
 
+flow DelayedRetries {
+    @permission(roles: [Admin])
+}
 
 flow ErrorInStep {
     @permission(roles: [Admin])
