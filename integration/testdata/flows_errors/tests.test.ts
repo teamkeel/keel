@@ -1,7 +1,6 @@
 import { resetDatabase, models, flows } from "@teamkeel/testing";
 import { isDate } from "node:util/types";
 import { beforeEach, expect, test } from "vitest";
-import { DelayedRetries } from "@teamkeel/sdk";
 
 beforeEach(resetDatabase);
 
@@ -216,6 +215,21 @@ test("flows - error in step with retries", async () => {
         endTime: expect.any(Date),
         ui: null,
       },
+      {
+        id: expect.any(String),
+        name: "erroring step",
+        runId: flow.id,
+        stage: null,
+        status: "FAILED",
+        type: "FUNCTION",
+        value: null,
+        error: "Error in step",
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
+        ui: null,
+      },
     ],
     createdAt: flow.createdAt,
     updatedAt: expect.any(Date),
@@ -230,11 +244,15 @@ test("flows - error in step with retries", async () => {
   let timeDiffMs =
     new Date(updatedFlow.steps[1].startTime as string).getTime() -
     new Date(updatedFlow.steps[1].createdAt as string).getTime();
-  expect(timeDiffMs).toBeGreaterThan(2000);
+  expect(timeDiffMs).toBeGreaterThan(1000);
   timeDiffMs =
     new Date(updatedFlow.steps[2].startTime as string).getTime() -
     new Date(updatedFlow.steps[2].createdAt as string).getTime();
-  expect(timeDiffMs).toBeGreaterThan(4000);
+  expect(timeDiffMs).toBeGreaterThan(2000);
+  timeDiffMs =
+    new Date(updatedFlow.steps[3].startTime as string).getTime() -
+    new Date(updatedFlow.steps[3].createdAt as string).getTime();
+  expect(timeDiffMs).toBeGreaterThan(3000);
 });
 
 test("flows - on failure callback", async () => {

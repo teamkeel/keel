@@ -3,10 +3,10 @@ import { ErrorInStep, RetryBackoffLinear } from "@teamkeel/sdk";
 export default ErrorInStep({}, async (ctx) => {
   await ctx.step(
     "erroring step",
-    { retries: 2, retryDelay: RetryBackoffLinear(2) },
+    { retries: 3, retryDelay: RetryBackoffLinear(1) },
     async (args) => {
-      if (args.stepOptions.retries !== 2) {
-        throw new Error("Should have 2 retries");
+      if (args.stepOptions.retries !== 3) {
+        throw new Error("Should have 3 retries");
       }
 
       throw new Error("Error in step");
