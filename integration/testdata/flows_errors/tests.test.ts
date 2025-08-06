@@ -4,7 +4,6 @@ import { beforeEach, expect, test } from "vitest";
 
 beforeEach(resetDatabase);
 
-
 test("flows - user defined delay retry", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
   let flow = await flows.userDelays.withAuthToken(token).start({});
@@ -123,7 +122,6 @@ test("flows - user defined delay retry", async () => {
     },
   });
 
-
   // we have a retry delay policy defined by the user:
   // retry 1, delay 3s
   // retry 2, delay 1s
@@ -145,7 +143,6 @@ test("flows - user defined delay retry", async () => {
     new Date(updatedFlow.steps[3].createdAt as string).getTime();
   expect(timeDiffMs).toBeGreaterThan(2000);
 });
-
 
 test("flows - constant delay retry", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
