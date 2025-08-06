@@ -1,11 +1,11 @@
-import { UserDelays } from "@teamkeel/sdk";
+import { UserDelays, FlowConfig } from "@teamkeel/sdk";
 
 export default UserDelays({}, async (ctx) => {
   await ctx.step(
     "user defined delay step",
     {
       retries: 3,
-      retryPolicy: (retry: number) => {
+      retryDelay: (retry: number) => {
         switch (retry) {
           case 1:
             return 3000; // retry 1, delay 3s

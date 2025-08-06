@@ -1,4 +1,7 @@
 
+flow UserDelays {
+    @permission(roles: [Admin])
+}
 flow DelayedRetries {
     @permission(roles: [Admin])
 }
