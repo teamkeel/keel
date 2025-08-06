@@ -72,15 +72,14 @@ type JsonSerializable =
   | { [key: string]: JsonSerializable };
 
 /** A function used to calculate the delay between attempting a retry. The returned value is the number of ms of delay. */
-type RetryDelayFn = (attempt: number) => number;
+type RetryDelayFn = (retry: number) => number;
 
 /**
  * Returns a linear backoff retry delay.
  * @param intervalS duration in seconds before the first retry. The second retry will double it, the third triple it and so on.
  */
 export const RetryBackoffLinear = (intervalS: number): RetryDelayFn => {
-  return (attempt: number) =>
-    Math.max(intervalS * (attempt - 1), intervalS) * 1000;
+  return (retry: number) => retry * intervalS * 1000;
 };
 
 /**
@@ -88,18 +87,20 @@ export const RetryBackoffLinear = (intervalS: number): RetryDelayFn => {
  * @param intervalS duration in seconds between retries.
  */
 export const RetryConstant = (intervalS: number): RetryDelayFn => {
-  return (attempt: number) => intervalS * 1000;
+  return (retry: number) => (retry > 0 ? intervalS * 1000 : 0);
 };
 
 /**
  * Returns an exponential backoff retry delay.
  * @param intervalS the base duration in seconds.
- * @returns
  */
 export const RetryBackoffExponential = (intervalS: number): RetryDelayFn => {
-  return (attempt: number) => {
+  return (retry: number) => {
+    if (retry == 0) {
+      return 0;
+    }
     // Calculate exponential backoff base
-    let exp = Math.max(attempt - 2, 0);
+    let exp = Math.max(retry - 1, 0);
     let backoff = Math.pow(2, exp);
 
     return backoff * intervalS * 1000;
