@@ -79,7 +79,8 @@ type RetryDelayFn = (attempt: number) => number;
  * @param intervalS duration in seconds before the first retry. The second retry will double it, the third triple it and so on.
  */
 export const RetryBackoffLinear = (intervalS: number): RetryDelayFn => {
-  return (attempt: number) => Math.max(intervalS * (attempt - 1), intervalS) * 1000;
+  return (attempt: number) =>
+    Math.max(intervalS * (attempt - 1), intervalS) * 1000;
 };
 
 /**
@@ -88,6 +89,21 @@ export const RetryBackoffLinear = (intervalS: number): RetryDelayFn => {
  */
 export const RetryConstant = (intervalS: number): RetryDelayFn => {
   return (attempt: number) => intervalS * 1000;
+};
+
+/**
+ * Returns an exponential backoff retry delay.
+ * @param intervalS the base duration in seconds.
+ * @returns
+ */
+export const RetryBackoffExponential = (intervalS: number): RetryDelayFn => {
+  return (attempt: number) => {
+    // Calculate exponential backoff base
+    let exp = Math.max(attempt - 2, 0);
+    let backoff = Math.pow(2, exp);
+
+    return backoff * intervalS * 1000;
+  };
 };
 
 type StepOptions<C extends FlowConfig> = {
@@ -323,7 +339,9 @@ export function createFlowContext<C extends FlowConfig, E, S, I>(
 
           throw new StepCreatedDisrupt(
             options.retryDelay
-              ? new Date(Date.now() + options.retryDelay(failedSteps.length + 1))
+              ? new Date(
+                  Date.now() + options.retryDelay(failedSteps.length + 1)
+                )
               : undefined
           );
         }
