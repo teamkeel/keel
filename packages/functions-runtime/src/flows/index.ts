@@ -96,14 +96,10 @@ export const RetryConstant = (intervalS: number): RetryDelayFn => {
  */
 export const RetryBackoffExponential = (intervalS: number): RetryDelayFn => {
   return (retry: number) => {
-    if (retry == 0) {
+    if (retry < 1) {
       return 0;
     }
-    // Calculate exponential backoff base
-    let exp = Math.max(retry - 1, 0);
-    let backoff = Math.pow(2, exp);
-
-    return backoff * intervalS * 1000;
+    return Math.pow(intervalS, retry) * 1000;
   };
 };
 
