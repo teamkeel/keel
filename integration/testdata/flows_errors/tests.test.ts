@@ -1,10 +1,9 @@
 import { resetDatabase, models, flows } from "@teamkeel/testing";
 import { isDate } from "node:util/types";
 import { beforeEach, expect, test } from "vitest";
-import { DelayedRetries } from '@teamkeel/sdk';
+import { DelayedRetries } from "@teamkeel/sdk";
 
 beforeEach(resetDatabase);
-
 
 test("flows - constant delay retry", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
@@ -109,7 +108,7 @@ test("flows - constant delay retry", async () => {
     },
   });
 
-  // we have a retryDelay set as a constant delay of 2s defined on the flow, thus, 
+  // we have a retryDelay set as a constant delay of 2s defined on the flow, thus,
   // we expect the second step and third steps to have been delayed by 2 seconds
   // and the third steps to have been delayed by 4 seconds
   let timeDiffMs =
@@ -225,7 +224,7 @@ test("flows - error in step with retries", async () => {
     },
   });
 
-  // we have a retryDelay set as a linear backoff with a seed of 2s defined on the flow, thus, 
+  // we have a retryDelay set as a linear backoff with a seed of 2s defined on the flow, thus,
   // we expect the second step to be delayed by 2 seconds
   // and the third steps to have been delayed by 4 seconds
   let timeDiffMs =

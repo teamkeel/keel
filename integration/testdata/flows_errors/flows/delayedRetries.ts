@@ -1,7 +1,11 @@
-import { DelayedRetries, RetryBackoffLinear, RetryConstant } from '@teamkeel/sdk';
+import {
+  DelayedRetries,
+  RetryBackoffLinear,
+  RetryConstant,
+} from "@teamkeel/sdk";
 
 export default DelayedRetries({}, async (ctx) => {
-await ctx.step(
+  await ctx.step(
     "constant delay step",
     { retries: 2, retryDelay: RetryConstant(2) },
     async (args) => {
@@ -9,7 +13,7 @@ await ctx.step(
         throw new Error("enforce 2 retries");
       }
 
-      return "completed"
+      return "completed";
     }
   );
 });
