@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -205,6 +206,11 @@ func (h *AWSAPIHandler) sqsSendMessage(r *http.Request, w http.ResponseWriter) {
 	}
 
 	eh := h.OnSQSEvent[*input.QueueUrl]
+
+	// handle any delays set on the messages
+	if input.DelaySeconds > 0 {
+		time.Sleep(time.Duration(input.DelaySeconds) * time.Second)
+	}
 	eh(event)
 
 	writeJSON(w, http.StatusOK, nil)

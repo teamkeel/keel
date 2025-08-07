@@ -201,7 +201,7 @@ func GetFlowRunState(ctx context.Context, runID string) (run *Run, err error) {
 	}
 
 	// setting the flow config and ui component on the pending UI step
-	run.SetUIComponents(resp.GetUIComponents())
+	run.SetUIComponents(resp.getUIComponents())
 
 	return
 }
