@@ -16,7 +16,7 @@ import (
 	"go.opentelemetry.io/otel/codes"
 )
 
-const maxDelaySeconds = 20 // TODO: change this back to 900. currently set for testing purposes
+const maxDelaySeconds = 900 // 15 mins max delay before scheduling via eventbridge
 
 type EventSender interface {
 	// Send sends the given payload onto the flows queue. Optionally, the payload can be deferred to be sent after the
@@ -90,14 +90,14 @@ func (s *SQSEventSender) sendWithDelay(ctx context.Context, payload *EventWrappe
 }
 
 func (s *SQSEventSender) schedule(ctx context.Context, payload *EventWrapper, scheduledAt time.Time) error {
+	ctx, span := tracer.Start(ctx, "Scheduling event")
+	span.SetAttributes(attribute.String("time", fmt.Sprintf("at(%s)", scheduledAt.Format("2006-01-02T15:04:05"))))
+	defer span.End()
+
 	bodyBytes, err := json.Marshal(payload)
 	if err != nil {
 		return err
 	}
-
-	ctx, span := tracer.Start(ctx, "scheduling event")
-	span.SetAttributes(attribute.String("time", fmt.Sprintf("at(%s)", scheduledAt.Format("2006-01-02T15:04:05"))))
-	defer span.End()
 
 	input := scheduler.CreateScheduleInput{
 		FlexibleTimeWindow: &types.FlexibleTimeWindow{
@@ -115,13 +115,12 @@ func (s *SQSEventSender) schedule(ctx context.Context, payload *EventWrapper, sc
 		ActionAfterCompletion:      types.ActionAfterCompletionDelete,
 	}
 
-	schedule, err := s.schedulerClient.CreateSchedule(ctx, &input)
+	_, err = s.schedulerClient.CreateSchedule(ctx, &input)
 	if err != nil {
 		span.SetStatus(codes.Error, err.Error())
 		return err
 	}
 
-	span.SetAttributes(attribute.String("schedule", *schedule.ScheduleArn))
 	return nil
 }
 
