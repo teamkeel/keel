@@ -13,6 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/segmentio/ksuid"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 )
 
 const maxDelaySeconds = 20 // TODO: change this back to 900. currently set for testing purposes
@@ -115,8 +116,14 @@ func (s *SQSEventSender) schedule(ctx context.Context, payload *EventWrapper, sc
 		ActionAfterCompletion:      types.ActionAfterCompletionDelete,
 	}
 
-	_, err = s.schedulerClient.CreateSchedule(ctx, &input)
-	return err
+	schedule, err := s.schedulerClient.CreateSchedule(ctx, &input)
+	if err != nil {
+		span.SetStatus(codes.Error, err.Error())
+		return err
+	}
+
+	span.SetAttributes(attribute.String("schedule", *schedule.ScheduleArn))
+	return nil
 }
 
 type NoQueueEventSender struct {
