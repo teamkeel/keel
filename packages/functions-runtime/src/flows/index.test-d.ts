@@ -1,4 +1,4 @@
-import { test, expect } from "vitest";
+import { test } from "vitest";
 import { testFlow } from "./testingUtils";
 
 test("stages types work correctly", () => {
