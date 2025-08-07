@@ -111,7 +111,6 @@ func (s *SQSEventSender) schedule(ctx context.Context, payload *EventWrapper, sc
 			Input:   aws.String(string(bodyBytes)),
 		},
 		ScheduleExpressionTimezone: aws.String("UTC"),
-		StartDate:                  aws.Time(time.Now()),
 		State:                      types.ScheduleStateEnabled,
 		ActionAfterCompletion:      types.ActionAfterCompletionDelete,
 	}
