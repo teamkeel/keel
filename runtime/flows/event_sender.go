@@ -12,9 +12,10 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/segmentio/ksuid"
+	"go.opentelemetry.io/otel/attribute"
 )
 
-const maxDelaySeconds = 900
+const maxDelaySeconds = 20 // TODO: change this back to 900. currently set for testing purposes
 
 type EventSender interface {
 	// Send sends the given payload onto the flows queue. Optionally, the payload can be deferred to be sent after the
@@ -58,8 +59,8 @@ func (s *SQSEventSender) Send(ctx context.Context, payload *EventWrapper, schedu
 	}
 
 	// delayed for up to maxDelaySeconds
-	if delaySeconds := time.Until(*scheduledAfter).Seconds(); delaySeconds < maxDelaySeconds {
-		return s.sendWithDelay(ctx, payload, int32(math.Ceil(delaySeconds)))
+	if delaySeconds := math.Ceil(time.Until(*scheduledAfter).Seconds()); delaySeconds < maxDelaySeconds {
+		return s.sendWithDelay(ctx, payload, int32(delaySeconds))
 	}
 
 	// delayed for more than maxDelaySeconds, this message needs to be scheduled
@@ -92,6 +93,10 @@ func (s *SQSEventSender) schedule(ctx context.Context, payload *EventWrapper, sc
 	if err != nil {
 		return err
 	}
+
+	ctx, span := tracer.Start(ctx, "scheduling event")
+	span.SetAttributes(attribute.String("time", fmt.Sprintf("at(%s)", scheduledAt.Format("2006-01-02T15:04:05"))))
+	defer span.End()
 
 	input := scheduler.CreateScheduleInput{
 		FlexibleTimeWindow: &types.FlexibleTimeWindow{
