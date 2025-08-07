@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/scheduler"
@@ -58,7 +59,7 @@ func (s *SQSEventSender) Send(ctx context.Context, payload *EventWrapper, schedu
 
 	// delayed for up to maxDelaySeconds
 	if delaySeconds := time.Until(*scheduledAfter).Seconds(); delaySeconds < maxDelaySeconds {
-		return s.sendWithDelay(ctx, payload, int32(delaySeconds))
+		return s.sendWithDelay(ctx, payload, int32(math.Ceil(delaySeconds)))
 	}
 
 	// delayed for more than maxDelaySeconds, this message needs to be scheduled
