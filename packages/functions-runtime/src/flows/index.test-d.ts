@@ -1,4 +1,4 @@
-import { test } from "vitest";
+import { test, expect } from "vitest";
 import { testFlow } from "./testingUtils";
 
 test("stages types work correctly", () => {
@@ -46,4 +46,26 @@ test("stages types work correctly", () => {
       });
     }
   );
+});
+
+test("json serializable constraint", () => {
+  testFlow({}, async (ctx) => {
+    await ctx.step("step", async () => {
+      return {
+        a: 1,
+        b: "2",
+        c: true,
+        d: [1, 2, 3],
+        e: {
+          f: "g",
+          h: 1,
+          i: true,
+        },
+        j: null,
+        k: undefined,
+        l: BigInt(10),
+        m: [{ n: [1, 2, 3] }],
+      };
+    });
+  });
 });

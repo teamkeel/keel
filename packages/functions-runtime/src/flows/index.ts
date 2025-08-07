@@ -66,8 +66,10 @@ export interface FlowContext<C extends FlowConfig, E, S, Id> {
 type JsonSerializable =
   | string
   | number
+  | bigint
   | boolean
   | null
+  | undefined
   | JsonSerializable[]
   | { [key: string]: JsonSerializable };
 
