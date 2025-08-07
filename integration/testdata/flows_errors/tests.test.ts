@@ -127,7 +127,7 @@ test("flows - user defined delay retry", async () => {
   // retry 2, delay 1s
   // retry 3, delay 2s
 
-  // we have a retryDelay set as a constant delay of 2s defined on the flow, thus,
+  // we have a retryPolicy set as a constant delay of 2s defined on the flow, thus,
   // we expect the second step and third steps to have been delayed by 2 seconds
   // and the third steps to have been delayed by 4 seconds
   let timeDiffMs =
@@ -247,7 +247,7 @@ test("flows - constant delay retry", async () => {
     },
   });
 
-  // we have a retryDelay set as a constant delay of 2s defined on the flow, thus,
+  // we have a retryPolicy set as a constant delay of 2s defined on the flow, thus,
   // we expect the second step and third steps to have been delayed by 2 seconds
   // and the third steps to have been delayed by 4 seconds
   let timeDiffMs =
@@ -378,7 +378,7 @@ test("flows - error in step with retries", async () => {
     },
   });
 
-  // we have a retryDelay set as a linear backoff with a seed of 2s defined on the flow, thus,
+  // we have a retryPolicy set as a linear backoff with a seed of 2s defined on the flow, thus,
   // we expect the second step to be delayed by 2 seconds
   // and the third steps to have been delayed by 4 seconds
   let timeDiffMs =
