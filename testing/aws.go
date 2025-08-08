@@ -219,7 +219,7 @@ func (h *AWSAPIHandler) sqsSendMessage(r *http.Request, w http.ResponseWriter) {
 	writeJSON(w, http.StatusOK, nil)
 }
 
-// https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_SendMessage.html
+// https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_GetQueueAttributes.html
 func (h *AWSAPIHandler) sqsGetQueueAttributes(r *http.Request, w http.ResponseWriter) {
 	requestBody, err := io.ReadAll(r.Body)
 	if err != nil {
