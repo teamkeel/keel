@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/service/scheduler"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/relvacode/iso8601"
 	"github.com/teamkeel/keel/functions"
@@ -51,8 +52,8 @@ func WithEventSender(es EventSender) OrchestratorOpt {
 }
 
 // WithAsyncQueue sets a SQSEventSender on the orchestrator with the given options (queue URL and sqs Client).
-func WithAsyncQueue(queueURL string, sqsClient *sqs.Client) OrchestratorOpt {
-	es := NewSQSEventSender(queueURL, sqsClient)
+func WithAsyncQueue(queueURL, queueARN string, sqsClient *sqs.Client, schedulerClient *scheduler.Client, schedulerPrefix string, scheduleRoleARN string) OrchestratorOpt {
+	es := NewSQSEventSender(queueURL, queueARN, sqsClient, schedulerClient, schedulerPrefix, scheduleRoleARN)
 	return WithEventSender(es)
 }
 

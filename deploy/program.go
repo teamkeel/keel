@@ -371,6 +371,26 @@ func createProgram(args *NewProgramArgs) pulumi.RunFunc {
 		var flow *lambda.Function
 
 		if args.Schema.HasFlows() {
+			// The role the EventBridge scheduler will assume to put events on the sqs queue
+			schedulerRole, err := iam.NewRole(ctx, "flows-scheduler-role", &iam.RoleArgs{
+				AssumeRolePolicy: pulumi.String(`{
+					"Version": "2012-10-17",
+					"Statement": [
+						{
+							"Action": "sts:AssumeRole",
+							"Principal": {
+								"Service": "scheduler.amazonaws.com"
+							},
+							"Effect": "Allow"
+						}
+					]
+				}`),
+				Tags: baseTags,
+			})
+			if err != nil {
+				return err
+			}
+
 			flow, err = lambda.NewFunction(ctx, "flows", &lambda.FunctionArgs{
 				Runtime:    lambda.RuntimeCustomAL2023,
 				MemorySize: pulumi.IntPtr(2048),
@@ -386,8 +406,9 @@ func createProgram(args *NewProgramArgs) pulumi.RunFunc {
 
 				Environment: lambda.FunctionEnvironmentArgs{
 					Variables: extendStringMap(baseRuntimeEnvVars, pulumi.StringMap{
-						"KEEL_RUNTIME_MODE": pulumi.String(runtime.RuntimeModeFlow),
-						"OTEL_SERVICE_NAME": pulumi.String("flows"),
+						"KEEL_RUNTIME_MODE":       pulumi.String(runtime.RuntimeModeFlow),
+						"OTEL_SERVICE_NAME":       pulumi.String("flows"),
+						"KEEL_SCHEDULER_ROLE_ARN": schedulerRole.Arn,
 					}),
 				},
 			})
@@ -405,7 +426,7 @@ func createProgram(args *NewProgramArgs) pulumi.RunFunc {
 				return err
 			}
 
-			err = createEventBridgeSchedulesForFlows(ctx, flowsQueue, args.Schema, baseTags)
+			err = createEventBridgeSchedulesForFlows(ctx, flowsQueue, args.Schema, schedulerRole, baseTags)
 			if err != nil {
 				return err
 			}
@@ -809,32 +830,12 @@ func createEventBridgeSchedules(ctx *pulumi.Context, jobsLambda *lambda.Function
 	return nil
 }
 
-func createEventBridgeSchedulesForFlows(ctx *pulumi.Context, flowsQueue *sqs.Queue, protoSchema *proto.Schema, tags pulumi.StringMap) error {
+func createEventBridgeSchedulesForFlows(ctx *pulumi.Context, flowsQueue *sqs.Queue, protoSchema *proto.Schema, schedulerRole *iam.Role, tags pulumi.StringMap) error {
 	if !protoSchema.HasScheduledFlows() {
 		return nil
 	}
 
 	scheduledFlows := protoSchema.ScheduledFlows()
-
-	// The role the EventBridge scheduler will assume to put events on the sqs queue
-	role, err := iam.NewRole(ctx, "flows-scheduler-role", &iam.RoleArgs{
-		AssumeRolePolicy: pulumi.String(`{
-			"Version": "2012-10-17",
-			"Statement": [
-				{
-					"Action": "sts:AssumeRole",
-					"Principal": {
-						"Service": "scheduler.amazonaws.com"
-					},
-					"Effect": "Allow"
-				}
-			]
-		}`),
-		Tags: tags,
-	})
-	if err != nil {
-		return err
-	}
 
 	// Add permissions for EventBridge to actually send messages on the queue
 	policy, err := iam.NewPolicy(ctx, "flows-scheduler-policy", &iam.PolicyArgs{
@@ -861,7 +862,7 @@ func createEventBridgeSchedulesForFlows(ctx *pulumi.Context, flowsQueue *sqs.Que
 	}
 
 	_, err = iam.NewRolePolicyAttachment(ctx, "flows-scheduler-policy-attachment", &iam.RolePolicyAttachmentArgs{
-		Role:      role.Name,
+		Role:      schedulerRole.Name,
 		PolicyArn: policy.Arn,
 	})
 	if err != nil {
@@ -890,7 +891,7 @@ func createEventBridgeSchedulesForFlows(ctx *pulumi.Context, flowsQueue *sqs.Que
 			// This is "templated target" - https://docs.aws.amazon.com/scheduler/latest/UserGuide/managing-targets-templated.html
 			Target: &scheduler.ScheduleTargetArgs{
 				Arn:     flowsQueue.Arn,
-				RoleArn: role.Arn,
+				RoleArn: schedulerRole.Arn,
 				Input:   pulumi.StringPtr(string(sqsMessage)),
 			},
 			// Start immediately

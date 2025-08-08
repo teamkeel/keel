@@ -58,6 +58,9 @@ func (h *AWSAPIHandler) HandleHTTP(r *http.Request, w http.ResponseWriter) {
 	case r.Header.Get("X-Amz-Target") == "AmazonSQS.SendMessage":
 		h.sqsSendMessage(r, w)
 		return
+	case r.Header.Get("X-Amz-Target") == "AmazonSQS.GetQueueAttributes":
+		h.sqsGetQueueAttributes(r, w)
+		return
 	case r.URL.Path == fmt.Sprintf("/aws/2015-03-31/functions/%s/invocations", h.FunctionsARN):
 		h.lambdaInvoke(r, w)
 	case r.Method == http.MethodPut && isS3():
@@ -214,4 +217,33 @@ func (h *AWSAPIHandler) sqsSendMessage(r *http.Request, w http.ResponseWriter) {
 	eh(event)
 
 	writeJSON(w, http.StatusOK, nil)
+}
+
+// https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_GetQueueAttributes.html
+func (h *AWSAPIHandler) sqsGetQueueAttributes(r *http.Request, w http.ResponseWriter) {
+	requestBody, err := io.ReadAll(r.Body)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, nil)
+		return
+	}
+
+	input := sqs.GetQueueAttributesInput{}
+	err = json.Unmarshal(requestBody, &input)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, nil)
+		return
+	}
+
+	attrs := map[string]string{}
+	if input.QueueUrl != nil {
+		bits := strings.Split(*input.QueueUrl, "/")
+		bits = bits[len(bits)-2:]
+		attrs["QueueArn"] = fmt.Sprintf("arn:aws:sqs:eu-west-2:%s:%s", bits[0], bits[1])
+	}
+
+	resp := sqs.GetQueueAttributesOutput{
+		Attributes: attrs,
+	}
+
+	writeJSON(w, http.StatusOK, resp)
 }
