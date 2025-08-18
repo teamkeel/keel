@@ -172,7 +172,12 @@ func (o *QueryOperand) toSqlOperandString(query *QueryBuilder) string {
 		}
 
 		if query.embedLiterals {
-			return fmt.Sprintf("%v", o.value)
+			switch v := o.value.(type) {
+			case string:
+				return fmt.Sprintf("'%s'", v)
+			default:
+				return fmt.Sprintf("%v", v)
+			}
 		}
 
 		return "?"

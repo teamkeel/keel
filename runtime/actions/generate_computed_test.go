@@ -251,10 +251,34 @@ var computedTestCases = []computedTestCase{
 		expectedSql: `(SELECT COALESCE(AVG("item$product"."price"), 0) FROM "item" LEFT JOIN "product" AS "item$product" ON "item$product"."id" = "item"."product_id" WHERE "item"."invoice_id" IS NOT DISTINCT FROM r."id" AND "item"."is_deleted" IS NOT DISTINCT FROM false AND "item$product"."price" > 0)`,
 	},
 	{
+		name: "countif - string comparison",
+		keelSchema: `
+			model Invoice {
+				fields {
+					item Item[]
+					#placeholder#
+				}
+			}
+			model Item {
+				fields {
+					invoice Invoice
+					name Text
+				}
+			}`,
+		field:       "noName Number @computed(COUNTIF(invoice.item.name,  invoice.item.name == \"\"))",
+		expectedSql: `(SELECT COALESCE(COUNT("item"."name"), 0) FROM "item" WHERE "item"."invoice_id" IS NOT DISTINCT FROM r."id" AND "item"."name" IS NOT DISTINCT FROM '')`,
+	},
+	{
 		name:        "concating strings",
 		keelSchema:  testSchema,
 		field:       "name Text @computed(\"Product: \" + item.product.name)",
 		expectedSql: `'Product: ' || (SELECT "product"."name" FROM "product" WHERE "product"."id" IS NOT DISTINCT FROM r."product_id")`,
+	},
+	{
+		name:        "comparing strings",
+		keelSchema:  testSchema,
+		field:       "isEmpty Boolean @computed(item.product.name == \"\")",
+		expectedSql: `(SELECT "product"."name" FROM "product" WHERE "product"."id" IS NOT DISTINCT FROM r."product_id") IS NOT DISTINCT FROM ''`,
 	},
 	{
 		name:        "enums",

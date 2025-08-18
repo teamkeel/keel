@@ -78,9 +78,11 @@ test("computed fields - number", async () => {
 
 test("computed fields - boolean", async () => {
   const expensive = await models.computedBool.create({
+    name: "expensive",
     price: 200,
     isActive: true,
   });
+  expect(expensive.isEmpty).toBeFalsy();
   expect(expensive.isExpensive).toBeTruthy();
   expect(expensive.isCheap).toBeFalsy();
 
@@ -88,13 +90,16 @@ test("computed fields - boolean", async () => {
     price: 90,
     isActive: true,
   });
+  expect(notExpensive.isEmpty).toBeFalsy();
   expect(notExpensive.isExpensive).toBeFalsy();
   expect(notExpensive.isCheap).toBeTruthy();
 
   const notActive = await models.computedBool.create({
+    name: "",
     price: 200,
     isActive: false,
   });
+  expect(notActive.isEmpty).toBeTruthy();
   expect(notActive.isExpensive).toBeFalsy();
   expect(notActive.isCheap).toBeTruthy();
 });
