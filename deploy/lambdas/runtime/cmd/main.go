@@ -20,10 +20,11 @@ func main() {
 		SecretNames:    strings.Split(os.Getenv("KEEL_SECRETS"), ":"),
 
 		// AWS resources
-		EventsQueueURL: os.Getenv("KEEL_EVENTS_QUEUE_URL"),
-		FlowsQueueURL:  os.Getenv("KEEL_FLOWS_QUEUE_URL"),
-		FunctionsARN:   os.Getenv("KEEL_FUNCTIONS_ARN"),
-		BucketName:     os.Getenv("KEEL_FILES_BUCKET_NAME"),
+		EventsQueueURL:   os.Getenv("KEEL_EVENTS_QUEUE_URL"),
+		FlowsQueueURL:    os.Getenv("KEEL_FLOWS_QUEUE_URL"),
+		SchedulerRoleARN: os.Getenv("KEEL_SCHEDULER_ROLE_ARN"),
+		FunctionsARN:     os.Getenv("KEEL_FUNCTIONS_ARN"),
+		BucketName:       os.Getenv("KEEL_FILES_BUCKET_NAME"),
 
 		// RDS
 		DBEndpoint:  os.Getenv("KEEL_DATABASE_ENDPOINT"),

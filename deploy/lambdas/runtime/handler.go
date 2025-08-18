@@ -70,6 +70,8 @@ type HandlerArgs struct {
 	EventsQueueURL string
 	// URL of SQS queue used to trigger orchestrate flows
 	FlowsQueueURL string
+	// ARN fo the iam role for scheduling
+	SchedulerRoleARN string
 	// Full ARN of functions Lambda.
 	FunctionsARN string
 	// Bucket name used for files and job inputs
@@ -142,7 +144,7 @@ func New(ctx context.Context, args *HandlerArgs) (*Handler, error) {
 		return nil, err
 	}
 
-	flowOrchestrator, err := initOrchestrator(ctx, args.FlowsQueueURL, args.AWSEndpoint, s)
+	flowOrchestrator, err := initOrchestrator(ctx, args.FlowsQueueURL, args.AWSEndpoint, args.SchedulerRoleARN, s)
 	if err != nil {
 		return nil, err
 	}
