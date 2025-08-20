@@ -451,6 +451,11 @@ func CallFlow(ctx context.Context, args FlowInvocationArgs) (any, *FunctionsRunt
 		span.SetAttributes(attribute.String("action", *args.Action))
 	}
 
+	if args.Callback != nil && args.Element != nil {
+		meta["callback"] = *args.Callback
+		meta["element"] = *args.Element
+	}
+
 	req := &FunctionsRuntimeRequest{
 		ID:     ksuid.New().String(),
 		Method: strcase.ToLowerCamel(args.Flow.GetName()),

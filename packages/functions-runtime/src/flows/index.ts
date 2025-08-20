@@ -8,11 +8,12 @@ import { booleanInput } from "./ui/elements/input/boolean";
 import { markdown } from "./ui/elements/display/markdown";
 import { table } from "./ui/elements/display/table";
 import { selectOne } from "./ui/elements/select/one";
-import { page, UiPage } from "./ui/page";
+import { page, callbackFn, UiPage } from "./ui/page";
 import {
   StepCreatedDisrupt,
   UIRenderDisrupt,
   ExhuastedRetriesDisrupt,
+  CallbackDisrupt,
 } from "./disrupts";
 import { banner } from "./ui/elements/display/banner";
 import { image } from "./ui/elements/display/image";
@@ -191,6 +192,8 @@ export function createFlowContext<C extends FlowConfig, E, S, Id, I>(
   runId: string,
   data: any,
   action: string | null,
+  callback: string | null,
+  element: string | null,
   spanId: string,
   ctx: {
     env: E;
@@ -379,6 +382,8 @@ export function createFlowContext<C extends FlowConfig, E, S, Id, I>(
       page: (async (name, options) => {
         const db = useDatabase();
 
+        const isCallback = element && callback;
+
         // Check for duplicate step names
         if (usedNames.has(name)) {
           await db
@@ -431,11 +436,33 @@ export function createFlowContext<C extends FlowConfig, E, S, Id, I>(
             .returningAll()
             .executeTakeFirst();
 
-          // If no data has been passed in, render the UI by disrupting the step with UIRenderDisrupt.
+          // We now render the UI by disrupting the step with UIRenderDisrupt.
           throw new UIRenderDisrupt(
             step?.id,
             (await page(options, null, null)).page
           );
+        }
+
+        if (isCallback) {
+          // we now need to resolve a UI callback.
+          try {
+            const response = await callbackFn(
+              options.content,
+              element,
+              callback,
+              data
+            );
+            throw new CallbackDisrupt(response, false);
+          } catch (e) {
+            if (e instanceof CallbackDisrupt) {
+              throw e;
+            }
+
+            throw new CallbackDisrupt(
+              e instanceof Error ? e.message : `An error occurred`,
+              true
+            );
+          }
         }
 
         if (!data) {
