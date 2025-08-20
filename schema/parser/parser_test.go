@@ -24,6 +24,18 @@ func TestEmptyModel(t *testing.T) {
 	assert.Equal(t, "Person", schema.Declarations[0].Model.Name.Value)
 }
 
+func TestModelIsTaskField(t *testing.T) {
+	// Test that model declarations set IsTask to false
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `model Person { }`})
+	assert.Equal(t, "Person", schema.Declarations[0].Model.Name.Value)
+	assert.Equal(t, false, schema.Declarations[0].Model.IsTask)
+
+	// Test that task declarations set IsTask to true
+	schema = parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `task MyTask { }`})
+	assert.Equal(t, "MyTask", schema.Declarations[0].Task.Name.Value)
+	assert.Equal(t, true, schema.Declarations[0].Task.IsTask)
+}
+
 func TestModelWithFields(t *testing.T) {
 	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
 	  model Author {

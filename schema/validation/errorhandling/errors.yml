@@ -1,6 +1,6 @@
 en:
   E003:
-    message: "Cannot use '{{ .Name }}' as it has already been defined on this model"
+    message: "Cannot use '{{ .Name }}' as it has already been defined on this {{ .DefinedOn }}"
     hint: "Rename this field to some other name which has not yet been defined"
   E004:
     message: "You have duplicate actions Model:{{ .Model }} Name:{{ .Name }}"

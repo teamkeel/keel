@@ -25,10 +25,15 @@ func UniqueFieldNamesRule(asts []*parser.AST) (errs errorhandling.ValidationErro
 						existingField.Name,
 					)
 				} else {
+					definedOn := "model"
+					if model.IsTask {
+						definedOn = "task"
+					}
+
 					errs.Append(errorhandling.ErrorFieldNamesUniqueInModel,
 						map[string]string{
-							"Name": field.Name.Value,
-							"Line": fmt.Sprint(field.Name.Pos.Line),
+							"Name":      field.Name.Value,
+							"DefinedOn": definedOn,
 						},
 						field.Name,
 					)

@@ -20,3 +20,18 @@ message MyMessage {
 job MyJob {
     @schedule("* * * * *")
 }
+
+task MyTask {
+    fields {
+        //expect-error:9:13:E009:field nope has an unsupported type Nope
+        nope Nope
+        //expect-error:9:18:E009:field nopeArray has an unsupported type Nope
+        nopeArray Nope[]
+        //expect-error:9:21:E009:field nopeOptional has an unsupported type Nope
+        nopeOptional Nope?
+        //expect-error:9:16:E009:field message has an unsupported type MyMessage
+        message MyMessage
+        //expect-error:9:12:E009:field job has an unsupported type MyJob
+        job MyJob
+    }
+}

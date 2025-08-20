@@ -4,3 +4,10 @@ model User {
         identity Identity @something
     }
 }
+
+task MyTask {
+    fields {
+        //expect-error:27:37:E011:field 'identity' has an unrecognised attribute @something
+        identity Identity @something
+    }
+}

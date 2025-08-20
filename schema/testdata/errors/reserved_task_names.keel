@@ -1,0 +1,3 @@
+//expect-error:6:11:NamingError:Reserved name 'Query'
+task Query {
+}

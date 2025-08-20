@@ -39,15 +39,22 @@ func Models(asts []*parser.AST, filters ...ModelFilter) (res []*parser.ModelNode
 	for _, ast := range asts {
 	models:
 		for _, decl := range ast.Declarations {
+			var model *parser.ModelNode
 			if decl.Model != nil {
-				for _, filter := range filters {
-					if !filter(decl.Model) {
-						continue models
-					}
-				}
-
-				res = append(res, decl.Model)
+				model = decl.Model
+			} else if decl.Task != nil {
+				model = decl.Task
+			} else {
+				continue
 			}
+
+			for _, filter := range filters {
+				if !filter(model) {
+					continue models
+				}
+			}
+
+			res = append(res, model)
 		}
 	}
 	return res
@@ -57,15 +64,22 @@ func ModelNames(asts []*parser.AST, filters ...ModelFilter) (res []string) {
 	for _, ast := range asts {
 	models:
 		for _, decl := range ast.Declarations {
+			var model *parser.ModelNode
 			if decl.Model != nil {
-				for _, filter := range filters {
-					if !filter(decl.Model) {
-						continue models
-					}
-				}
-
-				res = append(res, decl.Model.Name.Value)
+				model = decl.Model
+			} else if decl.Task != nil {
+				model = decl.Task
+			} else {
+				continue
 			}
+
+			for _, filter := range filters {
+				if !filter(model) {
+					continue models
+				}
+			}
+
+			res = append(res, model.Name.Value)
 		}
 	}
 
@@ -78,6 +92,9 @@ func Model(asts []*parser.AST, name string) *parser.ModelNode {
 			if decl.Model != nil && decl.Model.Name.Value == name {
 				return decl.Model
 			}
+			if decl.Task != nil && decl.Task.Name.Value == name {
+				return decl.Task
+			}
 		}
 	}
 	return nil
@@ -88,6 +105,15 @@ func Action(asts []*parser.AST, name string) *parser.ActionNode {
 		for _, decl := range ast.Declarations {
 			if decl.Model != nil {
 				for _, sec := range decl.Model.Sections {
+					for _, action := range sec.Actions {
+						if action.Name.Value == name {
+							return action
+						}
+					}
+				}
+			}
+			if decl.Task != nil {
+				for _, sec := range decl.Task.Sections {
 					for _, action := range sec.Actions {
 						if action.Name.Value == name {
 							return action
@@ -108,6 +134,15 @@ func ActionModel(asts []*parser.AST, name string) *parser.ModelNode {
 					for _, action := range sec.Actions {
 						if action.Name.Value == name {
 							return decl.Model
+						}
+					}
+				}
+			}
+			if decl.Task != nil {
+				for _, sec := range decl.Task.Sections {
+					for _, action := range sec.Actions {
+						if action.Name.Value == name {
+							return decl.Task
 						}
 					}
 				}
@@ -615,6 +650,25 @@ func SubscriberNames(asts []*parser.AST) (res []string) {
 		for _, decl := range ast.Declarations {
 			if decl.Model != nil {
 				for _, section := range decl.Model.Sections {
+					if section.Attribute != nil && section.Attribute.Name.Value == parser.AttributeOn {
+						attribute := section.Attribute
+
+						if len(attribute.Arguments) == 2 {
+							subscriberArg := attribute.Arguments[1]
+
+							ident, err := resolve.AsIdent(subscriberArg.Expression)
+							if err == nil && ident != nil && len(ident.Fragments) == 1 {
+								name := ident.String()
+								if !lo.Contains(res, name) {
+									res = append(res, name)
+								}
+							}
+						}
+					}
+				}
+			}
+			if decl.Task != nil {
+				for _, section := range decl.Task.Sections {
 					if section.Attribute != nil && section.Attribute.Name.Value == parser.AttributeOn {
 						attribute := section.Attribute
 

@@ -1,0 +1,15 @@
+task NewOrder {
+    fields {
+        ticketNo Text @sequence("S")
+        order Order
+        customerName Text
+        deliveryAddress Text
+        dueDate Date?
+    }
+}
+
+model Order {
+    fields {
+        isExpedited Boolean
+    }
+}

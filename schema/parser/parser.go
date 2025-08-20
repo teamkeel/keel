@@ -22,17 +22,29 @@ type AST struct {
 	Secrets              []string
 }
 
+// setIsTaskFields sets the IsTask field on all ModelNodes based on their declaration type.
+func (ast *AST) setIsTaskFields() {
+	for _, decl := range ast.Declarations {
+		if decl.Task != nil {
+			decl.Task.IsTask = true
+		} else if decl.Model != nil {
+			decl.Model.IsTask = false
+		}
+	}
+}
+
 type DeclarationNode struct {
 	node.Node
 
-	Model   *ModelNode   `("model" @@`
+	Task    *ModelNode   `"task" @@`
+	Model   *ModelNode   `| "model" @@`
 	Role    *RoleNode    `| "role" @@`
 	API     *APINode     `| "api" @@`
 	Enum    *EnumNode    `| "enum" @@`
 	Message *MessageNode `| "message" @@`
 	Job     *JobNode     `| "job" @@`
 	Flow    *FlowNode    `| "flow" @@`
-	Routes  *RoutesNode  `| "routes" @@)`
+	Routes  *RoutesNode  `| "routes" @@`
 }
 
 type ModelNode struct {
@@ -41,6 +53,7 @@ type ModelNode struct {
 	Name     NameNode            `@@`
 	Sections []*ModelSectionNode `"{" @@* "}"`
 	BuiltIn  bool
+	IsTask   bool
 }
 
 type ModelSectionNode struct {
@@ -427,6 +440,9 @@ func Parse(s *reader.SchemaFile) (*AST, error) {
 	}
 
 	schema.Raw = s.Contents
+
+	// Set the IsTask field on all ModelNodes based on their declaration type
+	schema.setIsTaskFields()
 
 	return schema, nil
 }
