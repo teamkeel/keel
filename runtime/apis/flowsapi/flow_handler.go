@@ -144,9 +144,9 @@ func FlowHandler(s *proto.Schema) common.HandlerFunc {
 
 			return common.NewJsonResponse(http.StatusOK, run, nil)
 		case 4:
-			// UI Callback: POST flows/json/[flowName]/[runID]/[stepID]/callback?name={callbackName}}&element={elementName}
+			// UI Callback: POST flows/json/[flowName]/[runID]/[stepID]/callback?callback={callbackName}&element={elementName}
 
-			// we're operating on a flow run (cancel/put values), we now need to set the tracing span context to the flow's trace
+			// we're operating on a flow run (cancel/put values), we now need to set the tracing span context to the flow's trace.
 			if traceparent, err := flows.GetTraceparent(ctx, pathParts[1]); err == nil {
 				sc := util.ParseTraceparent(traceparent)
 				ctx = trace.ContextWithSpanContext(ctx, sc)
