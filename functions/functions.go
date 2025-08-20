@@ -392,9 +392,27 @@ func CallSubscriber(ctx context.Context, subscriber *proto.Subscriber, event *ev
 	return nil
 }
 
+// FlowInvocationArgs is a struct holding all the arguments that are needed when invoking the functions runtime to perform an action as part of a flow.
+type FlowInvocationArgs struct {
+	// The flow that needs to be invoked
+	Flow *proto.Flow
+	// The ID of the flow run.
+	RunID string
+	// Inputs for the flow run.
+	Inputs map[string]any
+	// Data that is being sent to the flow as part of a step's input (for UI steps, this represents the user submitted data).
+	Data map[string]any
+	// Action chosen by the user. Applicable only for UI steps that have multiple actions defined.
+	Action *string
+}
+
 // CallFlow will invoke the flow function on the runtime node server.
-func CallFlow(ctx context.Context, flow *proto.Flow, runId string, inputs map[string]any, data map[string]any, action string) (any, *FunctionsRuntimeMeta, error) {
+func CallFlow(ctx context.Context, args FlowInvocationArgs) (any, *FunctionsRuntimeMeta, error) {
 	span := trace.SpanFromContext(ctx)
+
+	if args.Flow == nil {
+		return nil, nil, errors.New("invalid flow")
+	}
 
 	transport, ok := ctx.Value(contextKey).(Transport)
 	if !ok {
@@ -416,30 +434,30 @@ func CallFlow(ctx context.Context, flow *proto.Flow, runId string, inputs map[st
 	}
 
 	meta := map[string]any{
-		"runId":    runId,
+		"runId":    args.RunID,
 		"secrets":  secrets,
 		"tracing":  tracingContext,
-		"inputs":   inputs,
-		"data":     data,
+		"inputs":   args.Inputs,
+		"data":     args.Data,
 		"identity": identity,
 	}
 
-	if action != "" {
-		meta["action"] = action
-		span.SetAttributes(attribute.String("action", action))
+	if args.Action != nil {
+		meta["action"] = *args.Action
+		span.SetAttributes(attribute.String("action", *args.Action))
 	}
 
 	req := &FunctionsRuntimeRequest{
 		ID:     ksuid.New().String(),
-		Method: strcase.ToLowerCamel(flow.GetName()),
+		Method: strcase.ToLowerCamel(args.Flow.GetName()),
 		Type:   FlowFunction,
 		Meta:   meta,
 	}
 
 	span.SetAttributes(
 		attribute.String("request.id", req.ID),
-		attribute.String("run.id", runId),
-		attribute.String("flow.name", flow.GetName()),
+		attribute.String("run.id", args.RunID),
+		attribute.String("flow.name", args.Flow.GetName()),
 	)
 
 	resp, err := transport(ctx, req)
