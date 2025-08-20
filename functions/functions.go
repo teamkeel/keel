@@ -404,6 +404,10 @@ type FlowInvocationArgs struct {
 	Data map[string]any
 	// Action chosen by the user. Applicable only for UI steps that have multiple actions defined.
 	Action *string
+	// Element is the name of the UI Element on which we're executing a UI callback. If set, a Callback must also be set.
+	Element *string
+	// Callback is the name of the callback that needs to be executed when invoking the flow via a UI callback. If set, an Element must also be set
+	Callback *string
 }
 
 // CallFlow will invoke the flow function on the runtime node server.

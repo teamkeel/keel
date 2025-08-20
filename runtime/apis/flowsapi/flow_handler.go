@@ -143,6 +143,35 @@ func FlowHandler(s *proto.Schema) common.HandlerFunc {
 			}
 
 			return common.NewJsonResponse(http.StatusOK, run, nil)
+		case 4:
+			// UI Callback: POST flows/json/[flowName]/[runID]/[stepID]/callback?name={callbackName}}&element={elementName}
+
+			// we're operating on a flow run (cancel/put values), we now need to set the tracing span context to the flow's trace
+			if traceparent, err := flows.GetTraceparent(ctx, pathParts[1]); err == nil {
+				sc := util.ParseTraceparent(traceparent)
+				ctx = trace.ContextWithSpanContext(ctx, sc)
+			}
+
+			if r.Method != http.MethodPost {
+				return httpjson.NewErrorResponse(ctx, common.NewHttpMethodNotAllowedError("only HTTP POST accepted"), nil)
+			}
+
+			inputs, err := common.ParseRequestData(r)
+			if err != nil {
+				return httpjson.NewErrorResponse(ctx, common.NewInputMalformedError("error parsing POST body"), nil)
+			}
+
+			data, ok := inputs.(map[string]any)
+			if !ok {
+				return httpjson.NewErrorResponse(ctx, common.NewInputMalformedError("data not correctly formatted"), nil)
+			}
+
+			response, err := flows.Callback(ctx, pathParts[1], pathParts[2], data, r.URL.Query().Get("element"), r.URL.Query().Get("callback"))
+			if err != nil {
+				return httpjson.NewErrorResponse(ctx, err, nil)
+			}
+
+			return common.NewJsonResponse(http.StatusOK, response, nil)
 		}
 		return common.Response{
 			Status: http.StatusNotFound,
