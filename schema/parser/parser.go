@@ -22,7 +22,7 @@ type AST struct {
 	Secrets              []string
 }
 
-// setIsTaskFields sets the IsTask field on all ModelNodes based on their declaration type
+// setIsTaskFields sets the IsTask field on all ModelNodes based on their declaration type.
 func (ast *AST) setIsTaskFields() {
 	for _, decl := range ast.Declarations {
 		if decl.Task != nil {
