@@ -1,0 +1,5 @@
+task NewTask {
+    fields {
+        address Text
+    }
+}
