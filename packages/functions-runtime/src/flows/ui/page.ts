@@ -56,6 +56,33 @@ export interface UiPageApiResponse extends BaseUiDisplayResponse<"ui.page"> {
   validationError?: string;
 }
 
+export async function callbackFn<T extends UIElements>(
+  elements: T,
+  elementName: string,
+  callbackName: string,
+  data: any
+): Promise<any> {
+  // Find the element by name
+  const element = elements.find(
+    (el) => (el as any).uiConfig && (el as any).uiConfig.name === elementName
+  );
+
+  if (!element) {
+    throw new Error(`Element with name ${elementName} not found`);
+  }
+
+  // Check if the callback exists on the element
+  const cb = (element as any)[callbackName];
+  if (typeof cb !== "function") {
+    throw new Error(
+      `Callback ${callbackName} not found on element ${elementName}`
+    );
+  }
+
+  // Call the callback with provided arguments
+  return await cb(data);
+}
+
 export async function page<
   C extends FlowConfig,
   A extends PageActions[],

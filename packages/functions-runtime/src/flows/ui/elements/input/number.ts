@@ -43,6 +43,7 @@ export const numberInput: InputElementImplementation<
       max: options?.max,
     } satisfies UiElementInputNumberApiResponse,
     validate: options?.validate,
+    onLeave: options?.onLeave,
     getData: (x: any) => x,
   };
 };
