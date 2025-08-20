@@ -1,10 +1,4 @@
 en:
-  E001:
-    message: "You have a model name that is not UpperCamel {{ .Model }}"
-    hint: "Did you mean '{{ .Suggested }}'?"
-  E002:
-    message: "Action names should be written in lowerCamelCase"
-    hint: "Did you mean '{{ .Suggested }}'?"
   E003:
     message: "Cannot use '{{ .Name }}' as it has already been defined on this model"
     hint: "Rename this field to some other name which has not yet been defined"
@@ -17,33 +11,18 @@ en:
   E006:
     message: "Cannot use '{{ .Name }}' as it already exists as a built-in field"
     hint: "Rename this field to some other name which has not yet been defined"
-  E008:
-    message: "Action {{ .Name }} must either take a unique field as input or filter on a unique field using a @where attribute"
-    hint: "Did you mean to add 'id' as an input?"
   E009:
     message: "field {{ .Name }} has an unsupported type {{ .Type }}"
     hint: "Did you mean one of {{ .Suggestions }}?"
-  E010:
-    message: "You have duplicate Models Model:{{ .Name }}"
-    hint: "Try to remove '{{ .Name }}'"
   E011:
     message: "{{ .DefinedOn }} '{{ .ParentName }}' has an unrecognised attribute @{{ .Name }}"
     hint: "{{ if .Suggestions }}Did you mean {{ .Suggestions }}?{{ end }}"
-  E013:
-    message: "The {{ .AttributeName }} attribute doesn't accept the argument {{ .ArgumentName }}{{ if .Location }} when used inside an {{ .Location }}{{ end }}"
-    hint: "{{ if .ValidArgumentNames }}Did you mean one of {{ .ValidArgumentNames }}?{{ else }}Maybe remove the {{ .ArgumentName }} argument?{{ end }}"
-  E014:
-    message: "{{ .AttributeName }} requires all arguments to be named, for example @permission(roles: [MyRole])"
-    hint: "Valid argument names for {{ .AttributeName }} are {{ .ValidArgumentNames }}"
   E017:
     message: "You have a duplicate definition for 'api {{ .Name }}'"
     hint: "Please remove one of the definitions"
   E018:
     message: "You have a duplicate definition for 'role {{ .Name }}'"
     hint: "Please remove one of the definitions"
-  E022:
-    message: "Operator '{{ .Operator }}' not permitted on {{ .Attribute }}"
-    hint: "{{ .Suggestion }}"
   E025:
     message: "{{ .Message }}"
   E033:
@@ -52,14 +31,6 @@ en:
   E034:
     message: "required field '{{ .FieldName }}' must be set by a non-optional input, a @set expression or with @default"
     hint: "To learn more about create action inputs, visit https://docs.keel.so/actions#create"
-  E035:
-    message: "{{ .Input }} is not a unique field. {{ .ActionType }} actions take only unique inputs"
-    hint: ""
-  E036:
-    message: "{{ .Ident }} is not a unique field. {{ .ActionType }} actions can only filter on unique fields"
-    hint: ""
-  E040:
-    message: "{{ .Type }} is not a valid action type. Valid types are {{ .ValidTypes }}"
   E047:
     message: "api '{{ .API }}' has an unrecognised model {{ .Model }}"
     hint: ""
