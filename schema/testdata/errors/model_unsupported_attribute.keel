@@ -2,3 +2,8 @@ model Person {
     //expect-error:5:16:E011:model 'Person' has an unrecognised attribute @whatisthis
     @whatisthis
 }
+
+task MyTask {
+    //expect-error:5:16:E011:task 'MyTask' has an unrecognised attribute @whatisthis
+    @whatisthis
+}

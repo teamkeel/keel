@@ -1467,31 +1467,31 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 					arr := val.(string)
 					switch f.GetType().GetType() {
 					case proto.Type_TYPE_STRING, proto.Type_TYPE_ENUM, proto.Type_TYPE_ID, proto.Type_TYPE_MARKDOWN, proto.Type_TYPE_DURATION:
-						row[col], err = ParsePostgresArray[string](arr, func(s string) (string, error) {
+						row[col], err = ParsePostgresArray(arr, func(s string) (string, error) {
 							return s, nil
 						})
 					case proto.Type_TYPE_INT:
-						row[col], err = ParsePostgresArray[int](arr, func(s string) (int, error) {
+						row[col], err = ParsePostgresArray(arr, func(s string) (int, error) {
 							return strconv.Atoi(s)
 						})
 					case proto.Type_TYPE_DECIMAL, proto.Type_TYPE_VECTOR:
-						row[col], err = ParsePostgresArray[float64](arr, func(s string) (float64, error) {
+						row[col], err = ParsePostgresArray(arr, func(s string) (float64, error) {
 							return strconv.ParseFloat(s, 64)
 						})
 					case proto.Type_TYPE_BOOL:
-						row[col], err = ParsePostgresArray[bool](arr, func(s string) (bool, error) {
+						row[col], err = ParsePostgresArray(arr, func(s string) (bool, error) {
 							return strconv.ParseBool(s)
 						})
 					case proto.Type_TYPE_DATE:
-						row[col], err = ParsePostgresArray[time.Time](arr, func(s string) (time.Time, error) {
+						row[col], err = ParsePostgresArray(arr, func(s string) (time.Time, error) {
 							return time.Parse("2006-01-02", s)
 						})
 					case proto.Type_TYPE_TIMESTAMP, proto.Type_TYPE_DATETIME:
-						row[col], err = ParsePostgresArray[time.Time](arr, func(s string) (time.Time, error) {
+						row[col], err = ParsePostgresArray(arr, func(s string) (time.Time, error) {
 							return time.Parse("2006-01-02 15:04:05.999999999-07", s)
 						})
 					case proto.Type_TYPE_FILE:
-						row[col], err = ParsePostgresArray[storage.FileInfo](arr, func(s string) (storage.FileInfo, error) {
+						row[col], err = ParsePostgresArray(arr, func(s string) (storage.FileInfo, error) {
 							fi := storage.FileInfo{}
 							if err := json.Unmarshal([]byte(s), &fi); err != nil {
 								return storage.FileInfo{}, fmt.Errorf("failed to unmarshal file data: %w", err)

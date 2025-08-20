@@ -16,7 +16,12 @@ func AttributeLocationsRule(asts []*parser.AST) (errs errorhandling.ValidationEr
 	for _, model := range query.Models(asts) {
 		for _, section := range model.Sections {
 			if section.Attribute != nil {
-				errs.Concat(checkAttributes([]*parser.AttributeNode{section.Attribute}, "model", model.Name.Value))
+				definedOn := "model"
+				if model.IsTask {
+					definedOn = "task"
+				}
+
+				errs.Concat(checkAttributes([]*parser.AttributeNode{section.Attribute}, definedOn, model.Name.Value))
 			}
 
 			if section.Actions != nil {

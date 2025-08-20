@@ -36,6 +36,8 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 			switch {
 			case decl.Model != nil:
 				scm.makeModel(decl)
+			case decl.Task != nil:
+				scm.makeModel(decl)
 			case decl.Role != nil:
 				scm.makeRole(decl)
 			case decl.API != nil:
@@ -1439,9 +1441,16 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 }
 
 func (scm *Builder) makeModel(decl *parser.DeclarationNode) {
-	parserModel := decl.Model
+	var parserModel *parser.ModelNode
+	if decl.Model != nil {
+		parserModel = decl.Model
+	} else if decl.Task != nil {
+		parserModel = decl.Task
+	}
+
 	protoModel := &proto.Model{
-		Name: parserModel.Name.Value,
+		Name:   parserModel.Name.Value,
+		IsTask: parserModel.IsTask,
 	}
 
 	for _, section := range parserModel.Sections {

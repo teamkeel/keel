@@ -5,3 +5,11 @@ model User {
         name Text
     }
 }
+
+task MyTask {
+    fields {
+        name Text
+        //expect-error:9:13:E003:Cannot use 'name' as it has already been defined on this task
+        name Text
+    }
+}

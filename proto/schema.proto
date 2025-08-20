@@ -33,6 +33,9 @@ message Model {
     repeated Action actions = 3;
 
     repeated PermissionRule permissions = 4;
+
+    // Whether this model is created as a task.
+    bool is_task = 5;
 }
 
 message Field {
@@ -464,10 +467,10 @@ message Route {
 }
 
 message Flow {
-    // The name of the workflow.
+    // The name of the flow.
     string name = 1;
 
-    // The inputs defined on the workflow.
+    // The inputs defined on the flow.
     string input_message_name = 2;
 
     // A permission rule which need to be satisfied in order to run the flow.

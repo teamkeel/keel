@@ -1,0 +1,6 @@
+//expect-error:6:14:NamingError:There already exists a reserved model with the name 'Identity'
+task Identity {
+    fields {
+        email Text
+    }
+}
