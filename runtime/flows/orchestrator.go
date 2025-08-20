@@ -310,14 +310,21 @@ func (o *Orchestrator) CallFlow(ctx context.Context, run *Run, inputs map[string
 		}
 	}
 
-	resp, meta, err := functions.CallFlow(
-		ctx,
-		flow,
-		run.ID,
-		inputs,
-		data,
-		action,
-	)
+	args := functions.FlowInvocationArgs{
+		Flow:   flow,
+		RunID:  run.ID,
+		Inputs: inputs,
+		Data:   data,
+		Action: func() *string {
+			if action != "" {
+				return &action
+			}
+
+			return nil
+		}(),
+	}
+
+	resp, meta, err := functions.CallFlow(ctx, args)
 	if err != nil {
 		return nil, err
 	}
