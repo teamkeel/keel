@@ -144,7 +144,7 @@ func ComputedAttributeRules(asts []*parser.AST, errs *errorhandling.ValidationEr
 					continue
 				}
 
-				f := query.Field(entity, operand.Fragments[1])
+				f := entity.Field(operand.Fragments[1])
 
 				if f == field {
 					errs.AppendError(

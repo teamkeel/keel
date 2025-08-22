@@ -136,16 +136,6 @@ func ActionModel(asts []*parser.AST, name string) *parser.ModelNode {
 	return nil
 }
 
-// Field provides the field of the given name from the given model. (Or nil).
-func Field(entity parser.Entity, name string) *parser.FieldNode {
-	for _, f := range entity.Fields() {
-		if f.Name.Value == name {
-			return f
-		}
-	}
-	return nil
-}
-
 func IsModel(asts []*parser.AST, name string) bool {
 	return Model(asts, name) != nil
 }
@@ -154,7 +144,7 @@ func IsForeignKey(asts []*parser.AST, entity parser.Entity, field *parser.FieldN
 	if !field.BuiltIn {
 		return false
 	}
-	f := Field(entity, strings.TrimSuffix(field.Name.Value, "Id"))
+	f := entity.Field(strings.TrimSuffix(field.Name.Value, "Id"))
 	return f != nil && Entity(asts, f.Type.Value) != nil
 }
 
@@ -273,12 +263,12 @@ func Roles(asts []*parser.AST) (res []*parser.RoleNode) {
 }
 
 func IsUserDefinedType(asts []*parser.AST, name string) bool {
-	return Model(asts, name) != nil || Enum(asts, name) != nil
+	return Entity(asts, name) != nil || Enum(asts, name) != nil
 }
 
 func UserDefinedTypes(asts []*parser.AST) (res []string) {
-	for _, model := range Models(asts) {
-		res = append(res, model.Name.Value)
+	for _, entity := range Entities(asts) {
+		res = append(res, entity.GetName())
 	}
 	for _, enum := range Enums(asts) {
 		res = append(res, enum.Name.Value)
@@ -377,16 +367,6 @@ func TaskFields(task *parser.TaskNode, filters ...FieldFilter) (res []*parser.Fi
 	return res
 }
 
-func ModelField(model *parser.ModelNode, name string) *parser.FieldNode {
-	for _, section := range model.Sections {
-		for _, field := range section.Fields {
-			if field.Name.Value == name {
-				return field
-			}
-		}
-	}
-	return nil
-}
 func FieldHasAttribute(field *parser.FieldNode, name string) bool {
 	for _, attr := range field.Attributes {
 		if attr.Name.Value == name {
@@ -436,7 +416,7 @@ func CompositeUniqueFields(model *parser.ModelNode, attribute *parser.AttributeN
 		}
 
 		for _, f := range operands {
-			field := Field(model, f.String())
+			field := model.Field(f.String())
 			if field != nil {
 				fields = append(fields, field)
 			}
@@ -583,7 +563,7 @@ func ResolveInputField(asts []*parser.AST, input *parser.ActionInputNode, parent
 		if model == nil {
 			return nil
 		}
-		field = ModelField(model, fragment.Fragment)
+		field = model.Field(fragment.Fragment)
 		if field == nil {
 			return nil
 		}

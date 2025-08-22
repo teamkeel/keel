@@ -180,11 +180,11 @@ func (m *Migrations) SnapshotDatabase(ctx context.Context) (string, error) {
 		proto.Type_TYPE_TIMESTAMP: &TimeTypeHandler{},
 	}
 
-	for i, model := range models {
-		table := Identifier(model)
+	for i, entityName := range models {
+		table := Identifier(entityName)
 
 		// Check if keel_storage table exists before querying
-		if model == "keel_storage" {
+		if entityName == "keel_storage" {
 			exists, err := m.database.ExecuteQuery(ctx, "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'keel_storage')")
 			if err != nil {
 				return "", fmt.Errorf("error checking if keel_storage table exists: %w", err)
@@ -208,11 +208,13 @@ func (m *Migrations) SnapshotDatabase(ctx context.Context) (string, error) {
 		columns := make([]string, 0)
 		for _, col := range result.Columns {
 			// For keel_storage table, include all columns without schema lookup
-			if model == "keel_storage" {
+			if entityName == "keel_storage" {
 				columns = append(columns, col)
 				continue
 			}
-			field := proto.FindField(m.Schema.GetModels(), model, casing.ToLowerCamel(col))
+
+			entity := m.Schema.FindEntity(entityName)
+			field := entity.FindField(casing.ToLowerCamel(col))
 			if field != nil && field.GetComputedExpression() == nil && field.GetSequence() == nil {
 				columns = append(columns, col)
 			}
@@ -238,7 +240,7 @@ func (m *Migrations) SnapshotDatabase(ctx context.Context) (string, error) {
 
 				// For keel_storage table, use DefaultTypeHandler for all columns
 				// But the data column is binary, so we need to handle it differently
-				if model == "keel_storage" {
+				if entityName == "keel_storage" {
 					if col == "data" {
 						if val == nil {
 							values[j] = "NULL"
@@ -261,7 +263,8 @@ func (m *Migrations) SnapshotDatabase(ctx context.Context) (string, error) {
 					continue
 				}
 
-				field := proto.FindField(m.Schema.GetModels(), model, casing.ToLowerCamel(col))
+				entity := m.Schema.FindEntity(entityName)
+				field := entity.FindField(casing.ToLowerCamel(col))
 
 				var handler TypeHandler
 				handler = &DefaultTypeHandler{}

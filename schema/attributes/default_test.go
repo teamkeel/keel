@@ -18,7 +18,7 @@ func TestDefault_ValidString(t *testing.T) {
 	}`})
 
 	model := query.Model(schema, "Person")
-	field := query.Field(model, "name")
+	field := model.Field("name")
 	expression := field.Attributes[0].Arguments[0].Expression
 
 	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
@@ -35,7 +35,7 @@ func TestDefault_InvalidString(t *testing.T) {
 	}`})
 
 	model := query.Model(schema, "Person")
-	field := query.Field(model, "name")
+	field := model.Field("name")
 	expression := field.Attributes[0].Arguments[0].Expression
 
 	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
@@ -54,7 +54,7 @@ func TestDefault_ValidStringArray(t *testing.T) {
 	}`})
 
 	model := query.Model(schema, "Person")
-	field := query.Field(model, "names")
+	field := model.Field("names")
 	expression := field.Attributes[0].Arguments[0].Expression
 
 	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
@@ -71,7 +71,7 @@ func TestDefault_InValidStringArray(t *testing.T) {
 	}`})
 
 	model := query.Model(schema, "Person")
-	field := query.Field(model, "names")
+	field := model.Field("names")
 	expression := field.Attributes[0].Arguments[0].Expression
 
 	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
@@ -89,7 +89,7 @@ func TestDefault_ValidNumber(t *testing.T) {
 	}`})
 
 	model := query.Model(schema, "Person")
-	field := query.Field(model, "age")
+	field := model.Field("age")
 	expression := field.Attributes[0].Arguments[0].Expression
 
 	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
@@ -106,7 +106,7 @@ func TestDefault_ValidNumberFromDecimal(t *testing.T) {
 	}`})
 
 	model := query.Model(schema, "Person")
-	field := query.Field(model, "age")
+	field := model.Field("age")
 	expression := field.Attributes[0].Arguments[0].Expression
 
 	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
@@ -140,7 +140,7 @@ func TestDefault_ValidID(t *testing.T) {
 	}`})
 
 	model := query.Model(schema, "Person")
-	field := query.Field(model, "personId")
+	field := model.Field("personId")
 	expression := field.Attributes[0].Arguments[0].Expression
 
 	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)

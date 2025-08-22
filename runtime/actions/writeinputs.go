@@ -134,7 +134,7 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 	//   - create a new row and relate it to the current row (either referencedBy or references), OR
 	//   - determine that it is a primary key reference, do not create a row, and return the FK to the referencing row.
 	for _, input := range message.GetFields() {
-		field := proto.FindField(scope.Schema.GetModels(), model.GetName(), input.GetName())
+		field := model.FindField(input.GetName())
 
 		// If the input is not targeting a model field, then it is either a:
 		//  - Message, with nested fields which we must recurse into, or an
@@ -346,7 +346,7 @@ func targetAssociating(scope *Scope, target []string) bool {
 			if f.GetName() == t {
 				if f.GetType().GetType() == proto.Type_TYPE_MESSAGE {
 					message = scope.Schema.FindMessage(f.GetType().GetMessageName().GetValue())
-					field := proto.FindField(scope.Schema.GetModels(), model.GetName(), t)
+					field := model.FindField(t)
 					model = scope.Schema.FindModel(field.GetType().GetModelName().GetValue())
 				}
 				found = true
@@ -370,7 +370,7 @@ func messageAssociating(scope *Scope, message *proto.Message, model *proto.Model
 			continue
 		}
 
-		field := proto.FindField(scope.Schema.GetModels(), model.GetName(), input.GetName())
+		field := model.FindField(input.GetName())
 
 		// If any non-id field is being set, then we are not associating.
 		// This indicates that we are creating.

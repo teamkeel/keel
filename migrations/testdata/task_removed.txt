@@ -1,0 +1,31 @@
+task Person {
+  fields {
+    name Text
+  }
+}
+
+task Animal {
+  fields {
+    name Text
+  }
+}
+
+===
+
+task Person {
+    fields {
+        name Text
+    }
+}
+
+===
+
+DROP TABLE "animal" CASCADE;
+
+=== 
+
+[
+  { "Model": "Animal", "Field": "", "Type": "REMOVED" }
+]
+
+

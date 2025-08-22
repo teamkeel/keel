@@ -102,7 +102,7 @@ func EmbedAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors
 			model := currentModel
 			for _, fragment := range ident.Fragments {
 				// get the field in the relationship fragments
-				currentField := query.ModelField(model, fragment)
+				currentField := model.Field(fragment)
 				if currentField == nil {
 					errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 						errorhandling.AttributeArgumentError,

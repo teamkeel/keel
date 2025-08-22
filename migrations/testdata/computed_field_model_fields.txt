@@ -1,7 +1,5 @@
 ===
 
-
-
 model OrderJob {
     fields {
         customer Customer @computed(orderJob.order.customer)
@@ -19,6 +17,13 @@ model Customer {
     fields {
         name Text
         orders Order[]
+    }
+}
+
+task ProcessOrder {
+    fields {
+        order Order
+        customer Customer @computed(processOrder.order.customer)
     }
 }
 
@@ -80,17 +85,12 @@ CREATE TABLE "order_job" (
 "updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 ALTER TABLE "order_job" ADD CONSTRAINT order_job_id_pkey PRIMARY KEY ("id");
+CREATE TABLE "process_order" (
+
+);
 ALTER TABLE "order" ADD FOREIGN KEY ("customer_id") REFERENCES "customer"("id") ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE;
 ALTER TABLE "order_job" ADD FOREIGN KEY ("customer_id") REFERENCES "customer"("id") ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE;
 ALTER TABLE "order_job" ADD FOREIGN KEY ("order_id") REFERENCES "order"("id") ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE;
-CREATE TRIGGER order_job_create AFTER INSERT ON "order_job" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
-CREATE TRIGGER order_job_update AFTER UPDATE ON "order_job" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
-CREATE TRIGGER order_job_delete AFTER DELETE ON "order_job" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
-CREATE TRIGGER order_job_updated_at BEFORE UPDATE ON "order_job" FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
-CREATE TRIGGER order_create AFTER INSERT ON "order" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
-CREATE TRIGGER order_update AFTER UPDATE ON "order" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
-CREATE TRIGGER order_delete AFTER DELETE ON "order" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
-CREATE TRIGGER order_updated_at BEFORE UPDATE ON "order" FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
 CREATE TRIGGER customer_create AFTER INSERT ON "customer" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
 CREATE TRIGGER customer_update AFTER UPDATE ON "customer" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
 CREATE TRIGGER customer_delete AFTER DELETE ON "customer" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
@@ -99,6 +99,18 @@ CREATE TRIGGER identity_create AFTER INSERT ON "identity" REFERENCING NEW TABLE 
 CREATE TRIGGER identity_update AFTER UPDATE ON "identity" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
 CREATE TRIGGER identity_delete AFTER DELETE ON "identity" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
 CREATE TRIGGER identity_updated_at BEFORE UPDATE ON "identity" FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
+CREATE TRIGGER order_create AFTER INSERT ON "order" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER order_update AFTER UPDATE ON "order" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER order_delete AFTER DELETE ON "order" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER order_updated_at BEFORE UPDATE ON "order" FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
+CREATE TRIGGER order_job_create AFTER INSERT ON "order_job" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER order_job_update AFTER UPDATE ON "order_job" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER order_job_delete AFTER DELETE ON "order_job" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER order_job_updated_at BEFORE UPDATE ON "order_job" FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
+CREATE TRIGGER process_order_create AFTER INSERT ON "process_order" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER process_order_update AFTER UPDATE ON "process_order" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER process_order_delete AFTER DELETE ON "process_order" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER process_order_updated_at BEFORE UPDATE ON "process_order" FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
 CREATE FUNCTION "order_job__customer__92d925ba__comp"(r "order_job") RETURNS TEXT AS $$ BEGIN
 	RETURN (SELECT "order"."customer_id" FROM "order" WHERE "order"."id" IS NOT DISTINCT FROM r."order_id");
 END; $$ LANGUAGE plpgsql;
@@ -116,6 +128,7 @@ CREATE OR REPLACE TRIGGER "order__to__order_job__8302a118__comp_dep" AFTER INSER
 CREATE OR REPLACE TRIGGER "order__to__order_job__8302a118__comp_dep_update" AFTER UPDATE ON "order" FOR EACH ROW WHEN(NEW."customer_id" IS DISTINCT FROM OLD."customer_id") EXECUTE PROCEDURE "order__to__order_job__8302a118__comp_dep"();
 UPDATE "order_job" SET id = id;
 ALTER TABLE "order_job" ALTER COLUMN "customer_id" SET NOT NULL;
+ALTER TABLE "process_order" ALTER COLUMN "customer_id" SET NOT NULL;
 
 ===
 
@@ -124,5 +137,6 @@ ALTER TABLE "order_job" ALTER COLUMN "customer_id" SET NOT NULL;
     {"Model":"Identity","Field":"","Type":"ADDED"},
     {"Model":"KeelAudit","Field":"","Type":"ADDED"},
     {"Model":"Order","Field":"","Type":"ADDED"},
-    {"Model":"OrderJob","Field":"","Type":"ADDED"}
+    {"Model":"OrderJob","Field":"","Type":"ADDED"},
+    {"Model":"ProcessOrder","Field":"","Type":"ADDED"}
 ]

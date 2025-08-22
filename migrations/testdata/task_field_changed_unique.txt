@@ -1,0 +1,29 @@
+task Person {
+    fields {
+        firstName Text @unique
+        lastName Text
+    }
+}
+
+===
+
+task Person {
+    fields {
+        firstName Text
+        lastName Text @unique
+    }
+}
+
+===
+
+ALTER TABLE "person" DROP CONSTRAINT person_first_name_udx;
+ALTER TABLE "person" ADD CONSTRAINT person_last_name_udx UNIQUE ("last_name");
+
+=== 
+
+[
+  { "Model": "Person", "Field": "firstName", "Type": "MODIFIED" },
+  { "Model": "Person", "Field": "lastName", "Type": "MODIFIED" }
+]
+
+

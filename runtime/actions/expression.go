@@ -28,27 +28,33 @@ func (query *QueryBuilder) AddJoinFromFragments(schema *proto.Schema, fragments 
 		return err
 	}
 
-	model := casing.ToCamel(fragments[0])
+	entityName := casing.ToCamel(fragments[0])
+	entity := schema.FindEntity(entityName)
+
+	if entity == nil {
+		return fmt.Errorf("entity '%s' does not exist", entityName)
+	}
+
 	fragmentCount := len(fragments)
 
 	for i := 1; i < fragmentCount-1; i++ {
 		currentFragment := fragments[i]
 
-		if !proto.ModelHasField(schema, model, currentFragment) {
-			return fmt.Errorf("this model: %s, does not have a field of name: %s", model, currentFragment)
+		if !entity.HasField(currentFragment) {
+			return fmt.Errorf("this model: %s, does not have a field of name: %s", entityName, currentFragment)
 		}
 
 		// We know that the current fragment is a related model because it's not the last fragment
-		relatedModelField := proto.FindField(schema.GetModels(), model, currentFragment)
-		relatedModel := relatedModelField.GetType().GetModelName().GetValue()
-		foreignKeyField := proto.GetForeignKeyFieldName(schema.GetModels(), relatedModelField)
+		relatedEntityField := entity.FindField(currentFragment)
+		relatedEntityName := relatedEntityField.GetType().GetModelName().GetValue()
+		foreignKeyField := schema.GetForeignKeyFieldName(relatedEntityField)
 		primaryKey := "id"
 
 		var leftOperand *QueryOperand
 		var rightOperand *QueryOperand
 
 		switch {
-		case relatedModelField.IsBelongsTo():
+		case relatedEntityField.IsBelongsTo():
 			// In a "belongs to" the foreign key is on _this_ model
 			leftOperand = ExpressionField(fragments[:i+1], primaryKey, false)
 			rightOperand = ExpressionField(fragments[:i], foreignKeyField, false)
@@ -58,15 +64,15 @@ func (query *QueryBuilder) AddJoinFromFragments(schema *proto.Schema, fragments 
 			rightOperand = ExpressionField(fragments[:i], primaryKey, false)
 		}
 
-		query.Join(relatedModel, leftOperand, rightOperand)
+		query.Join(relatedEntityName, leftOperand, rightOperand)
 
-		model = relatedModelField.GetType().GetModelName().GetValue()
+		entityName = relatedEntityField.GetType().GetModelName().GetValue()
 	}
 
 	return nil
 }
 
-func generateOperand(ctx context.Context, schema *proto.Schema, model *proto.Model, action *proto.Action, inputs map[string]any, fragments []string) (*QueryOperand, error) {
+func generateOperand(ctx context.Context, schema *proto.Schema, entity proto.Entity, action *proto.Action, inputs map[string]any, fragments []string) (*QueryOperand, error) {
 	ident, err := NormaliseFragments(schema, fragments)
 	if err != nil {
 		return nil, err
@@ -75,7 +81,7 @@ func generateOperand(ctx context.Context, schema *proto.Schema, model *proto.Mod
 	switch {
 	case len(ident) == 2 && proto.EnumExists(schema.GetEnums(), ident[0]):
 		return Value(ident[1]), nil
-	case model != nil && expressions.IsModelDbColumn(model, ident):
+	case entity != nil && expressions.IsEntityDbColumn(entity, ident):
 		return operandFromFragments(schema, ident)
 	case action != nil && expressions.IsInput(schema, action, ident):
 		value, ok := inputs[ident[0]]
@@ -213,18 +219,18 @@ func NormaliseFragments(schema *proto.Schema, fragments []string) ([]string, err
 	}
 
 	// The first fragment will always be the root model name, e.g. "author" in author.posts.title
-	modelTarget := schema.FindModel(casing.ToCamel(fragments[0]))
-	if modelTarget == nil {
+	entityTarget := schema.FindEntity(casing.ToCamel(fragments[0]))
+	if entityTarget == nil {
 		// If it's not the model, then it could be an input
 		return fragments, nil
 	}
 
 	var fieldTarget *proto.Field
 	for i := 1; i < len(fragments); i++ {
-		fieldTarget = proto.FindField(schema.GetModels(), modelTarget.GetName(), fragments[i])
+		fieldTarget = entityTarget.FindField(fragments[i])
 		if fieldTarget.GetType().GetType() == proto.Type_TYPE_MODEL {
-			modelTarget = schema.FindModel(fieldTarget.GetType().GetModelName().GetValue())
-			if modelTarget == nil {
+			entityTarget = schema.FindEntity(fieldTarget.GetType().GetModelName().GetValue())
+			if entityTarget == nil {
 				return nil, fmt.Errorf("model '%s' does not exist in schema", fieldTarget.GetType().GetModelName().GetValue())
 			}
 		}
@@ -247,16 +253,16 @@ func NormaliseFragments(schema *proto.Schema, fragments []string) ([]string, err
 			i++
 		}
 
-		modelTarget := schema.FindModel(casing.ToCamel(fragments[i]))
+		modelTarget := schema.FindEntity(casing.ToCamel(fragments[i]))
 		if modelTarget == nil {
 			return nil, fmt.Errorf("model '%s' does not exist in schema", casing.ToCamel(fragments[i]))
 		}
 
 		var fieldTarget *proto.Field
 		for i := i + 1; i < len(fragments); i++ {
-			fieldTarget = proto.FindField(schema.GetModels(), modelTarget.GetName(), fragments[i])
+			fieldTarget = modelTarget.FindField(fragments[i])
 			if fieldTarget.GetType().GetType() == proto.Type_TYPE_MODEL {
-				modelTarget = schema.FindModel(fieldTarget.GetType().GetModelName().GetValue())
+				modelTarget = schema.FindEntity(fieldTarget.GetType().GetModelName().GetValue())
 				if modelTarget == nil {
 					return nil, fmt.Errorf("model '%s' does not exist in schema", fieldTarget.GetType().GetModelName().GetValue())
 				}
@@ -288,25 +294,26 @@ func operandFromFragments(schema *proto.Schema, fragments []string) (*QueryOpera
 	}
 
 	var field string
-	model := casing.ToCamel(fragments[0])
+	entityName := casing.ToCamel(fragments[0])
+	entity := schema.FindEntity(entityName)
 	fragmentCount := len(fragments)
 	isArray := false
 
 	for i := 1; i < fragmentCount; i++ {
 		currentFragment := fragments[i]
 
-		if !proto.ModelHasField(schema, model, currentFragment) {
-			return nil, fmt.Errorf("this model: %s, does not have a field of name: %s", model, currentFragment)
+		if !entity.HasField(currentFragment) {
+			return nil, fmt.Errorf("this model: %s, does not have a field of name: %s", entityName, currentFragment)
 		}
 
 		if i < fragmentCount-1 {
 			// We know that the current fragment is a model because it's not the last fragment
-			relatedModelField := proto.FindField(schema.GetModels(), model, currentFragment)
-			model = relatedModelField.GetType().GetModelName().GetValue()
+			relatedModelField := entity.FindField(currentFragment)
+			entityName = relatedModelField.GetType().GetModelName().GetValue()
 		} else {
 			// The last fragment is referencing the field
 			field = currentFragment
-			isArray = proto.FindField(schema.GetModels(), model, currentFragment).GetType().GetRepeated()
+			isArray = entity.FindField(currentFragment).GetType().GetRepeated()
 		}
 	}
 

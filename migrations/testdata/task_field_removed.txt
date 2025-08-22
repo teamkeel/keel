@@ -1,0 +1,26 @@
+task Person {
+    fields {
+        name Text
+        age Number
+    }
+}
+
+===
+
+task Person {
+    fields {
+        name Text
+    }
+}
+
+===
+
+ALTER TABLE "person" DROP COLUMN "age" CASCADE;
+
+=== 
+
+[
+  { "Model": "Person", "Field": "age", "Type": "REMOVED" }
+]
+
+

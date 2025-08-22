@@ -99,7 +99,7 @@ func definitionFromIdent(asts []*parser.AST, model *parser.ModelNode, ident *par
 			break
 		}
 
-		field = query.ModelField(model, i.Fragment)
+		field = model.Field(i.Fragment)
 		if field == nil {
 			break
 		}

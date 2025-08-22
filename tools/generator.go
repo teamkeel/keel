@@ -214,7 +214,7 @@ func (g *Generator) GenerateFields(ctx context.Context) error {
 		for _, field := range model.GetFields() {
 			f := Field{
 				Type:      FieldTypeModel,
-				ModelName: field.GetModelName(),
+				ModelName: field.GetEntityName(),
 				FieldName: field.GetName(),
 				EnumName:  field.GetType().GetEnumName().GetValue(),
 			}
@@ -793,7 +793,7 @@ func (g *Generator) makeInputsForMessage(
 			config.EnumName = &f.Type.EnumName.Value
 		}
 
-		if f.GetType().GetModelName() != nil && f.GetType().GetFieldName() != nil && proto.FindField(g.Schema.GetModels(), f.GetType().GetModelName().GetValue(), f.GetType().GetFieldName().GetValue()).GetUnique() {
+		if f.GetType().GetModelName() != nil && f.GetType().GetFieldName() != nil && g.Schema.FindEntity(f.GetType().GetModelName().GetValue()).FindField(f.GetType().GetFieldName().GetValue()).GetUnique() {
 			// generate lookup action only for ID inputs
 			if f.GetType().GetFieldName().GetValue() == fieldNameID {
 				if lookupToolsIDs := g.findListTools(f.GetType().GetModelName().GetValue()); len(lookupToolsIDs) > 0 {
@@ -971,7 +971,7 @@ func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string,
 				}
 				return false
 			}(),
-			ModelName: &f.ModelName,
+			ModelName: &f.EntityName,
 			FieldName: &f.Name,
 			EnumName: func() *string {
 				if f.GetType().GetEnumName() != nil {

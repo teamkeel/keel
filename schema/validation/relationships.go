@@ -203,7 +203,7 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 				}
 
 				// @relation field does not exist
-				otherField := query.Field(otherEntity, relation)
+				otherField := otherEntity.Field(relation)
 				if otherField == nil {
 					errs.AppendError(makeRelationshipError(
 						fmt.Sprintf("The field '%s' does not exist on %s", relation, otherEntity.GetName()),

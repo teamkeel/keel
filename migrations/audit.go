@@ -31,7 +31,7 @@ func auditModel() *proto.Model {
 		Name: modelName,
 		Fields: []*proto.Field{
 			{
-				ModelName:  modelName,
+				EntityName: modelName,
 				Name:       strcase.ToLowerCamel(auditing.ColumnId),
 				PrimaryKey: true,
 				DefaultValue: &proto.DefaultValue{
@@ -45,8 +45,8 @@ func auditModel() *proto.Model {
 				Optional: false,
 			},
 			{
-				ModelName: modelName,
-				Name:      strcase.ToLowerCamel(auditing.ColumnTableName),
+				EntityName: modelName,
+				Name:       strcase.ToLowerCamel(auditing.ColumnTableName),
 				Type: &proto.TypeInfo{
 					Type:      proto.Type_TYPE_STRING,
 					ModelName: wrapperspb.String(modelName),
@@ -55,8 +55,8 @@ func auditModel() *proto.Model {
 				Optional: false,
 			},
 			{
-				ModelName: modelName,
-				Name:      strcase.ToLowerCamel(auditing.ColumnOp),
+				EntityName: modelName,
+				Name:       strcase.ToLowerCamel(auditing.ColumnOp),
 				Type: &proto.TypeInfo{
 					Type:      proto.Type_TYPE_STRING,
 					ModelName: wrapperspb.String(modelName),
@@ -65,8 +65,8 @@ func auditModel() *proto.Model {
 				Optional: false,
 			},
 			{
-				ModelName: modelName,
-				Name:      strcase.ToLowerCamel(auditing.ColumnData),
+				EntityName: modelName,
+				Name:       strcase.ToLowerCamel(auditing.ColumnData),
 				Type: &proto.TypeInfo{
 					Type:      proto.Type_TYPE_STRING,
 					ModelName: wrapperspb.String(modelName),
@@ -75,8 +75,8 @@ func auditModel() *proto.Model {
 				Optional: false,
 			},
 			{
-				ModelName: modelName,
-				Name:      strcase.ToLowerCamel(auditing.ColumnCreatedAt),
+				EntityName: modelName,
+				Name:       strcase.ToLowerCamel(auditing.ColumnCreatedAt),
 				DefaultValue: &proto.DefaultValue{
 					UseZeroValue: true,
 				},
@@ -88,8 +88,8 @@ func auditModel() *proto.Model {
 				Optional: false,
 			},
 			{
-				ModelName: modelName,
-				Name:      strcase.ToLowerCamel(auditing.ColumnIdentityId),
+				EntityName: modelName,
+				Name:       strcase.ToLowerCamel(auditing.ColumnIdentityId),
 				Type: &proto.TypeInfo{
 					Type:      proto.Type_TYPE_ID,
 					ModelName: wrapperspb.String(modelName),
@@ -98,8 +98,8 @@ func auditModel() *proto.Model {
 				Optional: true,
 			},
 			{
-				ModelName: modelName,
-				Name:      strcase.ToLowerCamel(auditing.ColumnTraceId),
+				EntityName: modelName,
+				Name:       strcase.ToLowerCamel(auditing.ColumnTraceId),
 				Type: &proto.TypeInfo{
 					Type:      proto.Type_TYPE_STRING,
 					ModelName: wrapperspb.String(modelName),
@@ -108,8 +108,8 @@ func auditModel() *proto.Model {
 				Optional: true,
 			},
 			{
-				ModelName: modelName,
-				Name:      strcase.ToLowerCamel(auditing.ColumnEventProcessedAt),
+				EntityName: modelName,
+				Name:       strcase.ToLowerCamel(auditing.ColumnEventProcessedAt),
 				Type: &proto.TypeInfo{
 					Type:      proto.Type_TYPE_TIMESTAMP,
 					ModelName: wrapperspb.String(modelName),

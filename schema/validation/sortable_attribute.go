@@ -127,7 +127,7 @@ func SortableAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErr
 			}
 
 			argumentValue := ident.String()
-			modelField := query.ModelField(currentModel, argumentValue)
+			modelField := currentModel.Field(argumentValue)
 
 			if modelField == nil {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(

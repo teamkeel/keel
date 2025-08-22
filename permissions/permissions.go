@@ -199,7 +199,7 @@ func handleOperand(s *proto.Schema, model *proto.Model, ident *parser.Expression
 	case "ctx":
 		return handleContext(s, ident, stmt)
 	case casing.ToLowerCamel(model.GetName()):
-		return handleModel(s, model, ident, stmt)
+		return handleEntity(s, model, ident, stmt)
 	default:
 		// If not context of model must be enum, but still worth checking to be sure
 		enum := proto.FindEnum(s.GetEnums(), ident.Fragments[0])
@@ -238,7 +238,7 @@ func handleContext(s *proto.Schema, ident *parser.ExpressionIdent, stmt *stateme
 			return nil
 		default:
 			inner := &statement{}
-			err := handleModel(
+			err := handleEntity(
 				s,
 				s.FindModel("Identity"),
 				&parser.ExpressionIdent{
@@ -287,7 +287,7 @@ func handleContext(s *proto.Schema, ident *parser.ExpressionIdent, stmt *stateme
 	}
 }
 
-func handleModel(s *proto.Schema, model *proto.Model, ident *parser.ExpressionIdent, stmt *statement) (err error) {
+func handleEntity(s *proto.Schema, entity proto.Entity, ident *parser.ExpressionIdent, stmt *statement) (err error) {
 	fieldName := ""
 	for i, f := range ident.Fragments {
 		switch {
@@ -297,9 +297,9 @@ func handleModel(s *proto.Schema, model *proto.Model, ident *parser.ExpressionId
 
 		// Remaining fragments
 		default:
-			field := proto.FindField(s.GetModels(), model.GetName(), f)
+			field := entity.FindField(f)
 			if field == nil {
-				return fmt.Errorf("model %s has no field %s", model.GetName(), f)
+				return fmt.Errorf("model %s has no field %s", entity.GetName(), f)
 			}
 
 			isLast := i == len(ident.Fragments)-1
@@ -316,28 +316,28 @@ func handleModel(s *proto.Schema, model *proto.Model, ident *parser.ExpressionId
 				// Right alias is the join table
 				rightAlias := fieldName
 
-				field := proto.FindField(s.GetModels(), model.GetName(), f)
+				field := entity.FindField(f)
 				if field == nil {
-					return fmt.Errorf("model %s has no field %s", model.GetName(), f)
+					return fmt.Errorf("model %s has no field %s", entity.GetName(), f)
 				}
 
-				joinModel := s.FindModel(field.GetType().GetModelName().GetValue())
-				if joinModel == nil {
-					return fmt.Errorf("model %s not found in schema", model.GetName())
+				joinEntity := s.FindEntity(field.GetType().GetModelName().GetValue())
+				if joinEntity == nil {
+					return fmt.Errorf("model %s not found in schema", entity.GetName())
 				}
 
-				leftFieldName := proto.GetForeignKeyFieldName(s.GetModels(), field)
-				rightFieldName := joinModel.PrimaryKeyFieldName()
+				leftFieldName := s.GetForeignKeyFieldName(field)
+				rightFieldName := joinEntity.PrimaryKeyFieldName()
 
 				// If not belongs to then swap foreign/primary key
 				if !field.IsBelongsTo() {
-					leftFieldName = model.PrimaryKeyFieldName()
-					rightFieldName = proto.GetForeignKeyFieldName(s.GetModels(), field)
+					leftFieldName = entity.PrimaryKeyFieldName()
+					rightFieldName = s.GetForeignKeyFieldName(field)
 				}
 
 				stmt.joins = append(stmt.joins, fmt.Sprintf(
 					"LEFT JOIN %s AS %s ON %s.%s = %s.%s",
-					identifier(joinModel.GetName()),
+					identifier(joinEntity.GetName()),
 					identifier(rightAlias),
 					identifier(leftAlias),
 					identifier(leftFieldName),
@@ -345,7 +345,7 @@ func handleModel(s *proto.Schema, model *proto.Model, ident *parser.ExpressionId
 					identifier(rightFieldName),
 				))
 
-				model = joinModel
+				entity = joinEntity
 			}
 
 			if isLast {

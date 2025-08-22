@@ -59,7 +59,7 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 	writeFunctionHookTypes(sdkTypes)
 	writeRouteFunctionTypes(sdkTypes)
 
-	writeTableConfig(sdk, schema.GetModels())
+	writeTableConfig(schema, sdk, schema.GetModels())
 	writeAPIFactory(sdk, schema)
 
 	sdk.Writeln("export * from '@teamkeel/functions-runtime';")
@@ -400,7 +400,7 @@ func writeCreateValuesType(w *codegen.Writer, schema *proto.Schema, model *proto
 				w.Write("Array<")
 			}
 
-			relation := schema.FindModel(field.GetType().GetModelName().GetValue())
+			relation := schema.FindEntity(field.GetType().GetModelName().GetValue())
 
 			// For a has-many we need to omit the fields that relate to _this_ model.
 			// For example if we're making the create values type for author, and this
@@ -408,7 +408,7 @@ func writeCreateValuesType(w *codegen.Writer, schema *proto.Schema, model *proto
 			// to expect you to provide "author" or "authorId" - as that field will be filled
 			// in when the author record is created
 			if field.IsHasMany() {
-				inverseField := proto.FindField(schema.GetModels(), relation.GetName(), field.GetInverseFieldName().GetValue())
+				inverseField := relation.FindField(field.GetInverseFieldName().GetValue())
 				w.Writef("Omit<%sCreateValues, '%s' | '%s'>", relation.GetName(), inverseField.GetName(), inverseField.GetForeignKeyFieldName().GetValue())
 			} else {
 				w.Writef("%sCreateValues", relation.GetName())
@@ -1157,7 +1157,7 @@ func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("export { createContextAPI, createJobContextAPI, createSubscriberContextAPI, createFlowContextAPI };")
 }
 
-func writeTableConfig(w *codegen.Writer, models []*proto.Model) {
+func writeTableConfig(schema *proto.Schema, w *codegen.Writer, models []*proto.Model) {
 	w.Write("const tableConfigMap = ")
 
 	// In case the words map and string over and over aren't clear enough
@@ -1173,7 +1173,7 @@ func writeTableConfig(w *codegen.Writer, models []*proto.Model) {
 
 			relationshipConfig := map[string]string{
 				"referencesTable": casing.ToSnake(field.GetType().GetModelName().GetValue()),
-				"foreignKey":      casing.ToSnake(proto.GetForeignKeyFieldName(models, field)),
+				"foreignKey":      casing.ToSnake(schema.GetForeignKeyFieldName(field)),
 			}
 
 			switch {

@@ -2,29 +2,24 @@
 
 model Person {
     fields {
-        // deliberately not in alphabetical order to test ordering of constraint columns
-        thingC Text
-        thingB Text
-        thingA Text
+        name Text
+        code Text
     }
-
-    // deliberately different order from the fields order
-    @unique([thingB, thingC, thingA])
 }
 
 task ProcessPerson {
     fields {
-        // deliberately not in alphabetical order to test ordering of constraint columns
-        thingC Text
-        thingB Text
-        thingA Text
+        person Person
+        personCode Text @unique
+        companyCode Text
+        comments Text @default("none")
+        file File
     }
 
-    // deliberately different order from the fields order
-    @unique([thingB, thingC, thingA])
+    @unique([personCode, companyCode])
 }
 
-=== 
+===
 
 CREATE TABLE "identity" (
 "email" TEXT,
@@ -61,21 +56,21 @@ CREATE TABLE "keel_audit" (
 );
 ALTER TABLE "keel_audit" ADD CONSTRAINT keel_audit_id_pkey PRIMARY KEY ("id");
 CREATE TABLE "person" (
-"thing_c" TEXT NOT NULL,
-"thing_b" TEXT NOT NULL,
-"thing_a" TEXT NOT NULL,
+"name" TEXT NOT NULL,
+"code" TEXT NOT NULL,
 "id" TEXT NOT NULL DEFAULT ksuid(),
 "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
 "updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 ALTER TABLE "person" ADD CONSTRAINT person_id_pkey PRIMARY KEY ("id");
-ALTER TABLE "person" ADD CONSTRAINT person_thing_a_thing_b_thing_c_udx UNIQUE ("thing_a", "thing_b", "thing_c");
 CREATE TABLE "process_person" (
-"thing_c" TEXT NOT NULL,
-"thing_b" TEXT NOT NULL,
-"thing_a" TEXT NOT NULL
+"person_code" TEXT NOT NULL,
+"company_code" TEXT NOT NULL,
+"comments" TEXT NOT NULL DEFAULT 'none',
+"file" JSONB NOT NULL
 );
-ALTER TABLE "process_person" ADD CONSTRAINT process_person_thing_a_thing_b_thing_c_udx UNIQUE ("thing_a", "thing_b", "thing_c");
+ALTER TABLE "process_person" ADD CONSTRAINT process_person_person_code_udx UNIQUE ("person_code");
+ALTER TABLE "process_person" ADD CONSTRAINT process_person_company_code_person_code_udx UNIQUE ("company_code", "person_code");
 CREATE TRIGGER identity_create AFTER INSERT ON "identity" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
 CREATE TRIGGER identity_update AFTER UPDATE ON "identity" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
 CREATE TRIGGER identity_delete AFTER DELETE ON "identity" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
@@ -88,7 +83,8 @@ CREATE TRIGGER process_person_create AFTER INSERT ON "process_person" REFERENCIN
 CREATE TRIGGER process_person_update AFTER UPDATE ON "process_person" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
 CREATE TRIGGER process_person_delete AFTER DELETE ON "process_person" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
 CREATE TRIGGER process_person_updated_at BEFORE UPDATE ON "process_person" FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
-=== 
+
+===
 
 [
     {"Model":"Identity","Field":"","Type":"ADDED"},

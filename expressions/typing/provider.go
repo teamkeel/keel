@@ -56,7 +56,7 @@ func (p *TypeProvider) FindStructFieldType(structType, fieldName string) (*types
 	parentIsArray := strings.HasSuffix(structType, "[]")
 
 	if entity := query.Entity(p.Schema, obj); entity != nil {
-		field := query.Field(entity, fieldName)
+		field := entity.Field(fieldName)
 		if field == nil {
 			return nil, false
 		}

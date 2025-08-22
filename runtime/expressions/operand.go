@@ -6,11 +6,11 @@ import (
 	"github.com/teamkeel/keel/proto"
 )
 
-// IsModelDbColumn returns true if the expression operand refers to a field value residing in the database.
+// IsEntityDbColumn returns true if the expression operand refers to a field value residing in the database.
 // For example, a where condition might filter on reading data,
 // such as: @where(post.author.isActive).
-func IsModelDbColumn(model *proto.Model, fragments []string) bool {
-	return fragments[0] == strcase.ToLowerCamel(model.GetName())
+func IsEntityDbColumn(entity proto.Entity, fragments []string) bool {
+	return fragments[0] == strcase.ToLowerCamel(entity.GetName())
 }
 
 // IsContextDbColumn returns true if the expression refers to a value on the context

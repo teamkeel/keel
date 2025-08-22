@@ -24,6 +24,17 @@ func (s *Schema) HasFiles() bool {
 	return false
 }
 
+// FindEntity finds within the schema the model or task that has the given name. Returns nil if model not found.
+func (s *Schema) FindEntity(entityName string) Entity {
+	for _, e := range s.Entities() {
+		if e.GetName() == entityName {
+			return e
+		}
+	}
+
+	return nil
+}
+
 // FindModel finds within the schema the model that has the given name. Returns nil if model not found.
 func (s *Schema) FindModel(modelName string) *Model {
 	for _, m := range s.GetModels() {

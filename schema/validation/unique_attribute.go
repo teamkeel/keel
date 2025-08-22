@@ -8,7 +8,6 @@ import (
 	"github.com/teamkeel/keel/schema/attributes"
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
-	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
@@ -19,7 +18,7 @@ import (
 // - composite @unique attributes must not have duplicate field names
 // - composite @unique can't specify has-many fields.
 func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
-	var currentModel *parser.ModelNode
+	var currentEntity parser.Entity
 	var currentField *parser.FieldNode
 	var attribute *parser.AttributeNode
 
@@ -27,10 +26,16 @@ func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationError
 
 	return Visitor{
 		EnterModel: func(m *parser.ModelNode) {
-			currentModel = m
+			currentEntity = m
 		},
 		LeaveModel: func(m *parser.ModelNode) {
-			currentModel = nil
+			currentEntity = nil
+		},
+		EnterTask: func(t *parser.TaskNode) {
+			currentEntity = t
+		},
+		LeaveTask: func(t *parser.TaskNode) {
+			currentEntity = nil
 		},
 		EnterField: func(f *parser.FieldNode) {
 			currentField = f
@@ -80,10 +85,6 @@ func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationError
 						return
 					}
 
-					// fieldNames := lo.Map(operands, func(o *parser.ExpressionIdent, _ int) string {
-					// 	return o.ToString()
-					// })
-
 					// check there are no duplicate field names specified in the composite uniqueness
 					// constraint e.g @unique([fieldA, fieldA])
 					dupes := findDuplicateConstraints(operands)
@@ -105,7 +106,7 @@ func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationError
 					// check every field specified in the unique constraint against the standard
 					// restrictions for @unique attribute usage
 					for _, uniqueField := range operands {
-						field := query.ModelField(currentModel, uniqueField.String())
+						field := currentEntity.Field(uniqueField.String())
 
 						if field == nil {
 							// the field isnt a recognised field on the model, so abort as this is covered
@@ -143,7 +144,7 @@ func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationError
 				return
 			}
 
-			issues, err := attributes.ValidateCompositeUnique(currentModel, expression)
+			issues, err := attributes.ValidateCompositeUnique(currentEntity, expression)
 			if err != nil {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeExpressionError,

@@ -21,11 +21,6 @@ func TestFindModels(t *testing.T) {
 	require.Equal(t, []string{"ModelA", "ModelC"}, namesOfFoundModels)
 }
 
-func TestFindField(t *testing.T) {
-	t.Parallel()
-	require.Equal(t, "Field2", FindField(referenceSchema.GetModels(), "ModelA", "Field2").GetName())
-}
-
 func TestModelExists(t *testing.T) {
 	t.Parallel()
 	require.True(t, ModelExists(referenceSchema.GetModels(), "ModelA"))

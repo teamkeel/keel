@@ -2237,7 +2237,7 @@ const tableConfigMap = {
 };`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		writeTableConfig(w, s.GetModels())
+		writeTableConfig(s, w, s.GetModels())
 	})
 }
 

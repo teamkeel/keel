@@ -2,6 +2,7 @@ package parser
 
 type Entity interface {
 	GetName() string
+	Field(name string) *FieldNode
 	Fields() []*FieldNode
 	GetAttributes() []*AttributeNode
 	IsBuiltIn() bool
@@ -28,6 +29,17 @@ func (m *ModelNode) Fields() (res []*FieldNode) {
 	return res
 }
 
+func (m *ModelNode) Field(name string) *FieldNode {
+	for _, section := range m.Sections {
+		for _, field := range section.Fields {
+			if field.Name.Value == name {
+				return field
+			}
+		}
+	}
+	return nil
+}
+
 func (m *ModelNode) GetAttributes() (res []*AttributeNode) {
 
 	for _, section := range m.Sections {
@@ -49,6 +61,17 @@ func (m *ModelNode) EntityType() string {
 
 func (t *TaskNode) GetName() string {
 	return t.Name.Value
+}
+
+func (t *TaskNode) Field(name string) *FieldNode {
+	for _, section := range t.Sections {
+		for _, field := range section.Fields {
+			if field.Name.Value == name {
+				return field
+			}
+		}
+	}
+	return nil
 }
 
 func (t *TaskNode) Fields() (res []*FieldNode) {

@@ -192,8 +192,8 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 
 	statements := []string{}
 	changes := []*DatabaseChange{}
-	modelsAdded := []*proto.Model{}
-	existingModels := []*proto.Model{}
+	entitiesAdded := []proto.Entity{}
+	existingEntities := []proto.Entity{}
 
 	// We're going to analyse the database changes required using a temporarily mutated schema.
 	// Specifically we're going to inject a fake, hard-coded KeelAudit model into it.
@@ -209,65 +209,63 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 	pushAuditModel(schema)
 	defer popAuditModel(schema)
 
-	modelNames := schema.ModelNames()
-
-	// Add any new models
-	for _, modelName := range modelNames {
-		model := schema.FindModel(modelName)
+	// Add any new entities
+	for _, entity := range schema.Entities() {
+		entity := schema.FindEntity(entity.GetName())
 		_, exists := lo.Find(columns, func(c *ColumnRow) bool {
-			return c.TableName == casing.ToSnake(model.GetName())
+			return c.TableName == casing.ToSnake(entity.GetName())
 		})
 		if !exists {
-			stmt, err := createTableStmt(schema, model)
+			stmt, err := createTableStmt(schema, entity)
 			if err != nil {
 				return nil, err
 			}
 			statements = append(statements, stmt)
 			changes = append(changes, &DatabaseChange{
-				Model: model.GetName(),
+				Model: entity.GetName(),
 				Type:  ChangeTypeAdded,
 			})
-			modelsAdded = append(modelsAdded, model)
+			entitiesAdded = append(entitiesAdded, entity)
 			continue
 		}
 
-		existingModels = append(existingModels, model)
+		existingEntities = append(existingEntities, entity)
 	}
 
 	// Foreign key constraints for new models (done after all tables have been created)
-	for _, model := range modelsAdded {
-		statements = append(statements, fkConstraintsForModel(model)...)
+	for _, entity := range entitiesAdded {
+		statements = append(statements, fkConstraintsForEntity(entity)...)
 	}
 
-	// Drop tables if models removed from schema
+	// Drop tables if models or tasks removed from schema
 	tablesDeleted := map[string]bool{}
 	for _, column := range columns {
 		if _, ok := tablesDeleted[column.TableName]; ok {
 			continue
 		}
 
-		modelName := casing.ToCamel(column.TableName)
+		entityName := casing.ToCamel(column.TableName)
 
-		m := schema.FindModel(modelName)
+		m := schema.FindEntity(entityName)
 		if m == nil {
 			tablesDeleted[column.TableName] = true
-			statements = append(statements, dropTableStmt(modelName))
+			statements = append(statements, dropTableStmt(entityName))
 			changes = append(changes, &DatabaseChange{
-				Model: modelName,
+				Model: entityName,
 				Type:  ChangeTypeRemoved,
 			})
 		}
 	}
 
 	// Add audit log triggers all model tables excluding the audit table itself.
-	for _, model := range schema.GetModels() {
-		if model.GetName() != strcase.ToCamel(auditing.TableName) {
-			stmt := createAuditTriggerStmts(existingTriggers, model)
+	for _, entity := range schema.Entities() {
+		if entity.GetName() != strcase.ToCamel(auditing.TableName) {
+			stmt := createAuditTriggerStmts(existingTriggers, entity)
 			if stmt != "" {
 				statements = append(statements, stmt)
 			}
 
-			stmt = createUpdatedAtTriggerStmts(existingTriggers, model)
+			stmt = createUpdatedAtTriggerStmts(existingTriggers, entity)
 			if stmt != "" {
 				statements = append(statements, stmt)
 			}
@@ -275,14 +273,14 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 	}
 
 	// Updating columns for tables that already exist
-	for _, model := range existingModels {
-		tableName := casing.ToSnake(model.GetName())
+	for _, entity := range existingEntities {
+		tableName := casing.ToSnake(entity.GetName())
 
 		tableColumns := lo.Filter(columns, func(c *ColumnRow, _ int) bool {
 			return c.TableName == tableName
 		})
 
-		for _, field := range model.GetFields() {
+		for _, field := range entity.GetFields() {
 			if field.GetType().GetType() == proto.Type_TYPE_MODEL {
 				continue
 			}
@@ -292,20 +290,20 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 			})
 			if column == nil {
 				// Add new column
-				stmt, err := addColumnStmt(schema, model.GetName(), field)
+				stmt, err := addColumnStmt(schema, entity.GetName(), field)
 				if err != nil {
 					return nil, err
 				}
 				statements = append(statements, stmt)
 				changes = append(changes, &DatabaseChange{
-					Model: model.GetName(),
+					Model: entity.GetName(),
 					Field: field.GetName(),
 					Type:  ChangeTypeAdded,
 				})
 
 				// When the field added is a foreign key field, we add a corresponding foreign key constraint.
 				if field.GetForeignKeyInfo() != nil {
-					statements = append(statements, fkConstraint(field, model))
+					statements = append(statements, fkConstraint(field, entity))
 				}
 				continue
 			}
@@ -313,7 +311,7 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 			// Column already exists - see if any changes need to be applied
 			hasChanged := false
 
-			alterSQL, err := alterColumnStmt(model.GetName(), field, column)
+			alterSQL, err := alterColumnStmt(entity.GetName(), field, column)
 			if err != nil {
 				return nil, err
 			}
@@ -327,7 +325,7 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 			})
 
 			if field.GetUnique() && !field.GetPrimaryKey() && !hasUniqueConstraint {
-				uniqueStmt, err := addUniqueConstraintStmt(schema, model.GetName(), []string{field.GetName()})
+				uniqueStmt, err := addUniqueConstraintStmt(schema, entity.GetName(), []string{field.GetName()})
 				if err != nil {
 					return nil, err
 				}
@@ -342,7 +340,7 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 
 			if hasChanged {
 				changes = append(changes, &DatabaseChange{
-					Model: model.GetName(),
+					Model: entity.GetName(),
 					Field: field.GetName(),
 					Type:  ChangeTypeModified,
 				})
@@ -362,20 +360,20 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 
 			colName := strings.TrimSuffix(column.ColumnName, sequenceSuffix)
 
-			field := proto.FindField(schema.GetModels(), model.GetName(), casing.ToLowerCamel(colName))
+			field := entity.FindField(casing.ToLowerCamel(colName))
 			if field == nil {
-				statements = append(statements, dropColumnStmt(model.GetName(), column.ColumnName))
+				statements = append(statements, dropColumnStmt(entity.GetName(), column.ColumnName))
 
 				// Remove __sequence suffix if present
 				changes = append(changes, &DatabaseChange{
-					Model: model.GetName(),
+					Model: entity.GetName(),
 					Field: casing.ToLowerCamel(colName),
 					Type:  ChangeTypeRemoved,
 				})
 			}
 		}
 
-		stmts, err := compositeUniqueConstraints(schema, model, constraints)
+		stmts, err := compositeUniqueConstraints(schema, entity, constraints)
 		if err != nil {
 			return nil, err
 		}
@@ -383,7 +381,7 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 		if len(stmts) > 0 {
 			statements = append(statements, stmts...)
 			changes = append(changes, &DatabaseChange{
-				Model: model.GetName(),
+				Model: entity.GetName(),
 				Type:  ChangeTypeModified,
 			})
 		}
@@ -432,11 +430,10 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 
 	// For required computed fields, we need to set the NOT NULL constraint as this was deferred
 	// to the end of the migration because we may have needed to populate existing rows first.
-	for _, modelName := range modelNames {
-		model := schema.FindModel(modelName)
-		for _, field := range model.GetFields() {
+	for _, entity := range schema.Entities() {
+		for _, field := range entity.GetFields() {
 			column, has := lo.Find(columns, func(c *ColumnRow) bool {
-				return c.TableName == casing.ToSnake(model.GetName()) && c.ColumnName == casing.ToSnake(field.GetName())
+				return c.TableName == casing.ToSnake(entity.GetName()) && c.ColumnName == casing.ToSnake(field.GetName())
 			})
 
 			if field.GetComputedExpression() == nil || field.GetOptional() {
@@ -449,20 +446,20 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 			}
 
 			if !has {
-				statements = append(statements, fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s SET NOT NULL;", Identifier(model.GetName()), Identifier(col)))
+				statements = append(statements, fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s SET NOT NULL;", Identifier(entity.GetName()), Identifier(col)))
 				continue
 			}
 
 			if field.GetOptional() == column.NotNull && !field.GetOptional() && field.GetComputedExpression() != nil {
-				statements = append(statements, fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s SET NOT NULL;", Identifier(model.GetName()), Identifier(col)))
+				statements = append(statements, fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s SET NOT NULL;", Identifier(entity.GetName()), Identifier(col)))
 
 				if lo.ContainsBy(changes, func(c *DatabaseChange) bool {
-					return c.Model == model.GetName() && c.Field == field.GetName() && c.Type == ChangeTypeModified
+					return c.Model == entity.GetName() && c.Field == field.GetName() && c.Type == ChangeTypeModified
 				}) {
 					continue
 				}
 				changes = append(changes, &DatabaseChange{
-					Model: model.GetName(),
+					Model: entity.GetName(),
 					Field: field.GetName(),
 					Type:  ChangeTypeModified,
 				})
@@ -484,12 +481,12 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 // compositeUniqueConstraintsForModel finds all composite unique constraints in model and
 // returns a map where the keys are constraint names and the keys are the field names in
 // that constraint.
-func compositeUniqueConstraintsForModel(model *proto.Model) map[string][]string {
+func compositeUniqueConstraintsForModel(entity proto.Entity) map[string][]string {
 	uniqueConstraints := map[string][]string{}
-	for _, field := range model.GetFields() {
+	for _, field := range entity.GetFields() {
 		if len(field.GetUniqueWith()) > 0 {
 			fieldNames := append([]string{field.GetName()}, field.GetUniqueWith()...)
-			constraintName := UniqueConstraintName(model.GetName(), fieldNames)
+			constraintName := UniqueConstraintName(entity.GetName(), fieldNames)
 			uniqueConstraints[constraintName] = fieldNames
 		}
 	}
@@ -498,11 +495,11 @@ func compositeUniqueConstraintsForModel(model *proto.Model) map[string][]string 
 
 // compositeUniqueConstraints generates SQL statements for dropping or creating composite
 // unique constraints for model.
-func compositeUniqueConstraints(schema *proto.Schema, model *proto.Model, constraints []*ConstraintRow) (statements []string, err error) {
-	uniqueConstraints := compositeUniqueConstraintsForModel(model)
+func compositeUniqueConstraints(schema *proto.Schema, entity proto.Entity, constraints []*ConstraintRow) (statements []string, err error) {
+	uniqueConstraints := compositeUniqueConstraintsForModel(entity)
 
 	for _, c := range constraints {
-		if c.TableName != casing.ToSnake(model.GetName()) || c.ConstraintType != "u" || len(c.ConstrainedColumns) == 1 {
+		if c.TableName != casing.ToSnake(entity.GetName()) || c.ConstraintType != "u" || len(c.ConstrainedColumns) == 1 {
 			continue
 		}
 
@@ -516,7 +513,7 @@ func compositeUniqueConstraints(schema *proto.Schema, model *proto.Model, constr
 	}
 
 	for _, fieldNames := range uniqueConstraints {
-		stmt, err := addUniqueConstraintStmt(schema, model.GetName(), fieldNames)
+		stmt, err := addUniqueConstraintStmt(schema, entity.GetName(), fieldNames)
 		if err != nil {
 			return nil, err
 		}
@@ -552,17 +549,17 @@ func computedFieldDependencies(schema *proto.Schema) (map[*proto.Field][]*depPai
 			}
 
 			for _, ident := range idents {
-				currModel := schema.FindModel(strcase.ToCamel(ident.Fragments[0]))
+				currEntity := schema.FindEntity(strcase.ToCamel(ident.Fragments[0]))
 
-				if currModel == nil {
+				if currEntity == nil {
 					continue
 				}
 
 				for i, f := range ident.Fragments[1:] {
-					currField := currModel.FindField(f)
+					currField := currEntity.FindField(f)
 
 					if i < len(ident.Fragments)-2 {
-						currModel = schema.FindModel(currField.GetType().GetModelName().GetValue())
+						currEntity = schema.FindEntity(currField.GetType().GetModelName().GetValue())
 						continue
 					}
 
@@ -628,7 +625,7 @@ func computedFieldsStmts(ctx context.Context, schema *proto.Schema, existingComp
 
 			f := fieldFromComputedFnName(schema, fn)
 			changes = append(changes, &DatabaseChange{
-				Model: f.GetModelName(),
+				Model: f.GetEntityName(),
 				Field: f.GetName(),
 				Type:  ChangeTypeModified,
 			})
@@ -646,7 +643,7 @@ func computedFieldsStmts(ctx context.Context, schema *proto.Schema, existingComp
 			f := fieldFromComputedFnName(schema, fn)
 			if f != nil {
 				change := &DatabaseChange{
-					Model: f.GetModelName(),
+					Model: f.GetEntityName(),
 					Field: f.GetName(),
 					Type:  ChangeTypeModified,
 				}
@@ -676,12 +673,12 @@ func computedFieldsStmts(ctx context.Context, schema *proto.Schema, existingComp
 		return nil, nil, err
 	}
 
-	// For each model, we need to create a function which calls all the computed functions for fields on this model
+	// For each model and task, we need to create a function which calls all the computed functions for fields on this model
 	// Order is important because computed fields can depend on each other - this is catered for
-	for _, model := range schema.GetModels() {
+	for _, entity := range schema.Entities() {
 		modelhasChanged := false
 		for k, v := range changedFields {
-			if k.GetModelName() == model.GetName() && v {
+			if k.GetEntityName() == entity.GetName() && v {
 				modelhasChanged = true
 			}
 		}
@@ -689,7 +686,7 @@ func computedFieldsStmts(ctx context.Context, schema *proto.Schema, existingComp
 			continue
 		}
 
-		computedFields := model.GetComputedFields()
+		computedFields := entity.GetComputedFields()
 		if len(computedFields) == 0 {
 			continue
 		}
@@ -706,7 +703,7 @@ func computedFieldsStmts(ctx context.Context, schema *proto.Schema, existingComp
 
 			// Process dependencies first
 			for _, dep := range dependencies[field] {
-				if dep.field.GetModelName() == field.GetModelName() {
+				if dep.field.GetEntityName() == field.GetEntityName() {
 					visit(dep.field)
 				}
 			}
@@ -731,13 +728,13 @@ func computedFieldsStmts(ctx context.Context, schema *proto.Schema, existingComp
 		}
 
 		// Generate the trigger function which executes all the computed field functions for the model.
-		execFnName := computedExecFuncName(model)
+		execFnName := computedExecFuncName(entity)
 		sql := fmt.Sprintf("CREATE OR REPLACE FUNCTION \"%s\"() RETURNS TRIGGER AS $$ BEGIN\n\t%sRETURN NEW;\nEND; $$ LANGUAGE plpgsql;", execFnName, strings.Join(stmts, ""))
 
 		// Generate the table trigger which executed the trigger function.
 		// This must be a BEFORE trigger because we want to return the row with its computed fields being computed.
-		triggerName := computedTriggerName(model)
-		trigger := fmt.Sprintf("CREATE OR REPLACE TRIGGER \"%s\" BEFORE INSERT OR UPDATE ON %s FOR EACH ROW EXECUTE PROCEDURE \"%s\"();", triggerName, Identifier(model.GetName()), execFnName)
+		triggerName := computedTriggerName(entity)
+		trigger := fmt.Sprintf("CREATE OR REPLACE TRIGGER \"%s\" BEFORE INSERT OR UPDATE ON %s FOR EACH ROW EXECUTE PROCEDURE \"%s\"();", triggerName, Identifier(entity.GetName()), execFnName)
 
 		statements = append(statements, sql)
 		statements = append(statements, trigger)
@@ -750,7 +747,7 @@ func computedFieldsStmts(ctx context.Context, schema *proto.Schema, existingComp
 	for field, deps := range dependencies {
 		for _, dep := range deps {
 			// Skip this because the triggers call on the exec functions themselves
-			if field.GetModelName() == dep.field.GetModelName() {
+			if field.GetEntityName() == dep.field.GetEntityName() {
 				continue
 			}
 
@@ -759,39 +756,41 @@ func computedFieldsStmts(ctx context.Context, schema *proto.Schema, existingComp
 				return nil, nil, err
 			}
 
-			currentModel := casing.ToCamel(fragments[0])
+			currentEntityName := casing.ToCamel(fragments[0])
+			currentEntity := schema.FindEntity(currentEntityName)
 			for i := 1; i < len(fragments)-1; i++ {
-				baseQuery := actions.NewQuery(schema.FindModel(currentModel))
+				baseQuery := actions.NewQuery(currentEntity)
 				baseQuery.Select(actions.IdField())
 
 				expr := strings.Join(fragments, ".")
 				// Get the fragment pair from the previous model to the current model
 				// We need to reset the first fragment to the model name and not the previous model's field name
 				subFragments := slices.Clone(fragments[i-1 : i+1])
-				subFragments[0] = strcase.ToLowerCamel(currentModel)
+				subFragments[0] = strcase.ToLowerCamel(currentEntityName)
 
-				if !proto.ModelHasField(schema, currentModel, fragments[i]) {
-					return nil, nil, fmt.Errorf("this model: %s, does not have a field of name: %s", currentModel, subFragments[0])
+				if !currentEntity.HasField(fragments[i]) {
+					return nil, nil, fmt.Errorf("this entity: %s, does not have a field of name: %s", currentEntityName, fragments[i])
 				}
 
 				// We know that the current fragment is a related model because it's not the last fragment
-				relatedModelField := proto.FindField(schema.GetModels(), currentModel, fragments[i])
-				foreignKeyField := proto.GetForeignKeyFieldName(schema.GetModels(), relatedModelField)
+				relatedModelField := currentEntity.FindField(fragments[i])
+				foreignKeyField := schema.GetForeignKeyFieldName(relatedModelField)
 
-				previousModel := currentModel
-				currentModel = relatedModelField.GetType().GetModelName().GetValue()
+				previous := currentEntityName
+				currentEntityName = relatedModelField.GetType().GetModelName().GetValue()
+				currentEntity = schema.FindEntity(currentEntityName)
 				stmt := ""
 
 				// If the relationship is a belongs to or has many, we need to update the id field on the previous model
 				switch {
 				case relatedModelField.IsBelongsTo():
-					stmt += fmt.Sprintf("UPDATE %s SET id = id WHERE %s IN (NEW.id, OLD.id);", Identifier(previousModel), Identifier(foreignKeyField))
+					stmt += fmt.Sprintf("UPDATE %s SET id = id WHERE %s IN (NEW.id, OLD.id);", Identifier(previous), Identifier(foreignKeyField))
 				default:
-					stmt += fmt.Sprintf("UPDATE %s SET id = id WHERE id IN (NEW.%s, OLD.%s);", Identifier(previousModel), Identifier(foreignKeyField), Identifier(foreignKeyField))
+					stmt += fmt.Sprintf("UPDATE %s SET id = id WHERE id IN (NEW.%s, OLD.%s);", Identifier(previous), Identifier(foreignKeyField), Identifier(foreignKeyField))
 				}
 
 				// Trigger function which will perform a fake update on the earlier model in the expression chain
-				fnName := computedDependencyFuncName(schema.FindModel(strcase.ToCamel(previousModel)), schema.FindModel(currentModel), strings.Split(expr, "."))
+				fnName := computedDependencyFuncName(schema.FindEntity(strcase.ToCamel(previous)), schema.FindEntity(currentEntityName), strings.Split(expr, "."))
 				sql := fmt.Sprintf("CREATE OR REPLACE FUNCTION \"%s\"() RETURNS TRIGGER AS $$\nBEGIN\n\t%s\n\tRETURN NULL;\nEND; $$ LANGUAGE plpgsql;\n", fnName, stmt)
 
 				// For the comp_dep function on the target field's model, we include a filter on the UPDATE trigger to only trigger if the target field has changed
@@ -808,8 +807,8 @@ func computedFieldsStmts(ctx context.Context, schema *proto.Schema, existingComp
 
 				// Must be an AFTER trigger as we need the data to be written in order to perform the joins and for the computation to take into account the updated data
 				triggerName := fnName
-				sql += fmt.Sprintf("CREATE OR REPLACE TRIGGER \"%s\" AFTER INSERT OR DELETE ON %s FOR EACH ROW EXECUTE PROCEDURE \"%s\"();", triggerName, Identifier(currentModel), fnName)
-				sql += fmt.Sprintf("\nCREATE OR REPLACE TRIGGER \"%s_update\" AFTER UPDATE ON %s FOR EACH ROW WHEN(%s) EXECUTE PROCEDURE \"%s\"();", triggerName, Identifier(currentModel), whenCondition, fnName)
+				sql += fmt.Sprintf("CREATE OR REPLACE TRIGGER \"%s\" AFTER INSERT OR DELETE ON %s FOR EACH ROW EXECUTE PROCEDURE \"%s\"();", triggerName, Identifier(currentEntityName), fnName)
+				sql += fmt.Sprintf("\nCREATE OR REPLACE TRIGGER \"%s_update\" AFTER UPDATE ON %s FOR EACH ROW WHEN(%s) EXECUTE PROCEDURE \"%s\"();", triggerName, Identifier(currentEntityName), whenCondition, fnName)
 
 				depFns[fnName] = sql
 			}
@@ -895,21 +894,21 @@ func GetCurrentSchema(ctx context.Context, database db.Database) (*proto.Schema,
 
 // fkConstraintsForModel generates foreign key constraint statements for each of fields marked as
 // being foreign keys in the given model.
-func fkConstraintsForModel(model *proto.Model) (fkStatements []string) {
-	fkFields := model.ForeignKeyFields()
+func fkConstraintsForEntity(entity proto.Entity) (fkStatements []string) {
+	fkFields := entity.ForeignKeyFields()
 	for _, field := range fkFields {
-		stmt := fkConstraint(field, model)
+		stmt := fkConstraint(field, entity)
 		fkStatements = append(fkStatements, stmt)
 	}
 	return fkStatements
 }
 
 // fkConstraint generates a foreign key constraint statement for the given foreign key field.
-func fkConstraint(field *proto.Field, thisModel *proto.Model) (fkStatement string) {
+func fkConstraint(field *proto.Field, thisEntity proto.Entity) (fkStatement string) {
 	fki := field.GetForeignKeyInfo()
 	onDelete := lo.Ternary(field.GetOptional(), "SET NULL", "CASCADE")
 	stmt := addForeignKeyConstraintStmt(
-		Identifier(thisModel.GetName()),
+		Identifier(thisEntity.GetName()),
 		Identifier(field.GetName()),
 		Identifier(fki.GetRelatedModelName()),
 		Identifier(fki.GetRelatedModelField()),

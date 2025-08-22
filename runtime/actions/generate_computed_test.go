@@ -286,6 +286,35 @@ var computedTestCases = []computedTestCase{
 		field:       "isComplete Boolean @computed(item.orderStatus == OrderStatus.Delivered)",
 		expectedSql: `r."order_status" IS NOT DISTINCT FROM 'Delivered'`,
 	},
+	{
+		name: "tasks",
+		keelSchema: `
+			task DispatchInvoice {
+				fields {
+					invoice Invoice
+					#placeholder#
+				}
+			}
+			model Invoice {
+				fields {
+					item Item[]
+				}
+			}
+			model Item {
+				fields {
+					invoice Invoice
+					product Product
+				}
+			}
+			model Product {
+				fields {
+					name Text
+					price Decimal
+				}
+			}`,
+		field:       "total Decimal @computed(SUM(dispatchInvoice.invoice.item.product.price))",
+		expectedSql: `(SELECT COALESCE(SUM("item$product"."price"), 0) FROM "item" LEFT JOIN "product" AS "item$product" ON "item$product"."id" = "item"."product_id" WHERE "item"."invoice_id" IS NOT DISTINCT FROM r."id")`,
+	},
 }
 
 func TestGeneratedComputed(t *testing.T) {
@@ -309,14 +338,24 @@ func TestGeneratedComputed(t *testing.T) {
 			schema, err := builder.MakeFromInputs(schemaFiles)
 			assert.NoError(t, err)
 
-			model := schema.GetModels()[0]
 			fieldName := strings.Split(testCase.field, " ")[0]
-			field := proto.FindField(schema.GetModels(), model.GetName(), fieldName)
+
+			var field *proto.Field
+			var entity proto.Entity
+			for _, e := range schema.Entities() {
+				if e.FindField(fieldName) != nil {
+					field = e.FindField(fieldName)
+					entity = e
+					break
+				}
+			}
+			assert.NotNil(t, field)
+			assert.NotNil(t, entity)
 
 			expression, err := parser.ParseExpression(field.GetComputedExpression().GetSource())
 			assert.NoError(t, err)
 
-			sql, err := resolve.RunCelVisitor(expression, actions.GenerateComputedFunction(context.Background(), schema, model, field))
+			sql, err := resolve.RunCelVisitor(expression, actions.GenerateComputedFunction(context.Background(), schema, entity, field))
 			assert.NoError(t, err)
 
 			assert.Equal(t, testCase.expectedSql, sql, "expected `%s` but got `%s`", testCase.expectedSql, sql)

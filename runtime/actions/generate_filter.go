@@ -13,12 +13,12 @@ import (
 )
 
 // GenerateFilterQuery visits the expression and adds filter conditions to the provided query builder.
-func GenerateFilterQuery(ctx context.Context, query *QueryBuilder, schema *proto.Schema, model *proto.Model, action *proto.Action, inputs map[string]any) resolve.Visitor[*QueryBuilder] {
+func GenerateFilterQuery(ctx context.Context, query *QueryBuilder, schema *proto.Schema, entity proto.Entity, action *proto.Action, inputs map[string]any) resolve.Visitor[*QueryBuilder] {
 	return &whereQueryGen{
 		ctx:       ctx,
 		query:     query,
 		schema:    schema,
-		model:     model,
+		entity:    entity,
 		action:    action,
 		inputs:    inputs,
 		operators: arraystack.New(),
@@ -32,7 +32,7 @@ type whereQueryGen struct {
 	ctx       context.Context
 	query     *QueryBuilder
 	schema    *proto.Schema
-	model     *proto.Model
+	entity    proto.Entity
 	action    *proto.Action
 	inputs    map[string]any
 	operators *arraystack.Stack
@@ -165,7 +165,7 @@ func (v *whereQueryGen) VisitLiteral(value any) error {
 }
 
 func (v *whereQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
-	operand, err := generateOperand(v.ctx, v.schema, v.model, v.action, v.inputs, ident.Fragments)
+	operand, err := generateOperand(v.ctx, v.schema, v.entity, v.action, v.inputs, ident.Fragments)
 	if err != nil {
 		return err
 	}

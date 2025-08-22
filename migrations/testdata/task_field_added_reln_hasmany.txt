@@ -1,0 +1,41 @@
+task Account {
+  fields {
+    address Text
+  }
+}
+
+task Post {
+  fields {
+    size Number
+  }
+}
+
+===
+
+task Account {
+  fields {
+    address Text
+    posts Post[]
+  }
+}
+
+task Post {
+  fields {
+    size Number
+    author Account
+  }
+}
+
+===
+
+ALTER TABLE "post" ADD COLUMN "author_id" TEXT NOT NULL;
+ALTER TABLE "post" ADD FOREIGN KEY ("author_id") REFERENCES "account"("id") ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE;
+
+=== 
+
+
+[
+  { "Model": "Post", "Field": "authorId", "Type": "ADDED" }
+]
+
+

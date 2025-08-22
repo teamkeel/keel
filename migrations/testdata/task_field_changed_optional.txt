@@ -1,0 +1,29 @@
+task Person {
+    fields {
+        firstName Text
+        lastName Text?
+    }
+}
+
+===
+
+task Person {
+    fields {
+        firstName Text?
+        lastName Text
+    }
+}
+
+===
+
+ALTER TABLE "person" ALTER COLUMN "first_name" DROP NOT NULL;
+ALTER TABLE "person" ALTER COLUMN "last_name" SET NOT NULL;
+
+=== 
+
+[
+  { "Model": "Person", "Field": "firstName", "Type": "MODIFIED" },
+  { "Model": "Person", "Field": "lastName", "Type": "MODIFIED" }
+]
+
+

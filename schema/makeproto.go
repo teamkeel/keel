@@ -1131,8 +1131,7 @@ func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Mes
 				}
 			}
 
-			// Get field on the model.
-			field := query.ModelField(query.Model(scm.asts, currModel), fragment)
+			field := query.Model(scm.asts, currModel).Field(fragment)
 			if field == nil {
 				panic(fmt.Sprintf("cannot find field %s on model %s", fragment, currModel))
 			}
@@ -1698,10 +1697,10 @@ func (scm *Builder) makeFields(parserFields []*parser.FieldNode, modelName strin
 func (scm *Builder) makeField(parserField *parser.FieldNode, entityName string) *proto.Field {
 	typeInfo := scm.parserFieldToProtoTypeInfo(parserField)
 	protoField := &proto.Field{
-		ModelName: entityName,
-		Name:      parserField.Name.Value,
-		Type:      typeInfo,
-		Optional:  parserField.Optional,
+		EntityName: entityName,
+		Name:       parserField.Name.Value,
+		Type:       typeInfo,
+		Optional:   parserField.Optional,
 	}
 
 	// Handle @unique attribute at entity level which expresses
@@ -1730,7 +1729,7 @@ func (scm *Builder) makeField(parserField *parser.FieldNode, entityName string) 
 
 	// Auto-inserted foreign key field
 	if query.IsForeignKey(scm.asts, entity, parserField) {
-		modelField := query.Field(entity, strings.TrimSuffix(parserField.Name.Value, "Id"))
+		modelField := entity.Field(strings.TrimSuffix(parserField.Name.Value, "Id"))
 		protoField.ForeignKeyInfo = &proto.ForeignKeyInfo{
 			RelatedModelName:  modelField.Type.Value,
 			RelatedModelField: parser.FieldNameId,
@@ -1778,7 +1777,7 @@ func (scm *Builder) setInverseFieldName(thisParserField *parser.FieldNode, thisP
 
 	// If no @relation attribute exists, then look for a match in the related model fields' @relation attributes
 	for _, remoteField := range query.ModelFields(relatedModel) {
-		if remoteField.Type.Value != thisProtoField.GetModelName() {
+		if remoteField.Type.Value != thisProtoField.GetEntityName() {
 			continue
 		}
 		relationAttr := query.FieldGetAttribute(remoteField, parser.AttributeRelation)
@@ -1794,10 +1793,10 @@ func (scm *Builder) setInverseFieldName(thisParserField *parser.FieldNode, thisP
 	// If there are no @relation attributes that match, then we know that there is only one relation
 	// between these models of this exact relationship type and in this direction
 	for _, remoteField := range query.ModelFields(relatedModel) {
-		if remoteField.Type.Value != thisProtoField.GetModelName() {
+		if remoteField.Type.Value != thisProtoField.GetEntityName() {
 			continue
 		}
-		if nameOfRelatedModel == thisProtoField.GetModelName() && remoteField.Name.Value == thisProtoField.GetName() {
+		if nameOfRelatedModel == thisProtoField.GetEntityName() && remoteField.Name.Value == thisProtoField.GetName() {
 			continue
 		}
 		if query.ValidOneToHasMany(thisParserField, remoteField) ||
@@ -1916,7 +1915,7 @@ func (scm *Builder) inferParserInputType(
 		for _, ident := range idents {
 			target = append(target, ident.Fragment)
 
-			field = query.ModelField(currModel, ident.Fragment)
+			field = currModel.Field(ident.Fragment)
 
 			m := query.Model(scm.asts, field.Type.Value)
 			if m != nil {
