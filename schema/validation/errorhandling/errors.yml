@@ -38,5 +38,5 @@ en:
     message: "Cannot use '{{ .Name }}' as a field name as it is too long."
     hint: "Rename this field to a shorter name"
   E053:
-    message: "Cannot use '{{ .Name }}' as a model name as it is too long."
-    hint: "Rename this model to a shorter name"
+    message: "Cannot use '{{ .Name }}' as a {{ .DefinedOn }} name as it is too long."
+    hint: "Rename this {{ .DefinedOn }} to a shorter name"

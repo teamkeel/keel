@@ -10,3 +10,16 @@ model ALongLongLongLongModelNameThatNotVeryLong {
         foo Text
     }
 }
+
+//expect-error:6:50:E053:Cannot use 'ALongLongLongLongLongTasksNameThatIsVeryLong' as a task name as it is too long.
+task ALongLongLongLongLongTasksNameThatIsVeryLong {
+    fields {
+        foo Text
+    }
+}
+
+task ALongLongLongLongTasksNameThatNotVeryLong {
+    fields {
+        foo Text
+    }
+}

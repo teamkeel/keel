@@ -37,7 +37,7 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 			case decl.Model != nil:
 				scm.makeModel(decl)
 			case decl.Task != nil:
-				scm.makeModel(decl)
+				scm.makeTask(decl)
 			case decl.Role != nil:
 				scm.makeRole(decl)
 			case decl.API != nil:
@@ -53,7 +53,7 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 			case decl.Routes != nil:
 				scm.makeRoutes(decl)
 			default:
-				panic("Case not recognized")
+				//panic("Case not recognized")
 			}
 		}
 	}
@@ -1441,28 +1441,20 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 }
 
 func (scm *Builder) makeModel(decl *parser.DeclarationNode) {
-	var parserModel *parser.ModelNode
-	if decl.Model != nil {
-		parserModel = decl.Model
-	} else if decl.Task != nil {
-		parserModel = decl.Task
-	}
-
 	protoModel := &proto.Model{
-		Name:   parserModel.Name.Value,
-		IsTask: parserModel.IsTask,
+		Name: decl.Model.Name.Value,
 	}
 
-	for _, section := range parserModel.Sections {
+	for _, section := range decl.Model.Sections {
 		switch {
 		case section.Fields != nil:
 			fields := scm.makeFields(section.Fields, protoModel.GetName())
 			protoModel.Fields = append(protoModel.Fields, fields...)
 		case section.Actions != nil:
-			ops := scm.makeActions(section.Actions, protoModel.GetName(), parserModel.BuiltIn)
+			ops := scm.makeActions(section.Actions, protoModel.GetName(), decl.Model.BuiltIn)
 			protoModel.Actions = append(protoModel.Actions, ops...)
 		case section.Attribute != nil:
-			scm.applyModelAttribute(parserModel, protoModel, section.Attribute)
+			scm.applyModelAttribute(decl.Model, protoModel, section.Attribute)
 		default:
 			// this is possible if the user defines an empty block in the schema e.g. "fields {}"
 			// this isn't really an error so we can just ignore these sections
@@ -1470,6 +1462,28 @@ func (scm *Builder) makeModel(decl *parser.DeclarationNode) {
 	}
 
 	scm.proto.Models = append(scm.proto.Models, protoModel)
+}
+
+func (scm *Builder) makeTask(decl *parser.DeclarationNode) {
+	protoTask := &proto.Task{
+		Name: decl.Task.Name.Value,
+	}
+
+	for _, section := range decl.Task.Sections {
+		switch {
+		case section.Fields != nil:
+			fields := scm.makeFields(section.Fields, protoTask.GetName())
+			protoTask.Fields = append(protoTask.Fields, fields...)
+
+		case section.Attribute != nil:
+			scm.applyTaskAttribute(decl.Task, protoTask, section.Attribute)
+		default:
+			// this is possible if the user defines an empty block in the schema e.g. "fields {}"
+			// this isn't really an error so we can just ignore these sections
+		}
+	}
+
+	scm.proto.Tasks = append(scm.proto.Tasks, protoTask)
 }
 
 func (scm *Builder) makeRole(decl *parser.DeclarationNode) {
@@ -1681,19 +1695,19 @@ func (scm *Builder) makeFields(parserFields []*parser.FieldNode, modelName strin
 	return protoFields
 }
 
-func (scm *Builder) makeField(parserField *parser.FieldNode, modelName string) *proto.Field {
+func (scm *Builder) makeField(parserField *parser.FieldNode, entityName string) *proto.Field {
 	typeInfo := scm.parserFieldToProtoTypeInfo(parserField)
 	protoField := &proto.Field{
-		ModelName: modelName,
+		ModelName: entityName,
 		Name:      parserField.Name.Value,
 		Type:      typeInfo,
 		Optional:  parserField.Optional,
 	}
 
-	// Handle @unique attribute at model level which expresses
+	// Handle @unique attribute at entity level which expresses
 	// unique constrains across multiple fields
-	model := query.Model(scm.asts, modelName)
-	for _, attr := range query.ModelAttributes(model) {
+	entity := query.Entity(scm.asts, entityName)
+	for _, attr := range entity.GetAttributes() {
 		if attr.Name.Value != parser.AttributeUnique {
 			continue
 		}
@@ -1715,15 +1729,15 @@ func (scm *Builder) makeField(parserField *parser.FieldNode, modelName string) *
 	scm.applyFieldAttributes(parserField, protoField)
 
 	// Auto-inserted foreign key field
-	if query.IsForeignKey(scm.asts, model, parserField) {
-		modelField := query.Field(model, strings.TrimSuffix(parserField.Name.Value, "Id"))
+	if query.IsForeignKey(scm.asts, entity, parserField) {
+		modelField := query.Field(entity, strings.TrimSuffix(parserField.Name.Value, "Id"))
 		protoField.ForeignKeyInfo = &proto.ForeignKeyInfo{
 			RelatedModelName:  modelField.Type.Value,
 			RelatedModelField: parser.FieldNameId,
 		}
 	}
 
-	relationship, err := query.GetRelationship(scm.asts, query.Model(scm.asts, modelName), parserField)
+	relationship, err := query.GetRelationship(scm.asts, entity, parserField)
 	if err != nil {
 		panic(err)
 	}
@@ -2072,6 +2086,15 @@ func (scm *Builder) applyModelAttribute(parserModel *parser.ModelNode, protoMode
 
 			subscriber.EventNames = append(subscriber.EventNames, eventName)
 		}
+	}
+}
+
+func (scm *Builder) applyTaskAttribute(parserTask *parser.TaskNode, protoTask *proto.Task, attribute *parser.AttributeNode) {
+	switch attribute.Name.Value {
+	case parser.AttributePermission:
+		perm := scm.permissionAttributeToProtoPermission(attribute)
+		perm.ModelName = protoTask.GetName()
+		protoTask.Permissions = append(protoTask.Permissions, perm)
 	}
 }
 

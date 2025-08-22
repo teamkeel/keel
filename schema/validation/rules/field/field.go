@@ -12,9 +12,9 @@ import (
 )
 
 func UniqueFieldNamesRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
-	for _, model := range query.Models(asts) {
+	for _, entity := range query.Entities(asts) {
 		fieldNames := map[string]*parser.FieldNode{}
-		for _, field := range query.ModelFields(model) {
+		for _, field := range entity.Fields() {
 			if existingField, ok := fieldNames[field.Name.Value]; ok {
 				if field.BuiltIn {
 					errs.Append(errorhandling.ErrorReservedFieldName,
@@ -25,15 +25,10 @@ func UniqueFieldNamesRule(asts []*parser.AST) (errs errorhandling.ValidationErro
 						existingField.Name,
 					)
 				} else {
-					definedOn := "model"
-					if model.IsTask {
-						definedOn = "task"
-					}
-
 					errs.Append(errorhandling.ErrorFieldNamesUniqueInModel,
 						map[string]string{
 							"Name":      field.Name.Value,
-							"DefinedOn": definedOn,
+							"DefinedOn": entity.EntityType(),
 						},
 						field.Name,
 					)
@@ -48,8 +43,8 @@ func UniqueFieldNamesRule(asts []*parser.AST) (errs errorhandling.ValidationErro
 }
 
 func ValidFieldTypesRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
-	for _, model := range query.Models(asts) {
-		for _, field := range query.ModelFields(model) {
+	for _, entity := range query.Entities(asts) {
+		for _, field := range entity.Fields() {
 			if parser.IsBuiltInFieldType(field.Type.Value) {
 				continue
 			}
@@ -90,6 +85,21 @@ func FieldNamesMaxLengthRule(asts []*parser.AST) (errs errorhandling.ValidationE
 
 	for _, model := range query.Models(asts) {
 		for _, field := range query.ModelFields(model) {
+			identifier := casing.ToSnake(field.Name.Value)
+
+			if len(identifier) > maxBytes {
+				errs.Append(errorhandling.ErrorFieldNamesMaxLength,
+					map[string]string{
+						"Name": field.Name.Value,
+					},
+					field.Name,
+				)
+			}
+		}
+	}
+
+	for _, task := range query.Tasks(asts) {
+		for _, field := range query.TaskFields(task) {
 			identifier := casing.ToSnake(field.Name.Value)
 
 			if len(identifier) > maxBytes {

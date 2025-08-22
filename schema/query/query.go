@@ -35,58 +35,60 @@ func ExcludeBuiltInModels(m *parser.ModelNode) bool {
 	return !m.BuiltIn
 }
 
+func Entities(asts []*parser.AST) (res []parser.Entity) {
+	for _, model := range Models(asts) {
+		res = append(res, model)
+	}
+	for _, task := range Tasks(asts) {
+		res = append(res, task)
+	}
+	return res
+}
+
 func Models(asts []*parser.AST, filters ...ModelFilter) (res []*parser.ModelNode) {
 	for _, ast := range asts {
 	models:
 		for _, decl := range ast.Declarations {
-			var model *parser.ModelNode
-			if decl.Model != nil {
-				model = decl.Model
-			} else if decl.Task != nil {
-				model = decl.Task
-			} else {
+			if decl.Model == nil {
 				continue
 			}
 
 			for _, filter := range filters {
-				if !filter(model) {
+				if !filter(decl.Model) {
 					continue models
 				}
 			}
 
-			res = append(res, model)
+			res = append(res, decl.Model)
 		}
 	}
 	return res
 }
 
-func ModelNames(asts []*parser.AST, filters ...ModelFilter) (res []string) {
+func Tasks(asts []*parser.AST) (res []*parser.TaskNode) {
 	for _, ast := range asts {
-	models:
 		for _, decl := range ast.Declarations {
-			var model *parser.ModelNode
-			if decl.Model != nil {
-				model = decl.Model
-			} else if decl.Task != nil {
-				model = decl.Task
-			} else {
-				continue
+			if decl.Task != nil {
+				res = append(res, decl.Task)
 			}
-
-			for _, filter := range filters {
-				if !filter(model) {
-					continue models
-				}
-			}
-
-			res = append(res, model.Name.Value)
 		}
 	}
-
 	return res
 }
 
 func Model(asts []*parser.AST, name string) *parser.ModelNode {
+	for _, ast := range asts {
+		for _, decl := range ast.Declarations {
+			if decl.Model != nil && decl.Model.Name.Value == name {
+				return decl.Model
+			}
+		}
+	}
+	return nil
+}
+
+// Entity returns the model or task matching the given name.
+func Entity(asts []*parser.AST, name string) parser.Entity {
 	for _, ast := range asts {
 		for _, decl := range ast.Declarations {
 			if decl.Model != nil && decl.Model.Name.Value == name {
@@ -112,15 +114,6 @@ func Action(asts []*parser.AST, name string) *parser.ActionNode {
 					}
 				}
 			}
-			if decl.Task != nil {
-				for _, sec := range decl.Task.Sections {
-					for _, action := range sec.Actions {
-						if action.Name.Value == name {
-							return action
-						}
-					}
-				}
-			}
 		}
 	}
 	return nil
@@ -138,23 +131,14 @@ func ActionModel(asts []*parser.AST, name string) *parser.ModelNode {
 					}
 				}
 			}
-			if decl.Task != nil {
-				for _, sec := range decl.Task.Sections {
-					for _, action := range sec.Actions {
-						if action.Name.Value == name {
-							return decl.Task
-						}
-					}
-				}
-			}
 		}
 	}
 	return nil
 }
 
 // Field provides the field of the given name from the given model. (Or nil).
-func Field(model *parser.ModelNode, name string) *parser.FieldNode {
-	for _, f := range ModelFields(model) {
+func Field(entity parser.Entity, name string) *parser.FieldNode {
+	for _, f := range entity.Fields() {
 		if f.Name.Value == name {
 			return f
 		}
@@ -166,12 +150,12 @@ func IsModel(asts []*parser.AST, name string) bool {
 	return Model(asts, name) != nil
 }
 
-func IsForeignKey(asts []*parser.AST, model *parser.ModelNode, field *parser.FieldNode) bool {
+func IsForeignKey(asts []*parser.AST, entity parser.Entity, field *parser.FieldNode) bool {
 	if !field.BuiltIn {
 		return false
 	}
-	modelField := Field(model, strings.TrimSuffix(field.Name.Value, "Id"))
-	return modelField != nil && Model(asts, modelField.Type.Value) != nil
+	f := Field(entity, strings.TrimSuffix(field.Name.Value, "Id"))
+	return f != nil && Entity(asts, f.Type.Value) != nil
 }
 
 func IsIdentityModel(asts []*parser.AST, name string) bool {
@@ -334,14 +318,46 @@ func ModelActions(model *parser.ModelNode, filters ...ModelActionFilter) (res []
 	return res
 }
 
-type ModelFieldFilter func(f *parser.FieldNode) bool
+type FieldFilter func(f *parser.FieldNode) bool
 
 func ExcludeBuiltInFields(f *parser.FieldNode) bool {
 	return !f.BuiltIn
 }
 
-func ModelFields(model *parser.ModelNode, filters ...ModelFieldFilter) (res []*parser.FieldNode) {
+func ModelFields(model *parser.ModelNode, filters ...FieldFilter) (res []*parser.FieldNode) {
 	for _, section := range model.Sections {
+		if section.Fields == nil {
+			continue
+		}
+
+	fields:
+		for _, field := range section.Fields {
+			for _, filter := range filters {
+				if !filter(field) {
+					continue fields
+				}
+			}
+
+			res = append(res, field)
+		}
+	}
+
+	return res
+}
+
+func TaskField(task *parser.TaskNode, name string) *parser.FieldNode {
+	for _, section := range task.Sections {
+		for _, field := range section.Fields {
+			if field.Name.Value == name {
+				return field
+			}
+		}
+	}
+	return nil
+}
+
+func TaskFields(task *parser.TaskNode, filters ...FieldFilter) (res []*parser.FieldNode) {
+	for _, section := range task.Sections {
 		if section.Fields == nil {
 			continue
 		}
@@ -371,7 +387,6 @@ func ModelField(model *parser.ModelNode, name string) *parser.FieldNode {
 	}
 	return nil
 }
-
 func FieldHasAttribute(field *parser.FieldNode, name string) bool {
 	for _, attr := range field.Attributes {
 		if attr.Name.Value == name {
@@ -492,10 +507,10 @@ func FieldsInModelOfType(model *parser.ModelNode, requiredType string) []string 
 }
 
 // FieldsInModelOfType provides a list of the field names for the fields in the
-// given model, that have the given type name.
-func ModelFieldsOfType(model *parser.ModelNode, typeName string) []*parser.FieldNode {
+// given model or task, that have the given type name.
+func FieldsOfType(entity parser.Entity, typeName string) []*parser.FieldNode {
 	fields := []*parser.FieldNode{}
-	for _, field := range ModelFields(model) {
+	for _, field := range entity.Fields() {
 		if field.Type.Value == typeName {
 			fields = append(fields, field)
 		}
@@ -693,22 +708,22 @@ func SubscriberNames(asts []*parser.AST) (res []string) {
 }
 
 type Relationship struct {
-	Model *parser.ModelNode
-	Field *parser.FieldNode
+	Entity parser.Entity
+	Field  *parser.FieldNode
 }
 
 // GetRelationshipCandidates will find all the candidates relationships that can be formed with the related model.
 // Each relationship field should only have exactly 1 candidate, otherwise there are incorrectly defined relationships in the schema.
-func GetRelationshipCandidates(asts []*parser.AST, model *parser.ModelNode, field *parser.FieldNode) []*Relationship {
+func GetRelationshipCandidates(asts []*parser.AST, entity parser.Entity, field *parser.FieldNode) []*Relationship {
 	candidates := []*Relationship{}
 
-	otherModel := Model(asts, field.Type.Value)
-	if otherModel == nil {
+	otherEntity := Entity(asts, field.Type.Value)
+	if otherEntity == nil {
 		return candidates
 	}
 
-	otherFields := ModelFieldsOfType(otherModel, model.Name.Value)
-	theseFields := ModelFieldsOfType(model, otherModel.Name.Value)
+	otherFields := FieldsOfType(otherEntity, entity.GetName())
+	theseFields := FieldsOfType(entity, otherEntity.GetName())
 
 	relationAttributeExists := false
 	for _, otherField := range otherFields {
@@ -740,7 +755,7 @@ func GetRelationshipCandidates(asts []*parser.AST, model *parser.ModelNode, fiel
 
 			if !alreadyReferencedByRelation {
 				// This field has a new relationship candidate with the other model
-				candidates = append(candidates, &Relationship{Model: otherModel, Field: otherField})
+				candidates = append(candidates, &Relationship{Entity: otherEntity, Field: otherField})
 			}
 
 			if FieldHasAttribute(field, parser.AttributeRelation) || FieldHasAttribute(otherField, parser.AttributeRelation) {
@@ -764,15 +779,15 @@ func GetRelationshipCandidates(asts []*parser.AST, model *parser.ModelNode, fiel
 
 	if len(candidates) == 0 && !field.Repeated {
 		// When there is no inverse field provided.
-		candidates = append(candidates, &Relationship{Model: otherModel})
+		candidates = append(candidates, &Relationship{Entity: otherEntity})
 	}
 
 	return candidates
 }
 
 // GetRelationship will return the related model and field on that model which forms the relationship.
-func GetRelationship(asts []*parser.AST, currentModel *parser.ModelNode, currentField *parser.FieldNode) (*Relationship, error) {
-	candidates := GetRelationshipCandidates(asts, currentModel, currentField)
+func GetRelationship(asts []*parser.AST, currentEntity parser.Entity, currentField *parser.FieldNode) (*Relationship, error) {
+	candidates := GetRelationshipCandidates(asts, currentEntity, currentField)
 
 	otherModel := Model(asts, currentField.Type.Value)
 	if otherModel == nil {
@@ -781,7 +796,7 @@ func GetRelationship(asts []*parser.AST, currentModel *parser.ModelNode, current
 
 	// There can only be exactly one candidate, since schema validation has all passed
 	if len(candidates) != 1 {
-		return nil, fmt.Errorf("there is not exactly one candidate relationship for %s field on the %s model", currentField.Name.Value, currentModel.Name.Value)
+		return nil, fmt.Errorf("there is not exactly one candidate relationship for %s field on %s", currentField.Name.Value, currentEntity.GetName())
 	}
 
 	return candidates[0], nil

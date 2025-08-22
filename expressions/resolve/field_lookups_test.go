@@ -8,7 +8,7 @@ import (
 	"github.com/teamkeel/keel/schema/parser"
 )
 
-var model = &parser.ModelNode{Name: parser.NameNode{Value: "Product"}}
+var model = &parser.ModelNode{EntityNode: parser.EntityNode{Name: parser.NameNode{Value: "Product"}}}
 
 func TestFieldLookups_ByModel(t *testing.T) {
 	expression, err := parser.ParseExpression("product == someProduct")

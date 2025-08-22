@@ -1,66 +1,6 @@
 {
   "models": [
     {
-      "name": "NewOrder",
-      "fields": [
-        {
-          "modelName": "NewOrder",
-          "name": "ticketNo",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "unique": true,
-          "sequence": {
-            "prefix": "S",
-            "startsAt": 1
-          }
-        },
-        {
-          "modelName": "NewOrder",
-          "name": "order",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Order"
-          },
-          "foreignKeyFieldName": "orderId"
-        },
-        {
-          "modelName": "NewOrder",
-          "name": "orderId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Order",
-            "relatedModelField": "id"
-          }
-        },
-        {
-          "modelName": "NewOrder",
-          "name": "customerName",
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        },
-        {
-          "modelName": "NewOrder",
-          "name": "deliveryAddress",
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        },
-        {
-          "modelName": "NewOrder",
-          "name": "dueDate",
-          "type": {
-            "type": "TYPE_DATE"
-          },
-          "optional": true
-        }
-      ],
-      "isTask": true
-    },
-    {
       "name": "Order",
       "fields": [
         {
@@ -114,7 +54,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "modelName": "Identity",
@@ -151,7 +93,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
           "modelName": "Identity",
@@ -299,9 +243,6 @@
       "name": "Api",
       "apiModels": [
         {
-          "modelName": "NewOrder"
-        },
-        {
           "modelName": "Order"
         },
         {
@@ -365,6 +306,56 @@
     },
     {
       "name": "ResetPasswordResponse"
+    }
+  ],
+  "tasks": [
+    {
+      "name": "NewOrder",
+      "fields": [
+        {
+          "modelName": "NewOrder",
+          "name": "ticketNo",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "unique": true,
+          "sequence": {
+            "prefix": "S",
+            "startsAt": 1
+          }
+        },
+        {
+          "modelName": "NewOrder",
+          "name": "order",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Order"
+          },
+          "foreignKeyFieldName": "orderId"
+        },
+        {
+          "modelName": "NewOrder",
+          "name": "customerName",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "modelName": "NewOrder",
+          "name": "deliveryAddress",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "modelName": "NewOrder",
+          "name": "dueDate",
+          "type": {
+            "type": "TYPE_DATE"
+          },
+          "optional": true
+        }
+      ]
     }
   ]
 }

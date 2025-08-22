@@ -381,11 +381,13 @@ func (scm *Builder) insertIdentityModel(declarations *parser.AST, schemaFile *re
 	identityModelDeclaration := &parser.DeclarationNode{
 		Model: &parser.ModelNode{
 			BuiltIn: true,
-			Name: parser.NameNode{
-				Value: parser.IdentityModelName,
-				Node: node.Node{
-					Pos: lexer.Position{
-						Filename: schemaFile.FileName,
+			EntityNode: parser.EntityNode{
+				Name: parser.NameNode{
+					Value: parser.IdentityModelName,
+					Node: node.Node{
+						Pos: lexer.Position{
+							Filename: schemaFile.FileName,
+						},
 					},
 				},
 			},

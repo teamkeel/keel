@@ -19,6 +19,7 @@ message Schema {
     repeated Event events = 10;
     repeated Route routes = 11;
     repeated Flow flows = 12;
+    repeated Task tasks = 13;
 }
 
 message Model {
@@ -33,9 +34,16 @@ message Model {
     repeated Action actions = 3;
 
     repeated PermissionRule permissions = 4;
+}
 
-    // Whether this model is created as a task.
-    bool is_task = 5;
+message Task {
+    // The name of the task. Must be in PascalCase and be unique within the schema.
+    string name = 1;
+
+    // The fields this task contains
+    repeated Field fields = 2;
+
+    repeated PermissionRule permissions = 3;
 }
 
 message Field {

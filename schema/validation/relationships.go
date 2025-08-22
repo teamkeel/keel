@@ -61,7 +61,7 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 							if !alreadyErrored[field] {
 								errs.AppendError(makeRelationshipError(
 									fmt.Sprintf("Cannot form a one to many relationship with field '%s' on %s as it is already associated with field '%s'", field.Name.Value, currentModel.Name.Value, pairedCandidate.Field.Name.Value),
-									fmt.Sprintf("Use @relation on '%s' to explicitly create a relationship with this field. For example, %s %s @relation(%s). %s", field.Name.Value, field.Name.Value, candidate.Model.Name.Value, candidate.Field.Name.Value, learnMore),
+									fmt.Sprintf("Use @relation on '%s' to explicitly create a relationship with this field. For example, %s %s @relation(%s). %s", field.Name.Value, field.Name.Value, candidate.Entity.GetName(), candidate.Field.Name.Value, learnMore),
 									candidate.Field.Name,
 								))
 								alreadyErrored[field] = true
@@ -70,13 +70,13 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 							if !alreadyErrored[candidate.Field] {
 								errs.AppendError(makeRelationshipError(
 									fmt.Sprintf("Cannot associate with repeated field '%s' on %s to form a one to many relationship because it is already associated with field '%s'", field.Name.Value, currentModel.Name.Value, pairedCandidate.Field.Name.Value),
-									fmt.Sprintf("Use @relation to refer to another %s[] field on %s which is not yet in a relationship. %s", candidate.Model.Name.Value, currentModel.Name.Value, learnMore),
+									fmt.Sprintf("Use @relation to refer to another %s[] field on %s which is not yet in a relationship. %s", candidate.Entity.GetName(), currentModel.Name.Value, learnMore),
 									candidate.Field.Name,
 								))
 								alreadyErrored[candidate.Field] = true
 							}
 						case query.ValidUniqueOneToHasOne(field, candidate.Field):
-							if candidate.Model.Name.Value == parser.IdentityModelName {
+							if candidate.Entity.GetName() == parser.IdentityModelName {
 								// We cannot show errors on the built-in Identity AST nodes, so we rather skip
 								// and let the errors get picked up by the other direction.
 								continue
@@ -84,7 +84,7 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 							if !alreadyErrored[field] {
 								errs.AppendError(makeRelationshipError(
 									fmt.Sprintf("Cannot form a one to one relationship with field '%s' on %s as it is already associated with field '%s'", field.Name.Value, currentModel.Name.Value, pairedCandidate.Field.Name.Value),
-									fmt.Sprintf("Use @relation on '%s' to explicitly create a relationship with this field. For example, %s %s @unique @relation(%s). %s", field.Name.Value, field.Name.Value, candidate.Model.Name.Value, candidate.Field.Name.Value, learnMore),
+									fmt.Sprintf("Use @relation on '%s' to explicitly create a relationship with this field. For example, %s %s @unique @relation(%s). %s", field.Name.Value, field.Name.Value, candidate.Entity.GetName(), candidate.Field.Name.Value, learnMore),
 									candidate.Field.Name,
 								))
 								alreadyErrored[field] = true
@@ -93,14 +93,14 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 							if !alreadyErrored[candidate.Field] {
 								errs.AppendError(makeRelationshipError(
 									fmt.Sprintf("Cannot associate with field '%s' on %s to form a one to one relationship because it is already associated with '%s'", field.Name.Value, currentModel.Name.Value, pairedCandidate.Field.Name.Value),
-									fmt.Sprintf("Use @relation to refer to another %s field on %s which is not yet in a relationship. %s", candidate.Model.Name.Value, currentModel.Name.Value, learnMore),
+									fmt.Sprintf("Use @relation to refer to another %s field on %s which is not yet in a relationship. %s", candidate.Entity.GetName(), currentModel.Name.Value, learnMore),
 									candidate.Field.Name,
 								))
 								alreadyErrored[candidate.Field] = true
 							}
 						default:
 							errs.AppendError(makeRelationshipError(
-								fmt.Sprintf("Cannot associate with field '%s' on model %s to form a relationship", candidate.Field.Name.Value, candidate.Model.Name.Value),
+								fmt.Sprintf("Cannot associate with field '%s' on model %s to form a relationship", candidate.Field.Name.Value, candidate.Entity.GetName()),
 								learnMore,
 								field.Name,
 							))

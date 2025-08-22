@@ -8,13 +8,9 @@ import (
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
-func DuplicateModelNames(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
+func DuplicateTaskNames(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 	return Visitor{
-		EnterModel: func(n *parser.ModelNode) {
-			if n.BuiltIn {
-				return
-			}
-
+		EnterTask: func(n *parser.TaskNode) {
 			for _, entity := range query.Entities(asts) {
 				if n == entity {
 					continue

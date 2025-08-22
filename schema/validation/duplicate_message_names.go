@@ -15,13 +15,13 @@ func DuplicateMessageNames(asts []*parser.AST, errs *errorhandling.ValidationErr
 				return
 			}
 
-			for _, model := range query.Models(asts) {
-				if model.Name.Value == n.Name.Value {
+			for _, entity := range query.Entities(asts) {
+				if entity.GetName() == n.Name.Value {
 					var message string
-					if model.BuiltIn {
-						message = fmt.Sprintf("There already exists a reserved model with the name '%s'", n.Name.Value)
+					if entity.IsBuiltIn() {
+						message = fmt.Sprintf("There already exists a reserved %s with the name '%s'", entity.EntityType(), n.Name.Value)
 					} else {
-						message = fmt.Sprintf("There already exists a model with the name '%s'", n.Name.Value)
+						message = fmt.Sprintf("There already exists a %s with the name '%s'", entity.EntityType(), n.Name.Value)
 					}
 
 					errs.AppendError(
@@ -29,7 +29,7 @@ func DuplicateMessageNames(asts []*parser.AST, errs *errorhandling.ValidationErr
 							errorhandling.NamingError,
 							errorhandling.ErrorDetails{
 								Message: message,
-								Hint:    "Use unique names between models, enums and messages",
+								Hint:    "Use unique names between models, enums, messages and tasks",
 							},
 							n.Name,
 						),
@@ -45,7 +45,7 @@ func DuplicateMessageNames(asts []*parser.AST, errs *errorhandling.ValidationErr
 							errorhandling.NamingError,
 							errorhandling.ErrorDetails{
 								Message: fmt.Sprintf("There already exists an enum with the name '%s'", n.Name.Value),
-								Hint:    "Use unique names between models, enums and messages",
+								Hint:    "Use unique names between models, enums, messages and tasks",
 							},
 							n.Name,
 						),
@@ -72,7 +72,7 @@ func DuplicateMessageNames(asts []*parser.AST, errs *errorhandling.ValidationErr
 							errorhandling.NamingError,
 							errorhandling.ErrorDetails{
 								Message: m,
-								Hint:    "Use unique names between models, enums and messages",
+								Hint:    "Use unique names between models, enums, messages and tasks",
 							},
 							n.Name,
 						),

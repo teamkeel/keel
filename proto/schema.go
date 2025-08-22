@@ -108,6 +108,15 @@ func (s *Schema) ModelNames() []string {
 	return names
 }
 
+// TaskNames provides a (sorted) list of all the Task names used in the given schema.
+func (s *Schema) TaskNames() []string {
+	names := lo.Map(s.GetTasks(), func(x *Task, _ int) string {
+		return x.GetName()
+	})
+	sort.Strings(names)
+	return names
+}
+
 // AllFields provides a list of all the model fields specified in the schema.
 func (s *Schema) AllFields() []*Field {
 	fields := []*Field{}

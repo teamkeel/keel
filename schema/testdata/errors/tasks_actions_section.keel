@@ -1,0 +1,9 @@
+task MyTask {
+    fields {
+        name Text
+    }
+    //expect-error:5:5:E025: unexpected token "actions" (expected "}")
+    actions {
+
+    }
+}
