@@ -106,7 +106,7 @@ func MapType(schema []*parser.AST, typeName string, isRepeated bool) (*types.Typ
 			typeName = typeName + "[]"
 		}
 		return types.NewOpaqueType(typeName), nil
-	case query.Model(schema, typeName) != nil:
+	case query.Entity(schema, typeName) != nil:
 		if isRepeated {
 			typeName = typeName + "[]"
 		}

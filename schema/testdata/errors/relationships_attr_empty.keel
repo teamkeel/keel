@@ -6,5 +6,14 @@ model Post {
     }
 }
 
+task NewPost {
+    fields {
+        //expect-error:24:33:AttributeArgumentError:expected an argument for @relation
+        //expect-error:24:33:RelationshipError:The @relation argument must refer to a field on Author
+        author2 Author @relation
+    }
+}
+
+
 model Author {
 }

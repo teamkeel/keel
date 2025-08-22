@@ -409,24 +409,24 @@ func WithComparisonOperators() expressions.Option {
 				}
 			}
 
-			// For each models, configure equals, not equals and 'in' operators
-			for _, model := range query.Models(p.Provider.Schema) {
-				modelType := types.NewObjectType(model.Name.Value)
-				modelTypeArr := types.NewObjectType(model.Name.Value + "[]")
+			// For each entity, configure equals, not equals and 'in' operators
+			for _, entity := range query.Entities(p.Provider.Schema) {
+				entityType := types.NewObjectType(entity.GetName())
+				entityTypeArr := types.NewObjectType(entity.GetName() + "[]")
 
 				mapping[operators.Equals] = append(mapping[operators.Equals],
-					[]*types.Type{modelType},
-					[]*types.Type{modelTypeArr},
+					[]*types.Type{entityType},
+					[]*types.Type{entityTypeArr},
 				)
 
 				mapping[operators.NotEquals] = append(mapping[operators.NotEquals],
-					[]*types.Type{modelType},
-					[]*types.Type{modelTypeArr},
+					[]*types.Type{entityType},
+					[]*types.Type{entityTypeArr},
 				)
 
 				p.CelEnv, err = p.CelEnv.Extend(
 					cel.Function(operators.In,
-						cel.Overload(fmt.Sprintf("in_%s", strcase.ToLowerCamel(model.Name.Value)), []*types.Type{modelType, modelTypeArr}, types.BoolType),
+						cel.Overload(fmt.Sprintf("in_%s", strcase.ToLowerCamel(entity.GetName())), []*types.Type{entityType, entityTypeArr}, types.BoolType),
 					))
 				if err != nil {
 					return err

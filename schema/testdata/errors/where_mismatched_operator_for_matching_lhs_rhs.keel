@@ -9,3 +9,14 @@ model Profile {
         actions: [get]
     )
 }
+
+task NewProfile {
+    fields {
+        username Text
+    }
+
+    @permission(
+        //expect-error:41:43:AttributeExpressionError:cannot use operator '>=' with types Text and Text
+        expression: newProfile.username >= "adaam2"
+    )
+}

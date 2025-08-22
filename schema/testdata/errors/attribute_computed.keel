@@ -41,3 +41,10 @@ model Thing {
         create createItem() with (total) 
     }
 }
+
+task Task {
+    fields {
+        //expect-error:23:32:AttributeArgumentError:0 argument(s) provided to @computed but expected 1
+        total Decimal @computed
+    }
+}

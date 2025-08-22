@@ -72,7 +72,7 @@ func TestValidation(t *testing.T) {
 	require.NoError(t, err)
 
 	for _, tc := range testCases {
-		// if tc.Name() != "tasks.keel" {
+		// if tc.Name() != "permission_attribute_expression_invalid_operands.keel" {
 		// 	continue
 		// }
 		testCase := tc

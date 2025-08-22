@@ -1,6 +1,6 @@
 model Thing {
     fields {
-        //expect-error:22:31:RelationshipError:The @relation attribute cannot be used on non-model fields
+        //expect-error:22:31:RelationshipError:The @relation attribute cannot be used on non-model or non-task fields
         texts Text[] @relation(otherThing.thing)
     }
 }

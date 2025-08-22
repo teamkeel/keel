@@ -13,16 +13,22 @@ import (
 )
 
 func ComputedAttributeRules(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
-	var model *parser.ModelNode
+	var entity parser.Entity
 	var field *parser.FieldNode
 	var attribute *parser.AttributeNode
 
 	return Visitor{
 		EnterModel: func(m *parser.ModelNode) {
-			model = m
+			entity = m
 		},
 		LeaveModel: func(*parser.ModelNode) {
-			model = nil
+			entity = nil
+		},
+		EnterTask: func(t *parser.TaskNode) {
+			entity = t
+		},
+		LeaveTask: func(*parser.TaskNode) {
+			entity = nil
 		},
 		EnterField: func(f *parser.FieldNode) {
 			field = f
@@ -107,7 +113,7 @@ func ComputedAttributeRules(asts []*parser.AST, errs *errorhandling.ValidationEr
 				return
 			}
 
-			issues, err := attributes.ValidateComputedExpression(asts, model, field, expression)
+			issues, err := attributes.ValidateComputedExpression(asts, entity, field, expression)
 			if err != nil {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeExpressionError,
@@ -134,11 +140,11 @@ func ComputedAttributeRules(asts []*parser.AST, errs *errorhandling.ValidationEr
 					continue
 				}
 
-				if operand.Fragments[0] != casing.ToSnake(model.Name.Value) {
+				if operand.Fragments[0] != casing.ToSnake(entity.GetName()) {
 					continue
 				}
 
-				f := query.Field(model, operand.Fragments[1])
+				f := query.Field(entity, operand.Fragments[1])
 
 				if f == field {
 					errs.AppendError(

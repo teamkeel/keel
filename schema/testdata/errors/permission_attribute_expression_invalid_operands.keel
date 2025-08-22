@@ -54,6 +54,55 @@ model Person {
     )
 }
 
+task Task {
+    fields {
+        identity Identity
+        organisation Organisation
+    }
+
+    @permission(
+        //expect-error:21:28:AttributeExpressionError:unknown identifier 'invalid'
+        expression: invalid
+    )
+
+    @permission(
+        //expect-error:21:23:AttributeExpressionError:unknown identifier 'ct'
+        expression: ct.isAuthenticated
+    )
+
+    @permission(
+        //expect-error:24:25:AttributeExpressionError:field 'invalid' does not exist
+        expression: ctx.invalid
+    )
+
+    @permission(
+        //expect-error:21:27:AttributeExpressionError:expression expected to resolve to type Boolean but it is Text
+        expression: "true"
+    )
+
+    @permission(
+        //expect-error:29:30:AttributeExpressionError:unknown identifier 'c'
+        expression: true || c.isAuthenticated
+    )
+
+    @permission(
+        //expect-error:54:55:AttributeExpressionError:field 'invalid' does not exist
+        expression: ctx.identity in task.organisation.invalid
+    )
+
+    @permission(
+        //expect-error:77:78:AttributeExpressionError:field 'invalid' does not exist
+        expression: ctx.isAuthenticated && ctx.identity in task.organisation.invalid
+    )
+
+    @permission(
+        //expect-error:40:41:AttributeExpressionError:type Boolean does not have any fields to select
+        //expect-error:85:86:AttributeExpressionError:field 'invalid' does not exist
+        expression: ctx.isAuthenticated.invalid && ctx.identity in task.organisation.invalid
+    )
+}
+
+
 model Organisation {
     fields {
         people Person[]

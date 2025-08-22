@@ -14,8 +14,15 @@ func AttributeArgumentsRules(asts []*parser.AST, errs *errorhandling.ValidationE
 	var action *parser.ActionNode
 	var job *parser.JobNode
 	var flow *parser.FlowNode
+	var task *parser.TaskNode
 
 	return Visitor{
+		EnterTask: func(t *parser.TaskNode) {
+			task = t
+		},
+		LeaveTask: func(*parser.TaskNode) {
+			task = nil
+		},
 		EnterAction: func(a *parser.ActionNode) {
 			action = a
 		},
@@ -102,7 +109,14 @@ func AttributeArgumentsRules(asts []*parser.AST, errs *errorhandling.ValidationE
 
 				hint = `the @schedule attribute accepts cron syntax as a string, for e.g. @schedule("every weekday at 9am")`
 			case parser.AttributePermission:
-				if action != nil {
+				if task != nil {
+					template = map[string]bool{
+						"expression": false,
+						"roles":      false,
+					}
+
+					hint = `the @permission attribute in tasks can accept either an expression or a roles argument, for e.g. @permission(expression: ctx.isAuthenticated)`
+				} else if action != nil {
 					template = map[string]bool{
 						"expression": false,
 						"roles":      false,

@@ -2,8 +2,10 @@ task NewOrder {
     fields {
         ticketNo Text @sequence("S")
         order Order
+        orderCode Text @computed(newOrder.order.orderCode)
         customerName Text
         deliveryAddress Text
+        notes Text @default("none")
         dueDate Date?
     }
 }
@@ -11,5 +13,6 @@ task NewOrder {
 model Order {
     fields {
         isExpedited Boolean
+        orderCode Text
     }
 }

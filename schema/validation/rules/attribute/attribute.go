@@ -80,6 +80,11 @@ var attributeLocations = map[string][]string{
 		parser.AttributeUnique,
 		parser.AttributeOn,
 	},
+	parser.KeywordTask: {
+		parser.AttributePermission,
+		parser.AttributeUnique,
+		parser.AttributeOrderBy,
+	},
 	parser.KeywordField: {
 		parser.AttributeUnique,
 		parser.AttributeDefault,

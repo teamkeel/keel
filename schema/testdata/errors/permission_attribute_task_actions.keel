@@ -1,0 +1,5 @@
+task AddPerson {
+    //expect-error:35:42:AttributeArgumentError:unexpected argument 'actions' for @permission
+    //expect-error:35:42:AttributeArgumentError:cannot provide 'actions' arguments when using @permission in a task
+    @permission(expression: true, actions: [get])
+}

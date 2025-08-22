@@ -712,7 +712,7 @@ type Relationship struct {
 	Field  *parser.FieldNode
 }
 
-// GetRelationshipCandidates will find all the candidates relationships that can be formed with the related model.
+// GetRelationshipCandidates will find all the candidates relationships that can be formed with the related model or task.
 // Each relationship field should only have exactly 1 candidate, otherwise there are incorrectly defined relationships in the schema.
 func GetRelationshipCandidates(asts []*parser.AST, entity parser.Entity, field *parser.FieldNode) []*Relationship {
 	candidates := []*Relationship{}
@@ -789,8 +789,8 @@ func GetRelationshipCandidates(asts []*parser.AST, entity parser.Entity, field *
 func GetRelationship(asts []*parser.AST, currentEntity parser.Entity, currentField *parser.FieldNode) (*Relationship, error) {
 	candidates := GetRelationshipCandidates(asts, currentEntity, currentField)
 
-	otherModel := Model(asts, currentField.Type.Value)
-	if otherModel == nil {
+	otherEntity := Entity(asts, currentField.Type.Value)
+	if otherEntity == nil {
 		return nil, nil
 	}
 

@@ -12,6 +12,13 @@
         },
         {
           "modelName": "Order",
+          "name": "orderCode",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "modelName": "Order",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -54,9 +61,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "issuer"
-          ]
+          "uniqueWith": ["issuer"]
         },
         {
           "modelName": "Identity",
@@ -93,9 +98,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "email"
-          ]
+          "uniqueWith": ["email"]
         },
         {
           "modelName": "Identity",
@@ -335,6 +338,16 @@
         },
         {
           "modelName": "NewOrder",
+          "name": "orderCode",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "computedExpression": {
+            "source": "newOrder.order.orderCode"
+          }
+        },
+        {
+          "modelName": "NewOrder",
           "name": "customerName",
           "type": {
             "type": "TYPE_STRING"
@@ -345,6 +358,18 @@
           "name": "deliveryAddress",
           "type": {
             "type": "TYPE_STRING"
+          }
+        },
+        {
+          "modelName": "NewOrder",
+          "name": "notes",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "defaultValue": {
+            "expression": {
+              "source": "\"none\""
+            }
           }
         },
         {

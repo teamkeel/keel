@@ -12,7 +12,9 @@ import (
 )
 
 func PermissionsAttribute(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
-	var model *parser.ModelNode
+	// var model *parser.ModelNode
+	var task *parser.TaskNode
+	var entity parser.Entity
 	var action *parser.ActionNode
 	var job *parser.JobNode
 	var flow *parser.FlowNode
@@ -21,10 +23,18 @@ func PermissionsAttribute(asts []*parser.AST, errs *errorhandling.ValidationErro
 
 	return Visitor{
 		EnterModel: func(m *parser.ModelNode) {
-			model = m
+			entity = m
 		},
 		LeaveModel: func(_ *parser.ModelNode) {
-			model = nil
+			entity = nil
+		},
+		EnterTask: func(t *parser.TaskNode) {
+			entity = t
+			task = t
+		},
+		LeaveTask: func(_ *parser.TaskNode) {
+			entity = nil
+			task = nil
 		},
 		EnterAction: func(a *parser.ActionNode) {
 			action = a
@@ -64,13 +74,13 @@ func PermissionsAttribute(asts []*parser.AST, errs *errorhandling.ValidationErro
 				case "actions":
 					hasActions = true
 
-					if action != nil || job != nil || flow != nil {
+					if action != nil || job != nil || flow != nil || task != nil {
 						errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 							errorhandling.AttributeArgumentError,
 							errorhandling.ErrorDetails{
 								Message: fmt.Sprintf(
 									"cannot provide 'actions' arguments when using @permission in %s",
-									lo.Ternary(action != nil, "an action", lo.Ternary(flow != nil, "a flow", "a job")),
+									lo.Ternary(action != nil, "an action", lo.Ternary(flow != nil, "a flow", lo.Ternary(job != nil, "a job", "a task"))),
 								),
 							},
 							arg.Label,
@@ -92,7 +102,7 @@ func PermissionsAttribute(asts []*parser.AST, errs *errorhandling.ValidationErro
 						for _, op := range operands {
 							// An ident must have at least one fragment - we only care about the first one
 							fragment := op.Fragments[0]
-							if fragment == casing.ToLowerCamel(model.Name.Value) {
+							if fragment == casing.ToLowerCamel(entity.GetName()) {
 								errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 									errorhandling.AttributeArgumentError,
 									errorhandling.ErrorDetails{
@@ -125,7 +135,7 @@ func PermissionsAttribute(asts []*parser.AST, errs *errorhandling.ValidationErro
 			}
 
 			// Missing actions argument which is required
-			if job == nil && action == nil && flow == nil && !hasActions {
+			if job == nil && action == nil && flow == nil && task == nil && !hasActions {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeArgumentError,
 					errorhandling.ErrorDetails{
@@ -169,7 +179,7 @@ func PermissionsAttribute(asts []*parser.AST, errs *errorhandling.ValidationErro
 
 			switch arg.Label.Value {
 			case "expression":
-				issues, err = attributes.ValidatePermissionExpression(asts, model, action, job, expression)
+				issues, err = attributes.ValidatePermissionExpression(asts, entity, action, job, expression)
 			case "roles":
 				issues, err = attributes.ValidatePermissionRoles(asts, expression)
 			case "actions":
