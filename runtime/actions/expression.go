@@ -28,20 +28,19 @@ func (query *QueryBuilder) AddJoinFromFragments(schema *proto.Schema, fragments 
 		return err
 	}
 
-	entityName := casing.ToCamel(fragments[0])
-	entity := schema.FindEntity(entityName)
-
-	if entity == nil {
-		return fmt.Errorf("entity '%s' does not exist", entityName)
-	}
+	entity := schema.FindEntity(casing.ToCamel(fragments[0]))
 
 	fragmentCount := len(fragments)
 
 	for i := 1; i < fragmentCount-1; i++ {
 		currentFragment := fragments[i]
 
+		if entity == nil {
+			return fmt.Errorf("entity '%s' does not exist", casing.ToCamel(fragments[0]))
+		}
+
 		if !entity.HasField(currentFragment) {
-			return fmt.Errorf("this model: %s, does not have a field of name: %s", entityName, currentFragment)
+			return fmt.Errorf("this model: %s, does not have a field of name: %s", entity.GetName(), currentFragment)
 		}
 
 		// We know that the current fragment is a related model because it's not the last fragment
@@ -66,7 +65,7 @@ func (query *QueryBuilder) AddJoinFromFragments(schema *proto.Schema, fragments 
 
 		query.Join(relatedEntityName, leftOperand, rightOperand)
 
-		entityName = relatedEntityField.GetType().GetEntityName().GetValue()
+		entity = schema.FindEntity(relatedEntityField.GetType().GetEntityName().GetValue())
 	}
 
 	return nil
@@ -205,7 +204,7 @@ func generateOperandForCtx(ctx context.Context, schema *proto.Schema, fragments 
 }
 
 func NormaliseFragments(schema *proto.Schema, fragments []string) ([]string, error) {
-	isModelField := false
+	isEntityField := false
 	isCtx := fragments[0] == "ctx"
 
 	if isCtx {
@@ -237,17 +236,17 @@ func NormaliseFragments(schema *proto.Schema, fragments []string) ([]string, err
 	}
 
 	// If no field is provided, for example: @where(account in ...)
-	// Or if the target field is a MODEL, for example:
+	// Or if the target field is a ENTITY, for example:
 	if fieldTarget == nil || fieldTarget.GetType().GetType() == proto.Type_TYPE_ENTITY {
-		isModelField = true
+		isEntityField = true
 	}
 
-	if isModelField && len(fragments) == 1 {
+	if isEntityField && len(fragments) == 1 {
 		// One fragment is only possible if the expression is only referencing the model.
 		// For example, @where(account in ...)
 		// Add a new fragment 'id'
 		fragments = append(fragments, parser.FieldNameId)
-	} else if isModelField {
+	} else if isEntityField {
 		i := 0
 		if fragments[0] == "ctx" {
 			i++
@@ -294,8 +293,8 @@ func operandFromFragments(schema *proto.Schema, fragments []string) (*QueryOpera
 	}
 
 	var field string
-	entityName := casing.ToCamel(fragments[0])
-	entity := schema.FindEntity(entityName)
+
+	entity := schema.FindEntity(casing.ToCamel(fragments[0]))
 	fragmentCount := len(fragments)
 	isArray := false
 
@@ -303,13 +302,13 @@ func operandFromFragments(schema *proto.Schema, fragments []string) (*QueryOpera
 		currentFragment := fragments[i]
 
 		if !entity.HasField(currentFragment) {
-			return nil, fmt.Errorf("this model: %s, does not have a field of name: %s", entityName, currentFragment)
+			return nil, fmt.Errorf("this model: %s, does not have a field of name: %s", entity.GetName(), currentFragment)
 		}
 
 		if i < fragmentCount-1 {
 			// We know that the current fragment is a model because it's not the last fragment
 			relatedModelField := entity.FindField(currentFragment)
-			entityName = relatedModelField.GetType().GetEntityName().GetValue()
+			entity = schema.FindEntity(relatedModelField.GetType().GetEntityName().GetValue())
 		} else {
 			// The last fragment is referencing the field
 			field = currentFragment

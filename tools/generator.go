@@ -543,7 +543,7 @@ func (g *Generator) generateEmbeddedTools() {
 			}
 
 			// find the list tools for the related model
-			listTools := g.findListTools(f.GetType().GetModelName().GetValue())
+			listTools := g.findListTools(f.GetType().GetEntityName().GetValue())
 			for _, toolId := range listTools {
 				// check if there is an input for the foreign key
 				if input := g.Tools[toolId].getInput("$.where." + f.GetInverseFieldName().GetValue() + ".id.equals"); input != nil {
@@ -654,8 +654,8 @@ func (g *Generator) generateFlowInputs() error {
 				DisplayOrder:  int32(i),
 			}
 
-			if f.GetType().GetModelName() != nil {
-				config.ModelName = &f.Type.ModelName.Value
+			if f.GetType().GetEntityName() != nil {
+				config.ModelName = &f.Type.EntityName.Value
 			}
 			if f.GetType().GetFieldName() != nil {
 				config.FieldName = &f.Type.FieldName.Value
@@ -783,8 +783,8 @@ func (g *Generator) makeInputsForMessage(
 			Visible:       true,
 		}
 
-		if f.GetType().GetModelName() != nil {
-			config.ModelName = &f.Type.ModelName.Value
+		if f.GetType().GetEntityName() != nil {
+			config.ModelName = &f.Type.EntityName.Value
 		}
 		if f.GetType().GetFieldName() != nil {
 			config.FieldName = &f.Type.FieldName.Value
@@ -793,10 +793,10 @@ func (g *Generator) makeInputsForMessage(
 			config.EnumName = &f.Type.EnumName.Value
 		}
 
-		if f.GetType().GetModelName() != nil && f.GetType().GetFieldName() != nil && g.Schema.FindEntity(f.GetType().GetModelName().GetValue()).FindField(f.GetType().GetFieldName().GetValue()).GetUnique() {
+		if f.GetType().GetEntityName() != nil && f.GetType().GetFieldName() != nil && g.Schema.FindEntity(f.GetType().GetEntityName().GetValue()).FindField(f.GetType().GetFieldName().GetValue()).GetUnique() {
 			// generate lookup action only for ID inputs
 			if f.GetType().GetFieldName().GetValue() == fieldNameID {
-				if lookupToolsIDs := g.findListTools(f.GetType().GetModelName().GetValue()); len(lookupToolsIDs) > 0 {
+				if lookupToolsIDs := g.findListTools(f.GetType().GetEntityName().GetValue()); len(lookupToolsIDs) > 0 {
 					config.LookupAction = &toolsproto.ToolLink{
 						ToolId: lookupToolsIDs[0],
 					}
@@ -809,7 +809,7 @@ func (g *Generator) makeInputsForMessage(
 			// We do not add a GetEntryAction for the 'id' (or any unique lookup) input on a 'get', 'create' or 'update' action of a model, however do we add it for related models
 			if !((actionType == proto.ActionType_ACTION_TYPE_GET || actionType == proto.ActionType_ACTION_TYPE_CREATE || actionType == proto.ActionType_ACTION_TYPE_UPDATE) && len(f.GetTarget()) == 1) {
 				config.GetEntryAction = &toolsproto.ToolLink{
-					ToolId: f.GetType().GetModelName().GetValue(), // TODO: this is a bit of a hack placeholder because we do not know the underlying model which the field is pointing to during post-processing
+					ToolId: f.GetType().GetEntityName().GetValue(), // TODO: this is a bit of a hack placeholder because we do not know the underlying model which the field is pointing to during post-processing
 				}
 			}
 		}
@@ -852,8 +852,8 @@ func (g *Generator) makeResponsesForMessage(msg *proto.Message, pathPrefix strin
 			fields = append(fields, subFields...)
 
 			continue
-		} else if f.GetType().GetType() == proto.Type_TYPE_MODEL {
-			model := g.Schema.FindModel(f.GetType().GetModelName().GetValue())
+		} else if f.GetType().GetType() == proto.Type_TYPE_ENTITY {
+			model := g.Schema.FindModel(f.GetType().GetEntityName().GetValue())
 			if model == nil {
 				return nil, ErrInvalidSchema
 			}
@@ -936,7 +936,7 @@ func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string,
 				if f.IsHasMany() {
 					prefix = prefix + "[*]"
 				}
-				embeddedFields, err := g.makeResponsesForModel(g.Schema.FindModel(f.GetType().GetModelName().GetValue()), prefix, fieldEmbeddings, []string{})
+				embeddedFields, err := g.makeResponsesForModel(g.Schema.FindModel(f.GetType().GetEntityName().GetValue()), prefix, fieldEmbeddings, []string{})
 				if err != nil {
 					return nil, err
 				}
@@ -987,8 +987,8 @@ func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string,
 
 		// if this field is a model, we add a link to the action used to retrieve the related model. Note that inputs are
 		// generated first, so we're safe to create a tool/action link now
-		if f.IsForeignKey() && f.GetForeignKeyInfo().GetRelatedModelField() == fieldNameID {
-			if getToolID := g.findGetByIDTool(f.GetForeignKeyInfo().GetRelatedModelName()); getToolID != "" {
+		if f.IsForeignKey() && f.GetForeignKeyInfo().GetRelatedEntityField() == fieldNameID {
+			if getToolID := g.findGetByIDTool(f.GetForeignKeyInfo().GetRelatedEntityName()); getToolID != "" {
 				config.Link = &toolsproto.ToolLink{
 					ToolId: getToolID,
 					Data: []*toolsproto.DataMapping{
@@ -1002,7 +1002,7 @@ func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string,
 		}
 
 		if f.IsHasMany() {
-			if getToolID, input := g.findListByForeignID(f.GetType().GetModelName().GetValue(), f.GetInverseFieldName().GetValue()); getToolID != "" {
+			if getToolID, input := g.findListByForeignID(f.GetType().GetEntityName().GetValue(), f.GetInverseFieldName().GetValue()); getToolID != "" {
 				config.Link = &toolsproto.ToolLink{
 					ToolId: getToolID,
 					Data: []*toolsproto.DataMapping{
