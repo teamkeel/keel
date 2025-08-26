@@ -352,3 +352,55 @@ func (o *Orchestrator) CallFlow(ctx context.Context, run *Run, inputs map[string
 
 	return &respBody, nil
 }
+
+// CallbackFlow calls the functions runtime in the context of a flow callback: the FE will call a UI element's callback
+// function to perform some user defined logic and returns it's response.
+func (o *Orchestrator) CallbackFlow(ctx context.Context, run *Run, data map[string]any, element, callback string) (any, error) {
+	ctx, span := tracer.Start(ctx, "CallbackFlow")
+	defer span.End()
+
+	if run == nil {
+		return nil, fmt.Errorf("invalid run")
+	}
+
+	flow := o.schema.FindFlow(run.Name)
+	if flow == nil {
+		return nil, fmt.Errorf("invalid flow run")
+	}
+
+	if !auth.IsAuthenticated(ctx) && run.StartedBy != nil {
+		if identity, err := actions.FindIdentityById(ctx, o.schema, *run.StartedBy); err == nil {
+			ctx = auth.WithIdentity(ctx, identity)
+		}
+	}
+
+	args := functions.FlowInvocationArgs{
+		Flow:     flow,
+		RunID:    run.ID,
+		Data:     data,
+		Element:  &element,
+		Callback: &callback,
+	}
+
+	resp, meta, err := functions.CallFlow(ctx, args)
+	if err != nil {
+		return nil, err
+	}
+
+	b, err := json.Marshal(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	var respBody any
+	if err := json.Unmarshal(b, &respBody); err != nil {
+		return nil, err
+	}
+	span.SetAttributes(attribute.String("response.body", string(b)))
+
+	if meta != nil {
+		span.SetAttributes(attribute.Int("response.code", meta.Status))
+	}
+
+	return &respBody, nil
+}

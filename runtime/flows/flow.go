@@ -65,14 +65,8 @@ func (Run) TableName() string {
 
 // HasPendingUIStep tells us if the current run is waiting for UI input.
 func (r *Run) HasPendingUIStep() bool {
-	if r == nil || (r.Status != StatusAwaitingInput && r.Status != StatusRunning) {
-		return false
-	}
-
-	for _, step := range r.Steps {
-		if step.Type == StepTypeUI && step.Status == StepStatusPending {
-			return true
-		}
+	if s := r.PendingUIStep(); s != nil {
+		return true
 	}
 
 	return false
@@ -91,6 +85,22 @@ func (r *Run) SetUIComponents(c *FlowUIComponents) {
 			}
 		}
 	}
+}
+
+// PendingUIStep returns the pending UI step for this flow run.
+// If the flow does not have a pending UI step then nil will be returned.
+func (r *Run) PendingUIStep() *Step {
+	if r == nil || (r.Status != StatusAwaitingInput && r.Status != StatusRunning) {
+		return nil
+	}
+
+	for _, step := range r.Steps {
+		if step.Type == StepTypeUI && step.Status == StepStatusPending {
+			return &step
+		}
+	}
+
+	return nil
 }
 
 type FlowStats struct {

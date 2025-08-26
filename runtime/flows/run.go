@@ -293,3 +293,52 @@ func UpdateStep(ctx context.Context, runID string, stepID string, data map[strin
 
 	return
 }
+
+// Callback invokes a callback function defined on a UI element for a flow's UI step.
+// The step must be pending user data.
+func Callback(ctx context.Context, runID string, stepID string, data map[string]any, element, callback string) (response any, err error) {
+	ctx, span := tracer.Start(ctx, "Callback")
+	defer span.End()
+
+	defer func() {
+		if err != nil {
+			span.RecordError(err, trace.WithStackTrace(true))
+			span.SetStatus(codes.Error, err.Error())
+		}
+	}()
+
+	span.SetAttributes(
+		attribute.String("flowRun.id", runID),
+		attribute.String("step.id", stepID),
+		attribute.String("element", element),
+		attribute.String("callback", callback),
+	)
+
+	var run *Run
+	run, err = getRun(ctx, runID)
+	if err != nil {
+		err = fmt.Errorf("retrieving flow run: %w", err)
+		return
+	}
+
+	if run == nil {
+		err = fmt.Errorf("flow run not found")
+		return
+	}
+
+	if step := run.PendingUIStep(); step == nil || step.ID != stepID {
+		err = fmt.Errorf("invalid pending UI step")
+		return
+	}
+
+	var o *Orchestrator
+	o, err = GetOrchestrator(ctx)
+	if err != nil {
+		err = fmt.Errorf("retrieving context flow orchestrator: %w", err)
+		return
+	}
+
+	response, err = o.CallbackFlow(ctx, run, data, element, callback)
+
+	return
+}
