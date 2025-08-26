@@ -220,7 +220,7 @@ func (scm *Builder) ValidateFromInputs(inputs *reader.Inputs, includeWarnings bo
 // our implicit (or built-in) fields. For example every Model has an <id> field.
 func (scm *Builder) insertBuiltInFields(declarations *parser.AST) {
 	for _, decl := range declarations.Declarations {
-		if decl.Model == nil {
+		if decl.Model == nil && decl.Task == nil {
 			continue
 		}
 
@@ -276,21 +276,41 @@ func (scm *Builder) insertBuiltInFields(declarations *parser.AST) {
 			},
 		}
 
-		var fieldsSection *parser.ModelSectionNode
-		for _, section := range decl.Model.Sections {
-			if len(section.Fields) > 0 {
-				fieldsSection = section
-				break
+		switch {
+		case decl.Model != nil:
+			var modelFieldsSection *parser.ModelSectionNode
+			for _, section := range decl.Model.Sections {
+				if len(section.Fields) > 0 {
+					modelFieldsSection = section
+					break
+				}
+			}
+
+			if modelFieldsSection == nil {
+				decl.Model.Sections = append(decl.Model.Sections, &parser.ModelSectionNode{
+					Fields: fields,
+				})
+			} else {
+				modelFieldsSection.Fields = append(modelFieldsSection.Fields, fields...)
+			}
+		case decl.Task != nil:
+			var taskFieldSection *parser.TaskSectionNode
+			for _, section := range decl.Task.Sections {
+				if len(section.Fields) > 0 {
+					taskFieldSection = section
+					break
+				}
+			}
+
+			if taskFieldSection == nil {
+				decl.Task.Sections = append(decl.Task.Sections, &parser.TaskSectionNode{
+					Fields: fields,
+				})
+			} else {
+				taskFieldSection.Fields = append(taskFieldSection.Fields, fields...)
 			}
 		}
 
-		if fieldsSection == nil {
-			decl.Model.Sections = append(decl.Model.Sections, &parser.ModelSectionNode{
-				Fields: fields,
-			})
-		} else {
-			fieldsSection.Fields = append(fieldsSection.Fields, fields...)
-		}
 	}
 }
 
@@ -298,15 +318,15 @@ func (scm *Builder) insertBuiltInFields(declarations *parser.AST) {
 // built and combined from all input files. It analyses the foreign key fields that should be auto
 // generated and injected into each model.
 func (scm *Builder) insertForeignKeyFields(asts []*parser.AST) *errorhandling.ErrorDetails {
-	for _, mdl := range query.Models(asts) {
+	for _, entity := range query.Entities(asts) {
 		fkFieldsToAdd := map[int]*parser.FieldNode{}
 
-		for i, field := range query.ModelFields(mdl) {
-			if query.Model(asts, field.Type.Value) == nil {
+		for i, field := range entity.Fields() {
+			if query.Entity(asts, field.Type.Value) == nil {
 				continue
 			}
 
-			candidates := query.GetRelationshipCandidates(asts, mdl, field)
+			candidates := query.GetRelationshipCandidates(asts, entity, field)
 			if candidates == nil || len(candidates) != 1 {
 				continue
 			}
@@ -318,21 +338,21 @@ func (scm *Builder) insertForeignKeyFields(asts []*parser.AST) *errorhandling.Er
 				continue
 			}
 
-			referredToModelName := casing.ToCamel(field.Type.Value)
-			referredToModel := query.Model(asts, referredToModelName)
+			referredToEntityName := casing.ToCamel(field.Type.Value)
+			referredToEntity := query.Entity(asts, referredToEntityName)
 
-			if referredToModel == nil {
+			if referredToEntity == nil {
 				errDetails := &errorhandling.ErrorDetails{
-					Message: fmt.Sprintf("cannot find the model referred to (%s) by field %s, on model %s",
-						referredToModelName, field.Name, mdl.Name),
-					Hint: "make sure you declare this model",
+					Message: fmt.Sprintf("cannot find the model or task referred to (%s) by field %s, on model or task %s",
+						referredToEntityName, field.Name, entity.GetName()),
+					Hint: "make sure you declare this model or task",
 				}
 				return errDetails
 			}
 
-			referredToModelPK := query.PrimaryKey(referredToModelName, asts)
+			referredToEntityPK := query.PrimaryKey(referredToEntityName, asts)
 
-			generatedForeignKeyName := field.Name.Value + casing.ToCamel(referredToModelPK.Name.Value)
+			generatedForeignKeyName := field.Name.Value + casing.ToCamel(referredToEntityPK.Name.Value)
 
 			fkField := &parser.FieldNode{
 				BuiltIn:  true,
@@ -361,13 +381,28 @@ func (scm *Builder) insertForeignKeyFields(asts []*parser.AST) *errorhandling.Er
 		offset := 1
 		keys := lo.Keys(fkFieldsToAdd)
 		slices.Sort(keys)
-		for _, section := range mdl.Sections {
-			if section.Fields != nil {
-				for _, v := range keys {
-					section.Fields = slices.Insert(section.Fields, v+offset, fkFieldsToAdd[v])
-					offset++
+
+		switch entity.EntityType() {
+		case "model":
+			for _, section := range entity.(*parser.ModelNode).Sections {
+				if section.Fields != nil {
+					for _, v := range keys {
+						section.Fields = slices.Insert(section.Fields, v+offset, fkFieldsToAdd[v])
+						offset++
+					}
 				}
 			}
+		case "task":
+			for _, section := range entity.(*parser.TaskNode).Sections {
+				if section.Fields != nil {
+					for _, v := range keys {
+						section.Fields = slices.Insert(section.Fields, v+offset, fkFieldsToAdd[v])
+						offset++
+					}
+				}
+			}
+		default:
+			panic(fmt.Sprintf("unknown entity type: %s", entity.EntityType()))
 		}
 	}
 	return nil

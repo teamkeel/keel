@@ -283,7 +283,7 @@ func (s *Schema) GetFlowModelInputs(f *Flow) map[string]bool {
 	m := map[string]bool{}
 
 	for _, f := range msg.GetFields() {
-		if mName := f.GetType().GetModelName().GetValue(); mName != "" {
+		if mName := f.GetType().GetEntityName().GetValue(); mName != "" {
 			m[mName] = !f.GetOptional() || m[mName]
 		}
 	}

@@ -123,7 +123,7 @@ func TestDefault_ValidDecimalFromNumber(t *testing.T) {
 	}`})
 
 	model := query.Model(schema, "Person")
-	field := query.Field(model, "age")
+	field := model.Field("age")
 	expression := field.Attributes[0].Arguments[0].Expression
 
 	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
@@ -157,7 +157,7 @@ func TestDefault_InvalidID(t *testing.T) {
 	}`})
 
 	model := query.Model(schema, "Person")
-	field := query.Field(model, "personId")
+	field := model.Field("personId")
 	expression := field.Attributes[0].Arguments[0].Expression
 
 	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
@@ -175,7 +175,7 @@ func TestDefault_ValidBooleanb(t *testing.T) {
 	}`})
 
 	model := query.Model(schema, "Person")
-	field := query.Field(model, "isEmployed")
+	field := model.Field("isEmployed")
 	expression := field.Attributes[0].Arguments[0].Expression
 
 	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
@@ -192,7 +192,7 @@ func TestDefault_InvalidBoolean(t *testing.T) {
 	}`})
 
 	model := query.Model(schema, "Person")
-	field := query.Field(model, "isEmployed")
+	field := model.Field("isEmployed")
 	expression := field.Attributes[0].Arguments[0].Expression
 
 	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
@@ -210,7 +210,7 @@ func TestDefault_InvalidWithOperators(t *testing.T) {
 	}`})
 
 	model := query.Model(schema, "Person")
-	field := query.Field(model, "isEmployed")
+	field := model.Field("isEmployed")
 	expression := field.Attributes[0].Arguments[0].Expression
 
 	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
@@ -228,7 +228,7 @@ func TestDefault_InvalidWithCtx(t *testing.T) {
 	}`})
 
 	model := query.Model(schema, "Person")
-	field := query.Field(model, "isEmployed")
+	field := model.Field("isEmployed")
 	expression := field.Attributes[0].Arguments[0].Expression
 
 	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)
@@ -246,7 +246,7 @@ func TestDefault_InvalidArithmetic(t *testing.T) {
 	}`})
 
 	model := query.Model(schema, "Person")
-	field := query.Field(model, "num")
+	field := model.Field("num")
 	expression := field.Attributes[0].Arguments[0].Expression
 
 	issues, err := attributes.ValidateDefaultExpression(schema, field, expression)

@@ -97,13 +97,13 @@ func (v *setQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
 			// This section performs a field lookup on a to-be related model as an inline query
 
 			field := model.FindField(ident.Fragments[1])
-			model = v.schema.FindModel(field.GetType().GetModelName().GetValue())
+			model = v.schema.FindModel(field.GetType().GetEntityName().GetValue())
 			query := NewQuery(model)
 
 			relatedModelField := v.model.FindField(normalised[1])
 
 			subFragments := normalised[1:]
-			subFragments[0] = strcase.ToLowerCamel(relatedModelField.GetType().GetModelName().GetValue())
+			subFragments[0] = strcase.ToLowerCamel(relatedModelField.GetType().GetEntityName().GetValue())
 
 			err := query.AddJoinFromFragments(v.schema, subFragments)
 			if err != nil {

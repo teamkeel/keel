@@ -4,30 +4,30 @@
       "name": "Company",
       "fields": [
         {
-          "modelName": "Company",
+          "entityName": "Company",
           "name": "profile",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "CompanyProfile"
+            "type": "TYPE_ENTITY",
+            "entityName": "CompanyProfile"
           },
           "unique": true,
           "foreignKeyFieldName": "profileId",
           "inverseFieldName": "company"
         },
         {
-          "modelName": "Company",
+          "entityName": "Company",
           "name": "profileId",
           "type": {
             "type": "TYPE_ID"
           },
           "unique": true,
           "foreignKeyInfo": {
-            "relatedModelName": "CompanyProfile",
-            "relatedModelField": "id"
+            "relatedEntityName": "CompanyProfile",
+            "relatedEntityField": "id"
           }
         },
         {
-          "modelName": "Company",
+          "entityName": "Company",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -39,7 +39,7 @@
           }
         },
         {
-          "modelName": "Company",
+          "entityName": "Company",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -49,7 +49,7 @@
           }
         },
         {
-          "modelName": "Company",
+          "entityName": "Company",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -73,23 +73,23 @@
       "name": "CompanyProfile",
       "fields": [
         {
-          "modelName": "CompanyProfile",
+          "entityName": "CompanyProfile",
           "name": "employeeCount",
           "type": {
             "type": "TYPE_INT"
           }
         },
         {
-          "modelName": "CompanyProfile",
+          "entityName": "CompanyProfile",
           "name": "company",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Company"
+            "type": "TYPE_ENTITY",
+            "entityName": "Company"
           },
           "inverseFieldName": "profile"
         },
         {
-          "modelName": "CompanyProfile",
+          "entityName": "CompanyProfile",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -101,7 +101,7 @@
           }
         },
         {
-          "modelName": "CompanyProfile",
+          "entityName": "CompanyProfile",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -111,7 +111,7 @@
           }
         },
         {
-          "modelName": "CompanyProfile",
+          "entityName": "CompanyProfile",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -126,16 +126,18 @@
       "name": "Identity",
       "fields": [
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "email",
           "type": {
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "emailVerified",
           "type": {
             "type": "TYPE_BOOL"
@@ -147,7 +149,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "password",
           "type": {
             "type": "TYPE_PASSWORD"
@@ -155,7 +157,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "externalId",
           "type": {
             "type": "TYPE_STRING"
@@ -163,16 +165,18 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "issuer",
           "type": {
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "name",
           "type": {
             "type": "TYPE_STRING"
@@ -180,7 +184,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "givenName",
           "type": {
             "type": "TYPE_STRING"
@@ -188,7 +192,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "familyName",
           "type": {
             "type": "TYPE_STRING"
@@ -196,7 +200,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "middleName",
           "type": {
             "type": "TYPE_STRING"
@@ -204,7 +208,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "nickName",
           "type": {
             "type": "TYPE_STRING"
@@ -212,7 +216,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "profile",
           "type": {
             "type": "TYPE_STRING"
@@ -220,7 +224,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "picture",
           "type": {
             "type": "TYPE_STRING"
@@ -228,7 +232,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "website",
           "type": {
             "type": "TYPE_STRING"
@@ -236,7 +240,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "gender",
           "type": {
             "type": "TYPE_STRING"
@@ -244,7 +248,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "zoneInfo",
           "type": {
             "type": "TYPE_STRING"
@@ -252,7 +256,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "locale",
           "type": {
             "type": "TYPE_STRING"
@@ -260,7 +264,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -272,7 +276,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -282,7 +286,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -410,10 +414,13 @@
           "name": "employeeCount",
           "type": {
             "type": "TYPE_INT",
-            "modelName": "CompanyProfile",
+            "entityName": "CompanyProfile",
             "fieldName": "employeeCount"
           },
-          "target": ["profile", "employeeCount"]
+          "target": [
+            "profile",
+            "employeeCount"
+          ]
         }
       ]
     }

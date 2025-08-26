@@ -4,27 +4,27 @@
       "name": "Author",
       "fields": [
         {
-          "modelName": "Author",
+          "entityName": "Author",
           "name": "identity",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Identity"
+            "type": "TYPE_ENTITY",
+            "entityName": "Identity"
           },
           "foreignKeyFieldName": "identityId"
         },
         {
-          "modelName": "Author",
+          "entityName": "Author",
           "name": "identityId",
           "type": {
             "type": "TYPE_ID"
           },
           "foreignKeyInfo": {
-            "relatedModelName": "Identity",
-            "relatedModelField": "id"
+            "relatedEntityName": "Identity",
+            "relatedEntityField": "id"
           }
         },
         {
-          "modelName": "Author",
+          "entityName": "Author",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -36,7 +36,7 @@
           }
         },
         {
-          "modelName": "Author",
+          "entityName": "Author",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -46,7 +46,7 @@
           }
         },
         {
-          "modelName": "Author",
+          "entityName": "Author",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -61,27 +61,27 @@
       "name": "Publisher",
       "fields": [
         {
-          "modelName": "Publisher",
+          "entityName": "Publisher",
           "name": "identity",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Identity"
+            "type": "TYPE_ENTITY",
+            "entityName": "Identity"
           },
           "foreignKeyFieldName": "identityId"
         },
         {
-          "modelName": "Publisher",
+          "entityName": "Publisher",
           "name": "identityId",
           "type": {
             "type": "TYPE_ID"
           },
           "foreignKeyInfo": {
-            "relatedModelName": "Identity",
-            "relatedModelField": "id"
+            "relatedEntityName": "Identity",
+            "relatedEntityField": "id"
           }
         },
         {
-          "modelName": "Publisher",
+          "entityName": "Publisher",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -93,7 +93,7 @@
           }
         },
         {
-          "modelName": "Publisher",
+          "entityName": "Publisher",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -103,7 +103,7 @@
           }
         },
         {
-          "modelName": "Publisher",
+          "entityName": "Publisher",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -118,58 +118,58 @@
       "name": "Post",
       "fields": [
         {
-          "modelName": "Post",
+          "entityName": "Post",
           "name": "title",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "modelName": "Post",
+          "entityName": "Post",
           "name": "owner",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Author"
+            "type": "TYPE_ENTITY",
+            "entityName": "Author"
           },
           "optional": true,
           "foreignKeyFieldName": "ownerId"
         },
         {
-          "modelName": "Post",
+          "entityName": "Post",
           "name": "ownerId",
           "type": {
             "type": "TYPE_ID"
           },
           "optional": true,
           "foreignKeyInfo": {
-            "relatedModelName": "Author",
-            "relatedModelField": "id"
+            "relatedEntityName": "Author",
+            "relatedEntityField": "id"
           }
         },
         {
-          "modelName": "Post",
+          "entityName": "Post",
           "name": "publisher",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Publisher"
+            "type": "TYPE_ENTITY",
+            "entityName": "Publisher"
           },
           "optional": true,
           "foreignKeyFieldName": "publisherId"
         },
         {
-          "modelName": "Post",
+          "entityName": "Post",
           "name": "publisherId",
           "type": {
             "type": "TYPE_ID"
           },
           "optional": true,
           "foreignKeyInfo": {
-            "relatedModelName": "Publisher",
-            "relatedModelField": "id"
+            "relatedEntityName": "Publisher",
+            "relatedEntityField": "id"
           }
         },
         {
-          "modelName": "Post",
+          "entityName": "Post",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -181,7 +181,7 @@
           }
         },
         {
-          "modelName": "Post",
+          "entityName": "Post",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -191,7 +191,7 @@
           }
         },
         {
-          "modelName": "Post",
+          "entityName": "Post",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -209,7 +209,7 @@
           "implementation": "ACTION_IMPLEMENTATION_AUTO",
           "permissions": [
             {
-              "modelName": "Post",
+              "entityName": "Post",
               "actionName": "createPost",
               "expression": {
                 "source": "post.owner.identity == post.publisher.identity"
@@ -224,16 +224,18 @@
       "name": "Identity",
       "fields": [
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "email",
           "type": {
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "emailVerified",
           "type": {
             "type": "TYPE_BOOL"
@@ -245,7 +247,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "password",
           "type": {
             "type": "TYPE_PASSWORD"
@@ -253,7 +255,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "externalId",
           "type": {
             "type": "TYPE_STRING"
@@ -261,16 +263,18 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "issuer",
           "type": {
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "name",
           "type": {
             "type": "TYPE_STRING"
@@ -278,7 +282,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "givenName",
           "type": {
             "type": "TYPE_STRING"
@@ -286,7 +290,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "familyName",
           "type": {
             "type": "TYPE_STRING"
@@ -294,7 +298,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "middleName",
           "type": {
             "type": "TYPE_STRING"
@@ -302,7 +306,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "nickName",
           "type": {
             "type": "TYPE_STRING"
@@ -310,7 +314,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "profile",
           "type": {
             "type": "TYPE_STRING"
@@ -318,7 +322,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "picture",
           "type": {
             "type": "TYPE_STRING"
@@ -326,7 +330,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "website",
           "type": {
             "type": "TYPE_STRING"
@@ -334,7 +338,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "gender",
           "type": {
             "type": "TYPE_STRING"
@@ -342,7 +346,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "zoneInfo",
           "type": {
             "type": "TYPE_STRING"
@@ -350,7 +354,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "locale",
           "type": {
             "type": "TYPE_STRING"
@@ -358,7 +362,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -370,7 +374,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -380,7 +384,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -498,10 +502,12 @@
           "name": "title",
           "type": {
             "type": "TYPE_STRING",
-            "modelName": "Post",
+            "entityName": "Post",
             "fieldName": "title"
           },
-          "target": ["title"]
+          "target": [
+            "title"
+          ]
         },
         {
           "messageName": "CreatePostInput",
@@ -531,10 +537,13 @@
           "name": "id",
           "type": {
             "type": "TYPE_ID",
-            "modelName": "Publisher",
+            "entityName": "Publisher",
             "fieldName": "id"
           },
-          "target": ["publisher", "id"]
+          "target": [
+            "publisher",
+            "id"
+          ]
         }
       ]
     },
@@ -546,10 +555,13 @@
           "name": "id",
           "type": {
             "type": "TYPE_ID",
-            "modelName": "Author",
+            "entityName": "Author",
             "fieldName": "id"
           },
-          "target": ["owner", "id"]
+          "target": [
+            "owner",
+            "id"
+          ]
         }
       ]
     }

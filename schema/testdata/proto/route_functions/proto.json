@@ -1,20 +1,205 @@
 {
-  "routes": [
+  "models": [
     {
-      "handler": "myHandler",
-      "method": "HTTP_METHOD_GET",
-      "pattern": "/my/route"
-    },
-    {
-      "handler": "otherHandler",
-      "method": "HTTP_METHOD_POST",
-      "pattern": "/some/webhook/:param"
+      "name": "Identity",
+      "fields": [
+        {
+          "entityName": "Identity",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true,
+          "uniqueWith": [
+            "issuer"
+          ]
+        },
+        {
+          "entityName": "Identity",
+          "name": "emailVerified",
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "defaultValue": {
+            "expression": {
+              "source": "false"
+            }
+          }
+        },
+        {
+          "entityName": "Identity",
+          "name": "password",
+          "type": {
+            "type": "TYPE_PASSWORD"
+          },
+          "optional": true
+        },
+        {
+          "entityName": "Identity",
+          "name": "externalId",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "entityName": "Identity",
+          "name": "issuer",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true,
+          "uniqueWith": [
+            "email"
+          ]
+        },
+        {
+          "entityName": "Identity",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "entityName": "Identity",
+          "name": "givenName",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "entityName": "Identity",
+          "name": "familyName",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "entityName": "Identity",
+          "name": "middleName",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "entityName": "Identity",
+          "name": "nickName",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "entityName": "Identity",
+          "name": "profile",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "entityName": "Identity",
+          "name": "picture",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "entityName": "Identity",
+          "name": "website",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "entityName": "Identity",
+          "name": "gender",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "entityName": "Identity",
+          "name": "zoneInfo",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "entityName": "Identity",
+          "name": "locale",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "entityName": "Identity",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "unique": true,
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "entityName": "Identity",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "entityName": "Identity",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        }
+      ],
+      "actions": [
+        {
+          "modelName": "Identity",
+          "name": "requestPasswordReset",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "RequestPasswordResetInput",
+          "responseMessageName": "RequestPasswordResetResponse"
+        },
+        {
+          "modelName": "Identity",
+          "name": "resetPassword",
+          "type": "ACTION_TYPE_WRITE",
+          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "ResetPasswordInput",
+          "responseMessageName": "ResetPasswordResponse"
+        }
+      ]
     }
   ],
   "apis": [
     {
+      "name": "Api",
       "apiModels": [
         {
+          "modelName": "Identity",
           "modelActions": [
             {
               "actionName": "requestPasswordReset"
@@ -22,11 +207,9 @@
             {
               "actionName": "resetPassword"
             }
-          ],
-          "modelName": "Identity"
+          ]
         }
-      ],
-      "name": "Api"
+      ]
     }
   ],
   "messages": [
@@ -34,6 +217,7 @@
       "name": "Any"
     },
     {
+      "name": "RequestPasswordResetInput",
       "fields": [
         {
           "messageName": "RequestPasswordResetInput",
@@ -49,13 +233,13 @@
             "type": "TYPE_STRING"
           }
         }
-      ],
-      "name": "RequestPasswordResetInput"
+      ]
     },
     {
       "name": "RequestPasswordResetResponse"
     },
     {
+      "name": "ResetPasswordInput",
       "fields": [
         {
           "messageName": "ResetPasswordInput",
@@ -71,202 +255,22 @@
             "type": "TYPE_STRING"
           }
         }
-      ],
-      "name": "ResetPasswordInput"
+      ]
     },
     {
       "name": "ResetPasswordResponse"
     }
   ],
-  "models": [
+  "routes": [
     {
-      "actions": [
-        {
-          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
-          "inputMessageName": "RequestPasswordResetInput",
-          "modelName": "Identity",
-          "name": "requestPasswordReset",
-          "responseMessageName": "RequestPasswordResetResponse",
-          "type": "ACTION_TYPE_WRITE"
-        },
-        {
-          "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
-          "inputMessageName": "ResetPasswordInput",
-          "modelName": "Identity",
-          "name": "resetPassword",
-          "responseMessageName": "ResetPasswordResponse",
-          "type": "ACTION_TYPE_WRITE"
-        }
-      ],
-      "fields": [
-        {
-          "modelName": "Identity",
-          "name": "email",
-          "optional": true,
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "uniqueWith": ["issuer"]
-        },
-        {
-          "defaultValue": {
-            "expression": {
-              "source": "false"
-            }
-          },
-          "modelName": "Identity",
-          "name": "emailVerified",
-          "type": {
-            "type": "TYPE_BOOL"
-          }
-        },
-        {
-          "modelName": "Identity",
-          "name": "password",
-          "optional": true,
-          "type": {
-            "type": "TYPE_PASSWORD"
-          }
-        },
-        {
-          "modelName": "Identity",
-          "name": "externalId",
-          "optional": true,
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        },
-        {
-          "modelName": "Identity",
-          "name": "issuer",
-          "optional": true,
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "uniqueWith": ["email"]
-        },
-        {
-          "modelName": "Identity",
-          "name": "name",
-          "optional": true,
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        },
-        {
-          "modelName": "Identity",
-          "name": "givenName",
-          "optional": true,
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        },
-        {
-          "modelName": "Identity",
-          "name": "familyName",
-          "optional": true,
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        },
-        {
-          "modelName": "Identity",
-          "name": "middleName",
-          "optional": true,
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        },
-        {
-          "modelName": "Identity",
-          "name": "nickName",
-          "optional": true,
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        },
-        {
-          "modelName": "Identity",
-          "name": "profile",
-          "optional": true,
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        },
-        {
-          "modelName": "Identity",
-          "name": "picture",
-          "optional": true,
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        },
-        {
-          "modelName": "Identity",
-          "name": "website",
-          "optional": true,
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        },
-        {
-          "modelName": "Identity",
-          "name": "gender",
-          "optional": true,
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        },
-        {
-          "modelName": "Identity",
-          "name": "zoneInfo",
-          "optional": true,
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        },
-        {
-          "modelName": "Identity",
-          "name": "locale",
-          "optional": true,
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        },
-        {
-          "defaultValue": {
-            "useZeroValue": true
-          },
-          "modelName": "Identity",
-          "name": "id",
-          "primaryKey": true,
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "unique": true
-        },
-        {
-          "defaultValue": {
-            "useZeroValue": true
-          },
-          "modelName": "Identity",
-          "name": "createdAt",
-          "type": {
-            "type": "TYPE_DATETIME"
-          }
-        },
-        {
-          "defaultValue": {
-            "useZeroValue": true
-          },
-          "modelName": "Identity",
-          "name": "updatedAt",
-          "type": {
-            "type": "TYPE_DATETIME"
-          }
-        }
-      ],
-      "name": "Identity"
+      "method": "HTTP_METHOD_GET",
+      "pattern": "/my/route",
+      "handler": "myHandler"
+    },
+    {
+      "method": "HTTP_METHOD_POST",
+      "pattern": "/some/webhook/:param",
+      "handler": "otherHandler"
     }
   ]
 }

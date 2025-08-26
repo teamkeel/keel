@@ -46,7 +46,7 @@ func (query *QueryBuilder) AddJoinFromFragments(schema *proto.Schema, fragments 
 
 		// We know that the current fragment is a related model because it's not the last fragment
 		relatedEntityField := entity.FindField(currentFragment)
-		relatedEntityName := relatedEntityField.GetType().GetModelName().GetValue()
+		relatedEntityName := relatedEntityField.GetType().GetEntityName().GetValue()
 		foreignKeyField := schema.GetForeignKeyFieldName(relatedEntityField)
 		primaryKey := "id"
 
@@ -66,7 +66,7 @@ func (query *QueryBuilder) AddJoinFromFragments(schema *proto.Schema, fragments 
 
 		query.Join(relatedEntityName, leftOperand, rightOperand)
 
-		entityName = relatedEntityField.GetType().GetModelName().GetValue()
+		entityName = relatedEntityField.GetType().GetEntityName().GetValue()
 	}
 
 	return nil
@@ -228,17 +228,17 @@ func NormaliseFragments(schema *proto.Schema, fragments []string) ([]string, err
 	var fieldTarget *proto.Field
 	for i := 1; i < len(fragments); i++ {
 		fieldTarget = entityTarget.FindField(fragments[i])
-		if fieldTarget.GetType().GetType() == proto.Type_TYPE_MODEL {
-			entityTarget = schema.FindEntity(fieldTarget.GetType().GetModelName().GetValue())
+		if fieldTarget.GetType().GetType() == proto.Type_TYPE_ENTITY {
+			entityTarget = schema.FindEntity(fieldTarget.GetType().GetEntityName().GetValue())
 			if entityTarget == nil {
-				return nil, fmt.Errorf("model '%s' does not exist in schema", fieldTarget.GetType().GetModelName().GetValue())
+				return nil, fmt.Errorf("model '%s' does not exist in schema", fieldTarget.GetType().GetEntityName().GetValue())
 			}
 		}
 	}
 
 	// If no field is provided, for example: @where(account in ...)
 	// Or if the target field is a MODEL, for example:
-	if fieldTarget == nil || fieldTarget.GetType().GetType() == proto.Type_TYPE_MODEL {
+	if fieldTarget == nil || fieldTarget.GetType().GetType() == proto.Type_TYPE_ENTITY {
 		isModelField = true
 	}
 
@@ -261,10 +261,10 @@ func NormaliseFragments(schema *proto.Schema, fragments []string) ([]string, err
 		var fieldTarget *proto.Field
 		for i := i + 1; i < len(fragments); i++ {
 			fieldTarget = modelTarget.FindField(fragments[i])
-			if fieldTarget.GetType().GetType() == proto.Type_TYPE_MODEL {
-				modelTarget = schema.FindEntity(fieldTarget.GetType().GetModelName().GetValue())
+			if fieldTarget.GetType().GetType() == proto.Type_TYPE_ENTITY {
+				modelTarget = schema.FindEntity(fieldTarget.GetType().GetEntityName().GetValue())
 				if modelTarget == nil {
-					return nil, fmt.Errorf("model '%s' does not exist in schema", fieldTarget.GetType().GetModelName().GetValue())
+					return nil, fmt.Errorf("model '%s' does not exist in schema", fieldTarget.GetType().GetEntityName().GetValue())
 				}
 			}
 		}
@@ -309,7 +309,7 @@ func operandFromFragments(schema *proto.Schema, fragments []string) (*QueryOpera
 		if i < fragmentCount-1 {
 			// We know that the current fragment is a model because it's not the last fragment
 			relatedModelField := entity.FindField(currentFragment)
-			entityName = relatedModelField.GetType().GetModelName().GetValue()
+			entityName = relatedModelField.GetType().GetEntityName().GetValue()
 		} else {
 			// The last fragment is referencing the field
 			field = currentFragment

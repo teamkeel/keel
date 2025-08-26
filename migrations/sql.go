@@ -54,26 +54,26 @@ func Identifier(v string) string {
 	return db.QuoteIdentifier(casing.ToSnake(v))
 }
 
-func UniqueConstraintName(modelName string, fieldNames []string) string {
+func UniqueConstraintName(entityName string, fieldNames []string) string {
 	slices.Sort(fieldNames)
 	snaked := lo.Map(fieldNames, func(s string, _ int) string {
 		return casing.ToSnake(s)
 	})
-	return fmt.Sprintf("%s_%s_udx", casing.ToSnake(modelName), strings.Join(snaked, "_"))
+	return fmt.Sprintf("%s_%s_udx", casing.ToSnake(entityName), strings.Join(snaked, "_"))
 }
 
-func PrimaryKeyConstraintName(modelName string, fieldName string) string {
-	return fmt.Sprintf("%s_%s_pkey", casing.ToSnake(modelName), casing.ToSnake(fieldName))
+func PrimaryKeyConstraintName(entityName string, fieldName string) string {
+	return fmt.Sprintf("%s_%s_pkey", casing.ToSnake(entityName), casing.ToSnake(fieldName))
 }
 
 func createTableStmt(schema *proto.Schema, entity proto.Entity) (string, error) {
 	statements := []string{}
 	output := fmt.Sprintf("CREATE TABLE %s (\n", Identifier(entity.GetName()))
 
-	// Exclude fields of type Model - these exists only in proto land - and has no corresponding
+	// Exclude fields of type ENTITY - these exists only in proto land - and has no corresponding
 	// column in the database.
 	fields := lo.Filter(entity.GetFields(), func(field *proto.Field, _ int) bool {
-		return field.GetType().GetType() != proto.Type_TYPE_MODEL
+		return field.GetType().GetType() != proto.Type_TYPE_ENTITY
 	})
 
 	fieldDefs := []string{}
@@ -155,7 +155,7 @@ func dropConstraintStmt(tableName string, constraintName string) string {
 	return fmt.Sprintf("ALTER TABLE %s DROP CONSTRAINT %s;", Identifier(tableName), constraintName)
 }
 
-func addColumnStmt(schema *proto.Schema, modelName string, field *proto.Field) (string, error) {
+func addColumnStmt(schema *proto.Schema, entityName string, field *proto.Field) (string, error) {
 	statements := []string{}
 
 	stmt, err := fieldDefinition(field)
@@ -165,16 +165,16 @@ func addColumnStmt(schema *proto.Schema, modelName string, field *proto.Field) (
 
 	if field.GetSequence() != nil {
 		statements = append(statements,
-			fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s;", Identifier(modelName), sequenceColumnDefinition(field)),
+			fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s;", Identifier(entityName), sequenceColumnDefinition(field)),
 		)
 	}
 
 	statements = append(statements,
-		fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s;", Identifier(modelName), stmt),
+		fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s;", Identifier(entityName), stmt),
 	)
 
 	if field.GetUnique() && !field.GetPrimaryKey() {
-		stmt, err := addUniqueConstraintStmt(schema, modelName, []string{field.GetName()})
+		stmt, err := addUniqueConstraintStmt(schema, entityName, []string{field.GetName()})
 		if err != nil {
 			return "", err
 		}
@@ -285,9 +285,9 @@ func computedTriggerName(entity proto.Entity) string {
 	return fmt.Sprintf("%s__comp", strcase.ToSnake(entity.GetName()))
 }
 
-func computedDependencyFuncName(entity proto.Entity, dependentModel proto.Entity, fragments []string) string {
+func computedDependencyFuncName(entity proto.Entity, dependentEntity proto.Entity, fragments []string) string {
 	hash := hashOfExpression(strings.Join(fragments, "."))
-	return fmt.Sprintf("%s__to__%s__%s__comp_dep", strcase.ToSnake(dependentModel.GetName()), strcase.ToSnake(entity.GetName()), hash)
+	return fmt.Sprintf("%s__to__%s__%s__comp_dep", strcase.ToSnake(dependentEntity.GetName()), strcase.ToSnake(entity.GetName()), hash)
 }
 
 // fieldFromComputedFnName determines the field from computed function name.
@@ -308,7 +308,7 @@ func addComputedFieldFuncStmt(ctx context.Context, schema *proto.Schema, entity 
 	switch field.GetType().GetType() {
 	case proto.Type_TYPE_DECIMAL, proto.Type_TYPE_INT, proto.Type_TYPE_BOOL, proto.Type_TYPE_STRING, proto.Type_TYPE_DURATION:
 		sqlType = PostgresFieldTypes[field.GetType().GetType()]
-	case proto.Type_TYPE_MODEL:
+	case proto.Type_TYPE_ENTITY:
 		sqlType = "TEXT"
 	default:
 		return "", "", fmt.Errorf("type not supported for computed fields: %s", field.GetType().GetType())
@@ -335,12 +335,12 @@ func addComputedFieldFuncStmt(ctx context.Context, schema *proto.Schema, entity 
 	return fn, sql, nil
 }
 
-func dropComputedExecFunctionStmt(model *proto.Model) string {
-	return fmt.Sprintf("DROP FUNCTION \"%s__exec_comp_fns\";", strcase.ToSnake(model.GetName()))
+func dropComputedExecFunctionStmt(entity proto.Entity) string {
+	return fmt.Sprintf("DROP FUNCTION \"%s__exec_comp_fns\";", strcase.ToSnake(entity.GetName()))
 }
 
-func dropComputedTriggerStmt(model *proto.Model) string {
-	return fmt.Sprintf("DROP TRIGGER \"%s__comp\" ON \"%s\";", strcase.ToSnake(model.GetName()), strcase.ToSnake(model.GetName()))
+func dropComputedTriggerStmt(entity proto.Entity) string {
+	return fmt.Sprintf("DROP TRIGGER \"%s__comp\" ON \"%s\";", strcase.ToSnake(entity.GetName()), strcase.ToSnake(entity.GetName()))
 }
 
 func fieldDefinition(field *proto.Field) (string, error) {
@@ -549,8 +549,8 @@ func toSqlLiteral(value any, field *proto.Field) (string, error) {
 	}
 }
 
-func dropColumnStmt(modelName string, fieldName string) string {
-	output := fmt.Sprintf("ALTER TABLE %s ", Identifier(modelName))
+func dropColumnStmt(entityName string, fieldName string) string {
+	output := fmt.Sprintf("ALTER TABLE %s ", Identifier(entityName))
 	output += fmt.Sprintf("DROP COLUMN %s CASCADE;", Identifier(fieldName))
 	return output
 }
@@ -585,11 +585,11 @@ func createAuditTriggerStmts(triggers []*TriggerRow, entity proto.Entity) string
 // createUpdatedAtTriggerStmts generates the CREATE TRIGGER statements for automatically updating each model's updatedAt column.
 // Only creates a trigger if the trigger does not already exist in the database.
 func createUpdatedAtTriggerStmts(triggers []*TriggerRow, entity proto.Entity) string {
-	modelLower := casing.ToSnake(entity.GetName())
+	entityLower := casing.ToSnake(entity.GetName())
 	statements := []string{}
 
-	updatedAt := fmt.Sprintf("%s_updated_at", modelLower)
-	if _, found := lo.Find(triggers, func(t *TriggerRow) bool { return t.TriggerName == updatedAt && t.TableName == modelLower }); !found {
+	updatedAt := fmt.Sprintf("%s_updated_at", entityLower)
+	if _, found := lo.Find(triggers, func(t *TriggerRow) bool { return t.TriggerName == updatedAt && t.TableName == entityLower }); !found {
 		statements = append(statements, fmt.Sprintf(
 			`CREATE TRIGGER %s BEFORE UPDATE ON %s FOR EACH ROW EXECUTE PROCEDURE set_updated_at();`, updatedAt, Identifier(entity.GetName())))
 	}
@@ -687,7 +687,7 @@ func findIndexableInputFields(schema *proto.Schema, model *proto.Model, message 
 		}
 
 		if !input.IsModelField() && input.GetType().GetType() == proto.Type_TYPE_MESSAGE {
-			messageModel := schema.FindModel(field.GetType().GetModelName().GetValue())
+			messageModel := schema.FindModel(field.GetType().GetEntityName().GetValue())
 			nestedMsg := schema.FindMessage(input.GetType().GetMessageName().GetValue())
 			indexedFields = append(indexedFields, findIndexableInputFields(schema, messageModel, nestedMsg)...)
 		}

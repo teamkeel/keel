@@ -4,7 +4,7 @@
       "name": "User",
       "fields": [
         {
-          "modelName": "User",
+          "entityName": "User",
           "name": "email",
           "type": {
             "type": "TYPE_STRING"
@@ -12,30 +12,30 @@
           "unique": true
         },
         {
-          "modelName": "User",
+          "entityName": "User",
           "name": "details",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "UserDetails"
+            "type": "TYPE_ENTITY",
+            "entityName": "UserDetails"
           },
           "unique": true,
           "foreignKeyFieldName": "detailsId",
           "inverseFieldName": "user"
         },
         {
-          "modelName": "User",
+          "entityName": "User",
           "name": "detailsId",
           "type": {
             "type": "TYPE_ID"
           },
           "unique": true,
           "foreignKeyInfo": {
-            "relatedModelName": "UserDetails",
-            "relatedModelField": "id"
+            "relatedEntityName": "UserDetails",
+            "relatedEntityField": "id"
           }
         },
         {
-          "modelName": "User",
+          "entityName": "User",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -47,7 +47,7 @@
           }
         },
         {
-          "modelName": "User",
+          "entityName": "User",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -57,7 +57,7 @@
           }
         },
         {
-          "modelName": "User",
+          "entityName": "User",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -86,23 +86,23 @@
       "name": "UserDetails",
       "fields": [
         {
-          "modelName": "UserDetails",
+          "entityName": "UserDetails",
           "name": "user",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "User"
+            "type": "TYPE_ENTITY",
+            "entityName": "User"
           },
           "inverseFieldName": "details"
         },
         {
-          "modelName": "UserDetails",
+          "entityName": "UserDetails",
           "name": "name",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "modelName": "UserDetails",
+          "entityName": "UserDetails",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -114,7 +114,7 @@
           }
         },
         {
-          "modelName": "UserDetails",
+          "entityName": "UserDetails",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -124,7 +124,7 @@
           }
         },
         {
-          "modelName": "UserDetails",
+          "entityName": "UserDetails",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -148,16 +148,18 @@
       "name": "Identity",
       "fields": [
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "email",
           "type": {
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "emailVerified",
           "type": {
             "type": "TYPE_BOOL"
@@ -169,7 +171,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "password",
           "type": {
             "type": "TYPE_PASSWORD"
@@ -177,7 +179,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "externalId",
           "type": {
             "type": "TYPE_STRING"
@@ -185,16 +187,18 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "issuer",
           "type": {
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "name",
           "type": {
             "type": "TYPE_STRING"
@@ -202,7 +206,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "givenName",
           "type": {
             "type": "TYPE_STRING"
@@ -210,7 +214,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "familyName",
           "type": {
             "type": "TYPE_STRING"
@@ -218,7 +222,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "middleName",
           "type": {
             "type": "TYPE_STRING"
@@ -226,7 +230,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "nickName",
           "type": {
             "type": "TYPE_STRING"
@@ -234,7 +238,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "profile",
           "type": {
             "type": "TYPE_STRING"
@@ -242,7 +246,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "picture",
           "type": {
             "type": "TYPE_STRING"
@@ -250,7 +254,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "website",
           "type": {
             "type": "TYPE_STRING"
@@ -258,7 +262,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "gender",
           "type": {
             "type": "TYPE_STRING"
@@ -266,7 +270,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "zoneInfo",
           "type": {
             "type": "TYPE_STRING"
@@ -274,7 +278,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "locale",
           "type": {
             "type": "TYPE_STRING"
@@ -282,7 +286,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -294,7 +298,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -304,7 +308,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -437,10 +441,13 @@
           "name": "name",
           "type": {
             "type": "TYPE_STRING",
-            "modelName": "UserDetails",
+            "entityName": "UserDetails",
             "fieldName": "name"
           },
-          "target": ["details", "name"]
+          "target": [
+            "details",
+            "name"
+          ]
         }
       ]
     },
@@ -452,10 +459,12 @@
           "name": "name",
           "type": {
             "type": "TYPE_STRING",
-            "modelName": "UserDetails",
+            "entityName": "UserDetails",
             "fieldName": "name"
           },
-          "target": ["name"]
+          "target": [
+            "name"
+          ]
         }
       ]
     }

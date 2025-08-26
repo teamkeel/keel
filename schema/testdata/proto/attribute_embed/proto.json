@@ -4,14 +4,14 @@
       "name": "Author",
       "fields": [
         {
-          "modelName": "Author",
+          "entityName": "Author",
           "name": "firstName",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "modelName": "Author",
+          "entityName": "Author",
           "name": "surname",
           "type": {
             "type": "TYPE_STRING"
@@ -19,17 +19,17 @@
           "unique": true
         },
         {
-          "modelName": "Author",
+          "entityName": "Author",
           "name": "books",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Book",
+            "type": "TYPE_ENTITY",
+            "entityName": "Book",
             "repeated": true
           },
           "inverseFieldName": "author"
         },
         {
-          "modelName": "Author",
+          "entityName": "Author",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -41,7 +41,7 @@
           }
         },
         {
-          "modelName": "Author",
+          "entityName": "Author",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -51,7 +51,7 @@
           }
         },
         {
-          "modelName": "Author",
+          "entityName": "Author",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -79,7 +79,7 @@
       ],
       "permissions": [
         {
-          "modelName": "Author",
+          "entityName": "Author",
           "expression": {
             "source": "true"
           },
@@ -97,35 +97,35 @@
       "name": "Review",
       "fields": [
         {
-          "modelName": "Review",
+          "entityName": "Review",
           "name": "content",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "modelName": "Review",
+          "entityName": "Review",
           "name": "book",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Book"
+            "type": "TYPE_ENTITY",
+            "entityName": "Book"
           },
           "foreignKeyFieldName": "bookId",
           "inverseFieldName": "reviews"
         },
         {
-          "modelName": "Review",
+          "entityName": "Review",
           "name": "bookId",
           "type": {
             "type": "TYPE_ID"
           },
           "foreignKeyInfo": {
-            "relatedModelName": "Book",
-            "relatedModelField": "id"
+            "relatedEntityName": "Book",
+            "relatedEntityField": "id"
           }
         },
         {
-          "modelName": "Review",
+          "entityName": "Review",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -137,7 +137,7 @@
           }
         },
         {
-          "modelName": "Review",
+          "entityName": "Review",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -147,7 +147,7 @@
           }
         },
         {
-          "modelName": "Review",
+          "entityName": "Review",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -178,12 +178,14 @@
           "type": "ACTION_TYPE_GET",
           "implementation": "ACTION_IMPLEMENTATION_AUTO",
           "inputMessageName": "GetReviewInput",
-          "responseEmbeds": ["book"]
+          "responseEmbeds": [
+            "book"
+          ]
         }
       ],
       "permissions": [
         {
-          "modelName": "Review",
+          "entityName": "Review",
           "expression": {
             "source": "true"
           },
@@ -201,55 +203,55 @@
       "name": "Book",
       "fields": [
         {
-          "modelName": "Book",
+          "entityName": "Book",
           "name": "title",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "modelName": "Book",
+          "entityName": "Book",
           "name": "author",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Author"
+            "type": "TYPE_ENTITY",
+            "entityName": "Author"
           },
           "foreignKeyFieldName": "authorId",
           "inverseFieldName": "books"
         },
         {
-          "modelName": "Book",
+          "entityName": "Book",
           "name": "authorId",
           "type": {
             "type": "TYPE_ID"
           },
           "foreignKeyInfo": {
-            "relatedModelName": "Author",
-            "relatedModelField": "id"
+            "relatedEntityName": "Author",
+            "relatedEntityField": "id"
           }
         },
         {
-          "modelName": "Book",
+          "entityName": "Book",
           "name": "reviews",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Review",
+            "type": "TYPE_ENTITY",
+            "entityName": "Review",
             "repeated": true
           },
           "inverseFieldName": "book"
         },
         {
-          "modelName": "Book",
+          "entityName": "Book",
           "name": "code",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Code"
+            "type": "TYPE_ENTITY",
+            "entityName": "Code"
           },
           "optional": true,
           "inverseFieldName": "book"
         },
         {
-          "modelName": "Book",
+          "entityName": "Book",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -261,7 +263,7 @@
           }
         },
         {
-          "modelName": "Book",
+          "entityName": "Book",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -271,7 +273,7 @@
           }
         },
         {
-          "modelName": "Book",
+          "entityName": "Book",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -288,7 +290,9 @@
           "type": "ACTION_TYPE_LIST",
           "implementation": "ACTION_IMPLEMENTATION_AUTO",
           "inputMessageName": "ListBooksInput",
-          "responseEmbeds": ["author"]
+          "responseEmbeds": [
+            "author"
+          ]
         },
         {
           "modelName": "Book",
@@ -303,7 +307,10 @@
           "type": "ACTION_TYPE_GET",
           "implementation": "ACTION_IMPLEMENTATION_AUTO",
           "inputMessageName": "GetBookInput",
-          "responseEmbeds": ["code", "author"]
+          "responseEmbeds": [
+            "code",
+            "author"
+          ]
         },
         {
           "modelName": "Book",
@@ -315,7 +322,7 @@
       ],
       "permissions": [
         {
-          "modelName": "Book",
+          "entityName": "Book",
           "expression": {
             "source": "true"
           },
@@ -333,37 +340,37 @@
       "name": "Code",
       "fields": [
         {
-          "modelName": "Code",
+          "entityName": "Code",
           "name": "code",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "modelName": "Code",
+          "entityName": "Code",
           "name": "book",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Book"
+            "type": "TYPE_ENTITY",
+            "entityName": "Book"
           },
           "unique": true,
           "foreignKeyFieldName": "bookId",
           "inverseFieldName": "code"
         },
         {
-          "modelName": "Code",
+          "entityName": "Code",
           "name": "bookId",
           "type": {
             "type": "TYPE_ID"
           },
           "unique": true,
           "foreignKeyInfo": {
-            "relatedModelName": "Book",
-            "relatedModelField": "id"
+            "relatedEntityName": "Book",
+            "relatedEntityField": "id"
           }
         },
         {
-          "modelName": "Code",
+          "entityName": "Code",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -375,7 +382,7 @@
           }
         },
         {
-          "modelName": "Code",
+          "entityName": "Code",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -385,7 +392,7 @@
           }
         },
         {
-          "modelName": "Code",
+          "entityName": "Code",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -400,16 +407,18 @@
       "name": "Identity",
       "fields": [
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "email",
           "type": {
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "emailVerified",
           "type": {
             "type": "TYPE_BOOL"
@@ -421,7 +430,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "password",
           "type": {
             "type": "TYPE_PASSWORD"
@@ -429,7 +438,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "externalId",
           "type": {
             "type": "TYPE_STRING"
@@ -437,16 +446,18 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "issuer",
           "type": {
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "name",
           "type": {
             "type": "TYPE_STRING"
@@ -454,7 +465,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "givenName",
           "type": {
             "type": "TYPE_STRING"
@@ -462,7 +473,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "familyName",
           "type": {
             "type": "TYPE_STRING"
@@ -470,7 +481,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "middleName",
           "type": {
             "type": "TYPE_STRING"
@@ -478,7 +489,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "nickName",
           "type": {
             "type": "TYPE_STRING"
@@ -486,7 +497,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "profile",
           "type": {
             "type": "TYPE_STRING"
@@ -494,7 +505,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "picture",
           "type": {
             "type": "TYPE_STRING"
@@ -502,7 +513,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "website",
           "type": {
             "type": "TYPE_STRING"
@@ -510,7 +521,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "gender",
           "type": {
             "type": "TYPE_STRING"
@@ -518,7 +529,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "zoneInfo",
           "type": {
             "type": "TYPE_STRING"
@@ -526,7 +537,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "locale",
           "type": {
             "type": "TYPE_STRING"
@@ -534,7 +545,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -546,7 +557,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -556,7 +567,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -705,20 +716,24 @@
           "name": "firstName",
           "type": {
             "type": "TYPE_STRING",
-            "modelName": "Author",
+            "entityName": "Author",
             "fieldName": "firstName"
           },
-          "target": ["firstName"]
+          "target": [
+            "firstName"
+          ]
         },
         {
           "messageName": "CreateAuthorInput",
           "name": "surname",
           "type": {
             "type": "TYPE_STRING",
-            "modelName": "Author",
+            "entityName": "Author",
             "fieldName": "surname"
           },
-          "target": ["surname"]
+          "target": [
+            "surname"
+          ]
         }
       ]
     },
@@ -820,10 +835,12 @@
           "name": "content",
           "type": {
             "type": "TYPE_STRING",
-            "modelName": "Review",
+            "entityName": "Review",
             "fieldName": "content"
           },
-          "target": ["content"]
+          "target": [
+            "content"
+          ]
         },
         {
           "messageName": "CreateReviewInput",
@@ -843,10 +860,13 @@
           "name": "id",
           "type": {
             "type": "TYPE_ID",
-            "modelName": "Book",
+            "entityName": "Book",
             "fieldName": "id"
           },
-          "target": ["book", "id"]
+          "target": [
+            "book",
+            "id"
+          ]
         }
       ]
     },
@@ -861,7 +881,10 @@
             "messageName": "IdQueryInput"
           },
           "optional": true,
-          "target": ["book", "id"]
+          "target": [
+            "book",
+            "id"
+          ]
         }
       ]
     },
@@ -873,7 +896,7 @@
           "name": "equals",
           "type": {
             "type": "TYPE_ID",
-            "modelName": "Book"
+            "entityName": "Book"
           },
           "optional": true,
           "nullable": true
@@ -883,7 +906,7 @@
           "name": "oneOf",
           "type": {
             "type": "TYPE_ID",
-            "modelName": "Book",
+            "entityName": "Book",
             "repeated": true
           },
           "optional": true
@@ -893,7 +916,7 @@
           "name": "notEquals",
           "type": {
             "type": "TYPE_ID",
-            "modelName": "Book"
+            "entityName": "Book"
           },
           "optional": true,
           "nullable": true
@@ -984,10 +1007,12 @@
           "name": "id",
           "type": {
             "type": "TYPE_ID",
-            "modelName": "Review",
+            "entityName": "Review",
             "fieldName": "id"
           },
-          "target": ["id"]
+          "target": [
+            "id"
+          ]
         }
       ]
     },
@@ -1052,10 +1077,12 @@
           "name": "title",
           "type": {
             "type": "TYPE_STRING",
-            "modelName": "Book",
+            "entityName": "Book",
             "fieldName": "title"
           },
-          "target": ["title"]
+          "target": [
+            "title"
+          ]
         },
         {
           "messageName": "CreateBookInput",
@@ -1075,10 +1102,13 @@
           "name": "id",
           "type": {
             "type": "TYPE_ID",
-            "modelName": "Author",
+            "entityName": "Author",
             "fieldName": "id"
           },
-          "target": ["author", "id"]
+          "target": [
+            "author",
+            "id"
+          ]
         }
       ]
     },
@@ -1090,10 +1120,12 @@
           "name": "id",
           "type": {
             "type": "TYPE_ID",
-            "modelName": "Book",
+            "entityName": "Book",
             "fieldName": "id"
           },
-          "target": ["id"]
+          "target": [
+            "id"
+          ]
         }
       ]
     },
@@ -1105,10 +1137,12 @@
           "name": "id",
           "type": {
             "type": "TYPE_ID",
-            "modelName": "Book",
+            "entityName": "Book",
             "fieldName": "id"
           },
-          "target": ["id"]
+          "target": [
+            "id"
+          ]
         }
       ]
     }

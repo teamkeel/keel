@@ -81,8 +81,8 @@ type Migrations struct {
 	SQL string
 }
 
-// HasModelFieldChanges returns true if the migrations contain model field changes to be applied.
-func (m *Migrations) HasModelFieldChanges() bool {
+// HasEntityFieldChanges returns true if the migrations contain entity field changes to be applied.
+func (m *Migrations) HasEntityFieldChanges() bool {
 	return m.SQL != ""
 }
 
@@ -232,7 +232,7 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 		existingEntities = append(existingEntities, entity)
 	}
 
-	// Foreign key constraints for new models (done after all tables have been created)
+	// Foreign key constraints for new entities (done after all tables have been created)
 	for _, entity := range entitiesAdded {
 		statements = append(statements, fkConstraintsForEntity(entity)...)
 	}
@@ -257,7 +257,7 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 		}
 	}
 
-	// Add audit log triggers all model tables excluding the audit table itself.
+	// Add audit log triggers all model and task tables excluding the audit table itself.
 	for _, entity := range schema.Entities() {
 		if entity.GetName() != strcase.ToCamel(auditing.TableName) {
 			stmt := createAuditTriggerStmts(existingTriggers, entity)
@@ -281,7 +281,7 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 		})
 
 		for _, field := range entity.GetFields() {
-			if field.GetType().GetType() == proto.Type_TYPE_MODEL {
+			if field.GetType().GetType() == proto.Type_TYPE_ENTITY {
 				continue
 			}
 
@@ -347,7 +347,7 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 			}
 		}
 
-		// Drop columns if fields removed from model
+		// Drop columns if fields removed from models or tasks
 		for _, column := range tableColumns {
 			// Detect a sequence column by seeing if there is _another_ column with the same name plus the sequence suffix.
 			// For sequence columns we don't need to drop the actual column, we just need to drop the __sequence column
@@ -478,10 +478,10 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 	}, nil
 }
 
-// compositeUniqueConstraintsForModel finds all composite unique constraints in model and
+// compositeUniqueConstraintsForEntity finds all composite unique constraints in entity and
 // returns a map where the keys are constraint names and the keys are the field names in
 // that constraint.
-func compositeUniqueConstraintsForModel(entity proto.Entity) map[string][]string {
+func compositeUniqueConstraintsForEntity(entity proto.Entity) map[string][]string {
 	uniqueConstraints := map[string][]string{}
 	for _, field := range entity.GetFields() {
 		if len(field.GetUniqueWith()) > 0 {
@@ -494,9 +494,9 @@ func compositeUniqueConstraintsForModel(entity proto.Entity) map[string][]string
 }
 
 // compositeUniqueConstraints generates SQL statements for dropping or creating composite
-// unique constraints for model.
+// unique constraints for entity.
 func compositeUniqueConstraints(schema *proto.Schema, entity proto.Entity, constraints []*ConstraintRow) (statements []string, err error) {
-	uniqueConstraints := compositeUniqueConstraintsForModel(entity)
+	uniqueConstraints := compositeUniqueConstraintsForEntity(entity)
 
 	for _, c := range constraints {
 		if c.TableName != casing.ToSnake(entity.GetName()) || c.ConstraintType != "u" || len(c.ConstrainedColumns) == 1 {
@@ -532,8 +532,8 @@ type depPair struct {
 func computedFieldDependencies(schema *proto.Schema) (map[*proto.Field][]*depPair, error) {
 	dependencies := map[*proto.Field][]*depPair{}
 
-	for _, model := range schema.GetModels() {
-		for _, field := range model.GetFields() {
+	for _, entity := range schema.Entities() {
+		for _, field := range entity.GetFields() {
 			if field.GetComputedExpression() == nil {
 				continue
 			}
@@ -559,7 +559,7 @@ func computedFieldDependencies(schema *proto.Schema) (map[*proto.Field][]*depPai
 					currField := currEntity.FindField(f)
 
 					if i < len(ident.Fragments)-2 {
-						currEntity = schema.FindEntity(currField.GetType().GetModelName().GetValue())
+						currEntity = schema.FindEntity(currField.GetType().GetEntityName().GetValue())
 						continue
 					}
 
@@ -592,36 +592,36 @@ func computedFieldsStmts(ctx context.Context, schema *proto.Schema, existingComp
 	fns := map[string]string{}
 	fieldsFns := map[*proto.Field]string{}
 	changedFields := map[*proto.Field]bool{}
-	recompute := []*proto.Model{}
+	recompute := []proto.Entity{}
 
 	// Adding computed field triggers and functions
-	for _, model := range schema.GetModels() {
-		modelFns := map[string]string{}
+	for _, entity := range schema.Entities() {
+		entityFns := map[string]string{}
 
-		for _, field := range model.GetComputedFields() {
+		for _, field := range entity.GetComputedFields() {
 			changedFields[field] = false
-			fnName, computedFuncStmt, err := addComputedFieldFuncStmt(ctx, schema, model, field)
+			fnName, computedFuncStmt, err := addComputedFieldFuncStmt(ctx, schema, entity, field)
 			if err != nil {
 				return nil, nil, err
 			}
 
 			fieldsFns[field] = fnName
-			modelFns[fnName] = computedFuncStmt
+			entityFns[fnName] = computedFuncStmt
 		}
 
-		// Get all the preexisting computed functions for computed fields on this model
-		existingComputedFnNamesForModel := lo.Filter(existingComputedFnNames, func(f string, _ int) bool {
-			return strings.HasPrefix(f, fmt.Sprintf("%s__", strcase.ToSnake(model.GetName()))) &&
+		// Get all the preexisting computed functions for computed fields on this entity
+		existingComputedFnNamesForEntity := lo.Filter(existingComputedFnNames, func(f string, _ int) bool {
+			return strings.HasPrefix(f, fmt.Sprintf("%s__", strcase.ToSnake(entity.GetName()))) &&
 				strings.HasSuffix(f, "__comp")
 		})
 
-		newFns, retiredFns := lo.Difference(lo.Keys(modelFns), existingComputedFnNamesForModel)
+		newFns, retiredFns := lo.Difference(lo.Keys(entityFns), existingComputedFnNamesForEntity)
 		slices.Sort(newFns)
 		slices.Sort(retiredFns)
 
 		// Computed functions to be created for each computed field
 		for _, fn := range newFns {
-			statements = append(statements, modelFns[fn])
+			statements = append(statements, entityFns[fn])
 
 			f := fieldFromComputedFnName(schema, fn)
 			changes = append(changes, &DatabaseChange{
@@ -631,8 +631,8 @@ func computedFieldsStmts(ctx context.Context, schema *proto.Schema, existingComp
 			})
 			changedFields[f] = true
 
-			if !lo.Contains(recompute, model) {
-				recompute = append(recompute, model)
+			if !lo.Contains(recompute, entity) {
+				recompute = append(recompute, entity)
 			}
 		}
 
@@ -657,13 +657,13 @@ func computedFieldsStmts(ctx context.Context, schema *proto.Schema, existingComp
 		}
 
 		// When all computed fields have been removed
-		if len(modelFns) == 0 && len(retiredFns) > 0 {
-			dropExecFn := dropComputedExecFunctionStmt(model)
-			dropTrigger := dropComputedTriggerStmt(model)
+		if len(entityFns) == 0 && len(retiredFns) > 0 {
+			dropExecFn := dropComputedExecFunctionStmt(entity)
+			dropTrigger := dropComputedTriggerStmt(entity)
 			statements = append(statements, dropTrigger, dropExecFn)
 		}
 
-		for k, v := range modelFns {
+		for k, v := range entityFns {
 			fns[k] = v
 		}
 	}
@@ -673,16 +673,16 @@ func computedFieldsStmts(ctx context.Context, schema *proto.Schema, existingComp
 		return nil, nil, err
 	}
 
-	// For each model and task, we need to create a function which calls all the computed functions for fields on this model
+	// For each entity, we need to create a function which calls all the computed functions for fields on this entity
 	// Order is important because computed fields can depend on each other - this is catered for
 	for _, entity := range schema.Entities() {
-		modelhasChanged := false
+		entityhasChanged := false
 		for k, v := range changedFields {
 			if k.GetEntityName() == entity.GetName() && v {
-				modelhasChanged = true
+				entityhasChanged = true
 			}
 		}
-		if !modelhasChanged {
+		if !entityhasChanged {
 			continue
 		}
 
@@ -727,7 +727,7 @@ func computedFieldsStmts(ctx context.Context, schema *proto.Schema, existingComp
 			stmts = append(stmts, s)
 		}
 
-		// Generate the trigger function which executes all the computed field functions for the model.
+		// Generate the trigger function which executes all the computed field functions for the entity.
 		execFnName := computedExecFuncName(entity)
 		sql := fmt.Sprintf("CREATE OR REPLACE FUNCTION \"%s\"() RETURNS TRIGGER AS $$ BEGIN\n\t%sRETURN NEW;\nEND; $$ LANGUAGE plpgsql;", execFnName, strings.Join(stmts, ""))
 
@@ -740,9 +740,9 @@ func computedFieldsStmts(ctx context.Context, schema *proto.Schema, existingComp
 		statements = append(statements, trigger)
 	}
 
-	// For computed fields which depend on fields in other models, we need to create triggers which start from the source model and cascades
-	// down through the relationship until it reaches the target model (where the computed field is defined). We then perform a fake update on the
-	// specific rows in the target model which will then trigger the computed fns.
+	// For computed fields which depend on fields in other entities, we need to create triggers which start from the source entity and cascades
+	// down through the relationship until it reaches the target entity (where the computed field is defined). We then perform a fake update on the
+	// specific rows in the target entity which will then trigger the computed fns.
 	depFns := map[string]string{}
 	for field, deps := range dependencies {
 		for _, dep := range deps {
@@ -763,8 +763,8 @@ func computedFieldsStmts(ctx context.Context, schema *proto.Schema, existingComp
 				baseQuery.Select(actions.IdField())
 
 				expr := strings.Join(fragments, ".")
-				// Get the fragment pair from the previous model to the current model
-				// We need to reset the first fragment to the model name and not the previous model's field name
+				// Get the fragment pair from the previous entity to the current entity
+				// We need to reset the first fragment to the entity name and not the previous entity's field name
 				subFragments := slices.Clone(fragments[i-1 : i+1])
 				subFragments[0] = strcase.ToLowerCamel(currentEntityName)
 
@@ -772,34 +772,34 @@ func computedFieldsStmts(ctx context.Context, schema *proto.Schema, existingComp
 					return nil, nil, fmt.Errorf("this entity: %s, does not have a field of name: %s", currentEntityName, fragments[i])
 				}
 
-				// We know that the current fragment is a related model because it's not the last fragment
-				relatedModelField := currentEntity.FindField(fragments[i])
-				foreignKeyField := schema.GetForeignKeyFieldName(relatedModelField)
+				// We know that the current fragment is a related entity because it's not the last fragment
+				relatedEntityField := currentEntity.FindField(fragments[i])
+				foreignKeyField := schema.GetForeignKeyFieldName(relatedEntityField)
 
 				previous := currentEntityName
-				currentEntityName = relatedModelField.GetType().GetModelName().GetValue()
+				currentEntityName = relatedEntityField.GetType().GetEntityName().GetValue()
 				currentEntity = schema.FindEntity(currentEntityName)
 				stmt := ""
 
-				// If the relationship is a belongs to or has many, we need to update the id field on the previous model
+				// If the relationship is a belongs to or has many, we need to update the id field on the previous entity
 				switch {
-				case relatedModelField.IsBelongsTo():
+				case relatedEntityField.IsBelongsTo():
 					stmt += fmt.Sprintf("UPDATE %s SET id = id WHERE %s IN (NEW.id, OLD.id);", Identifier(previous), Identifier(foreignKeyField))
 				default:
 					stmt += fmt.Sprintf("UPDATE %s SET id = id WHERE id IN (NEW.%s, OLD.%s);", Identifier(previous), Identifier(foreignKeyField), Identifier(foreignKeyField))
 				}
 
-				// Trigger function which will perform a fake update on the earlier model in the expression chain
+				// Trigger function which will perform a fake update on the earlier entity in the expression chain
 				fnName := computedDependencyFuncName(schema.FindEntity(strcase.ToCamel(previous)), schema.FindEntity(currentEntityName), strings.Split(expr, "."))
 				sql := fmt.Sprintf("CREATE OR REPLACE FUNCTION \"%s\"() RETURNS TRIGGER AS $$\nBEGIN\n\t%s\n\tRETURN NULL;\nEND; $$ LANGUAGE plpgsql;\n", fnName, stmt)
 
-				// For the comp_dep function on the target field's model, we include a filter on the UPDATE trigger to only trigger if the target field has changed
+				// For the comp_dep function on the target field's entity, we include a filter on the UPDATE trigger to only trigger if the target field has changed
 				whenCondition := "TRUE"
 				if i == len(fragments)-2 {
 					f := fragments[len(fragments)-1]
 					whenCondition = fmt.Sprintf("NEW.%s IS DISTINCT FROM OLD.%s", Identifier(f), Identifier(f))
 
-					if !relatedModelField.IsBelongsTo() {
+					if !relatedEntityField.IsBelongsTo() {
 						updatingField := foreignKeyField
 						whenCondition += fmt.Sprintf(" OR NEW.%s IS DISTINCT FROM OLD.%s", Identifier(updatingField), Identifier(updatingField))
 					}
@@ -837,8 +837,8 @@ func computedFieldsStmts(ctx context.Context, schema *proto.Schema, existingComp
 
 	// If a computed field has been added or modified, we need to recompute all existing data.
 	// This is done by fake updating each row on the table which will cause the triggers to run.
-	for _, model := range recompute {
-		sql := fmt.Sprintf("UPDATE %s SET id = id;", Identifier(model.GetName()))
+	for _, entity := range recompute {
+		sql := fmt.Sprintf("UPDATE %s SET id = id;", Identifier(entity.GetName()))
 		statements = append(statements, sql)
 	}
 
@@ -892,8 +892,8 @@ func GetCurrentSchema(ctx context.Context, database db.Database) (*proto.Schema,
 	return &protoSchema, nil
 }
 
-// fkConstraintsForModel generates foreign key constraint statements for each of fields marked as
-// being foreign keys in the given model.
+// fkConstraintsForEntity generates foreign key constraint statements for each of fields marked as
+// being foreign keys in the given entity.
 func fkConstraintsForEntity(entity proto.Entity) (fkStatements []string) {
 	fkFields := entity.ForeignKeyFields()
 	for _, field := range fkFields {
@@ -910,8 +910,8 @@ func fkConstraint(field *proto.Field, thisEntity proto.Entity) (fkStatement stri
 	stmt := addForeignKeyConstraintStmt(
 		Identifier(thisEntity.GetName()),
 		Identifier(field.GetName()),
-		Identifier(fki.GetRelatedModelName()),
-		Identifier(fki.GetRelatedModelField()),
+		Identifier(fki.GetRelatedEntityName()),
+		Identifier(fki.GetRelatedEntityField()),
 		onDelete,
 	)
 	return stmt

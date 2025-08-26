@@ -124,8 +124,8 @@ func makeIDQueryInputMessage(name string, modelName *wrapperspb.StringValue) *pr
 			Optional:    true,
 			Nullable:    true,
 			Type: &proto.TypeInfo{
-				Type:      proto.Type_TYPE_ID,
-				ModelName: modelName,
+				Type:       proto.Type_TYPE_ID,
+				EntityName: modelName,
 			},
 		},
 		{
@@ -133,9 +133,9 @@ func makeIDQueryInputMessage(name string, modelName *wrapperspb.StringValue) *pr
 			Name:        "oneOf",
 			Optional:    true,
 			Type: &proto.TypeInfo{
-				Type:      proto.Type_TYPE_ID,
-				Repeated:  true,
-				ModelName: modelName,
+				Type:       proto.Type_TYPE_ID,
+				Repeated:   true,
+				EntityName: modelName,
 			},
 		},
 		{
@@ -144,8 +144,8 @@ func makeIDQueryInputMessage(name string, modelName *wrapperspb.StringValue) *pr
 			Optional:    true,
 			Nullable:    true,
 			Type: &proto.TypeInfo{
-				Type:      proto.Type_TYPE_ID,
-				ModelName: modelName,
+				Type:       proto.Type_TYPE_ID,
+				EntityName: modelName,
 			},
 		},
 	}}
@@ -1037,7 +1037,7 @@ func (scm *Builder) makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.
 
 	switch typeInfo.GetType() {
 	case proto.Type_TYPE_ID:
-		return makeIDQueryInputMessage(msgName, typeInfo.GetModelName()), nil
+		return makeIDQueryInputMessage(msgName, typeInfo.GetEntityName()), nil
 	case proto.Type_TYPE_STRING:
 		return makeStringQueryInputMessage(msgName), nil
 	case proto.Type_TYPE_INT:
@@ -1565,8 +1565,8 @@ func (scm *Builder) makeMessage(decl *parser.DeclarationNode) {
 			field.Type.MessageName = wrapperspb.String(f.Type.Value)
 		}
 
-		if field.GetType().GetType() == proto.Type_TYPE_MODEL {
-			field.Type.ModelName = wrapperspb.String(f.Type.Value)
+		if field.GetType().GetType() == proto.Type_TYPE_ENTITY {
+			field.Type.EntityName = wrapperspb.String(f.Type.Value)
 		}
 
 		return field
@@ -1685,10 +1685,10 @@ func (scm *Builder) makeFlow(decl *parser.DeclarationNode) {
 	scm.proto.Flows = append(scm.proto.Flows, flow)
 }
 
-func (scm *Builder) makeFields(parserFields []*parser.FieldNode, modelName string) []*proto.Field {
+func (scm *Builder) makeFields(parserFields []*parser.FieldNode, entityName string) []*proto.Field {
 	protoFields := []*proto.Field{}
 	for _, parserField := range parserFields {
-		protoField := scm.makeField(parserField, modelName)
+		protoField := scm.makeField(parserField, entityName)
 		protoFields = append(protoFields, protoField)
 	}
 	return protoFields
@@ -1729,10 +1729,10 @@ func (scm *Builder) makeField(parserField *parser.FieldNode, entityName string) 
 
 	// Auto-inserted foreign key field
 	if query.IsForeignKey(scm.asts, entity, parserField) {
-		modelField := entity.Field(strings.TrimSuffix(parserField.Name.Value, "Id"))
+		entityField := entity.Field(strings.TrimSuffix(parserField.Name.Value, "Id"))
 		protoField.ForeignKeyInfo = &proto.ForeignKeyInfo{
-			RelatedModelName:  modelField.Type.Value,
-			RelatedModelField: parser.FieldNameId,
+			RelatedEntityName:  entityField.Type.Value,
+			RelatedEntityField: parser.FieldNameId,
 		}
 	}
 
@@ -1750,22 +1750,22 @@ func (scm *Builder) makeField(parserField *parser.FieldNode, entityName string) 
 
 	// If this is a HasMany or BelongsTo relationship field - see if we can mark it with
 	// an explicit InverseFieldName - i.e. one defined by an @relation attribute.
-	if protoField.GetType().GetType() == proto.Type_TYPE_MODEL {
+	if protoField.GetType().GetType() == proto.Type_TYPE_ENTITY {
 		scm.setInverseFieldName(parserField, protoField)
 	}
 
 	return protoField
 }
 
-// setInverseFieldName works on fields of type Model that are repeated. It looks to
+// setInverseFieldName works on fields of type ENTITY that are repeated. It looks to
 // see if the schema defines an explicit inverse relationship field for it, and when so, sets
 // this field's InverseFieldName property accordingly.
 func (scm *Builder) setInverseFieldName(thisParserField *parser.FieldNode, thisProtoField *proto.Field) {
 	// We have to look in the related model's fields, to see if any of them have an @relation
 	// attribute that refers back to this field.
 
-	nameOfRelatedModel := thisProtoField.GetType().GetModelName().GetValue()
-	relatedModel := query.Model(scm.asts, nameOfRelatedModel)
+	nameOfRelatedEntity := thisProtoField.GetType().GetEntityName().GetValue()
+	relatedEntity := query.Entity(scm.asts, nameOfRelatedEntity)
 
 	// Use the field name in @relation(fieldName) if this attribute exists
 	relationAttr := query.FieldGetAttribute(thisParserField, parser.AttributeRelation)
@@ -1775,8 +1775,8 @@ func (scm *Builder) setInverseFieldName(thisParserField *parser.FieldNode, thisP
 		return
 	}
 
-	// If no @relation attribute exists, then look for a match in the related model fields' @relation attributes
-	for _, remoteField := range query.ModelFields(relatedModel) {
+	// If no @relation attribute exists, then look for a match in the related entity fields' @relation attributes
+	for _, remoteField := range relatedEntity.Fields() {
 		if remoteField.Type.Value != thisProtoField.GetEntityName() {
 			continue
 		}
@@ -1792,11 +1792,11 @@ func (scm *Builder) setInverseFieldName(thisParserField *parser.FieldNode, thisP
 
 	// If there are no @relation attributes that match, then we know that there is only one relation
 	// between these models of this exact relationship type and in this direction
-	for _, remoteField := range query.ModelFields(relatedModel) {
+	for _, remoteField := range relatedEntity.Fields() {
 		if remoteField.Type.Value != thisProtoField.GetEntityName() {
 			continue
 		}
-		if nameOfRelatedModel == thisProtoField.GetEntityName() && remoteField.Name.Value == thisProtoField.GetName() {
+		if nameOfRelatedEntity == thisProtoField.GetEntityName() && remoteField.Name.Value == thisProtoField.GetName() {
 			continue
 		}
 		if query.ValidOneToHasMany(thisParserField, remoteField) ||
@@ -1946,15 +1946,15 @@ func (scm *Builder) inferParserInputType(
 	}
 
 	return &proto.TypeInfo{
-		Type:      protoType,
-		Repeated:  repeated,
-		ModelName: modelName,
-		FieldName: fieldName,
-		EnumName:  enumName,
+		Type:       protoType,
+		Repeated:   repeated,
+		EntityName: modelName,
+		FieldName:  fieldName,
+		EnumName:   enumName,
 	}, target, targetsOptionalField
 }
 
-// parserType could be a built-in type or a user-defined model or enum.
+// parserType could be a built-in type or a user-defined entity or enum.
 func (scm *Builder) parserTypeToProtoType(parserType string) proto.Type {
 	switch {
 	case parserType == parser.FieldTypeText:
@@ -1973,8 +1973,8 @@ func (scm *Builder) parserTypeToProtoType(parserType string) proto.Type {
 		return proto.Type_TYPE_SECRET
 	case parserType == parser.FieldTypePassword:
 		return proto.Type_TYPE_PASSWORD
-	case query.IsModel(scm.asts, parserType):
-		return proto.Type_TYPE_MODEL
+	case query.IsEntity(scm.asts, parserType):
+		return proto.Type_TYPE_ENTITY
 	case query.IsEnum(scm.asts, parserType):
 		return proto.Type_TYPE_ENUM
 	case query.IsMessage(scm.asts, parserType):
@@ -2000,7 +2000,7 @@ func (scm *Builder) explicitInputToTypeInfo(input *parser.ActionInputNode) *prot
 	protoType := scm.parserTypeToProtoType(input.Type.Fragments[0].Fragment)
 
 	disallowedExplicitInputTypes := []proto.Type{
-		proto.Type_TYPE_MODEL,
+		proto.Type_TYPE_ENTITY,
 		proto.Type_TYPE_MESSAGE,
 		proto.Type_TYPE_ANY,
 		proto.Type_TYPE_UNKNOWN}
@@ -2024,13 +2024,13 @@ func (scm *Builder) explicitInputToTypeInfo(input *parser.ActionInputNode) *prot
 
 func (scm *Builder) parserFieldToProtoTypeInfo(field *parser.FieldNode) *proto.TypeInfo {
 	protoType := scm.parserTypeToProtoType(field.Type.Value)
-	var modelName *wrapperspb.StringValue
+	var entityName *wrapperspb.StringValue
 	var enumName *wrapperspb.StringValue
 
 	switch protoType {
-	case proto.Type_TYPE_MODEL:
-		modelName = &wrapperspb.StringValue{
-			Value: query.Model(scm.asts, field.Type.Value).Name.Value,
+	case proto.Type_TYPE_ENTITY:
+		entityName = &wrapperspb.StringValue{
+			Value: query.Entity(scm.asts, field.Type.Value).GetName(),
 		}
 	case proto.Type_TYPE_ENUM:
 		enumName = &wrapperspb.StringValue{
@@ -2039,10 +2039,10 @@ func (scm *Builder) parserFieldToProtoTypeInfo(field *parser.FieldNode) *proto.T
 	}
 
 	return &proto.TypeInfo{
-		Type:      protoType,
-		Repeated:  field.Repeated,
-		ModelName: modelName,
-		EnumName:  enumName,
+		Type:       protoType,
+		Repeated:   field.Repeated,
+		EntityName: entityName,
+		EnumName:   enumName,
 	}
 }
 
@@ -2050,7 +2050,7 @@ func (scm *Builder) applyModelAttribute(parserModel *parser.ModelNode, protoMode
 	switch attribute.Name.Value {
 	case parser.AttributePermission:
 		perm := scm.permissionAttributeToProtoPermission(attribute)
-		perm.ModelName = protoModel.GetName()
+		perm.EntityName = protoModel.GetName()
 		protoModel.Permissions = append(protoModel.Permissions, perm)
 	case parser.AttributeOn:
 		subscriberName, _ := resolve.AsIdent(attribute.Arguments[1].Expression)
@@ -2092,7 +2092,7 @@ func (scm *Builder) applyTaskAttribute(parserTask *parser.TaskNode, protoTask *p
 	switch attribute.Name.Value {
 	case parser.AttributePermission:
 		perm := scm.permissionAttributeToProtoPermission(attribute)
-		perm.ModelName = protoTask.GetName()
+		perm.EntityName = protoTask.GetName()
 		protoTask.Permissions = append(protoTask.Permissions, perm)
 	}
 }
@@ -2174,8 +2174,8 @@ func (scm *Builder) makeSubscriberInputMessages() {
 				MessageName: eventTargetMessage.GetName(),
 				Name:        "data",
 				Type: &proto.TypeInfo{
-					Type:      proto.Type_TYPE_MODEL,
-					ModelName: wrapperspb.String(event.GetModelName()),
+					Type:       proto.Type_TYPE_ENTITY,
+					EntityName: wrapperspb.String(event.GetModelName()),
 				},
 			})
 
@@ -2184,8 +2184,8 @@ func (scm *Builder) makeSubscriberInputMessages() {
 					MessageName: eventTargetMessage.GetName(),
 					Name:        "previousData",
 					Type: &proto.TypeInfo{
-						Type:      proto.Type_TYPE_MODEL,
-						ModelName: wrapperspb.String(event.GetModelName()),
+						Type:       proto.Type_TYPE_ENTITY,
+						EntityName: wrapperspb.String(event.GetModelName()),
 					},
 				})
 			}
@@ -2202,7 +2202,7 @@ func (scm *Builder) applyActionAttributes(action *parser.ActionNode, protoAction
 		switch attribute.Name.Value {
 		case parser.AttributePermission:
 			perm := scm.permissionAttributeToProtoPermission(attribute)
-			perm.ModelName = modelName
+			perm.EntityName = modelName
 			perm.ActionName = wrapperspb.String(protoAction.GetName())
 			protoAction.Permissions = append(protoAction.Permissions, perm)
 		case parser.AttributeWhere:
@@ -2432,8 +2432,8 @@ func (scm *Builder) applyFlowInputs(protoMessage *proto.Message, inputs []*parse
 			protoField.Type.EnumName = wrapperspb.String(input.Type.Value)
 		}
 
-		if protoField.GetType().GetType() == proto.Type_TYPE_MODEL {
-			protoField.Type.ModelName = wrapperspb.String(input.Type.Value)
+		if protoField.GetType().GetType() == proto.Type_TYPE_ENTITY {
+			protoField.Type.EntityName = wrapperspb.String(input.Type.Value)
 		}
 
 		protoMessage.Fields = append(protoMessage.Fields, protoField)

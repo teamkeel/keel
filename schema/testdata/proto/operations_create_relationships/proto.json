@@ -4,24 +4,24 @@
       "name": "Sale",
       "fields": [
         {
-          "modelName": "Sale",
+          "entityName": "Sale",
           "name": "date",
           "type": {
             "type": "TYPE_DATE"
           }
         },
         {
-          "modelName": "Sale",
+          "entityName": "Sale",
           "name": "items",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "SaleItem",
+            "type": "TYPE_ENTITY",
+            "entityName": "SaleItem",
             "repeated": true
           },
           "inverseFieldName": "sale"
         },
         {
-          "modelName": "Sale",
+          "entityName": "Sale",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -33,7 +33,7 @@
           }
         },
         {
-          "modelName": "Sale",
+          "entityName": "Sale",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -43,7 +43,7 @@
           }
         },
         {
-          "modelName": "Sale",
+          "entityName": "Sale",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -74,55 +74,55 @@
       "name": "SaleItem",
       "fields": [
         {
-          "modelName": "SaleItem",
+          "entityName": "SaleItem",
           "name": "sale",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Sale"
+            "type": "TYPE_ENTITY",
+            "entityName": "Sale"
           },
           "foreignKeyFieldName": "saleId",
           "inverseFieldName": "items"
         },
         {
-          "modelName": "SaleItem",
+          "entityName": "SaleItem",
           "name": "saleId",
           "type": {
             "type": "TYPE_ID"
           },
           "foreignKeyInfo": {
-            "relatedModelName": "Sale",
-            "relatedModelField": "id"
+            "relatedEntityName": "Sale",
+            "relatedEntityField": "id"
           }
         },
         {
-          "modelName": "SaleItem",
+          "entityName": "SaleItem",
           "name": "product",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Product"
+            "type": "TYPE_ENTITY",
+            "entityName": "Product"
           },
           "foreignKeyFieldName": "productId"
         },
         {
-          "modelName": "SaleItem",
+          "entityName": "SaleItem",
           "name": "productId",
           "type": {
             "type": "TYPE_ID"
           },
           "foreignKeyInfo": {
-            "relatedModelName": "Product",
-            "relatedModelField": "id"
+            "relatedEntityName": "Product",
+            "relatedEntityField": "id"
           }
         },
         {
-          "modelName": "SaleItem",
+          "entityName": "SaleItem",
           "name": "quantity",
           "type": {
             "type": "TYPE_INT"
           }
         },
         {
-          "modelName": "SaleItem",
+          "entityName": "SaleItem",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -134,7 +134,7 @@
           }
         },
         {
-          "modelName": "SaleItem",
+          "entityName": "SaleItem",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -144,7 +144,7 @@
           }
         },
         {
-          "modelName": "SaleItem",
+          "entityName": "SaleItem",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -175,14 +175,14 @@
       "name": "Product",
       "fields": [
         {
-          "modelName": "Product",
+          "entityName": "Product",
           "name": "name",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "modelName": "Product",
+          "entityName": "Product",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -194,7 +194,7 @@
           }
         },
         {
-          "modelName": "Product",
+          "entityName": "Product",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -204,7 +204,7 @@
           }
         },
         {
-          "modelName": "Product",
+          "entityName": "Product",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -219,16 +219,18 @@
       "name": "Identity",
       "fields": [
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "email",
           "type": {
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "emailVerified",
           "type": {
             "type": "TYPE_BOOL"
@@ -240,7 +242,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "password",
           "type": {
             "type": "TYPE_PASSWORD"
@@ -248,7 +250,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "externalId",
           "type": {
             "type": "TYPE_STRING"
@@ -256,16 +258,18 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "issuer",
           "type": {
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "name",
           "type": {
             "type": "TYPE_STRING"
@@ -273,7 +277,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "givenName",
           "type": {
             "type": "TYPE_STRING"
@@ -281,7 +285,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "familyName",
           "type": {
             "type": "TYPE_STRING"
@@ -289,7 +293,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "middleName",
           "type": {
             "type": "TYPE_STRING"
@@ -297,7 +301,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "nickName",
           "type": {
             "type": "TYPE_STRING"
@@ -305,7 +309,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "profile",
           "type": {
             "type": "TYPE_STRING"
@@ -313,7 +317,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "picture",
           "type": {
             "type": "TYPE_STRING"
@@ -321,7 +325,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "website",
           "type": {
             "type": "TYPE_STRING"
@@ -329,7 +333,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "gender",
           "type": {
             "type": "TYPE_STRING"
@@ -337,7 +341,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "zoneInfo",
           "type": {
             "type": "TYPE_STRING"
@@ -345,7 +349,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "locale",
           "type": {
             "type": "TYPE_STRING"
@@ -353,7 +357,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -365,7 +369,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -375,7 +379,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -504,10 +508,12 @@
           "name": "date",
           "type": {
             "type": "TYPE_DATE",
-            "modelName": "Sale",
+            "entityName": "Sale",
             "fieldName": "date"
           },
-          "target": ["date"]
+          "target": [
+            "date"
+          ]
         },
         {
           "messageName": "CreateSaleAndItemsInput",
@@ -536,10 +542,13 @@
           "name": "quantity",
           "type": {
             "type": "TYPE_INT",
-            "modelName": "SaleItem",
+            "entityName": "SaleItem",
             "fieldName": "quantity"
           },
-          "target": ["items", "quantity"]
+          "target": [
+            "items",
+            "quantity"
+          ]
         }
       ]
     },
@@ -551,10 +560,14 @@
           "name": "id",
           "type": {
             "type": "TYPE_ID",
-            "modelName": "Product",
+            "entityName": "Product",
             "fieldName": "id"
           },
-          "target": ["items", "product", "id"]
+          "target": [
+            "items",
+            "product",
+            "id"
+          ]
         }
       ]
     },
@@ -566,10 +579,12 @@
           "name": "date",
           "type": {
             "type": "TYPE_DATE",
-            "modelName": "Sale",
+            "entityName": "Sale",
             "fieldName": "date"
           },
-          "target": ["date"]
+          "target": [
+            "date"
+          ]
         },
         {
           "messageName": "CreateSaleAndProductInput",
@@ -598,10 +613,13 @@
           "name": "quantity",
           "type": {
             "type": "TYPE_INT",
-            "modelName": "SaleItem",
+            "entityName": "SaleItem",
             "fieldName": "quantity"
           },
-          "target": ["items", "quantity"]
+          "target": [
+            "items",
+            "quantity"
+          ]
         }
       ]
     },
@@ -613,10 +631,14 @@
           "name": "name",
           "type": {
             "type": "TYPE_STRING",
-            "modelName": "Product",
+            "entityName": "Product",
             "fieldName": "name"
           },
-          "target": ["items", "product", "name"]
+          "target": [
+            "items",
+            "product",
+            "name"
+          ]
         }
       ]
     },
@@ -644,10 +666,12 @@
           "name": "quantity",
           "type": {
             "type": "TYPE_INT",
-            "modelName": "SaleItem",
+            "entityName": "SaleItem",
             "fieldName": "quantity"
           },
-          "target": ["quantity"]
+          "target": [
+            "quantity"
+          ]
         }
       ]
     },
@@ -659,10 +683,13 @@
           "name": "id",
           "type": {
             "type": "TYPE_ID",
-            "modelName": "Sale",
+            "entityName": "Sale",
             "fieldName": "id"
           },
-          "target": ["sale", "id"]
+          "target": [
+            "sale",
+            "id"
+          ]
         }
       ]
     },
@@ -674,10 +701,13 @@
           "name": "id",
           "type": {
             "type": "TYPE_ID",
-            "modelName": "Product",
+            "entityName": "Product",
             "fieldName": "id"
           },
-          "target": ["product", "id"]
+          "target": [
+            "product",
+            "id"
+          ]
         }
       ]
     },
@@ -705,10 +735,12 @@
           "name": "quantity",
           "type": {
             "type": "TYPE_INT",
-            "modelName": "SaleItem",
+            "entityName": "SaleItem",
             "fieldName": "quantity"
           },
-          "target": ["quantity"]
+          "target": [
+            "quantity"
+          ]
         }
       ]
     },
@@ -720,10 +752,13 @@
           "name": "id",
           "type": {
             "type": "TYPE_ID",
-            "modelName": "Sale",
+            "entityName": "Sale",
             "fieldName": "id"
           },
-          "target": ["sale", "id"]
+          "target": [
+            "sale",
+            "id"
+          ]
         }
       ]
     },
@@ -735,10 +770,13 @@
           "name": "name",
           "type": {
             "type": "TYPE_STRING",
-            "modelName": "Product",
+            "entityName": "Product",
             "fieldName": "name"
           },
-          "target": ["product", "name"]
+          "target": [
+            "product",
+            "name"
+          ]
         }
       ]
     }

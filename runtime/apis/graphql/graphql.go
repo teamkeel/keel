@@ -282,7 +282,7 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 			return nil, err
 		}
 
-		if field.GetType().GetType() != proto.Type_TYPE_MODEL {
+		if field.GetType().GetType() != proto.Type_TYPE_ENTITY {
 			object.AddFieldConfig(field.GetName(), &graphql.Field{
 				Name: field.GetName(),
 				Type: outputType,
@@ -320,7 +320,7 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 				ctx, span := tracer.Start(p.Context, fmt.Sprintf("Resolve %s.%s", model.GetName(), field.GetName()))
 				defer span.End()
 
-				relatedModel := mk.schema.FindModel(field.GetType().GetModelName().GetValue())
+				relatedModel := mk.schema.FindModel(field.GetType().GetEntityName().GetValue())
 
 				// Create a new query for the related model
 				query := actions.NewQuery(relatedModel)
@@ -660,8 +660,8 @@ func (mk *graphqlSchemaBuilder) addMessage(message *proto.Message) (graphql.Outp
 			if err != nil {
 				return nil, err
 			}
-		case proto.Type_TYPE_MODEL:
-			modelMessage := mk.schema.FindModel(field.GetType().GetModelName().GetValue())
+		case proto.Type_TYPE_ENTITY:
+			modelMessage := mk.schema.FindModel(field.GetType().GetEntityName().GetValue())
 
 			var err error
 			fieldType, err = mk.addModel(modelMessage)
@@ -739,8 +739,8 @@ func (mk *graphqlSchemaBuilder) inputTypeForModelField(field *proto.Field) (in g
 	case proto.Type_TYPE_ENUM:
 		enumMessage := proto.FindEnum(mk.schema.GetEnums(), field.GetType().GetEnumName().GetValue())
 		in = mk.addEnum(enumMessage)
-	case proto.Type_TYPE_MODEL:
-		model := mk.schema.FindModel(field.GetType().GetModelName().GetValue())
+	case proto.Type_TYPE_ENTITY:
+		model := mk.schema.FindModel(field.GetType().GetEntityName().GetValue())
 		var err error
 		in, err = mk.addModelInput(model)
 		if err != nil {
@@ -755,7 +755,7 @@ func (mk *graphqlSchemaBuilder) inputTypeForModelField(field *proto.Field) (in g
 	}
 
 	if field.GetType().GetRepeated() {
-		if field.GetType().GetType() == proto.Type_TYPE_MODEL {
+		if field.GetType().GetType() == proto.Type_TYPE_ENTITY {
 			in = mk.makeConnectionType(in, nil)
 		} else {
 			in = graphql.NewList(in)
@@ -774,8 +774,8 @@ func (mk *graphqlSchemaBuilder) outputTypeForModelField(field *proto.Field) (out
 	case proto.Type_TYPE_ENUM:
 		enumMessage := proto.FindEnum(mk.schema.GetEnums(), field.GetType().GetEnumName().GetValue())
 		out = mk.addEnum(enumMessage)
-	case proto.Type_TYPE_MODEL:
-		modelMessage := mk.schema.FindModel(field.GetType().GetModelName().GetValue())
+	case proto.Type_TYPE_ENTITY:
+		modelMessage := mk.schema.FindModel(field.GetType().GetEntityName().GetValue())
 		var err error
 		out, err = mk.addModel(modelMessage)
 		if err != nil {
@@ -790,7 +790,7 @@ func (mk *graphqlSchemaBuilder) outputTypeForModelField(field *proto.Field) (out
 	}
 
 	if field.GetType().GetRepeated() {
-		if field.GetType().GetType() == proto.Type_TYPE_MODEL {
+		if field.GetType().GetType() == proto.Type_TYPE_ENTITY {
 			out = mk.makeConnectionType(out, nil)
 		} else {
 			out = graphql.NewList(out)
@@ -870,8 +870,8 @@ func (mk *graphqlSchemaBuilder) inputTypeFromMessageField(field *proto.MessageFi
 
 		mk.inputs[messageName] = inputObject
 		in = inputObject
-	case field.GetType().GetType() == proto.Type_TYPE_MODEL:
-		model := mk.schema.FindModel(field.GetType().GetModelName().GetValue())
+	case field.GetType().GetType() == proto.Type_TYPE_ENTITY:
+		model := mk.schema.FindModel(field.GetType().GetEntityName().GetValue())
 		in, err = mk.addModelInput(model)
 		if err != nil {
 			return nil, err

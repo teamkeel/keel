@@ -63,7 +63,7 @@ func transform(schema *proto.Schema, message *proto.Message, input map[string]an
 				input[f.GetName()], err = parseItem(v, f.GetType().GetRepeated(), toTimestamp)
 			case proto.Type_TYPE_VECTOR:
 				input[f.GetName()], err = parseItem(v, true, toFloat)
-			case proto.Type_TYPE_UNION, proto.Type_TYPE_ANY, proto.Type_TYPE_MODEL, proto.Type_TYPE_OBJECT:
+			case proto.Type_TYPE_UNION, proto.Type_TYPE_ANY, proto.Type_TYPE_ENTITY, proto.Type_TYPE_OBJECT:
 				return input, nil
 			case proto.Type_TYPE_FILE:
 				if forFunctions {

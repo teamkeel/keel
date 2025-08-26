@@ -4,54 +4,54 @@
       "name": "Record",
       "fields": [
         {
-          "modelName": "Record",
+          "entityName": "Record",
           "name": "name",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "modelName": "Record",
+          "entityName": "Record",
           "name": "owner",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "User"
+            "type": "TYPE_ENTITY",
+            "entityName": "User"
           },
           "foreignKeyFieldName": "ownerId"
         },
         {
-          "modelName": "Record",
+          "entityName": "Record",
           "name": "ownerId",
           "type": {
             "type": "TYPE_ID"
           },
           "foreignKeyInfo": {
-            "relatedModelName": "User",
-            "relatedModelField": "id"
+            "relatedEntityName": "User",
+            "relatedEntityField": "id"
           }
         },
         {
-          "modelName": "Record",
+          "entityName": "Record",
           "name": "organisation",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Organisation"
+            "type": "TYPE_ENTITY",
+            "entityName": "Organisation"
           },
           "foreignKeyFieldName": "organisationId"
         },
         {
-          "modelName": "Record",
+          "entityName": "Record",
           "name": "organisationId",
           "type": {
             "type": "TYPE_ID"
           },
           "foreignKeyInfo": {
-            "relatedModelName": "Organisation",
-            "relatedModelField": "id"
+            "relatedEntityName": "Organisation",
+            "relatedEntityField": "id"
           }
         },
         {
-          "modelName": "Record",
+          "entityName": "Record",
           "name": "isActive",
           "type": {
             "type": "TYPE_BOOL"
@@ -63,40 +63,40 @@
           }
         },
         {
-          "modelName": "Record",
+          "entityName": "Record",
           "name": "parent",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Record"
+            "type": "TYPE_ENTITY",
+            "entityName": "Record"
           },
           "optional": true,
           "foreignKeyFieldName": "parentId",
           "inverseFieldName": "children"
         },
         {
-          "modelName": "Record",
+          "entityName": "Record",
           "name": "parentId",
           "type": {
             "type": "TYPE_ID"
           },
           "optional": true,
           "foreignKeyInfo": {
-            "relatedModelName": "Record",
-            "relatedModelField": "id"
+            "relatedEntityName": "Record",
+            "relatedEntityField": "id"
           }
         },
         {
-          "modelName": "Record",
+          "entityName": "Record",
           "name": "children",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Record",
+            "type": "TYPE_ENTITY",
+            "entityName": "Record",
             "repeated": true
           },
           "inverseFieldName": "parent"
         },
         {
-          "modelName": "Record",
+          "entityName": "Record",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -108,7 +108,7 @@
           }
         },
         {
-          "modelName": "Record",
+          "entityName": "Record",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -118,7 +118,7 @@
           }
         },
         {
-          "modelName": "Record",
+          "entityName": "Record",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -159,11 +159,14 @@
       ],
       "permissions": [
         {
-          "modelName": "Record",
+          "entityName": "Record",
           "expression": {
             "source": "true"
           },
-          "actionTypes": ["ACTION_TYPE_CREATE", "ACTION_TYPE_UPDATE"]
+          "actionTypes": [
+            "ACTION_TYPE_CREATE",
+            "ACTION_TYPE_UPDATE"
+          ]
         }
       ]
     },
@@ -171,51 +174,51 @@
       "name": "User",
       "fields": [
         {
-          "modelName": "User",
+          "entityName": "User",
           "name": "identity",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Identity"
+            "type": "TYPE_ENTITY",
+            "entityName": "Identity"
           },
           "unique": true,
           "foreignKeyFieldName": "identityId",
           "inverseFieldName": "user"
         },
         {
-          "modelName": "User",
+          "entityName": "User",
           "name": "identityId",
           "type": {
             "type": "TYPE_ID"
           },
           "unique": true,
           "foreignKeyInfo": {
-            "relatedModelName": "Identity",
-            "relatedModelField": "id"
+            "relatedEntityName": "Identity",
+            "relatedEntityField": "id"
           }
         },
         {
-          "modelName": "User",
+          "entityName": "User",
           "name": "organisation",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Organisation"
+            "type": "TYPE_ENTITY",
+            "entityName": "Organisation"
           },
           "foreignKeyFieldName": "organisationId",
           "inverseFieldName": "users"
         },
         {
-          "modelName": "User",
+          "entityName": "User",
           "name": "organisationId",
           "type": {
             "type": "TYPE_ID"
           },
           "foreignKeyInfo": {
-            "relatedModelName": "Organisation",
-            "relatedModelField": "id"
+            "relatedEntityName": "Organisation",
+            "relatedEntityField": "id"
           }
         },
         {
-          "modelName": "User",
+          "entityName": "User",
           "name": "isAdmin",
           "type": {
             "type": "TYPE_BOOL"
@@ -227,7 +230,7 @@
           }
         },
         {
-          "modelName": "User",
+          "entityName": "User",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -239,7 +242,7 @@
           }
         },
         {
-          "modelName": "User",
+          "entityName": "User",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -249,7 +252,7 @@
           }
         },
         {
-          "modelName": "User",
+          "entityName": "User",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -264,17 +267,17 @@
       "name": "Organisation",
       "fields": [
         {
-          "modelName": "Organisation",
+          "entityName": "Organisation",
           "name": "users",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "User",
+            "type": "TYPE_ENTITY",
+            "entityName": "User",
             "repeated": true
           },
           "inverseFieldName": "organisation"
         },
         {
-          "modelName": "Organisation",
+          "entityName": "Organisation",
           "name": "isActive",
           "type": {
             "type": "TYPE_BOOL"
@@ -286,7 +289,7 @@
           }
         },
         {
-          "modelName": "Organisation",
+          "entityName": "Organisation",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -298,7 +301,7 @@
           }
         },
         {
-          "modelName": "Organisation",
+          "entityName": "Organisation",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -308,7 +311,7 @@
           }
         },
         {
-          "modelName": "Organisation",
+          "entityName": "Organisation",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -323,16 +326,18 @@
       "name": "Identity",
       "fields": [
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "email",
           "type": {
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "emailVerified",
           "type": {
             "type": "TYPE_BOOL"
@@ -344,7 +349,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "password",
           "type": {
             "type": "TYPE_PASSWORD"
@@ -352,7 +357,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "externalId",
           "type": {
             "type": "TYPE_STRING"
@@ -360,16 +365,18 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "issuer",
           "type": {
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "name",
           "type": {
             "type": "TYPE_STRING"
@@ -377,7 +384,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "givenName",
           "type": {
             "type": "TYPE_STRING"
@@ -385,7 +392,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "familyName",
           "type": {
             "type": "TYPE_STRING"
@@ -393,7 +400,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "middleName",
           "type": {
             "type": "TYPE_STRING"
@@ -401,7 +408,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "nickName",
           "type": {
             "type": "TYPE_STRING"
@@ -409,7 +416,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "profile",
           "type": {
             "type": "TYPE_STRING"
@@ -417,7 +424,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "picture",
           "type": {
             "type": "TYPE_STRING"
@@ -425,7 +432,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "website",
           "type": {
             "type": "TYPE_STRING"
@@ -433,7 +440,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "gender",
           "type": {
             "type": "TYPE_STRING"
@@ -441,7 +448,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "zoneInfo",
           "type": {
             "type": "TYPE_STRING"
@@ -449,7 +456,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "locale",
           "type": {
             "type": "TYPE_STRING"
@@ -457,7 +464,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -469,7 +476,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -479,7 +486,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -489,11 +496,11 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "user",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "User"
+            "type": "TYPE_ENTITY",
+            "entityName": "User"
           },
           "optional": true,
           "inverseFieldName": "identity"
@@ -607,10 +614,12 @@
           "name": "name",
           "type": {
             "type": "TYPE_STRING",
-            "modelName": "Record",
+            "entityName": "Record",
             "fieldName": "name"
           },
-          "target": ["name"]
+          "target": [
+            "name"
+          ]
         },
         {
           "messageName": "CreateRecordWithChildrenInput",
@@ -631,10 +640,13 @@
           "name": "name",
           "type": {
             "type": "TYPE_STRING",
-            "modelName": "Record",
+            "entityName": "Record",
             "fieldName": "name"
           },
-          "target": ["children", "name"]
+          "target": [
+            "children",
+            "name"
+          ]
         }
       ]
     }

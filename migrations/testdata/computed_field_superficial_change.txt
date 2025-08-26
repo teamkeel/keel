@@ -31,5 +31,6 @@ UPDATE "item" SET id = id;
 
 ===
 
-[]
-
+[
+    {"Model":"Item","Field":"total","Type":"MODIFIED"}
+]

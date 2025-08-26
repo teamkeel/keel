@@ -29,7 +29,7 @@ func (query *QueryBuilder) applyImplicitFiltersFromMessage(scope *Scope, message
 		//  - Explicit input, which is handled elsewhere.
 		if !input.IsModelField() {
 			if input.GetType().GetType() == proto.Type_TYPE_MESSAGE {
-				messageModel := scope.Schema.FindModel(field.GetType().GetModelName().GetValue())
+				messageModel := scope.Schema.FindModel(field.GetType().GetEntityName().GetValue())
 				nestedMessage := scope.Schema.FindMessage(input.GetType().GetMessageName().GetValue())
 
 				argsSectioned, ok := args[input.GetName()].(map[string]any)

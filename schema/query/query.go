@@ -136,8 +136,8 @@ func ActionModel(asts []*parser.AST, name string) *parser.ModelNode {
 	return nil
 }
 
-func IsModel(asts []*parser.AST, name string) bool {
-	return Model(asts, name) != nil
+func IsEntity(asts []*parser.AST, name string) bool {
+	return Entity(asts, name) != nil
 }
 
 func IsForeignKey(asts []*parser.AST, entity parser.Entity, field *parser.FieldNode) bool {
@@ -575,11 +575,11 @@ func ResolveInputField(asts []*parser.AST, input *parser.ActionInputNode, parent
 }
 
 // PrimaryKey gives you the name of the primary key field on the given
-// model. It favours fields that have the AttributePrimaryKey attribute,
+// entity. It favours fields that have the AttributePrimaryKey attribute,
 // but drops back to the id field if none have.
-func PrimaryKey(modelName string, asts []*parser.AST) *parser.FieldNode {
-	model := Model(asts, modelName)
-	potentialFields := ModelFields(model)
+func PrimaryKey(entityName string, asts []*parser.AST) *parser.FieldNode {
+	entity := Entity(asts, entityName)
+	potentialFields := entity.Fields()
 
 	for _, field := range potentialFields {
 		if FieldHasAttribute(field, parser.AttributePrimaryKey) {
@@ -599,7 +599,7 @@ func PrimaryKey(modelName string, asts []*parser.AST) *parser.FieldNode {
 // a field that references another model, and is not denoted as being repeated.
 func IsHasOneModelField(asts []*parser.AST, field *parser.FieldNode) bool {
 	switch {
-	case !IsModel(asts, field.Type.Value):
+	case !IsEntity(asts, field.Type.Value):
 		return false
 	case field.Repeated && !field.IsScalar():
 		return false
@@ -612,7 +612,7 @@ func IsHasOneModelField(asts []*parser.AST, field *parser.FieldNode) bool {
 // a field that references another model, and is denoted as being REPEATED.
 func IsHasManyModelField(asts []*parser.AST, field *parser.FieldNode) bool {
 	switch {
-	case !IsModel(asts, field.Type.Value):
+	case !IsEntity(asts, field.Type.Value):
 		return false
 	case !field.Repeated:
 		return false
@@ -626,7 +626,7 @@ func IsHasManyModelField(asts []*parser.AST, field *parser.FieldNode) bool {
 // This means the other model's field will have @unique defined and also the other model is
 // where the foreign key will exist.
 func IsBelongsToModelField(asts []*parser.AST, model *parser.ModelNode, field *parser.FieldNode) bool {
-	if IsModel(asts, field.Type.Value) {
+	if IsEntity(asts, field.Type.Value) {
 		for _, v := range ModelFields(Model(asts, field.Type.Value)) {
 			if v.Type.Value == model.Name.Value {
 				if !v.Repeated && FieldIsUnique(v) {

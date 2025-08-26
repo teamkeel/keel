@@ -4,7 +4,7 @@
       "name": "Post",
       "fields": [
         {
-          "modelName": "Post",
+          "entityName": "Post",
           "name": "name",
           "type": {
             "type": "TYPE_STRING"
@@ -12,7 +12,7 @@
           "optional": true
         },
         {
-          "modelName": "Post",
+          "entityName": "Post",
           "name": "published",
           "type": {
             "type": "TYPE_BOOL"
@@ -20,51 +20,51 @@
           "optional": true
         },
         {
-          "modelName": "Post",
+          "entityName": "Post",
           "name": "identity",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Identity"
+            "type": "TYPE_ENTITY",
+            "entityName": "Identity"
           },
           "optional": true,
           "foreignKeyFieldName": "identityId"
         },
         {
-          "modelName": "Post",
+          "entityName": "Post",
           "name": "identityId",
           "type": {
             "type": "TYPE_ID"
           },
           "optional": true,
           "foreignKeyInfo": {
-            "relatedModelName": "Identity",
-            "relatedModelField": "id"
+            "relatedEntityName": "Identity",
+            "relatedEntityField": "id"
           }
         },
         {
-          "modelName": "Post",
+          "entityName": "Post",
           "name": "publisher",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Publisher"
+            "type": "TYPE_ENTITY",
+            "entityName": "Publisher"
           },
           "optional": true,
           "foreignKeyFieldName": "publisherId"
         },
         {
-          "modelName": "Post",
+          "entityName": "Post",
           "name": "publisherId",
           "type": {
             "type": "TYPE_ID"
           },
           "optional": true,
           "foreignKeyInfo": {
-            "relatedModelName": "Publisher",
-            "relatedModelField": "id"
+            "relatedEntityName": "Publisher",
+            "relatedEntityField": "id"
           }
         },
         {
-          "modelName": "Post",
+          "entityName": "Post",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -76,7 +76,7 @@
           }
         },
         {
-          "modelName": "Post",
+          "entityName": "Post",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -86,7 +86,7 @@
           }
         },
         {
-          "modelName": "Post",
+          "entityName": "Post",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -221,87 +221,87 @@
       "name": "Publisher",
       "fields": [
         {
-          "modelName": "Publisher",
+          "entityName": "Publisher",
           "name": "name",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "modelName": "Publisher",
+          "entityName": "Publisher",
           "name": "owner",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Person"
+            "type": "TYPE_ENTITY",
+            "entityName": "Person"
           },
           "foreignKeyFieldName": "ownerId"
         },
         {
-          "modelName": "Publisher",
+          "entityName": "Publisher",
           "name": "ownerId",
           "type": {
             "type": "TYPE_ID"
           },
           "foreignKeyInfo": {
-            "relatedModelName": "Person",
-            "relatedModelField": "id"
+            "relatedEntityName": "Person",
+            "relatedEntityField": "id"
           }
         },
         {
-          "modelName": "Publisher",
+          "entityName": "Publisher",
           "name": "departments",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Department",
+            "type": "TYPE_ENTITY",
+            "entityName": "Department",
             "repeated": true
           },
           "inverseFieldName": "publisher"
         },
         {
-          "modelName": "Publisher",
+          "entityName": "Publisher",
           "name": "country",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Country"
+            "type": "TYPE_ENTITY",
+            "entityName": "Country"
           },
           "foreignKeyFieldName": "countryId"
         },
         {
-          "modelName": "Publisher",
+          "entityName": "Publisher",
           "name": "countryId",
           "type": {
             "type": "TYPE_ID"
           },
           "foreignKeyInfo": {
-            "relatedModelName": "Country",
-            "relatedModelField": "id"
+            "relatedEntityName": "Country",
+            "relatedEntityField": "id"
           }
         },
         {
-          "modelName": "Publisher",
+          "entityName": "Publisher",
           "name": "admin",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Identity"
+            "type": "TYPE_ENTITY",
+            "entityName": "Identity"
           },
           "unique": true,
           "foreignKeyFieldName": "adminId",
           "inverseFieldName": "publisher"
         },
         {
-          "modelName": "Publisher",
+          "entityName": "Publisher",
           "name": "adminId",
           "type": {
             "type": "TYPE_ID"
           },
           "unique": true,
           "foreignKeyInfo": {
-            "relatedModelName": "Identity",
-            "relatedModelField": "id"
+            "relatedEntityName": "Identity",
+            "relatedEntityField": "id"
           }
         },
         {
-          "modelName": "Publisher",
+          "entityName": "Publisher",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -313,7 +313,7 @@
           }
         },
         {
-          "modelName": "Publisher",
+          "entityName": "Publisher",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -323,7 +323,7 @@
           }
         },
         {
-          "modelName": "Publisher",
+          "entityName": "Publisher",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -338,64 +338,64 @@
       "name": "Department",
       "fields": [
         {
-          "modelName": "Department",
+          "entityName": "Department",
           "name": "publisher",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Publisher"
+            "type": "TYPE_ENTITY",
+            "entityName": "Publisher"
           },
           "foreignKeyFieldName": "publisherId",
           "inverseFieldName": "departments"
         },
         {
-          "modelName": "Department",
+          "entityName": "Department",
           "name": "publisherId",
           "type": {
             "type": "TYPE_ID"
           },
           "foreignKeyInfo": {
-            "relatedModelName": "Publisher",
-            "relatedModelField": "id"
+            "relatedEntityName": "Publisher",
+            "relatedEntityField": "id"
           }
         },
         {
-          "modelName": "Department",
+          "entityName": "Department",
           "name": "head",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Person"
+            "type": "TYPE_ENTITY",
+            "entityName": "Person"
           },
           "optional": true,
           "foreignKeyFieldName": "headId"
         },
         {
-          "modelName": "Department",
+          "entityName": "Department",
           "name": "headId",
           "type": {
             "type": "TYPE_ID"
           },
           "optional": true,
           "foreignKeyInfo": {
-            "relatedModelName": "Person",
-            "relatedModelField": "id"
+            "relatedEntityName": "Person",
+            "relatedEntityField": "id"
           }
         },
         {
-          "modelName": "Department",
+          "entityName": "Department",
           "name": "name",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "modelName": "Department",
+          "entityName": "Department",
           "name": "number",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "modelName": "Department",
+          "entityName": "Department",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -407,7 +407,7 @@
           }
         },
         {
-          "modelName": "Department",
+          "entityName": "Department",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -417,7 +417,7 @@
           }
         },
         {
-          "modelName": "Department",
+          "entityName": "Department",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -432,7 +432,7 @@
       "name": "Country",
       "fields": [
         {
-          "modelName": "Country",
+          "entityName": "Country",
           "name": "name",
           "type": {
             "type": "TYPE_STRING"
@@ -440,7 +440,7 @@
           "optional": true
         },
         {
-          "modelName": "Country",
+          "entityName": "Country",
           "name": "publishersCount",
           "type": {
             "type": "TYPE_INT"
@@ -448,7 +448,7 @@
           "optional": true
         },
         {
-          "modelName": "Country",
+          "entityName": "Country",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -460,7 +460,7 @@
           }
         },
         {
-          "modelName": "Country",
+          "entityName": "Country",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -470,7 +470,7 @@
           }
         },
         {
-          "modelName": "Country",
+          "entityName": "Country",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -485,37 +485,37 @@
       "name": "Person",
       "fields": [
         {
-          "modelName": "Person",
+          "entityName": "Person",
           "name": "name",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "modelName": "Person",
+          "entityName": "Person",
           "name": "identity",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Identity"
+            "type": "TYPE_ENTITY",
+            "entityName": "Identity"
           },
           "unique": true,
           "foreignKeyFieldName": "identityId",
           "inverseFieldName": "person"
         },
         {
-          "modelName": "Person",
+          "entityName": "Person",
           "name": "identityId",
           "type": {
             "type": "TYPE_ID"
           },
           "unique": true,
           "foreignKeyInfo": {
-            "relatedModelName": "Identity",
-            "relatedModelField": "id"
+            "relatedEntityName": "Identity",
+            "relatedEntityField": "id"
           }
         },
         {
-          "modelName": "Person",
+          "entityName": "Person",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -527,7 +527,7 @@
           }
         },
         {
-          "modelName": "Person",
+          "entityName": "Person",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -537,7 +537,7 @@
           }
         },
         {
-          "modelName": "Person",
+          "entityName": "Person",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -552,16 +552,18 @@
       "name": "Identity",
       "fields": [
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "email",
           "type": {
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "emailVerified",
           "type": {
             "type": "TYPE_BOOL"
@@ -573,7 +575,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "password",
           "type": {
             "type": "TYPE_PASSWORD"
@@ -581,7 +583,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "externalId",
           "type": {
             "type": "TYPE_STRING"
@@ -589,16 +591,18 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "issuer",
           "type": {
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "name",
           "type": {
             "type": "TYPE_STRING"
@@ -606,7 +610,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "givenName",
           "type": {
             "type": "TYPE_STRING"
@@ -614,7 +618,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "familyName",
           "type": {
             "type": "TYPE_STRING"
@@ -622,7 +626,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "middleName",
           "type": {
             "type": "TYPE_STRING"
@@ -630,7 +634,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "nickName",
           "type": {
             "type": "TYPE_STRING"
@@ -638,7 +642,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "profile",
           "type": {
             "type": "TYPE_STRING"
@@ -646,7 +650,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "picture",
           "type": {
             "type": "TYPE_STRING"
@@ -654,7 +658,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "website",
           "type": {
             "type": "TYPE_STRING"
@@ -662,7 +666,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "gender",
           "type": {
             "type": "TYPE_STRING"
@@ -670,7 +674,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "zoneInfo",
           "type": {
             "type": "TYPE_STRING"
@@ -678,7 +682,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "locale",
           "type": {
             "type": "TYPE_STRING"
@@ -686,7 +690,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -698,7 +702,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -708,7 +712,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -718,21 +722,21 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "publisher",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Publisher"
+            "type": "TYPE_ENTITY",
+            "entityName": "Publisher"
           },
           "optional": true,
           "inverseFieldName": "admin"
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "person",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Person"
+            "type": "TYPE_ENTITY",
+            "entityName": "Person"
           },
           "optional": true,
           "inverseFieldName": "identity"
@@ -915,10 +919,14 @@
           "name": "id",
           "type": {
             "type": "TYPE_ID",
-            "modelName": "Country",
+            "entityName": "Country",
             "fieldName": "id"
           },
-          "target": ["publisher", "country", "id"]
+          "target": [
+            "publisher",
+            "country",
+            "id"
+          ]
         }
       ]
     },
@@ -930,20 +938,28 @@
           "name": "name",
           "type": {
             "type": "TYPE_STRING",
-            "modelName": "Department",
+            "entityName": "Department",
             "fieldName": "name"
           },
-          "target": ["publisher", "departments", "name"]
+          "target": [
+            "publisher",
+            "departments",
+            "name"
+          ]
         },
         {
           "messageName": "NestedData1PublisherDepartmentsInput",
           "name": "number",
           "type": {
             "type": "TYPE_STRING",
-            "modelName": "Department",
+            "entityName": "Department",
             "fieldName": "number"
           },
-          "target": ["publisher", "departments", "number"]
+          "target": [
+            "publisher",
+            "departments",
+            "number"
+          ]
         }
       ]
     },
@@ -955,11 +971,13 @@
           "name": "name",
           "type": {
             "type": "TYPE_STRING",
-            "modelName": "Post",
+            "entityName": "Post",
             "fieldName": "name"
           },
           "nullable": true,
-          "target": ["name"]
+          "target": [
+            "name"
+          ]
         }
       ]
     },
@@ -1007,10 +1025,14 @@
           "name": "id",
           "type": {
             "type": "TYPE_ID",
-            "modelName": "Country",
+            "entityName": "Country",
             "fieldName": "id"
           },
-          "target": ["publisher", "country", "id"]
+          "target": [
+            "publisher",
+            "country",
+            "id"
+          ]
         }
       ]
     },
@@ -1022,20 +1044,28 @@
           "name": "name",
           "type": {
             "type": "TYPE_STRING",
-            "modelName": "Department",
+            "entityName": "Department",
             "fieldName": "name"
           },
-          "target": ["publisher", "departments", "name"]
+          "target": [
+            "publisher",
+            "departments",
+            "name"
+          ]
         },
         {
           "messageName": "NestedData3PublisherDepartmentsInput",
           "name": "number",
           "type": {
             "type": "TYPE_STRING",
-            "modelName": "Department",
+            "entityName": "Department",
             "fieldName": "number"
           },
-          "target": ["publisher", "departments", "number"]
+          "target": [
+            "publisher",
+            "departments",
+            "number"
+          ]
         }
       ]
     },
@@ -1083,10 +1113,14 @@
           "name": "id",
           "type": {
             "type": "TYPE_ID",
-            "modelName": "Country",
+            "entityName": "Country",
             "fieldName": "id"
           },
-          "target": ["publisher", "country", "id"]
+          "target": [
+            "publisher",
+            "country",
+            "id"
+          ]
         }
       ]
     },
@@ -1098,20 +1132,28 @@
           "name": "name",
           "type": {
             "type": "TYPE_STRING",
-            "modelName": "Department",
+            "entityName": "Department",
             "fieldName": "name"
           },
-          "target": ["publisher", "departments", "name"]
+          "target": [
+            "publisher",
+            "departments",
+            "name"
+          ]
         },
         {
           "messageName": "NestedData4PublisherDepartmentsInput",
           "name": "number",
           "type": {
             "type": "TYPE_STRING",
-            "modelName": "Department",
+            "entityName": "Department",
             "fieldName": "number"
           },
-          "target": ["publisher", "departments", "number"]
+          "target": [
+            "publisher",
+            "departments",
+            "number"
+          ]
         }
       ]
     },
@@ -1123,11 +1165,13 @@
           "name": "name",
           "type": {
             "type": "TYPE_STRING",
-            "modelName": "Post",
+            "entityName": "Post",
             "fieldName": "name"
           },
           "nullable": true,
-          "target": ["name"]
+          "target": [
+            "name"
+          ]
         }
       ]
     },
@@ -1166,10 +1210,14 @@
           "name": "id",
           "type": {
             "type": "TYPE_ID",
-            "modelName": "Country",
+            "entityName": "Country",
             "fieldName": "id"
           },
-          "target": ["publisher", "country", "id"]
+          "target": [
+            "publisher",
+            "country",
+            "id"
+          ]
         }
       ]
     },
@@ -1217,11 +1265,15 @@
           "name": "name",
           "type": {
             "type": "TYPE_STRING",
-            "modelName": "Country",
+            "entityName": "Country",
             "fieldName": "name"
           },
           "nullable": true,
-          "target": ["publisher", "country", "name"]
+          "target": [
+            "publisher",
+            "country",
+            "name"
+          ]
         }
       ]
     },
@@ -1233,20 +1285,28 @@
           "name": "name",
           "type": {
             "type": "TYPE_STRING",
-            "modelName": "Department",
+            "entityName": "Department",
             "fieldName": "name"
           },
-          "target": ["publisher", "departments", "name"]
+          "target": [
+            "publisher",
+            "departments",
+            "name"
+          ]
         },
         {
           "messageName": "NestedData7PublisherDepartmentsInput",
           "name": "number",
           "type": {
             "type": "TYPE_STRING",
-            "modelName": "Department",
+            "entityName": "Department",
             "fieldName": "number"
           },
-          "target": ["publisher", "departments", "number"]
+          "target": [
+            "publisher",
+            "departments",
+            "number"
+          ]
         }
       ]
     },
@@ -1294,10 +1354,14 @@
           "name": "id",
           "type": {
             "type": "TYPE_ID",
-            "modelName": "Country",
+            "entityName": "Country",
             "fieldName": "id"
           },
-          "target": ["publisher", "country", "id"]
+          "target": [
+            "publisher",
+            "country",
+            "id"
+          ]
         }
       ]
     },
@@ -1309,20 +1373,28 @@
           "name": "name",
           "type": {
             "type": "TYPE_STRING",
-            "modelName": "Department",
+            "entityName": "Department",
             "fieldName": "name"
           },
-          "target": ["publisher", "departments", "name"]
+          "target": [
+            "publisher",
+            "departments",
+            "name"
+          ]
         },
         {
           "messageName": "NestedData8PublisherDepartmentsInput",
           "name": "number",
           "type": {
             "type": "TYPE_STRING",
-            "modelName": "Department",
+            "entityName": "Department",
             "fieldName": "number"
           },
-          "target": ["publisher", "departments", "number"]
+          "target": [
+            "publisher",
+            "departments",
+            "number"
+          ]
         }
       ]
     }

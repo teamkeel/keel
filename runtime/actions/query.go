@@ -1445,7 +1445,7 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 
 	// For certain types, we need to parse them into a format the runtime understands.
 	for _, f := range statement.entity.GetFields() {
-		if f.GetType().GetType() == proto.Type_TYPE_MODEL {
+		if f.GetType().GetType() == proto.Type_TYPE_ENTITY {
 			continue
 		}
 

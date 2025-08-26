@@ -229,7 +229,7 @@ func (v *computedQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
 				return errors.New("argument stack is empty")
 			}
 
-			entity = v.schema.FindEntity(field.GetType().GetModelName().GetValue())
+			entity = v.schema.FindEntity(field.GetType().GetEntityName().GetValue())
 
 			switch arg.(int) {
 			case 1: //the first arg sets the SELECT
@@ -240,7 +240,7 @@ func (v *computedQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
 
 				r := v.entity.FindField(normalised[1])
 				subFragments := normalised[1:]
-				subFragments[0] = strcase.ToLowerCamel(r.GetType().GetModelName().GetValue())
+				subFragments[0] = strcase.ToLowerCamel(r.GetType().GetEntityName().GetValue())
 
 				err := query.AddJoinFromFragments(v.schema, subFragments)
 				if err != nil {
@@ -288,7 +288,7 @@ func (v *computedQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
 
 				r := v.entity.FindField(normalised[1])
 				subFragments := normalised[1:]
-				subFragments[0] = strcase.ToLowerCamel(r.GetType().GetModelName().GetValue())
+				subFragments[0] = strcase.ToLowerCamel(r.GetType().GetEntityName().GetValue())
 
 				newIdent := &parser.ExpressionIdent{
 					Fragments: subFragments,
@@ -298,12 +298,12 @@ func (v *computedQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
 			}
 		} else {
 			// Join together all the tables based on the ident fragments
-			entity = v.schema.FindEntity(field.GetType().GetModelName().GetValue())
+			entity = v.schema.FindEntity(field.GetType().GetEntityName().GetValue())
 			query := NewQuery(entity)
 
 			relatedEntityField := v.entity.FindField(normalised[1])
 			subFragments := normalised[1:]
-			subFragments[0] = strcase.ToLowerCamel(relatedEntityField.GetType().GetModelName().GetValue())
+			subFragments[0] = strcase.ToLowerCamel(relatedEntityField.GetType().GetEntityName().GetValue())
 
 			err := query.AddJoinFromFragments(v.schema, subFragments)
 			if err != nil {
@@ -343,10 +343,10 @@ func (v *computedQueryGen) isToManyLookup(idents *parser.ExpressionIdent) (bool,
 	for i := 1; i < len(fragments)-1; i++ {
 		currentFragment := fragments[i]
 		field := entity.FindField(currentFragment)
-		if field.GetType().GetType() == proto.Type_TYPE_MODEL && field.GetType().GetRepeated() {
+		if field.GetType().GetType() == proto.Type_TYPE_ENTITY && field.GetType().GetRepeated() {
 			return true, nil
 		}
-		entity = v.schema.FindEntity(field.GetType().GetModelName().GetValue())
+		entity = v.schema.FindEntity(field.GetType().GetEntityName().GetValue())
 	}
 
 	return false, nil

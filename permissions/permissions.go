@@ -303,7 +303,7 @@ func handleEntity(s *proto.Schema, entity proto.Entity, ident *parser.Expression
 			}
 
 			isLast := i == len(ident.Fragments)-1
-			isModel := field.GetType().GetType() == proto.Type_TYPE_MODEL
+			isModel := field.GetType().GetType() == proto.Type_TYPE_ENTITY
 			hasFk := field.GetForeignKeyFieldName() != nil
 
 			if isModel && (!isLast || !hasFk) {
@@ -321,7 +321,7 @@ func handleEntity(s *proto.Schema, entity proto.Entity, ident *parser.Expression
 					return fmt.Errorf("model %s has no field %s", entity.GetName(), f)
 				}
 
-				joinEntity := s.FindEntity(field.GetType().GetModelName().GetValue())
+				joinEntity := s.FindEntity(field.GetType().GetEntityName().GetValue())
 				if joinEntity == nil {
 					return fmt.Errorf("model %s not found in schema", entity.GetName())
 				}
@@ -353,7 +353,7 @@ func handleEntity(s *proto.Schema, entity proto.Entity, ident *parser.Expression
 				fieldName = identifier(fieldName)
 
 				// Then append the field name as a quoted identifier
-				if field.GetType().GetType() == proto.Type_TYPE_MODEL {
+				if field.GetType().GetType() == proto.Type_TYPE_ENTITY {
 					if field.GetForeignKeyFieldName() != nil {
 						fieldName += "." + identifier(field.GetForeignKeyFieldName().GetValue())
 					} else {

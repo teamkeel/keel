@@ -759,7 +759,7 @@ func getEmbedArgCompletions(asts []*parser.AST, t *TokensAtPosition) []*Completi
 	for _, field := range fields {
 		fieldName := field.Name.Value
 
-		if query.IsModel(asts, field.Type.Value) {
+		if query.IsEntity(asts, field.Type.Value) {
 			completions = append(completions, &CompletionItem{
 				Label:       fieldName,
 				Description: field.Type.Value,
