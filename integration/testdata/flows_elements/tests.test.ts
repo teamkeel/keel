@@ -2,6 +2,67 @@ import { resetDatabase, models, flows } from "@teamkeel/testing";
 import { beforeEach, expect, test } from "vitest";
 
 beforeEach(resetDatabase);
+test("flows - callback flow", async () => {
+  let flow = await flows.callbackFlow.start({});
+  expect(flow).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "AWAITING_INPUT",
+    name: "CallbackFlow",
+    startedBy: null,
+    input: {},
+    data: null,
+    steps: [
+      {
+        id: expect.any(String),
+        name: "my page",
+        runId: expect.any(String),
+        stage: null,
+        status: "PENDING",
+        type: "UI",
+        value: null,
+        error: null,
+        startTime: expect.any(Date),
+        endTime: null,
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        ui: {
+          __type: "ui.page",
+          content: [
+            {
+              __type: "ui.input.number",
+              defaultValue: 1,
+              disabled: false,
+              label: "How many numbers?",
+              name: "numberInput",
+              optional: false,
+            },
+          ],
+          hasValidationErrors: false,
+        },
+      },
+    ],
+    createdAt: expect.any(Date),
+    updatedAt: expect.any(Date),
+    config: {
+      title: "Callback flow",
+    },
+  });
+  const callbackResponse = await flows.callbackFlow.callback(
+    flow.id,
+    flow.steps[0].id,
+    "numberInput",
+    "onLeave",
+    {
+      number: 12
+    }
+  )
+
+  expect(callbackResponse).toEqual({
+    input: null,
+    result: 24
+  })
+})
 
 test("flows - iterator element", async () => {
   let flow = await flows.iterator.start({});
