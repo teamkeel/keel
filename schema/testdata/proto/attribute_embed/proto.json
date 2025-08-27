@@ -178,9 +178,7 @@
           "type": "ACTION_TYPE_GET",
           "implementation": "ACTION_IMPLEMENTATION_AUTO",
           "inputMessageName": "GetReviewInput",
-          "responseEmbeds": [
-            "book"
-          ]
+          "responseEmbeds": ["book"]
         }
       ],
       "permissions": [
@@ -290,9 +288,7 @@
           "type": "ACTION_TYPE_LIST",
           "implementation": "ACTION_IMPLEMENTATION_AUTO",
           "inputMessageName": "ListBooksInput",
-          "responseEmbeds": [
-            "author"
-          ]
+          "responseEmbeds": ["author"]
         },
         {
           "modelName": "Book",
@@ -307,10 +303,7 @@
           "type": "ACTION_TYPE_GET",
           "implementation": "ACTION_IMPLEMENTATION_AUTO",
           "inputMessageName": "GetBookInput",
-          "responseEmbeds": [
-            "code",
-            "author"
-          ]
+          "responseEmbeds": ["code", "author"]
         },
         {
           "modelName": "Book",
@@ -413,9 +406,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "issuer"
-          ]
+          "uniqueWith": ["issuer"]
         },
         {
           "entityName": "Identity",
@@ -452,9 +443,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "email"
-          ]
+          "uniqueWith": ["email"]
         },
         {
           "entityName": "Identity",
@@ -719,9 +708,7 @@
             "entityName": "Author",
             "fieldName": "firstName"
           },
-          "target": [
-            "firstName"
-          ]
+          "target": ["firstName"]
         },
         {
           "messageName": "CreateAuthorInput",
@@ -731,9 +718,7 @@
             "entityName": "Author",
             "fieldName": "surname"
           },
-          "target": [
-            "surname"
-          ]
+          "target": ["surname"]
         }
       ]
     },
@@ -838,9 +823,7 @@
             "entityName": "Review",
             "fieldName": "content"
           },
-          "target": [
-            "content"
-          ]
+          "target": ["content"]
         },
         {
           "messageName": "CreateReviewInput",
@@ -863,10 +846,7 @@
             "entityName": "Book",
             "fieldName": "id"
           },
-          "target": [
-            "book",
-            "id"
-          ]
+          "target": ["book", "id"]
         }
       ]
     },
@@ -881,10 +861,7 @@
             "messageName": "IdQueryInput"
           },
           "optional": true,
-          "target": [
-            "book",
-            "id"
-          ]
+          "target": ["book", "id"]
         }
       ]
     },
@@ -1010,9 +987,7 @@
             "entityName": "Review",
             "fieldName": "id"
           },
-          "target": [
-            "id"
-          ]
+          "target": ["id"]
         }
       ]
     },
@@ -1080,9 +1055,7 @@
             "entityName": "Book",
             "fieldName": "title"
           },
-          "target": [
-            "title"
-          ]
+          "target": ["title"]
         },
         {
           "messageName": "CreateBookInput",
@@ -1105,10 +1078,7 @@
             "entityName": "Author",
             "fieldName": "id"
           },
-          "target": [
-            "author",
-            "id"
-          ]
+          "target": ["author", "id"]
         }
       ]
     },
@@ -1123,9 +1093,7 @@
             "entityName": "Book",
             "fieldName": "id"
           },
-          "target": [
-            "id"
-          ]
+          "target": ["id"]
         }
       ]
     },
@@ -1140,9 +1108,7 @@
             "entityName": "Book",
             "fieldName": "id"
           },
-          "target": [
-            "id"
-          ]
+          "target": ["id"]
         }
       ]
     }

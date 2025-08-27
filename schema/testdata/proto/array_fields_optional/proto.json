@@ -101,9 +101,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "issuer"
-          ]
+          "uniqueWith": ["issuer"]
         },
         {
           "entityName": "Identity",
@@ -140,9 +138,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "email"
-          ]
+          "uniqueWith": ["email"]
         },
         {
           "entityName": "Identity",
@@ -373,9 +369,7 @@
           },
           "optional": true,
           "nullable": true,
-          "target": [
-            "texts"
-          ]
+          "target": ["texts"]
         },
         {
           "messageName": "CreateThingInput",
@@ -388,9 +382,7 @@
           },
           "optional": true,
           "nullable": true,
-          "target": [
-            "numbers"
-          ]
+          "target": ["numbers"]
         },
         {
           "messageName": "CreateThingInput",
@@ -403,9 +395,7 @@
           },
           "optional": true,
           "nullable": true,
-          "target": [
-            "booleans"
-          ]
+          "target": ["booleans"]
         },
         {
           "messageName": "CreateThingInput",
@@ -418,9 +408,7 @@
           },
           "optional": true,
           "nullable": true,
-          "target": [
-            "dates"
-          ]
+          "target": ["dates"]
         },
         {
           "messageName": "CreateThingInput",
@@ -433,9 +421,7 @@
           },
           "optional": true,
           "nullable": true,
-          "target": [
-            "timestamps"
-          ]
+          "target": ["timestamps"]
         }
       ]
     }

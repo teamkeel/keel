@@ -230,9 +230,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "issuer"
-          ]
+          "uniqueWith": ["issuer"]
         },
         {
           "entityName": "Identity",
@@ -269,9 +267,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "email"
-          ]
+          "uniqueWith": ["email"]
         },
         {
           "entityName": "Identity",
@@ -505,9 +501,7 @@
             "entityName": "Post",
             "fieldName": "title"
           },
-          "target": [
-            "title"
-          ]
+          "target": ["title"]
         },
         {
           "messageName": "CreatePostInput",
@@ -540,10 +534,7 @@
             "entityName": "Publisher",
             "fieldName": "id"
           },
-          "target": [
-            "publisher",
-            "id"
-          ]
+          "target": ["publisher", "id"]
         }
       ]
     },
@@ -558,10 +549,7 @@
             "entityName": "Author",
             "fieldName": "id"
           },
-          "target": [
-            "owner",
-            "id"
-          ]
+          "target": ["owner", "id"]
         }
       ]
     }

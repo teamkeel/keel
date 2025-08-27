@@ -170,9 +170,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "issuer"
-          ]
+          "uniqueWith": ["issuer"]
         },
         {
           "entityName": "Identity",
@@ -209,9 +207,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "email"
-          ]
+          "uniqueWith": ["email"]
         },
         {
           "entityName": "Identity",
@@ -451,9 +447,7 @@
             "entityName": "ChildModel",
             "fieldName": "id"
           },
-          "target": [
-            "id"
-          ]
+          "target": ["id"]
         }
       ]
     },
@@ -468,10 +462,7 @@
             "entityName": "ParentModel",
             "fieldName": "id"
           },
-          "target": [
-            "parent",
-            "id"
-          ]
+          "target": ["parent", "id"]
         }
       ]
     },
@@ -486,9 +477,7 @@
             "entityName": "ChildModel",
             "fieldName": "isActive"
           },
-          "target": [
-            "isActive"
-          ]
+          "target": ["isActive"]
         },
         {
           "messageName": "UpdateChild1Values",
@@ -532,9 +521,7 @@
             "entityName": "ChildModel",
             "fieldName": "id"
           },
-          "target": [
-            "id"
-          ]
+          "target": ["id"]
         }
       ]
     },
@@ -549,9 +536,7 @@
             "entityName": "ChildModel",
             "fieldName": "isActive"
           },
-          "target": [
-            "isActive"
-          ]
+          "target": ["isActive"]
         },
         {
           "messageName": "UpdateChild2Values",
@@ -561,9 +546,7 @@
             "entityName": "ChildModel",
             "fieldName": "parentId"
           },
-          "target": [
-            "parentId"
-          ]
+          "target": ["parentId"]
         }
       ]
     },
@@ -599,9 +582,7 @@
             "entityName": "ChildModel",
             "fieldName": "id"
           },
-          "target": [
-            "id"
-          ]
+          "target": ["id"]
         }
       ]
     },
@@ -616,10 +597,7 @@
             "entityName": "ParentModel",
             "fieldName": "id"
           },
-          "target": [
-            "parent",
-            "id"
-          ]
+          "target": ["parent", "id"]
         }
       ]
     },
@@ -634,10 +612,7 @@
             "entityName": "ParentModel",
             "fieldName": "id"
           },
-          "target": [
-            "parentOptional",
-            "id"
-          ]
+          "target": ["parentOptional", "id"]
         }
       ]
     },
@@ -652,9 +627,7 @@
             "entityName": "ChildModel",
             "fieldName": "isActive"
           },
-          "target": [
-            "isActive"
-          ]
+          "target": ["isActive"]
         },
         {
           "messageName": "UpdateChild3Values",
@@ -707,9 +680,7 @@
             "entityName": "ChildModel",
             "fieldName": "id"
           },
-          "target": [
-            "id"
-          ]
+          "target": ["id"]
         }
       ]
     },
@@ -724,9 +695,7 @@
             "entityName": "ChildModel",
             "fieldName": "isActive"
           },
-          "target": [
-            "isActive"
-          ]
+          "target": ["isActive"]
         },
         {
           "messageName": "UpdateChild4Values",
@@ -736,9 +705,7 @@
             "entityName": "ChildModel",
             "fieldName": "parentId"
           },
-          "target": [
-            "parentId"
-          ]
+          "target": ["parentId"]
         },
         {
           "messageName": "UpdateChild4Values",
@@ -749,9 +716,7 @@
             "fieldName": "parentOptionalId"
           },
           "nullable": true,
-          "target": [
-            "parentOptionalId"
-          ]
+          "target": ["parentOptionalId"]
         }
       ]
     },

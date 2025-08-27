@@ -61,9 +61,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "issuer"
-          ]
+          "uniqueWith": ["issuer"]
         },
         {
           "entityName": "Identity",
@@ -100,9 +98,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "email"
-          ]
+          "uniqueWith": ["email"]
         },
         {
           "entityName": "Identity",
@@ -357,9 +353,7 @@
           "type": {
             "type": "TYPE_STRING"
           },
-          "uniqueWith": [
-            "customerCode"
-          ],
+          "uniqueWith": ["customerCode"],
           "computedExpression": {
             "source": "newOrder.order.orderCode"
           }
@@ -378,9 +372,7 @@
             "type": "TYPE_STRING"
           },
           "unique": true,
-          "uniqueWith": [
-            "orderCode"
-          ]
+          "uniqueWith": ["orderCode"]
         },
         {
           "entityName": "NewOrder",

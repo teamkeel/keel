@@ -233,9 +233,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "issuer"
-          ]
+          "uniqueWith": ["issuer"]
         },
         {
           "entityName": "Identity",
@@ -272,9 +270,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "email"
-          ]
+          "uniqueWith": ["email"]
         },
         {
           "entityName": "Identity",
@@ -528,10 +524,7 @@
             "entityName": "ProductStock",
             "fieldName": "id"
           },
-          "target": [
-            "stock",
-            "id"
-          ]
+          "target": ["stock", "id"]
         }
       ]
     },
@@ -546,10 +539,7 @@
             "entityName": "ProductStock",
             "fieldName": "barcode"
           },
-          "target": [
-            "stock",
-            "barcode"
-          ]
+          "target": ["stock", "barcode"]
         }
       ]
     },
@@ -576,10 +566,7 @@
             "entityName": "ProductStock",
             "fieldName": "barcode"
           },
-          "target": [
-            "stock",
-            "barcode"
-          ]
+          "target": ["stock", "barcode"]
         }
       ]
     },
@@ -618,9 +605,7 @@
             "entityName": "Product",
             "fieldName": "sku"
           },
-          "target": [
-            "sku"
-          ]
+          "target": ["sku"]
         }
       ]
     },
@@ -635,10 +620,7 @@
             "entityName": "Product",
             "fieldName": "sku"
           },
-          "target": [
-            "product",
-            "sku"
-          ]
+          "target": ["product", "sku"]
         }
       ]
     }

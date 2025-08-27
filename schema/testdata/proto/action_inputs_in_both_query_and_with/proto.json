@@ -136,9 +136,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "issuer"
-          ]
+          "uniqueWith": ["issuer"]
         },
         {
           "entityName": "Identity",
@@ -175,9 +173,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "email"
-          ]
+          "uniqueWith": ["email"]
         },
         {
           "entityName": "Identity",
@@ -427,9 +423,7 @@
             "entityName": "Account",
             "fieldName": "username"
           },
-          "target": [
-            "username"
-          ]
+          "target": ["username"]
         }
       ]
     },
@@ -444,9 +438,7 @@
             "entityName": "Account",
             "fieldName": "name"
           },
-          "target": [
-            "name"
-          ]
+          "target": ["name"]
         },
         {
           "messageName": "UpdateAccountValues",
@@ -456,9 +448,7 @@
             "entityName": "Account",
             "fieldName": "username"
           },
-          "target": [
-            "username"
-          ]
+          "target": ["username"]
         },
         {
           "messageName": "UpdateAccountValues",
@@ -468,9 +458,7 @@
             "entityName": "Account",
             "fieldName": "isActive"
           },
-          "target": [
-            "isActive"
-          ]
+          "target": ["isActive"]
         }
       ]
     },
@@ -506,9 +494,7 @@
             "entityName": "Account",
             "fieldName": "username"
           },
-          "target": [
-            "username"
-          ]
+          "target": ["username"]
         },
         {
           "messageName": "UpdateAccount2Where",
@@ -518,9 +504,7 @@
             "entityName": "Account",
             "fieldName": "isActive"
           },
-          "target": [
-            "isActive"
-          ]
+          "target": ["isActive"]
         }
       ]
     },
@@ -535,9 +519,7 @@
             "entityName": "Account",
             "fieldName": "name"
           },
-          "target": [
-            "name"
-          ]
+          "target": ["name"]
         },
         {
           "messageName": "UpdateAccount2Values",
@@ -547,9 +529,7 @@
             "entityName": "Account",
             "fieldName": "username"
           },
-          "target": [
-            "username"
-          ]
+          "target": ["username"]
         },
         {
           "messageName": "UpdateAccount2Values",
@@ -559,9 +539,7 @@
             "entityName": "Account",
             "fieldName": "isActive"
           },
-          "target": [
-            "isActive"
-          ]
+          "target": ["isActive"]
         }
       ]
     },
@@ -597,10 +575,7 @@
             "entityName": "Identity",
             "fieldName": "id"
           },
-          "target": [
-            "identity",
-            "id"
-          ]
+          "target": ["identity", "id"]
         }
       ]
     },
@@ -615,10 +590,7 @@
             "entityName": "Identity",
             "fieldName": "id"
           },
-          "target": [
-            "identity",
-            "id"
-          ]
+          "target": ["identity", "id"]
         }
       ]
     },
@@ -668,10 +640,7 @@
             "fieldName": "email"
           },
           "nullable": true,
-          "target": [
-            "identity",
-            "email"
-          ]
+          "target": ["identity", "email"]
         },
         {
           "messageName": "UpdateAccount4Where",
@@ -682,10 +651,7 @@
             "fieldName": "issuer"
           },
           "nullable": true,
-          "target": [
-            "identity",
-            "issuer"
-          ]
+          "target": ["identity", "issuer"]
         }
       ]
     },
@@ -700,9 +666,7 @@
             "entityName": "Account",
             "fieldName": "email"
           },
-          "target": [
-            "email"
-          ]
+          "target": ["email"]
         }
       ]
     },
@@ -739,10 +703,7 @@
             "fieldName": "email"
           },
           "nullable": true,
-          "target": [
-            "identity",
-            "email"
-          ]
+          "target": ["identity", "email"]
         },
         {
           "messageName": "UpdateAccount5Where",
@@ -753,10 +714,7 @@
             "fieldName": "issuer"
           },
           "nullable": true,
-          "target": [
-            "identity",
-            "issuer"
-          ]
+          "target": ["identity", "issuer"]
         }
       ]
     },
@@ -771,9 +729,7 @@
             "entityName": "Account",
             "fieldName": "name"
           },
-          "target": [
-            "name"
-          ]
+          "target": ["name"]
         }
       ]
     },

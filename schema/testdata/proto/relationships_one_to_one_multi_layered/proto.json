@@ -235,9 +235,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "issuer"
-          ]
+          "uniqueWith": ["issuer"]
         },
         {
           "entityName": "Identity",
@@ -274,9 +272,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "email"
-          ]
+          "uniqueWith": ["email"]
         },
         {
           "entityName": "Identity",
@@ -520,9 +516,7 @@
             "entityName": "Company",
             "fieldName": "name"
           },
-          "target": [
-            "name"
-          ]
+          "target": ["name"]
         },
         {
           "messageName": "CreateCompanyInput",
@@ -545,10 +539,7 @@
             "entityName": "CompanyProfile",
             "fieldName": "employeeCount"
           },
-          "target": [
-            "companyProfile",
-            "employeeCount"
-          ]
+          "target": ["companyProfile", "employeeCount"]
         },
         {
           "messageName": "CreateCompanyCompanyProfileInput",
@@ -572,11 +563,7 @@
             "entityName": "TaxProfile",
             "fieldName": "taxNumber"
           },
-          "target": [
-            "companyProfile",
-            "taxProfile",
-            "taxNumber"
-          ]
+          "target": ["companyProfile", "taxProfile", "taxNumber"]
         }
       ]
     },
@@ -590,10 +577,7 @@
             "type": "TYPE_MESSAGE",
             "messageName": "IdQueryInput"
           },
-          "target": [
-            "company",
-            "id"
-          ]
+          "target": ["company", "id"]
         }
       ]
     },
@@ -729,11 +713,7 @@
             "type": "TYPE_MESSAGE",
             "messageName": "IdQueryInput"
           },
-          "target": [
-            "companyProfile",
-            "company",
-            "id"
-          ]
+          "target": ["companyProfile", "company", "id"]
         }
       ]
     },

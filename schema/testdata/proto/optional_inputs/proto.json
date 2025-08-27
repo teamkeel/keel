@@ -85,9 +85,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "issuer"
-          ]
+          "uniqueWith": ["issuer"]
         },
         {
           "entityName": "Identity",
@@ -124,9 +122,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "email"
-          ]
+          "uniqueWith": ["email"]
         },
         {
           "entityName": "Identity",
@@ -360,9 +356,7 @@
             "entityName": "Person",
             "fieldName": "name"
           },
-          "target": [
-            "name"
-          ]
+          "target": ["name"]
         },
         {
           "messageName": "CreatePersonInput",
@@ -373,9 +367,7 @@
             "fieldName": "preferredName"
           },
           "nullable": true,
-          "target": [
-            "preferredName"
-          ]
+          "target": ["preferredName"]
         }
       ]
     },
@@ -390,9 +382,7 @@
             "entityName": "Person",
             "fieldName": "id"
           },
-          "target": [
-            "id"
-          ]
+          "target": ["id"]
         }
       ]
     },
@@ -407,9 +397,7 @@
             "entityName": "Person",
             "fieldName": "name"
           },
-          "target": [
-            "name"
-          ]
+          "target": ["name"]
         },
         {
           "messageName": "UpdatePersonValues",
@@ -420,9 +408,7 @@
             "fieldName": "preferredName"
           },
           "nullable": true,
-          "target": [
-            "preferredName"
-          ]
+          "target": ["preferredName"]
         }
       ]
     },
@@ -513,9 +499,7 @@
             "type": "TYPE_MESSAGE",
             "messageName": "StringQueryInput"
           },
-          "target": [
-            "name"
-          ]
+          "target": ["name"]
         },
         {
           "messageName": "ListPersonWhere",
@@ -524,9 +508,7 @@
             "type": "TYPE_MESSAGE",
             "messageName": "StringQueryInput"
           },
-          "target": [
-            "preferredName"
-          ]
+          "target": ["preferredName"]
         }
       ]
     },

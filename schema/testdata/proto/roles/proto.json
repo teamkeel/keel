@@ -10,9 +10,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "issuer"
-          ]
+          "uniqueWith": ["issuer"]
         },
         {
           "entityName": "Identity",
@@ -49,9 +47,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "email"
-          ]
+          "uniqueWith": ["email"]
         },
         {
           "entityName": "Identity",
@@ -197,14 +193,8 @@
   "roles": [
     {
       "name": "Admin",
-      "domains": [
-        "domain1.com",
-        "domain2.zyz"
-      ],
-      "emails": [
-        "person1@bbc.com",
-        "person2@keel.xyz"
-      ]
+      "domains": ["domain1.com", "domain2.zyz"],
+      "emails": ["person1@bbc.com", "person2@keel.xyz"]
     },
     {
       "name": "Other"

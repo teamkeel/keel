@@ -84,9 +84,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "issuer"
-          ]
+          "uniqueWith": ["issuer"]
         },
         {
           "entityName": "Identity",
@@ -123,9 +121,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "email"
-          ]
+          "uniqueWith": ["email"]
         },
         {
           "entityName": "Identity",
@@ -415,9 +411,7 @@
             "entityName": "Foo",
             "fieldName": "bar"
           },
-          "target": [
-            "bar"
-          ]
+          "target": ["bar"]
         }
       ]
     },
@@ -432,9 +426,7 @@
             "entityName": "Foo",
             "fieldName": "bar"
           },
-          "target": [
-            "bar"
-          ]
+          "target": ["bar"]
         },
         {
           "messageName": "OperationCInput",

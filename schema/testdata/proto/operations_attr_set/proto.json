@@ -113,9 +113,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "issuer"
-          ]
+          "uniqueWith": ["issuer"]
         },
         {
           "entityName": "Identity",
@@ -152,9 +150,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "email"
-          ]
+          "uniqueWith": ["email"]
         },
         {
           "entityName": "Identity",
@@ -388,9 +384,7 @@
             "entityName": "Foo",
             "fieldName": "f2"
           },
-          "target": [
-            "f2"
-          ]
+          "target": ["f2"]
         },
         {
           "messageName": "CreatePostInput",
@@ -400,9 +394,7 @@
             "entityName": "Foo",
             "fieldName": "f3"
           },
-          "target": [
-            "f3"
-          ]
+          "target": ["f3"]
         },
         {
           "messageName": "CreatePostInput",
@@ -412,9 +404,7 @@
             "entityName": "Foo",
             "fieldName": "someId"
           },
-          "target": [
-            "someId"
-          ]
+          "target": ["someId"]
         }
       ]
     },
@@ -429,9 +419,7 @@
             "entityName": "Foo",
             "fieldName": "id"
           },
-          "target": [
-            "id"
-          ]
+          "target": ["id"]
         }
       ]
     },
@@ -446,9 +434,7 @@
             "entityName": "Foo",
             "fieldName": "f2"
           },
-          "target": [
-            "f2"
-          ]
+          "target": ["f2"]
         }
       ]
     },
@@ -484,9 +470,7 @@
             "entityName": "Foo",
             "fieldName": "id"
           },
-          "target": [
-            "id"
-          ]
+          "target": ["id"]
         }
       ]
     },

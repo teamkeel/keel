@@ -84,9 +84,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "issuer"
-          ]
+          "uniqueWith": ["issuer"]
         },
         {
           "entityName": "Identity",
@@ -123,9 +121,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "email"
-          ]
+          "uniqueWith": ["email"]
         },
         {
           "entityName": "Identity",
@@ -362,9 +358,7 @@
             "entityName": "Foo",
             "fieldName": "id"
           },
-          "target": [
-            "id"
-          ]
+          "target": ["id"]
         }
       ]
     },
@@ -380,9 +374,7 @@
             "fieldName": "name"
           },
           "nullable": true,
-          "target": [
-            "name"
-          ]
+          "target": ["name"]
         }
       ]
     },
@@ -418,9 +410,7 @@
             "entityName": "Foo",
             "fieldName": "id"
           },
-          "target": [
-            "id"
-          ]
+          "target": ["id"]
         }
       ]
     },

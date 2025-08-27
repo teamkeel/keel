@@ -257,9 +257,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "issuer"
-          ]
+          "uniqueWith": ["issuer"]
         },
         {
           "entityName": "Identity",
@@ -296,9 +294,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "email"
-          ]
+          "uniqueWith": ["email"]
         },
         {
           "entityName": "Identity",
@@ -566,9 +562,7 @@
             "entityName": "Product",
             "fieldName": "sku"
           },
-          "target": [
-            "sku"
-          ]
+          "target": ["sku"]
         }
       ]
     },
@@ -595,9 +589,7 @@
             "entityName": "Product",
             "fieldName": "name"
           },
-          "target": [
-            "name"
-          ]
+          "target": ["name"]
         }
       ]
     },
@@ -612,9 +604,7 @@
             "entityName": "Product",
             "fieldName": "sku"
           },
-          "target": [
-            "sku"
-          ]
+          "target": ["sku"]
         }
       ]
     },

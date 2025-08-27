@@ -80,9 +80,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "issuer"
-          ]
+          "uniqueWith": ["issuer"]
         },
         {
           "entityName": "Identity",
@@ -119,9 +117,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "email"
-          ]
+          "uniqueWith": ["email"]
         },
         {
           "entityName": "Identity",
@@ -349,9 +345,7 @@
             "entityName": "Item",
             "fieldName": "price"
           },
-          "target": [
-            "price"
-          ]
+          "target": ["price"]
         },
         {
           "messageName": "CreateItemInput",
@@ -361,9 +355,7 @@
             "entityName": "Item",
             "fieldName": "units"
           },
-          "target": [
-            "units"
-          ]
+          "target": ["units"]
         }
       ]
     }

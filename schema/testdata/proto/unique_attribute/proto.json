@@ -9,9 +9,7 @@
           "type": {
             "type": "TYPE_STRING"
           },
-          "uniqueWith": [
-            "publisher"
-          ]
+          "uniqueWith": ["publisher"]
         },
         {
           "entityName": "Product",
@@ -20,9 +18,7 @@
             "type": "TYPE_ENTITY",
             "entityName": "Publisher"
           },
-          "uniqueWith": [
-            "name"
-          ],
+          "uniqueWith": ["name"],
           "foreignKeyFieldName": "publisherId"
         },
         {
@@ -117,9 +113,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "issuer"
-          ]
+          "uniqueWith": ["issuer"]
         },
         {
           "entityName": "Identity",
@@ -156,9 +150,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "email"
-          ]
+          "uniqueWith": ["email"]
         },
         {
           "entityName": "Identity",

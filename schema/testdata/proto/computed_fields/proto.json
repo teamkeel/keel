@@ -282,9 +282,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "issuer"
-          ]
+          "uniqueWith": ["issuer"]
         },
         {
           "entityName": "Identity",
@@ -321,9 +319,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "email"
-          ]
+          "uniqueWith": ["email"]
         },
         {
           "entityName": "Identity",
@@ -681,9 +677,7 @@
             "type": "TYPE_MESSAGE",
             "messageName": "DecimalQueryInput"
           },
-          "target": [
-            "price"
-          ]
+          "target": ["price"]
         },
         {
           "messageName": "ListItemsWhere",
@@ -692,9 +686,7 @@
             "type": "TYPE_MESSAGE",
             "messageName": "IntQueryInput"
           },
-          "target": [
-            "quantity"
-          ]
+          "target": ["quantity"]
         },
         {
           "messageName": "ListItemsWhere",
@@ -703,9 +695,7 @@
             "type": "TYPE_MESSAGE",
             "messageName": "DecimalQueryInput"
           },
-          "target": [
-            "total"
-          ]
+          "target": ["total"]
         }
       ]
     },

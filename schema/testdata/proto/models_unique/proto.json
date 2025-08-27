@@ -9,9 +9,7 @@
           "type": {
             "type": "TYPE_STRING"
           },
-          "uniqueWith": [
-            "lastName"
-          ]
+          "uniqueWith": ["lastName"]
         },
         {
           "entityName": "Person",
@@ -19,9 +17,7 @@
           "type": {
             "type": "TYPE_STRING"
           },
-          "uniqueWith": [
-            "firstName"
-          ]
+          "uniqueWith": ["firstName"]
         },
         {
           "entityName": "Person",
@@ -67,9 +63,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "issuer"
-          ]
+          "uniqueWith": ["issuer"]
         },
         {
           "entityName": "Identity",
@@ -106,9 +100,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "email"
-          ]
+          "uniqueWith": ["email"]
         },
         {
           "entityName": "Identity",

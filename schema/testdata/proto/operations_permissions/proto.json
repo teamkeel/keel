@@ -53,9 +53,7 @@
             {
               "entityName": "Foo",
               "actionName": "opA",
-              "roleNames": [
-                "Admin"
-              ],
+              "roleNames": ["Admin"],
               "expression": {
                 "source": "foo.f1 == true"
               }
@@ -63,9 +61,7 @@
             {
               "entityName": "Foo",
               "actionName": "opA",
-              "roleNames": [
-                "Restricted"
-              ]
+              "roleNames": ["Restricted"]
             }
           ],
           "inputMessageName": "OpAInput"
@@ -82,9 +78,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "issuer"
-          ]
+          "uniqueWith": ["issuer"]
         },
         {
           "entityName": "Identity",
@@ -121,9 +115,7 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": [
-            "email"
-          ]
+          "uniqueWith": ["email"]
         },
         {
           "entityName": "Identity",
@@ -269,15 +261,11 @@
   "roles": [
     {
       "name": "Admin",
-      "domains": [
-        "myorg.com"
-      ]
+      "domains": ["myorg.com"]
     },
     {
       "name": "Restricted",
-      "emails": [
-        "superuser@myorg.com"
-      ]
+      "emails": ["superuser@myorg.com"]
     }
   ],
   "apis": [
