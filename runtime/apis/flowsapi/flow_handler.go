@@ -161,12 +161,7 @@ func FlowHandler(s *proto.Schema) common.HandlerFunc {
 				return httpjson.NewErrorResponse(ctx, common.NewInputMalformedError("error parsing POST body"), nil)
 			}
 
-			data, ok := inputs.(map[string]any)
-			if !ok {
-				return httpjson.NewErrorResponse(ctx, common.NewInputMalformedError("data not correctly formatted"), nil)
-			}
-
-			response, err := flows.Callback(ctx, pathParts[1], pathParts[2], data, r.URL.Query().Get("element"), r.URL.Query().Get("callback"))
+			response, err := flows.Callback(ctx, pathParts[1], pathParts[2], inputs, r.URL.Query().Get("element"), r.URL.Query().Get("callback"))
 			if err != nil {
 				return httpjson.NewErrorResponse(ctx, err, nil)
 			}

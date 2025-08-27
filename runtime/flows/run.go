@@ -296,7 +296,7 @@ func UpdateStep(ctx context.Context, runID string, stepID string, data map[strin
 
 // Callback invokes a callback function defined on a UI element for a flow's UI step.
 // The step must be pending user data.
-func Callback(ctx context.Context, runID string, stepID string, data map[string]any, element, callback string) (response any, err error) {
+func Callback(ctx context.Context, runID string, stepID string, data any, element, callback string) (response any, err error) {
 	ctx, span := tracer.Start(ctx, "Callback")
 	defer span.End()
 
