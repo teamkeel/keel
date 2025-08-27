@@ -150,6 +150,12 @@ declare class FlowExecutor<Input = {}> {
     values: Record<string, any>,
     action?: string
   ): Promise<FlowRun<Input>>;
+  callback(
+    id: string,
+    stepId: string,
+    element: string,
+    callbackName: string,
+    values: any): Promise<any>
   untilAwaitingInput(id: string, timeout?: number): Promise<FlowRun<Input>>;
   untilFinished(id: string, timeout?: number): Promise<FlowRun<Input>>;
 }

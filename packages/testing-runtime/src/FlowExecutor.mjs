@@ -97,6 +97,16 @@ export class FlowExecutor {
     }).then(handleResponse);
   }
 
+  async callback(id, stepId, element, callbackName, values)  {
+    let url = this._flowUrl + "/" + id + "/" + stepId + "/callback?element=" + element + "&callback=" + callbackName;
+    
+    return await fetch(url, {
+      method: "POST",
+      body: JSON.stringify(values),
+      headers: this.headers(),
+    }).then(handleResponse);
+  }
+
   async untilFinished(id, timeout = 5000) {
     const startTime = Date.now();
 
