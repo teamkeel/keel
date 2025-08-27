@@ -37,6 +37,14 @@ test("flows - callback flow", async () => {
               name: "numberInput",
               optional: false,
             },
+            {
+              __type: "ui.input.boolean",
+              disabled: false,
+              label: "True?",
+              mode: "checkbox",
+              name: "boolInput",
+              optional: false,
+            },
           ],
           hasValidationErrors: false,
         },
@@ -48,21 +56,47 @@ test("flows - callback flow", async () => {
       title: "Callback flow",
     },
   });
-  const callbackResponse = await flows.callbackFlow.callback(
+
+  let callbackResponse = await flows.callbackFlow.callback(
     flow.id,
     flow.steps[0].id,
     "numberInput",
     "onLeave",
-    {
-      number: 12
-    }
-  )
+    12
+  );
+  expect(callbackResponse).toEqual(24);
 
-  expect(callbackResponse).toEqual({
-    input: null,
-    result: 24
-  })
-})
+  callbackResponse = await flows.callbackFlow.callback(
+    flow.id,
+    flow.steps[0].id,
+    "numberInput",
+    "onLeave",
+    50
+  );
+  expect(callbackResponse).toEqual(100);
+
+  callbackResponse = await flows.callbackFlow.callback(
+    flow.id,
+    flow.steps[0].id,
+    "boolInput",
+    "onLeave",
+    false
+  );
+  expect(callbackResponse).toEqual(true);
+
+  await expect(
+    flows.callbackFlow.callback(
+      flow.id,
+      flow.steps[0].id,
+      "wrong",
+      "onLeave",
+      false
+    )
+  ).toHaveError({
+    code: "ERR_UNKNOWN",
+    message: "Element with name wrong not found",
+  });
+});
 
 test("flows - iterator element", async () => {
   let flow = await flows.iterator.start({});

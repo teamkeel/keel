@@ -155,7 +155,8 @@ declare class FlowExecutor<Input = {}> {
     stepId: string,
     element: string,
     callbackName: string,
-    values: any): Promise<any>
+    values: any
+  ): Promise<any>;
   untilAwaitingInput(id: string, timeout?: number): Promise<FlowRun<Input>>;
   untilFinished(id: string, timeout?: number): Promise<FlowRun<Input>>;
 }

@@ -5,19 +5,23 @@ const config = {
 } as const satisfies FlowConfig;
 
 export default CallbackFlow(config, async (ctx) => {
-  const { numberInput } = await ctx.ui.page("my page", {
+  const { numberInput, boolInput } = await ctx.ui.page("my page", {
     content: [
-         ctx.ui.inputs.number("numberInput", {
-                    label: "How many numbers?",
-                    defaultValue: 1,
-                    onLeave: (callbackInput) => {
-                        return {
-                            result: callbackInput.number * 2,
-                        }
-                    }
-                }),
-    ]
+      ctx.ui.inputs.number("numberInput", {
+        label: "How many numbers?",
+        defaultValue: 1,
+        onLeave: (callbackInput: number) => {
+          return callbackInput * 2;
+        },
+      }),
+      ctx.ui.inputs.boolean("boolInput", {
+        label: "True?",
+        onLeave: (callbackInput: boolean) => {
+          return !callbackInput;
+        },
+      }),
+    ],
   });
 
-  return numberInput;
+  return { numberInput, boolInput };
 });

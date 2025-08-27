@@ -97,9 +97,18 @@ export class FlowExecutor {
     }).then(handleResponse);
   }
 
-  async callback(id, stepId, element, callbackName, values)  {
-    let url = this._flowUrl + "/" + id + "/" + stepId + "/callback?element=" + element + "&callback=" + callbackName;
-    
+  async callback(id, stepId, element, callbackName, values) {
+    let url =
+      this._flowUrl +
+      "/" +
+      id +
+      "/" +
+      stepId +
+      "/callback?element=" +
+      element +
+      "&callback=" +
+      callbackName;
+
     return await fetch(url, {
       method: "POST",
       body: JSON.stringify(values),
@@ -176,7 +185,9 @@ function handleResponse(r) {
 
   return r.text().then((t) => {
     const response = JSON.parse(t, reviver);
-    response.input = parseOutputs(response.input);
+    if (response && response.input) {
+      response.input = parseOutputs(response.input);
+    }
 
     return response;
   });
