@@ -128,7 +128,7 @@
       },
       {
         "fieldLocation": { "path": "$.results[*].orderLines" },
-        "fieldType": "TYPE_MODEL",
+        "fieldType": "TYPE_ENTITY",
         "repeated": true,
         "displayName": "Order lines",
         "displayOrder": 3,

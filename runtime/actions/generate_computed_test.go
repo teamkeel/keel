@@ -271,7 +271,7 @@ var computedTestCases = []computedTestCase{
 	{
 		name:        "concating strings",
 		keelSchema:  testSchema,
-		field:       "name Text @computed(\"Product: \" + item.product.name)",
+		field:       "productName Text @computed(\"Product: \" + item.product.name)",
 		expectedSql: `'Product: ' || (SELECT "product"."name" FROM "product" WHERE "product"."id" IS NOT DISTINCT FROM r."product_id")`,
 	},
 	{
@@ -287,7 +287,7 @@ var computedTestCases = []computedTestCase{
 		expectedSql: `r."order_status" IS NOT DISTINCT FROM 'Delivered'`,
 	},
 	{
-		name: "tasks",
+		name: "computed on task using model fields",
 		keelSchema: `
 			task DispatchInvoice {
 				fields {
@@ -313,7 +313,25 @@ var computedTestCases = []computedTestCase{
 				}
 			}`,
 		field:       "total Decimal @computed(SUM(dispatchInvoice.invoice.item.product.price))",
-		expectedSql: `(SELECT COALESCE(SUM("item$product"."price"), 0) FROM "item" LEFT JOIN "product" AS "item$product" ON "item$product"."id" = "item"."product_id" WHERE "item"."invoice_id" IS NOT DISTINCT FROM r."id")`,
+		expectedSql: `(SELECT COALESCE(SUM("invoice$item$product"."price"), 0) FROM "invoice" LEFT JOIN "item" AS "invoice$item" ON "invoice$item"."invoice_id" = "invoice"."id" LEFT JOIN "product" AS "invoice$item$product" ON "invoice$item$product"."id" = "invoice$item"."product_id" WHERE "invoice"."invoice_id" IS NOT DISTINCT FROM r."id")`,
+	},
+	{
+		name: "computed on model using task fields",
+		keelSchema: `
+			task DispatchInvoice {
+				fields {
+					invoice Invoice
+					isComplete Boolean
+				}
+			}
+			model Invoice {
+				fields {
+					dispatchInvoice DispatchInvoice[]
+					#placeholder#
+				}
+			}`,
+		field:       "dispatches Number @computed(COUNTIF(invoice.dispatchInvoice.invoice, invoice.dispatchInvoice.isComplete))",
+		expectedSql: `(SELECT COALESCE(COUNT("dispatch_invoice"."invoice_id"), 0) FROM "dispatch_invoice" WHERE "dispatch_invoice"."invoice_id" IS NOT DISTINCT FROM r."id" AND "dispatch_invoice"."is_complete" IS NOT DISTINCT FROM true)`,
 	},
 }
 

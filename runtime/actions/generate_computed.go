@@ -235,12 +235,18 @@ func (v *computedQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
 			case 1: //the first arg sets the SELECT
 				query := NewQuery(entity, EmbedLiterals())
 
-				relatedEntityField := entity.FindField(normalised[1])
-				foreignKeyField := v.schema.GetForeignKeyFieldName(relatedEntityField)
+				relatedEntityField := v.entity.FindField(normalised[1])
+				if relatedEntityField == nil {
+					return fmt.Errorf("field %s not found on %s", normalised[1], v.entity.GetName())
+				}
 
-				r := v.entity.FindField(normalised[1])
+				foreignKeyField := v.schema.GetForeignKeyFieldName(relatedEntityField)
+				if foreignKeyField == "" {
+					return fmt.Errorf("foreign key field not found for %s", normalised[1])
+				}
+
 				subFragments := normalised[1:]
-				subFragments[0] = strcase.ToLowerCamel(r.GetType().GetEntityName().GetValue())
+				subFragments[0] = strcase.ToLowerCamel(relatedEntityField.GetType().GetEntityName().GetValue())
 
 				err := query.AddJoinFromFragments(v.schema, subFragments)
 				if err != nil {
