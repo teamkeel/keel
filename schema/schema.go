@@ -310,7 +310,6 @@ func (scm *Builder) insertBuiltInFields(declarations *parser.AST) {
 				taskFieldSection.Fields = append(taskFieldSection.Fields, fields...)
 			}
 		}
-
 	}
 }
 

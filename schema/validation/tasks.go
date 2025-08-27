@@ -20,7 +20,6 @@ func TasksValidation(_ []*parser.AST, errs *errorhandling.ValidationErrors) Visi
 			if n.Label == nil {
 				return
 			}
-
 		},
 		EnterEnum: func(n *parser.EnumNode) {
 

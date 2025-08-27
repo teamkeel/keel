@@ -275,7 +275,7 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 			continue
 		}
 
-		if messageAssociating(scope, message, model) && len(currentTarget) > 1 {
+		if messageAssociating(message, model) && len(currentTarget) > 1 {
 			// We know this needs to be a FK on the referencing row.
 			fieldName := fmt.Sprintf("%sId", input.GetTarget()[len(input.GetTarget())-2])
 
@@ -358,12 +358,12 @@ func targetAssociating(scope *Scope, target []string) bool {
 		}
 	}
 
-	return messageAssociating(scope, message, model)
+	return messageAssociating(message, model)
 }
 
 // If this (nested) message going to be used to establish a related association, or
 // are we creating the related data?
-func messageAssociating(scope *Scope, message *proto.Message, model *proto.Model) bool {
+func messageAssociating(message *proto.Message, model *proto.Model) bool {
 	for _, input := range message.GetFields() {
 		// Skip named/non-model inputs
 		if input.Target == nil {

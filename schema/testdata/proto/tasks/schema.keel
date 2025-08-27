@@ -10,6 +10,7 @@ task NewOrder {
         dueDate Date?
     }
     @unique([orderCode, customerCode])
+    @permission(expression: ctx.isAuthenticated)
 }
 
 model Order {

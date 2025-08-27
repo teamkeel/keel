@@ -103,7 +103,7 @@ CREATE TRIGGER product_update AFTER UPDATE ON "product" REFERENCING NEW TABLE AS
 CREATE TRIGGER product_delete AFTER DELETE ON "product" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
 CREATE TRIGGER product_updated_at BEFORE UPDATE ON "product" FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
 CREATE FUNCTION "invoice__total__d6ea5ced__comp"(r "invoice") RETURNS NUMERIC AS $$ BEGIN
-	RETURN (SELECT COALESCE(SUM("item"."total"), 0) FROM "item" LEFT JOIN "product" AS "item$product" ON "item$product"."id" = "item"."product_id" WHERE NULL IS NOT DISTINCT FROM r."id" AND NOT "item"."is_deleted" IS NOT DISTINCT FROM true AND NOT "item$product"."is_deleted" IS NOT DISTINCT FROM true);
+	RETURN (SELECT COALESCE(SUM("item"."total"), 0) FROM "item" LEFT JOIN "product" AS "item$product" ON "item$product"."id" = "item"."product_id" WHERE "item"."invoice_id" IS NOT DISTINCT FROM r."id" AND NOT "item"."is_deleted" IS NOT DISTINCT FROM true AND NOT "item$product"."is_deleted" IS NOT DISTINCT FROM true);
 END; $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION "invoice__exec_comp_fns"() RETURNS TRIGGER AS $$ BEGIN
 	NEW."total" := invoice__total__d6ea5ced__comp(NEW);

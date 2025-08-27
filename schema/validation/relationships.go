@@ -270,11 +270,9 @@ func RelationshipsRules(asts []*parser.AST, errs *errorhandling.ValidationErrors
 			}
 		},
 	}
-
 }
 
 // Removed top-level enterEntity and leaveEntity; logic now lives inside RelationshipsRules
-
 func makeRelationshipError(message string, hint string, node node.ParserNode) *errorhandling.ValidationError {
 	return errorhandling.NewValidationErrorWithDetails(
 		errorhandling.RelationshipError,

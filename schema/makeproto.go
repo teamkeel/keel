@@ -1475,7 +1475,7 @@ func (scm *Builder) makeTask(decl *parser.DeclarationNode) {
 			protoTask.Fields = append(protoTask.Fields, fields...)
 
 		case section.Attribute != nil:
-			scm.applyTaskAttribute(decl.Task, protoTask, section.Attribute)
+			scm.applyTaskAttribute(protoTask, section.Attribute)
 		default:
 			// this is possible if the user defines an empty block in the schema e.g. "fields {}"
 			// this isn't really an error so we can just ignore these sections
@@ -2088,7 +2088,7 @@ func (scm *Builder) applyModelAttribute(parserModel *parser.ModelNode, protoMode
 	}
 }
 
-func (scm *Builder) applyTaskAttribute(parserTask *parser.TaskNode, protoTask *proto.Task, attribute *parser.AttributeNode) {
+func (scm *Builder) applyTaskAttribute(protoTask *proto.Task, attribute *parser.AttributeNode) {
 	switch attribute.Name.Value {
 	case parser.AttributePermission:
 		perm := scm.permissionAttributeToProtoPermission(attribute)

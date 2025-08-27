@@ -441,6 +441,14 @@
             "useZeroValue": true
           }
         }
+      ],
+      "permissions": [
+        {
+          "entityName": "NewOrder",
+          "expression": {
+            "source": "ctx.isAuthenticated"
+          }
+        }
       ]
     }
   ]

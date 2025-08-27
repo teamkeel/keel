@@ -41,7 +41,6 @@ func (m *ModelNode) Field(name string) *FieldNode {
 }
 
 func (m *ModelNode) GetAttributes() (res []*AttributeNode) {
-
 	for _, section := range m.Sections {
 		if section.Attribute != nil {
 			res = append(res, section.Attribute)
@@ -86,7 +85,6 @@ func (t *TaskNode) Fields() (res []*FieldNode) {
 }
 
 func (t *TaskNode) GetAttributes() (res []*AttributeNode) {
-
 	for _, section := range t.Sections {
 		if section.Attribute != nil {
 			res = append(res, section.Attribute)

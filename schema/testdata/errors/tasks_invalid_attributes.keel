@@ -1,0 +1,7 @@
+task MyTask {
+    fields {
+        name Text
+    }
+    //expect-error:5:8:E011:task 'MyTask' has an unrecognised attribute @on
+    @on([create], doSomething)
+}
