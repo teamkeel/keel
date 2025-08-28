@@ -1,0 +1,39 @@
+
+task Person {
+    fields {
+        name Text
+        favouriteThing Thing[] // There is no field for a hasMany in the db,
+                                // so we won't see anything be deleted.
+    }
+}
+
+task Thing {
+    fields {
+        description Text
+        myFriend Person
+    }
+}
+
+===
+
+task Person {
+    fields {
+        name Text
+    }
+}
+
+task Thing {
+    fields {
+        description Text
+        myFriend Person
+    }
+}
+
+
+===
+
+=== 
+
+[]
+
+

@@ -4,40 +4,40 @@
       "name": "User",
       "fields": [
         {
-          "modelName": "User",
+          "entityName": "User",
           "name": "identity",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Identity"
+            "type": "TYPE_ENTITY",
+            "entityName": "Identity"
           },
           "unique": true,
           "foreignKeyFieldName": "identityId",
           "inverseFieldName": "user"
         },
         {
-          "modelName": "User",
+          "entityName": "User",
           "name": "identityId",
           "type": {
             "type": "TYPE_ID"
           },
           "unique": true,
           "foreignKeyInfo": {
-            "relatedModelName": "Identity",
-            "relatedModelField": "id"
+            "relatedEntityName": "Identity",
+            "relatedEntityField": "id"
           }
         },
         {
-          "modelName": "User",
+          "entityName": "User",
           "name": "student",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Student"
+            "type": "TYPE_ENTITY",
+            "entityName": "Student"
           },
           "optional": true,
           "inverseFieldName": "user"
         },
         {
-          "modelName": "User",
+          "entityName": "User",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -49,7 +49,7 @@
           }
         },
         {
-          "modelName": "User",
+          "entityName": "User",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -59,7 +59,7 @@
           }
         },
         {
-          "modelName": "User",
+          "entityName": "User",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -74,30 +74,30 @@
       "name": "Student",
       "fields": [
         {
-          "modelName": "Student",
+          "entityName": "Student",
           "name": "user",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "User"
+            "type": "TYPE_ENTITY",
+            "entityName": "User"
           },
           "unique": true,
           "foreignKeyFieldName": "userId",
           "inverseFieldName": "student"
         },
         {
-          "modelName": "Student",
+          "entityName": "Student",
           "name": "userId",
           "type": {
             "type": "TYPE_ID"
           },
           "unique": true,
           "foreignKeyInfo": {
-            "relatedModelName": "User",
-            "relatedModelField": "id"
+            "relatedEntityName": "User",
+            "relatedEntityField": "id"
           }
         },
         {
-          "modelName": "Student",
+          "entityName": "Student",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -109,7 +109,7 @@
           }
         },
         {
-          "modelName": "Student",
+          "entityName": "Student",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -119,7 +119,7 @@
           }
         },
         {
-          "modelName": "Student",
+          "entityName": "Student",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -134,7 +134,7 @@
       "name": "Identity",
       "fields": [
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "email",
           "type": {
             "type": "TYPE_STRING"
@@ -143,7 +143,7 @@
           "uniqueWith": ["issuer"]
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "emailVerified",
           "type": {
             "type": "TYPE_BOOL"
@@ -155,7 +155,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "password",
           "type": {
             "type": "TYPE_PASSWORD"
@@ -163,7 +163,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "externalId",
           "type": {
             "type": "TYPE_STRING"
@@ -171,7 +171,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "issuer",
           "type": {
             "type": "TYPE_STRING"
@@ -180,7 +180,7 @@
           "uniqueWith": ["email"]
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "name",
           "type": {
             "type": "TYPE_STRING"
@@ -188,7 +188,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "givenName",
           "type": {
             "type": "TYPE_STRING"
@@ -196,7 +196,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "familyName",
           "type": {
             "type": "TYPE_STRING"
@@ -204,7 +204,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "middleName",
           "type": {
             "type": "TYPE_STRING"
@@ -212,7 +212,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "nickName",
           "type": {
             "type": "TYPE_STRING"
@@ -220,7 +220,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "profile",
           "type": {
             "type": "TYPE_STRING"
@@ -228,7 +228,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "picture",
           "type": {
             "type": "TYPE_STRING"
@@ -236,7 +236,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "website",
           "type": {
             "type": "TYPE_STRING"
@@ -244,7 +244,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "gender",
           "type": {
             "type": "TYPE_STRING"
@@ -252,7 +252,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "zoneInfo",
           "type": {
             "type": "TYPE_STRING"
@@ -260,7 +260,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "locale",
           "type": {
             "type": "TYPE_STRING"
@@ -268,7 +268,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -280,7 +280,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -290,7 +290,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -300,11 +300,11 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "user",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "User"
+            "type": "TYPE_ENTITY",
+            "entityName": "User"
           },
           "optional": true,
           "inverseFieldName": "identity"

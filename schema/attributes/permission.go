@@ -49,7 +49,7 @@ func defaultPermission(schema []*parser.AST) (*expressions.Parser, error) {
 	return parser, nil
 }
 
-func ValidatePermissionExpression(schema []*parser.AST, model *parser.ModelNode, action *parser.ActionNode, job *parser.JobNode, expression *parser.Expression) ([]*errorhandling.ValidationError, error) {
+func ValidatePermissionExpression(schema []*parser.AST, entity parser.Entity, action *parser.ActionNode, job *parser.JobNode, expression *parser.Expression) ([]*errorhandling.ValidationError, error) {
 	parser, err := defaultPermission(schema)
 	if err != nil {
 		return nil, err
@@ -71,10 +71,10 @@ func ValidatePermissionExpression(schema []*parser.AST, model *parser.ModelNode,
 		}
 	}
 
-	if model != nil {
+	if entity != nil {
 		for _, operand := range operands {
-			if operand.Fragments[0] == strcase.ToLowerCamel(model.Name.Value) {
-				opts = append(opts, options.WithVariable(strcase.ToLowerCamel(model.Name.Value), model.Name.Value, false))
+			if operand.Fragments[0] == strcase.ToLowerCamel(entity.GetName()) {
+				opts = append(opts, options.WithVariable(strcase.ToLowerCamel(entity.GetName()), entity.GetName(), false))
 				break
 			}
 		}

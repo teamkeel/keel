@@ -204,7 +204,7 @@ func fragmentsUnique(asts []*parser.AST, model *parser.ModelNode, fragments []st
 
 	hasUniqueLookup := true
 	for i, fragment := range fragments {
-		field := query.ModelField(model, fragment)
+		field := model.Field(fragment)
 		if field == nil {
 			// Input field does not exist on the model
 			return false, nil

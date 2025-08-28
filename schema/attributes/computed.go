@@ -44,14 +44,14 @@ func defaultComputed(schema []*parser.AST) (*expressions.Parser, error) {
 	return parser, nil
 }
 
-func ValidateComputedExpression(schema []*parser.AST, model *parser.ModelNode, field *parser.FieldNode, expression *parser.Expression) ([]*errorhandling.ValidationError, error) {
+func ValidateComputedExpression(schema []*parser.AST, entity parser.Entity, field *parser.FieldNode, expression *parser.Expression) ([]*errorhandling.ValidationError, error) {
 	parser, err := defaultComputed(schema)
 	if err != nil {
 		return nil, err
 	}
 
 	opts := []expressions.Option{
-		options.WithVariable(strcase.ToLowerCamel(model.Name.Value), model.Name.Value, false),
+		options.WithVariable(strcase.ToLowerCamel(entity.GetName()), entity.GetName(), false),
 		options.WithReturnTypeAssertion(field.Type.Value, field.Repeated),
 	}
 

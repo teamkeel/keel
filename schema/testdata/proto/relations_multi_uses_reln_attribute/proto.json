@@ -4,48 +4,48 @@
       "name": "Account",
       "fields": [
         {
-          "modelName": "Account",
+          "entityName": "Account",
           "name": "favourite",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Post"
+            "type": "TYPE_ENTITY",
+            "entityName": "Post"
           },
           "foreignKeyFieldName": "favouriteId",
           "inverseFieldName": "favouritedBy"
         },
         {
-          "modelName": "Account",
+          "entityName": "Account",
           "name": "favouriteId",
           "type": {
             "type": "TYPE_ID"
           },
           "foreignKeyInfo": {
-            "relatedModelName": "Post",
-            "relatedModelField": "id"
+            "relatedEntityName": "Post",
+            "relatedEntityField": "id"
           }
         },
         {
-          "modelName": "Account",
+          "entityName": "Account",
           "name": "authoredPosts",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Post",
+            "type": "TYPE_ENTITY",
+            "entityName": "Post",
             "repeated": true
           },
           "inverseFieldName": "author"
         },
         {
-          "modelName": "Account",
+          "entityName": "Account",
           "name": "reviewedPosts",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Post",
+            "type": "TYPE_ENTITY",
+            "entityName": "Post",
             "repeated": true
           },
           "inverseFieldName": "reviewer"
         },
         {
-          "modelName": "Account",
+          "entityName": "Account",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -57,7 +57,7 @@
           }
         },
         {
-          "modelName": "Account",
+          "entityName": "Account",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -67,7 +67,7 @@
           }
         },
         {
-          "modelName": "Account",
+          "entityName": "Account",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -82,59 +82,59 @@
       "name": "Post",
       "fields": [
         {
-          "modelName": "Post",
+          "entityName": "Post",
           "name": "reviewer",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Account"
+            "type": "TYPE_ENTITY",
+            "entityName": "Account"
           },
           "foreignKeyFieldName": "reviewerId",
           "inverseFieldName": "reviewedPosts"
         },
         {
-          "modelName": "Post",
+          "entityName": "Post",
           "name": "reviewerId",
           "type": {
             "type": "TYPE_ID"
           },
           "foreignKeyInfo": {
-            "relatedModelName": "Account",
-            "relatedModelField": "id"
+            "relatedEntityName": "Account",
+            "relatedEntityField": "id"
           }
         },
         {
-          "modelName": "Post",
+          "entityName": "Post",
           "name": "favouritedBy",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Account",
+            "type": "TYPE_ENTITY",
+            "entityName": "Account",
             "repeated": true
           },
           "inverseFieldName": "favourite"
         },
         {
-          "modelName": "Post",
+          "entityName": "Post",
           "name": "author",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Account"
+            "type": "TYPE_ENTITY",
+            "entityName": "Account"
           },
           "foreignKeyFieldName": "authorId",
           "inverseFieldName": "authoredPosts"
         },
         {
-          "modelName": "Post",
+          "entityName": "Post",
           "name": "authorId",
           "type": {
             "type": "TYPE_ID"
           },
           "foreignKeyInfo": {
-            "relatedModelName": "Account",
-            "relatedModelField": "id"
+            "relatedEntityName": "Account",
+            "relatedEntityField": "id"
           }
         },
         {
-          "modelName": "Post",
+          "entityName": "Post",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -146,7 +146,7 @@
           }
         },
         {
-          "modelName": "Post",
+          "entityName": "Post",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -156,7 +156,7 @@
           }
         },
         {
-          "modelName": "Post",
+          "entityName": "Post",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -171,7 +171,7 @@
       "name": "Identity",
       "fields": [
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "email",
           "type": {
             "type": "TYPE_STRING"
@@ -180,7 +180,7 @@
           "uniqueWith": ["issuer"]
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "emailVerified",
           "type": {
             "type": "TYPE_BOOL"
@@ -192,7 +192,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "password",
           "type": {
             "type": "TYPE_PASSWORD"
@@ -200,7 +200,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "externalId",
           "type": {
             "type": "TYPE_STRING"
@@ -208,7 +208,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "issuer",
           "type": {
             "type": "TYPE_STRING"
@@ -217,7 +217,7 @@
           "uniqueWith": ["email"]
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "name",
           "type": {
             "type": "TYPE_STRING"
@@ -225,7 +225,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "givenName",
           "type": {
             "type": "TYPE_STRING"
@@ -233,7 +233,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "familyName",
           "type": {
             "type": "TYPE_STRING"
@@ -241,7 +241,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "middleName",
           "type": {
             "type": "TYPE_STRING"
@@ -249,7 +249,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "nickName",
           "type": {
             "type": "TYPE_STRING"
@@ -257,7 +257,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "profile",
           "type": {
             "type": "TYPE_STRING"
@@ -265,7 +265,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "picture",
           "type": {
             "type": "TYPE_STRING"
@@ -273,7 +273,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "website",
           "type": {
             "type": "TYPE_STRING"
@@ -281,7 +281,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "gender",
           "type": {
             "type": "TYPE_STRING"
@@ -289,7 +289,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "zoneInfo",
           "type": {
             "type": "TYPE_STRING"
@@ -297,7 +297,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "locale",
           "type": {
             "type": "TYPE_STRING"
@@ -305,7 +305,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -317,7 +317,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -327,7 +327,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"

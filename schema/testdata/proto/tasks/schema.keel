@@ -2,14 +2,20 @@ task NewOrder {
     fields {
         ticketNo Text @sequence("S")
         order Order
+        orderCode Text @computed(newOrder.order.orderCode)
         customerName Text
+        customerCode Text @unique
         deliveryAddress Text
+        notes Text @default("none")
         dueDate Date?
     }
+    @unique([orderCode, customerCode])
+    @permission(expression: ctx.isAuthenticated)
 }
 
 model Order {
     fields {
         isExpedited Boolean
+        orderCode Text
     }
 }

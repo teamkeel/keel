@@ -5,6 +5,13 @@ model Post {
     }
 }
 
+task Task {
+    fields {
+        //expect-error:32:41:AttributeExpressionError:unknown identifier 'Gibberish'
+        type PostType @default(Gibberish)
+    }
+}
+
 enum PostType {
     Draft
     Published

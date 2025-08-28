@@ -22,6 +22,23 @@ func ApiModels(s *Schema, api *Api) []*Model {
 	})
 }
 
+// Entities provides a (sorted) list of all the entities (models and tasks) used in the given schema.
+func (s *Schema) Entities() []Entity {
+	entities := []Entity{}
+	for _, model := range s.GetModels() {
+		entities = append(entities, model)
+	}
+	for _, task := range s.GetTasks() {
+		entities = append(entities, task)
+	}
+
+	sort.Slice(entities, func(i, j int) bool {
+		return entities[i].GetName() < entities[j].GetName()
+	})
+
+	return entities
+}
+
 // ModelNames provides a (sorted) list of all the Model names used in the
 // given schema.
 //
@@ -50,7 +67,7 @@ func FieldNames(m *Model) []string {
 //
 // Deprecated: Please use Field.IsTypeModel() instead.
 func IsTypeModel(field *Field) bool {
-	return field.GetType().GetType() == Type_TYPE_MODEL
+	return field.GetType().GetType() == Type_TYPE_ENTITY
 }
 
 // IsTypeRepeated returns true if the field is specified as
@@ -98,17 +115,17 @@ func ForeignKeyFields(model *Model) []*Field {
 
 // Deprecated: please use Field.IsHasMany() instead.
 func IsHasMany(field *Field) bool {
-	return field.GetType().GetType() == Type_TYPE_MODEL && field.GetForeignKeyFieldName() == nil && field.GetType().GetRepeated()
+	return field.GetType().GetType() == Type_TYPE_ENTITY && field.GetForeignKeyFieldName() == nil && field.GetType().GetRepeated()
 }
 
 // Deprecated: please use Field.IsHasOne() instead.
 func IsHasOne(field *Field) bool {
-	return field.GetType().GetType() == Type_TYPE_MODEL && field.GetForeignKeyFieldName() == nil && !field.GetType().GetRepeated()
+	return field.GetType().GetType() == Type_TYPE_ENTITY && field.GetForeignKeyFieldName() == nil && !field.GetType().GetRepeated()
 }
 
 // Deprecated: please use Field.IsBelongsTo() instead.
 func IsBelongsTo(field *Field) bool {
-	return field.GetType().GetType() == Type_TYPE_MODEL && field.GetForeignKeyFieldName() != nil && !field.GetType().GetRepeated()
+	return field.GetType().GetType() == Type_TYPE_ENTITY && field.GetForeignKeyFieldName() != nil && !field.GetType().GetRepeated()
 }
 
 // GetForeignKeyFieldName returns the foreign key field name for the given field if it
@@ -118,9 +135,9 @@ func IsBelongsTo(field *Field) bool {
 // it is related to, so this function would normally be used in conjunction with
 // IsBelongsTo or it's counterparts to determine on which side the foreign
 // key lives.
-func GetForeignKeyFieldName(models []*Model, field *Field) string {
+func (s *Schema) GetForeignKeyFieldName(field *Field) string {
 	// The query is not meaningful if the field is not of type Model.
-	if field.GetType().GetType() != Type_TYPE_MODEL {
+	if field.GetType().GetType() != Type_TYPE_ENTITY {
 		return ""
 	}
 
@@ -136,19 +153,19 @@ func GetForeignKeyFieldName(models []*Model, field *Field) string {
 	// that field in the related model, and that related model field will in turn,
 	// know the name of its sibling foreign key field name.
 	if field.GetInverseFieldName() != nil {
-		relatedModelName := field.GetType().GetModelName().GetValue()
-		inverseField := FindField(models, relatedModelName, field.GetInverseFieldName().GetValue())
+		relatedEntity := s.FindEntity(field.GetType().GetEntityName().GetValue())
+		inverseField := relatedEntity.FindField(field.GetInverseFieldName().GetValue())
 		fkName := inverseField.GetForeignKeyFieldName().GetValue()
 		return fkName
 	}
 
-	// If we get this far, we must search for fields in the related thisModel to infer the answer.
+	// If we get this far, we must search for fields in the related thisEntity to infer the answer.
 	// NB. Schema validation guarantees that there will never be more than one
 	// candidate in the latter case.
-	thisModel := FindModel(models, field.GetModelName())
-	relatedModel := FindModel(models, field.GetType().GetModelName().GetValue())
-	relatedField, _ := lo.Find(relatedModel.GetFields(), func(field *Field) bool {
-		return field.GetType().GetType() == Type_TYPE_MODEL && field.GetType().GetModelName().GetValue() == thisModel.GetName()
+	thisEntity := s.FindEntity(field.GetEntityName())
+	relatedEntity := s.FindEntity(field.GetType().GetEntityName().GetValue())
+	relatedField, _ := lo.Find(relatedEntity.GetFields(), func(field *Field) bool {
+		return field.GetType().GetType() == Type_TYPE_ENTITY && field.GetType().GetEntityName().GetValue() == thisEntity.GetName()
 	})
 	return relatedField.GetForeignKeyFieldName().GetValue()
 }
@@ -247,32 +264,6 @@ func FindModels(allModels []*Model, namesToFind []string) (foundModels []*Model)
 		}
 	}
 	return foundModels
-}
-
-func FindField(models []*Model, modelName string, fieldName string) *Field {
-	model := FindModel(models, modelName)
-	for _, field := range model.GetFields() {
-		if field.GetName() == fieldName {
-			return field
-		}
-	}
-	return nil
-}
-
-// ModelHasField returns true IF the schema contains a model of the given name AND
-// that model has a field of the given name.
-func ModelHasField(schema *Schema, model string, field string) bool {
-	for _, m := range schema.GetModels() {
-		if m.GetName() != model {
-			continue
-		}
-		for _, f := range m.GetFields() {
-			if f.GetName() == field {
-				return true
-			}
-		}
-	}
-	return false
 }
 
 // EnumExists returns true if the given schema contains a

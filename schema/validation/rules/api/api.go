@@ -31,7 +31,11 @@ func UniqueAPINamesRule(asts []*parser.AST) (errs errorhandling.ValidationErrors
 }
 
 func NamesCorrespondToModels(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
-	modelNames := query.ModelNames(asts)
+	models := query.Models(asts)
+	modelNames := lo.Map(models, func(m *parser.ModelNode, _ int) string {
+		return m.Name.Value
+	})
+
 	for _, api := range query.APIs(asts) {
 		for _, section := range api.Sections {
 			for _, model := range section.Models {

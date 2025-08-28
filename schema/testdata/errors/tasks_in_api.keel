@@ -1,0 +1,12 @@
+task MyTask {
+    fields {
+        name Text
+    }
+}
+
+api Web {
+    models {
+        //expect-error:9:15:E047:api 'Web' has an unrecognised model MyTask
+        MyTask
+    }
+}

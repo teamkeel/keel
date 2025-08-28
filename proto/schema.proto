@@ -19,6 +19,7 @@ message Schema {
     repeated Event events = 10;
     repeated Route routes = 11;
     repeated Flow flows = 12;
+    repeated Task tasks = 13;
 }
 
 message Model {
@@ -33,16 +34,23 @@ message Model {
     repeated Action actions = 3;
 
     repeated PermissionRule permissions = 4;
+}
 
-    // Whether this model is created as a task.
-    bool is_task = 5;
+message Task {
+    // The name of the task. Must be in PascalCase and be unique within the schema.
+    string name = 1;
+
+    // The fields this task contains
+    repeated Field fields = 2;
+
+    repeated PermissionRule permissions = 3;
 }
 
 message Field {
-    // The name of the model this field belongs to.
-    string model_name = 1;
+    // The name of the model or task this field belongs to.
+    string entity_name = 1;
 
-    // The name of the field. Must be in lowerCamelCase and be unique within the model.
+    // The name of the field. Must be in lowerCamelCase and be unique within the model or task.
     string name = 2;
 
     // Info regarding the type of this field
@@ -64,8 +72,8 @@ message Field {
     // If true then this field will be set as the primary key for the parent model
     bool primary_key = 7;
 
-    // If this field is of type TYPE_MODEL then this field indicates which field on _this_
-    // model is the foriegn key. This field should always be populated on the many side of a
+    // If this field is of type TYPE_ENTITY then this field indicates which field on _this_
+    // entity is the foriegn key. This field should always be populated on the many side of a
     // one-to-many relationship and on the unique side of a one-to-one.
     google.protobuf.StringValue foreign_key_field_name = 10;
 
@@ -77,7 +85,7 @@ message Field {
     // and carries corresponding metadata.
     ForeignKeyInfo foreign_key_info = 11;
 
-    // If this field is of type MODEL and the related model has an inverse field
+    // If this field is of type ENTITY and the related entity has an inverse field
     // to this one, then this field is set to that field name.
     // For example if a Post model has a field called author which is of type Author,
     // and then Author has posts which is of type Post, on the Post.author field this
@@ -98,8 +106,8 @@ message Sequence {
 }
 
 message ForeignKeyInfo {
-    string related_model_name = 1;
-    string related_model_field = 2;
+    string related_entity_name = 1;
+    string related_entity_field = 2;
 }
 
 message DefaultValue {
@@ -176,8 +184,8 @@ message Role {
 }
 
 message PermissionRule {
-    // Name of the model this permission rule applies to
-    string model_name = 1;
+    // Name of the entity this permission rule applies to
+    string entity_name = 1;
 
     // Name of the specific action this permission rule applies to.
     // If this field is populated then `action_types` is ignored.
@@ -262,7 +270,7 @@ message MessageField {
     bool nullable = 6;
 
     // Only valid for implicit inputs on built-in actions (ACTION_IMPLEMENTATION_AUTO)
-    // This field can be set to a path, from the current model, to a field that should
+    // This field can be set to a path, from the current entity, to a field that should
     // be read from or written to automatically by the runtime.
     // As an example if the parent model had a field called `item` which was a relationship to
     // an `Item` model which itself had a field called `price`, and this input wanted to filter
@@ -278,15 +286,15 @@ message TypeInfo {
     // the enum that the type refers to.
     google.protobuf.StringValue enum_name = 2;
 
-    // If this field is set then this type is referring to another model.
-    // In the case of TYPE_MODEL this type _is_ the model named here.
+    // If this field is set then this type is referring to another entity.
+    // In the case of TYPE_ENTITY this type _is_ the entity named here.
     // In the case of other types e.g. TYPE_ID this type is referencing a field
-    // on the model named here, and the specific field being referenced is indicated
+    // on the entity named here, and the specific field being referenced is indicated
     // by `field_name`.
-    google.protobuf.StringValue model_name = 3;
+    google.protobuf.StringValue entity_name = 3;
 
-    // This field indicates which field on `model_name` this type is referencing.
-    // This field should only be set if `model_name` is set.
+    // This field indicates which field on `entity_name` this type is referencing.
+    // This field should only be set if `entity_name` is set.
     google.protobuf.StringValue field_name = 5;
 
     // Only valid within a Message
@@ -367,7 +375,7 @@ enum Type {
     TYPE_TIMESTAMP = 4;
     TYPE_DATE = 5;
     TYPE_ID = 6;
-    TYPE_MODEL = 7;
+    TYPE_ENTITY = 7;
     TYPE_CURRENCY = 8;
     TYPE_DATETIME = 9;
     TYPE_ENUM = 10;

@@ -4,14 +4,14 @@
       "name": "Product",
       "fields": [
         {
-          "modelName": "Product",
+          "entityName": "Product",
           "name": "name",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "modelName": "Product",
+          "entityName": "Product",
           "name": "sku",
           "type": {
             "type": "TYPE_STRING"
@@ -19,11 +19,11 @@
           "unique": true
         },
         {
-          "modelName": "Product",
+          "entityName": "Product",
           "name": "stock",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "ProductStock"
+            "type": "TYPE_ENTITY",
+            "entityName": "ProductStock"
           },
           "optional": true,
           "unique": true,
@@ -31,7 +31,7 @@
           "inverseFieldName": "product"
         },
         {
-          "modelName": "Product",
+          "entityName": "Product",
           "name": "stockId",
           "type": {
             "type": "TYPE_ID"
@@ -39,12 +39,12 @@
           "optional": true,
           "unique": true,
           "foreignKeyInfo": {
-            "relatedModelName": "ProductStock",
-            "relatedModelField": "id"
+            "relatedEntityName": "ProductStock",
+            "relatedEntityField": "id"
           }
         },
         {
-          "modelName": "Product",
+          "entityName": "Product",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -56,7 +56,7 @@
           }
         },
         {
-          "modelName": "Product",
+          "entityName": "Product",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -66,7 +66,7 @@
           }
         },
         {
-          "modelName": "Product",
+          "entityName": "Product",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -157,7 +157,7 @@
       "name": "ProductStock",
       "fields": [
         {
-          "modelName": "ProductStock",
+          "entityName": "ProductStock",
           "name": "barcode",
           "type": {
             "type": "TYPE_STRING"
@@ -165,23 +165,23 @@
           "unique": true
         },
         {
-          "modelName": "ProductStock",
+          "entityName": "ProductStock",
           "name": "stockOnHand",
           "type": {
             "type": "TYPE_INT"
           }
         },
         {
-          "modelName": "ProductStock",
+          "entityName": "ProductStock",
           "name": "product",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Product"
+            "type": "TYPE_ENTITY",
+            "entityName": "Product"
           },
           "inverseFieldName": "stock"
         },
         {
-          "modelName": "ProductStock",
+          "entityName": "ProductStock",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -193,7 +193,7 @@
           }
         },
         {
-          "modelName": "ProductStock",
+          "entityName": "ProductStock",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -203,7 +203,7 @@
           }
         },
         {
-          "modelName": "ProductStock",
+          "entityName": "ProductStock",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -227,7 +227,7 @@
       "name": "Identity",
       "fields": [
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "email",
           "type": {
             "type": "TYPE_STRING"
@@ -236,7 +236,7 @@
           "uniqueWith": ["issuer"]
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "emailVerified",
           "type": {
             "type": "TYPE_BOOL"
@@ -248,7 +248,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "password",
           "type": {
             "type": "TYPE_PASSWORD"
@@ -256,7 +256,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "externalId",
           "type": {
             "type": "TYPE_STRING"
@@ -264,7 +264,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "issuer",
           "type": {
             "type": "TYPE_STRING"
@@ -273,7 +273,7 @@
           "uniqueWith": ["email"]
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "name",
           "type": {
             "type": "TYPE_STRING"
@@ -281,7 +281,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "givenName",
           "type": {
             "type": "TYPE_STRING"
@@ -289,7 +289,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "familyName",
           "type": {
             "type": "TYPE_STRING"
@@ -297,7 +297,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "middleName",
           "type": {
             "type": "TYPE_STRING"
@@ -305,7 +305,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "nickName",
           "type": {
             "type": "TYPE_STRING"
@@ -313,7 +313,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "profile",
           "type": {
             "type": "TYPE_STRING"
@@ -321,7 +321,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "picture",
           "type": {
             "type": "TYPE_STRING"
@@ -329,7 +329,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "website",
           "type": {
             "type": "TYPE_STRING"
@@ -337,7 +337,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "gender",
           "type": {
             "type": "TYPE_STRING"
@@ -345,7 +345,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "zoneInfo",
           "type": {
             "type": "TYPE_STRING"
@@ -353,7 +353,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "locale",
           "type": {
             "type": "TYPE_STRING"
@@ -361,7 +361,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -373,7 +373,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -383,7 +383,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -521,7 +521,7 @@
           "name": "stockId",
           "type": {
             "type": "TYPE_ID",
-            "modelName": "ProductStock",
+            "entityName": "ProductStock",
             "fieldName": "id"
           },
           "target": ["stock", "id"]
@@ -536,7 +536,7 @@
           "name": "stockBarcode",
           "type": {
             "type": "TYPE_STRING",
-            "modelName": "ProductStock",
+            "entityName": "ProductStock",
             "fieldName": "barcode"
           },
           "target": ["stock", "barcode"]
@@ -563,7 +563,7 @@
           "name": "stockBarcode",
           "type": {
             "type": "TYPE_STRING",
-            "modelName": "ProductStock",
+            "entityName": "ProductStock",
             "fieldName": "barcode"
           },
           "target": ["stock", "barcode"]
@@ -602,7 +602,7 @@
           "name": "sku",
           "type": {
             "type": "TYPE_STRING",
-            "modelName": "Product",
+            "entityName": "Product",
             "fieldName": "sku"
           },
           "target": ["sku"]
@@ -617,7 +617,7 @@
           "name": "productSku",
           "type": {
             "type": "TYPE_STRING",
-            "modelName": "Product",
+            "entityName": "Product",
             "fieldName": "sku"
           },
           "target": ["product", "sku"]

@@ -54,7 +54,7 @@ func ValidateSetExpression(schema []*parser.AST, action *parser.ActionNode, lhs 
 		if i == 0 {
 			continue
 		}
-		field = query.Field(currModel, fragment)
+		field = currModel.Field(fragment)
 		if i < len(targetField.Fragments)-1 {
 			currModel = query.Model(schema, field.Type.Value)
 		}

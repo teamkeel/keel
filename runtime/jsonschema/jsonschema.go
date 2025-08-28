@@ -390,7 +390,7 @@ func jsonSchemaForModel(ctx context.Context, schema *proto.Schema, model *proto.
 	for _, field := range model.GetFields() {
 		// if the field of model type, then we don't want to include this because JSON-based
 		// apis don't serialize nested relations
-		if field.GetType().GetType() == proto.Type_TYPE_MODEL {
+		if field.GetType().GetType() == proto.Type_TYPE_ENTITY {
 			continue
 		}
 
@@ -445,7 +445,7 @@ func objectSchemaForModel(ctx context.Context, schema *proto.Schema, model *prot
 
 		// if the field of model type, and the model is not included in embeddings,
 		// then we don't want to include this
-		if field.GetType().GetType() == proto.Type_TYPE_MODEL {
+		if field.GetType().GetType() == proto.Type_TYPE_ENTITY {
 			found := false
 
 			for _, embed := range embeddings {
@@ -589,8 +589,8 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto
 	case proto.Type_TYPE_DECIMAL:
 		prop.Type = "number"
 		prop.Format = "float"
-	case proto.Type_TYPE_MODEL:
-		model := schema.FindModel(t.GetModelName().GetValue())
+	case proto.Type_TYPE_ENTITY:
+		model := schema.FindModel(t.GetEntityName().GetValue())
 
 		modelSchema := JSONSchema{}
 		if len(embeddings) > 0 {
@@ -663,7 +663,7 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto
 		}
 	}
 
-	if t.GetRepeated() && (t.GetType() != proto.Type_TYPE_MESSAGE && t.GetType() != proto.Type_TYPE_MODEL && t.GetType() != proto.Type_TYPE_UNION) {
+	if t.GetRepeated() && (t.GetType() != proto.Type_TYPE_MESSAGE && t.GetType() != proto.Type_TYPE_ENTITY && t.GetType() != proto.Type_TYPE_UNION) {
 		prop.Items = &JSONSchema{Type: prop.Type, Enum: prop.Enum, Format: prop.Format}
 		prop.Enum = nil
 		prop.Format = ""

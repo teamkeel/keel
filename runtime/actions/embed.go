@@ -16,7 +16,7 @@ func resolveEmbeddedData(ctx context.Context, schema *proto.Schema, sourceModel 
 	}
 	embedTargetField := fragments[0]
 
-	field := proto.FindField(schema.GetModels(), sourceModel.GetName(), casing.ToLowerCamel(embedTargetField))
+	field := sourceModel.FindField(casing.ToLowerCamel(embedTargetField))
 	if field == nil {
 		return nil, fmt.Errorf("embed target field (%s) does not exist in model %s", embedTargetField, sourceModel.GetName())
 	}
@@ -26,9 +26,9 @@ func resolveEmbeddedData(ctx context.Context, schema *proto.Schema, sourceModel 
 	}
 
 	// we will select from the relatedModel's table, joining the source model with an alias ("source"), where source.id = sourceModel.id
-	relatedModelName := field.GetType().GetModelName().GetValue()
+	relatedModelName := field.GetType().GetEntityName().GetValue()
 	relatedModel := schema.FindModel(relatedModelName)
-	foreignKeyField := proto.GetForeignKeyFieldName(schema.GetModels(), field)
+	foreignKeyField := schema.GetForeignKeyFieldName(field)
 	sourceTableAlias := "_source"
 
 	dbQuery := NewQuery(relatedModel)

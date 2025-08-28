@@ -16,18 +16,27 @@ func AttributeLocationsRule(asts []*parser.AST) (errs errorhandling.ValidationEr
 	for _, model := range query.Models(asts) {
 		for _, section := range model.Sections {
 			if section.Attribute != nil {
-				definedOn := "model"
-				if model.IsTask {
-					definedOn = "task"
-				}
-
-				errs.Concat(checkAttributes([]*parser.AttributeNode{section.Attribute}, definedOn, model.Name.Value))
+				errs.Concat(checkAttributes([]*parser.AttributeNode{section.Attribute}, "model", model.Name.Value))
 			}
 
 			if section.Actions != nil {
 				for _, function := range section.Actions {
 					errs.Concat(checkAttributes(function.Attributes, parser.KeywordActions, function.Name.Value))
 				}
+			}
+
+			if section.Fields != nil {
+				for _, field := range section.Fields {
+					errs.Concat(checkAttributes(field.Attributes, "field", field.Name.Value))
+				}
+			}
+		}
+	}
+
+	for _, task := range query.Tasks(asts) {
+		for _, section := range task.Sections {
+			if section.Attribute != nil {
+				errs.Concat(checkAttributes([]*parser.AttributeNode{section.Attribute}, "task", task.Name.Value))
 			}
 
 			if section.Fields != nil {
@@ -70,6 +79,11 @@ var attributeLocations = map[string][]string{
 		parser.AttributePermission,
 		parser.AttributeUnique,
 		parser.AttributeOn,
+	},
+	parser.KeywordTask: {
+		parser.AttributePermission,
+		parser.AttributeUnique,
+		parser.AttributeOrderBy,
 	},
 	parser.KeywordField: {
 		parser.AttributeUnique,

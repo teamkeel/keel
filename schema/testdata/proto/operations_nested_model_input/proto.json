@@ -4,35 +4,35 @@
       "name": "Fee",
       "fields": [
         {
-          "modelName": "Fee",
+          "entityName": "Fee",
           "name": "theFi",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Fi"
+            "type": "TYPE_ENTITY",
+            "entityName": "Fi"
           },
           "foreignKeyFieldName": "theFiId",
           "inverseFieldName": "theFees"
         },
         {
-          "modelName": "Fee",
+          "entityName": "Fee",
           "name": "theFiId",
           "type": {
             "type": "TYPE_ID"
           },
           "foreignKeyInfo": {
-            "relatedModelName": "Fi",
-            "relatedModelField": "id"
+            "relatedEntityName": "Fi",
+            "relatedEntityField": "id"
           }
         },
         {
-          "modelName": "Fee",
+          "entityName": "Fee",
           "name": "theName",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "modelName": "Fee",
+          "entityName": "Fee",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -44,7 +44,7 @@
           }
         },
         {
-          "modelName": "Fee",
+          "entityName": "Fee",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -54,7 +54,7 @@
           }
         },
         {
-          "modelName": "Fee",
+          "entityName": "Fee",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -78,38 +78,38 @@
       "name": "Fi",
       "fields": [
         {
-          "modelName": "Fi",
+          "entityName": "Fi",
           "name": "theFo",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Fo"
+            "type": "TYPE_ENTITY",
+            "entityName": "Fo"
           },
           "foreignKeyFieldName": "theFoId",
           "inverseFieldName": "theFis"
         },
         {
-          "modelName": "Fi",
+          "entityName": "Fi",
           "name": "theFoId",
           "type": {
             "type": "TYPE_ID"
           },
           "foreignKeyInfo": {
-            "relatedModelName": "Fo",
-            "relatedModelField": "id"
+            "relatedEntityName": "Fo",
+            "relatedEntityField": "id"
           }
         },
         {
-          "modelName": "Fi",
+          "entityName": "Fi",
           "name": "theFees",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Fee",
+            "type": "TYPE_ENTITY",
+            "entityName": "Fee",
             "repeated": true
           },
           "inverseFieldName": "theFi"
         },
         {
-          "modelName": "Fi",
+          "entityName": "Fi",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -121,7 +121,7 @@
           }
         },
         {
-          "modelName": "Fi",
+          "entityName": "Fi",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -131,7 +131,7 @@
           }
         },
         {
-          "modelName": "Fi",
+          "entityName": "Fi",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -146,38 +146,38 @@
       "name": "Fo",
       "fields": [
         {
-          "modelName": "Fo",
+          "entityName": "Fo",
           "name": "theFum",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Fum"
+            "type": "TYPE_ENTITY",
+            "entityName": "Fum"
           },
           "foreignKeyFieldName": "theFumId",
           "inverseFieldName": "theFos"
         },
         {
-          "modelName": "Fo",
+          "entityName": "Fo",
           "name": "theFumId",
           "type": {
             "type": "TYPE_ID"
           },
           "foreignKeyInfo": {
-            "relatedModelName": "Fum",
-            "relatedModelField": "id"
+            "relatedEntityName": "Fum",
+            "relatedEntityField": "id"
           }
         },
         {
-          "modelName": "Fo",
+          "entityName": "Fo",
           "name": "theFis",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Fi",
+            "type": "TYPE_ENTITY",
+            "entityName": "Fi",
             "repeated": true
           },
           "inverseFieldName": "theFo"
         },
         {
-          "modelName": "Fo",
+          "entityName": "Fo",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -189,7 +189,7 @@
           }
         },
         {
-          "modelName": "Fo",
+          "entityName": "Fo",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -199,7 +199,7 @@
           }
         },
         {
-          "modelName": "Fo",
+          "entityName": "Fo",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -214,24 +214,24 @@
       "name": "Fum",
       "fields": [
         {
-          "modelName": "Fum",
+          "entityName": "Fum",
           "name": "theFos",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Fo",
+            "type": "TYPE_ENTITY",
+            "entityName": "Fo",
             "repeated": true
           },
           "inverseFieldName": "theFum"
         },
         {
-          "modelName": "Fum",
+          "entityName": "Fum",
           "name": "theName",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "modelName": "Fum",
+          "entityName": "Fum",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -243,7 +243,7 @@
           }
         },
         {
-          "modelName": "Fum",
+          "entityName": "Fum",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -253,7 +253,7 @@
           }
         },
         {
-          "modelName": "Fum",
+          "entityName": "Fum",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -277,7 +277,7 @@
       "name": "Identity",
       "fields": [
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "email",
           "type": {
             "type": "TYPE_STRING"
@@ -286,7 +286,7 @@
           "uniqueWith": ["issuer"]
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "emailVerified",
           "type": {
             "type": "TYPE_BOOL"
@@ -298,7 +298,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "password",
           "type": {
             "type": "TYPE_PASSWORD"
@@ -306,7 +306,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "externalId",
           "type": {
             "type": "TYPE_STRING"
@@ -314,7 +314,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "issuer",
           "type": {
             "type": "TYPE_STRING"
@@ -323,7 +323,7 @@
           "uniqueWith": ["email"]
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "name",
           "type": {
             "type": "TYPE_STRING"
@@ -331,7 +331,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "givenName",
           "type": {
             "type": "TYPE_STRING"
@@ -339,7 +339,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "familyName",
           "type": {
             "type": "TYPE_STRING"
@@ -347,7 +347,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "middleName",
           "type": {
             "type": "TYPE_STRING"
@@ -355,7 +355,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "nickName",
           "type": {
             "type": "TYPE_STRING"
@@ -363,7 +363,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "profile",
           "type": {
             "type": "TYPE_STRING"
@@ -371,7 +371,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "picture",
           "type": {
             "type": "TYPE_STRING"
@@ -379,7 +379,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "website",
           "type": {
             "type": "TYPE_STRING"
@@ -387,7 +387,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "gender",
           "type": {
             "type": "TYPE_STRING"
@@ -395,7 +395,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "zoneInfo",
           "type": {
             "type": "TYPE_STRING"
@@ -403,7 +403,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "locale",
           "type": {
             "type": "TYPE_STRING"
@@ -411,7 +411,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -423,7 +423,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -433,7 +433,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"

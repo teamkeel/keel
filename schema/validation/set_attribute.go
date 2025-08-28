@@ -117,7 +117,7 @@ func SetAttributeExpressionRules(asts []*parser.AST, errs *errorhandling.Validat
 
 				if i > 0 {
 					// get the next field in the relationship fragments
-					currentField = query.ModelField(currentModel, fragment)
+					currentField = currentModel.Field(fragment)
 					// currentModel will be null if this is not a model field
 					currentModel = query.Model(asts, currentField.Type.Value)
 				}

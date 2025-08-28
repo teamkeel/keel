@@ -1,0 +1,44 @@
+task Person {
+    fields {
+        name Text
+    }
+}
+
+===
+
+task Person {
+    fields {
+        name Text
+    }
+}
+
+task Animal {
+    fields {
+        name Text
+        humanFriend Person
+    }
+}
+
+===
+
+CREATE TABLE "animal" (
+"name" TEXT NOT NULL,
+"human_friend_id" TEXT NOT NULL,
+"id" TEXT NOT NULL DEFAULT ksuid(),
+"created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+"updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE "animal" ADD CONSTRAINT animal_id_pkey PRIMARY KEY ("id");
+ALTER TABLE "animal" ADD FOREIGN KEY ("human_friend_id") REFERENCES "person"("id") ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE;
+CREATE TRIGGER animal_create AFTER INSERT ON "animal" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER animal_update AFTER UPDATE ON "animal" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER animal_delete AFTER DELETE ON "animal" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER animal_updated_at BEFORE UPDATE ON "animal" FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
+
+=== 
+
+[
+  { "Model": "Animal", "Field": "", "Type": "ADDED" }
+]
+
+

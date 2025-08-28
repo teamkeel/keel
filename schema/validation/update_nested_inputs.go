@@ -49,7 +49,7 @@ func UpdateActionNestedInputsRule(asts []*parser.AST, errs *errorhandling.Valida
 				if model == nil {
 					return
 				}
-				field = query.ModelField(model, fragment.Fragment)
+				field = model.Field(fragment.Fragment)
 				if field == nil {
 					return
 				}

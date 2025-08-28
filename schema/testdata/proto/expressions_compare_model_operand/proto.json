@@ -4,30 +4,30 @@
       "name": "User",
       "fields": [
         {
-          "modelName": "User",
+          "entityName": "User",
           "name": "identity",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Identity"
+            "type": "TYPE_ENTITY",
+            "entityName": "Identity"
           },
           "unique": true,
           "foreignKeyFieldName": "identityId",
           "inverseFieldName": "user"
         },
         {
-          "modelName": "User",
+          "entityName": "User",
           "name": "identityId",
           "type": {
             "type": "TYPE_ID"
           },
           "unique": true,
           "foreignKeyInfo": {
-            "relatedModelName": "Identity",
-            "relatedModelField": "id"
+            "relatedEntityName": "Identity",
+            "relatedEntityField": "id"
           }
         },
         {
-          "modelName": "User",
+          "entityName": "User",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -39,7 +39,7 @@
           }
         },
         {
-          "modelName": "User",
+          "entityName": "User",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -49,7 +49,7 @@
           }
         },
         {
-          "modelName": "User",
+          "entityName": "User",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -64,30 +64,30 @@
       "name": "BankAccount",
       "fields": [
         {
-          "modelName": "BankAccount",
+          "entityName": "BankAccount",
           "name": "identity",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Identity"
+            "type": "TYPE_ENTITY",
+            "entityName": "Identity"
           },
           "unique": true,
           "foreignKeyFieldName": "identityId",
           "inverseFieldName": "bankAccount"
         },
         {
-          "modelName": "BankAccount",
+          "entityName": "BankAccount",
           "name": "identityId",
           "type": {
             "type": "TYPE_ID"
           },
           "unique": true,
           "foreignKeyInfo": {
-            "relatedModelName": "Identity",
-            "relatedModelField": "id"
+            "relatedEntityName": "Identity",
+            "relatedEntityField": "id"
           }
         },
         {
-          "modelName": "BankAccount",
+          "entityName": "BankAccount",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -99,7 +99,7 @@
           }
         },
         {
-          "modelName": "BankAccount",
+          "entityName": "BankAccount",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -109,7 +109,7 @@
           }
         },
         {
-          "modelName": "BankAccount",
+          "entityName": "BankAccount",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -127,7 +127,7 @@
           "implementation": "ACTION_IMPLEMENTATION_AUTO",
           "permissions": [
             {
-              "modelName": "BankAccount",
+              "entityName": "BankAccount",
               "actionName": "getBankAccount",
               "expression": {
                 "source": "ctx.identity.user == bankAccount.identity.user"
@@ -142,7 +142,7 @@
       "name": "Identity",
       "fields": [
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "email",
           "type": {
             "type": "TYPE_STRING"
@@ -151,7 +151,7 @@
           "uniqueWith": ["issuer"]
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "emailVerified",
           "type": {
             "type": "TYPE_BOOL"
@@ -163,7 +163,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "password",
           "type": {
             "type": "TYPE_PASSWORD"
@@ -171,7 +171,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "externalId",
           "type": {
             "type": "TYPE_STRING"
@@ -179,7 +179,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "issuer",
           "type": {
             "type": "TYPE_STRING"
@@ -188,7 +188,7 @@
           "uniqueWith": ["email"]
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "name",
           "type": {
             "type": "TYPE_STRING"
@@ -196,7 +196,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "givenName",
           "type": {
             "type": "TYPE_STRING"
@@ -204,7 +204,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "familyName",
           "type": {
             "type": "TYPE_STRING"
@@ -212,7 +212,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "middleName",
           "type": {
             "type": "TYPE_STRING"
@@ -220,7 +220,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "nickName",
           "type": {
             "type": "TYPE_STRING"
@@ -228,7 +228,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "profile",
           "type": {
             "type": "TYPE_STRING"
@@ -236,7 +236,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "picture",
           "type": {
             "type": "TYPE_STRING"
@@ -244,7 +244,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "website",
           "type": {
             "type": "TYPE_STRING"
@@ -252,7 +252,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "gender",
           "type": {
             "type": "TYPE_STRING"
@@ -260,7 +260,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "zoneInfo",
           "type": {
             "type": "TYPE_STRING"
@@ -268,7 +268,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "locale",
           "type": {
             "type": "TYPE_STRING"
@@ -276,7 +276,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -288,7 +288,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -298,7 +298,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -308,21 +308,21 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "user",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "User"
+            "type": "TYPE_ENTITY",
+            "entityName": "User"
           },
           "optional": true,
           "inverseFieldName": "identity"
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "bankAccount",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "BankAccount"
+            "type": "TYPE_ENTITY",
+            "entityName": "BankAccount"
           },
           "optional": true,
           "inverseFieldName": "identity"
@@ -433,7 +433,7 @@
           "name": "id",
           "type": {
             "type": "TYPE_ID",
-            "modelName": "BankAccount",
+            "entityName": "BankAccount",
             "fieldName": "id"
           },
           "target": ["id"]

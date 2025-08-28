@@ -69,7 +69,7 @@
             "fieldLocation": {
               "path": "$.customers"
             },
-            "fieldType": "TYPE_MODEL",
+            "fieldType": "TYPE_ENTITY",
             "repeated": true,
             "displayName": "Customers",
             "displayOrder": 1,

@@ -34,7 +34,7 @@ func (p *TypeProvider) FindStructType(structType string) (*types.Type, bool) {
 	obj := strings.TrimSuffix(structType, "[]")
 
 	switch {
-	case query.Model(p.Schema, obj) != nil:
+	case query.Entity(p.Schema, obj) != nil:
 		return types.NewObjectType(structType), true
 	case strings.Contains(obj, "_Enum") && query.Enum(p.Schema, strings.TrimSuffix(obj, "_Enum")) != nil:
 		return types.NewObjectType(structType), true
@@ -55,8 +55,8 @@ func (p *TypeProvider) FindStructFieldType(structType, fieldName string) (*types
 	obj := strings.TrimSuffix(structType, "[]")
 	parentIsArray := strings.HasSuffix(structType, "[]")
 
-	if model := query.Model(p.Schema, obj); model != nil {
-		field := query.Field(model, fieldName)
+	if entity := query.Entity(p.Schema, obj); entity != nil {
+		field := entity.Field(fieldName)
 		if field == nil {
 			return nil, false
 		}

@@ -4,21 +4,21 @@
       "name": "Member",
       "fields": [
         {
-          "modelName": "Member",
+          "entityName": "Member",
           "name": "name",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "modelName": "Member",
+          "entityName": "Member",
           "name": "email",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "modelName": "Member",
+          "entityName": "Member",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -30,7 +30,7 @@
           }
         },
         {
-          "modelName": "Member",
+          "entityName": "Member",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -40,7 +40,7 @@
           }
         },
         {
-          "modelName": "Member",
+          "entityName": "Member",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -55,21 +55,21 @@
       "name": "Employee",
       "fields": [
         {
-          "modelName": "Employee",
+          "entityName": "Employee",
           "name": "name",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "modelName": "Employee",
+          "entityName": "Employee",
           "name": "email",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "modelName": "Employee",
+          "entityName": "Employee",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -81,7 +81,7 @@
           }
         },
         {
-          "modelName": "Employee",
+          "entityName": "Employee",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -91,7 +91,7 @@
           }
         },
         {
-          "modelName": "Employee",
+          "entityName": "Employee",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -106,7 +106,7 @@
       "name": "Identity",
       "fields": [
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "email",
           "type": {
             "type": "TYPE_STRING"
@@ -115,7 +115,7 @@
           "uniqueWith": ["issuer"]
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "emailVerified",
           "type": {
             "type": "TYPE_BOOL"
@@ -127,7 +127,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "password",
           "type": {
             "type": "TYPE_PASSWORD"
@@ -135,7 +135,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "externalId",
           "type": {
             "type": "TYPE_STRING"
@@ -143,7 +143,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "issuer",
           "type": {
             "type": "TYPE_STRING"
@@ -152,7 +152,7 @@
           "uniqueWith": ["email"]
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "name",
           "type": {
             "type": "TYPE_STRING"
@@ -160,7 +160,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "givenName",
           "type": {
             "type": "TYPE_STRING"
@@ -168,7 +168,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "familyName",
           "type": {
             "type": "TYPE_STRING"
@@ -176,7 +176,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "middleName",
           "type": {
             "type": "TYPE_STRING"
@@ -184,7 +184,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "nickName",
           "type": {
             "type": "TYPE_STRING"
@@ -192,7 +192,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "profile",
           "type": {
             "type": "TYPE_STRING"
@@ -200,7 +200,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "picture",
           "type": {
             "type": "TYPE_STRING"
@@ -208,7 +208,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "website",
           "type": {
             "type": "TYPE_STRING"
@@ -216,7 +216,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "gender",
           "type": {
             "type": "TYPE_STRING"
@@ -224,7 +224,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "zoneInfo",
           "type": {
             "type": "TYPE_STRING"
@@ -232,7 +232,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "locale",
           "type": {
             "type": "TYPE_STRING"
@@ -240,7 +240,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -252,7 +252,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -262,7 +262,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -428,8 +428,8 @@
           "messageName": "SendWelcomeMailMemberCreatedEventTarget",
           "name": "data",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Member"
+            "type": "TYPE_ENTITY",
+            "entityName": "Member"
           }
         }
       ]
@@ -503,8 +503,8 @@
           "messageName": "VerifyEmailMemberCreatedEventTarget",
           "name": "data",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Member"
+            "type": "TYPE_ENTITY",
+            "entityName": "Member"
           }
         }
       ]
@@ -566,16 +566,16 @@
           "messageName": "VerifyEmailMemberUpdatedEventTarget",
           "name": "data",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Member"
+            "type": "TYPE_ENTITY",
+            "entityName": "Member"
           }
         },
         {
           "messageName": "VerifyEmailMemberUpdatedEventTarget",
           "name": "previousData",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Member"
+            "type": "TYPE_ENTITY",
+            "entityName": "Member"
           }
         }
       ]
@@ -637,8 +637,8 @@
           "messageName": "VerifyEmailEmployeeCreatedEventTarget",
           "name": "data",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Employee"
+            "type": "TYPE_ENTITY",
+            "entityName": "Employee"
           }
         }
       ]
@@ -700,16 +700,16 @@
           "messageName": "VerifyEmailEmployeeUpdatedEventTarget",
           "name": "data",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Employee"
+            "type": "TYPE_ENTITY",
+            "entityName": "Employee"
           }
         },
         {
           "messageName": "VerifyEmailEmployeeUpdatedEventTarget",
           "name": "previousData",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Employee"
+            "type": "TYPE_ENTITY",
+            "entityName": "Employee"
           }
         }
       ]
@@ -778,16 +778,16 @@
           "messageName": "SendGoodbyeMailMemberDeletedEventTarget",
           "name": "data",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Member"
+            "type": "TYPE_ENTITY",
+            "entityName": "Member"
           }
         },
         {
           "messageName": "SendGoodbyeMailMemberDeletedEventTarget",
           "name": "previousData",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Member"
+            "type": "TYPE_ENTITY",
+            "entityName": "Member"
           }
         }
       ]

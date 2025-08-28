@@ -93,7 +93,7 @@ func OrderByAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErro
 				return
 			}
 
-			modelField := query.ModelField(currentModel, arg.Label.Value)
+			modelField := currentModel.Field(arg.Label.Value)
 
 			if modelField == nil {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(

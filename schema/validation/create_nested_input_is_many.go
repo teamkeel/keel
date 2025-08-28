@@ -47,7 +47,7 @@ func CreateNestedInputIsMany(asts []*parser.AST, errs *errorhandling.ValidationE
 				if model == nil {
 					return
 				}
-				field = query.ModelField(model, fragment.Fragment)
+				field = model.Field(fragment.Fragment)
 				if field == nil {
 					return
 				}

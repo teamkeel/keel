@@ -22,14 +22,14 @@ func (query *QueryBuilder) applyImplicitFiltersForList(scope *Scope, args map[st
 
 func (query *QueryBuilder) applyImplicitFiltersFromMessage(scope *Scope, message *proto.Message, model *proto.Model, args map[string]any) error {
 	for _, input := range message.GetFields() {
-		field := proto.FindField(scope.Schema.GetModels(), model.GetName(), input.GetName())
+		field := model.FindField(input.GetName())
 
 		// If the input is not targeting a model field, then it is either a:
 		//  - Message, with nested fields which we must recurse into, or an
 		//  - Explicit input, which is handled elsewhere.
 		if !input.IsModelField() {
 			if input.GetType().GetType() == proto.Type_TYPE_MESSAGE {
-				messageModel := scope.Schema.FindModel(field.GetType().GetModelName().GetValue())
+				messageModel := scope.Schema.FindModel(field.GetType().GetEntityName().GetValue())
 				nestedMessage := scope.Schema.FindMessage(input.GetType().GetMessageName().GetValue())
 
 				argsSectioned, ok := args[input.GetName()].(map[string]any)

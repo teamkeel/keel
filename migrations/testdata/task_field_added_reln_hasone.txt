@@ -1,0 +1,39 @@
+task Person {
+    fields {
+        name Text
+    }
+}
+
+task Thing {
+    fields {
+        description Text
+    }
+}
+
+===
+
+task Person {
+    fields {
+        name Text
+        favouriteThing Thing
+    }
+}
+
+task Thing {
+    fields {
+        description Text
+    }
+}
+
+===
+
+ALTER TABLE "person" ADD COLUMN "favourite_thing_id" TEXT NOT NULL;
+ALTER TABLE "person" ADD FOREIGN KEY ("favourite_thing_id") REFERENCES "thing"("id") ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE;
+
+=== 
+
+[
+  { "Model": "Person", "Field": "favouriteThingId", "Type": "ADDED" }
+]
+
+

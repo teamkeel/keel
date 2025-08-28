@@ -24,6 +24,17 @@ func (s *Schema) HasFiles() bool {
 	return false
 }
 
+// FindEntity finds within the schema the model or task that has the given name. Returns nil if model not found.
+func (s *Schema) FindEntity(entityName string) Entity {
+	for _, e := range s.Entities() {
+		if e.GetName() == entityName {
+			return e
+		}
+	}
+
+	return nil
+}
+
 // FindModel finds within the schema the model that has the given name. Returns nil if model not found.
 func (s *Schema) FindModel(modelName string) *Model {
 	for _, m := range s.GetModels() {
@@ -102,6 +113,15 @@ func (m *Message) hasMessage(s *Schema, messageName string) bool {
 // ModelNames provides a (sorted) list of all the Model names used in the given schema.
 func (s *Schema) ModelNames() []string {
 	names := lo.Map(s.GetModels(), func(x *Model, _ int) string {
+		return x.GetName()
+	})
+	sort.Strings(names)
+	return names
+}
+
+// TaskNames provides a (sorted) list of all the Task names used in the given schema.
+func (s *Schema) TaskNames() []string {
+	names := lo.Map(s.GetTasks(), func(x *Task, _ int) string {
 		return x.GetName()
 	})
 	sort.Strings(names)
@@ -263,7 +283,7 @@ func (s *Schema) GetFlowModelInputs(f *Flow) map[string]bool {
 	m := map[string]bool{}
 
 	for _, f := range msg.GetFields() {
-		if mName := f.GetType().GetModelName().GetValue(); mName != "" {
+		if mName := f.GetType().GetEntityName().GetValue(); mName != "" {
 			m[mName] = !f.GetOptional() || m[mName]
 		}
 	}

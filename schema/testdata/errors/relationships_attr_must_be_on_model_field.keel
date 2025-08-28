@@ -1,6 +1,6 @@
 model Post {
     fields {
-        //expect-error:21:30:RelationshipError:The @relation attribute cannot be used on non-model fields
+        //expect-error:21:30:RelationshipError:The @relation attribute cannot be used on non-model or non-task fields
         author Text @relation(author)
     }
 }

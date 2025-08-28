@@ -1,0 +1,40 @@
+
+task Person {
+    fields {
+        name Text
+        favouriteThing Thing
+    }
+}
+
+task Thing {
+    fields {
+        description Text
+    }
+}
+
+===
+
+task Person {
+    fields {
+        name Text
+    }
+}
+
+task Thing {
+    fields {
+        description Text
+    }
+}
+
+
+===
+
+ALTER TABLE "person" DROP COLUMN "favourite_thing_id" CASCADE;
+
+=== 
+
+[
+  { "Model": "Person", "Field": "favouriteThingId", "Type": "REMOVED" }
+]
+
+

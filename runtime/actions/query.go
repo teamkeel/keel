@@ -259,8 +259,8 @@ func (o *QueryOperand) toSqlArgs() []any {
 
 // Statement is a templated SQL statement and associated values, ready to be executed.
 type Statement struct {
-	// The model that represents the table.
-	model *proto.Model
+	// The entity or task that represents the table.
+	entity proto.Entity
 	// The generated SQL template.
 	template string
 	// The arguments associated with the generated SQL template.
@@ -276,8 +276,8 @@ func (statement *Statement) SqlArgs() []any {
 }
 
 type QueryBuilder struct {
-	// The base model this query builder is acting on.
-	Model *proto.Model
+	// The base model or task this query builder is acting on.
+	Entity proto.Entity
 	// The table name in the database.
 	table string
 	// The columns and clauses in SELECT.
@@ -335,7 +335,7 @@ type orderClause struct {
 
 type Row struct {
 	// The schema model which this row represents data for.
-	model *proto.Model
+	model proto.Entity
 	// The target fragments that this row represents in the input.
 	target []string
 	// The values of the fields to insert.
@@ -375,10 +375,10 @@ func EmbedLiterals() QueryBuilderOption {
 	}
 }
 
-func NewQuery(model *proto.Model, opts ...QueryBuilderOption) *QueryBuilder {
+func NewQuery(entity proto.Entity, opts ...QueryBuilderOption) *QueryBuilder {
 	qb := &QueryBuilder{
-		Model:      model,
-		table:      casing.ToSnake(model.GetName()),
+		Entity:     entity,
+		table:      casing.ToSnake(entity.GetName()),
 		selection:  []string{},
 		distinctOn: []string{},
 		joins:      []joinClause{},
@@ -411,7 +411,7 @@ func NewQuery(model *proto.Model, opts ...QueryBuilderOption) *QueryBuilder {
 // Creates a copy of the query builder.
 func (query *QueryBuilder) Copy() *QueryBuilder {
 	return &QueryBuilder{
-		Model:      query.Model,
+		Entity:     query.Entity,
 		table:      query.table,
 		selection:  copySlice(query.selection),
 		distinctOn: copySlice(query.distinctOn),
@@ -426,13 +426,13 @@ func (query *QueryBuilder) Copy() *QueryBuilder {
 
 // Includes a value to be written during an INSERT or UPDATE.
 func (query *QueryBuilder) AddWriteValue(operand *QueryOperand, value *QueryOperand) {
-	query.writeValues.model = query.Model
+	query.writeValues.model = query.Entity
 	query.writeValues.values[operand.column] = value
 }
 
 // Includes values to be written during an INSERT or UPDATE.
 func (query *QueryBuilder) AddWriteValues(values map[string]*QueryOperand) {
-	query.writeValues.model = query.Model
+	query.writeValues.model = query.Entity
 	for k, v := range values {
 		query.AddWriteValue(Field(k), v)
 	}
@@ -758,7 +758,7 @@ func (query *QueryBuilder) applyCursorFilter(cursor string, isBackwards bool) er
 		for j := range i {
 			orderClause := query.orderBy[j]
 
-			inline := NewQuery(query.Model)
+			inline := NewQuery(query.Entity)
 			inline.Select(orderClause.field)
 			err = inline.Where(IdField(), Equals, Value(cursor))
 			if err != nil {
@@ -774,7 +774,7 @@ func (query *QueryBuilder) applyCursorFilter(cursor string, isBackwards bool) er
 
 		orderClause := query.orderBy[i]
 
-		inline := NewQuery(query.Model)
+		inline := NewQuery(query.Entity)
 		inline.Select(orderClause.field)
 		err = inline.Where(IdField(), Equals, Value(cursor))
 		if err != nil {
@@ -919,7 +919,7 @@ func (query *QueryBuilder) SelectStatement() *Statement {
 	return &Statement{
 		template: cleanSql(sql),
 		args:     query.args,
-		model:    query.Model,
+		entity:   query.Entity,
 	}
 }
 
@@ -948,7 +948,7 @@ func (query *QueryBuilder) InsertStatement(ctx context.Context) *Statement {
 		sqlQuote(alias))
 
 	return &Statement{
-		model:    query.Model,
+		entity:   query.Entity,
 		template: cleanSql(statement),
 		args:     args,
 	}
@@ -973,7 +973,7 @@ func (query *QueryBuilder) generateInsertCte(ctes []string, args []any, row *Row
 	// Does this foreign key of the relationship exist on this row?
 	// This means this row exists as a referencedBy row for another.
 	// For example, on the SaleItem row; saleId = (SELECT id FROM new_sale_1)
-	if foreignKey != nil && row.model.GetName() == foreignKey.GetModelName() {
+	if foreignKey != nil && row.model.GetName() == foreignKey.GetEntityName() {
 		row.values[foreignKey.GetForeignKeyFieldName().GetValue()] = Raw(fmt.Sprintf("(SELECT \"id\" FROM %s)", sqlQuote(primaryKeyTableAlias)))
 	}
 
@@ -1243,7 +1243,7 @@ func (query *QueryBuilder) UpdateStatement(ctx context.Context) *Statement {
 	return &Statement{
 		template: cleanSql(template),
 		args:     args,
-		model:    query.Model,
+		entity:   query.Entity,
 	}
 }
 
@@ -1296,7 +1296,7 @@ func (query *QueryBuilder) DeleteStatement(ctx context.Context) *Statement {
 	return &Statement{
 		template: cleanSql(template),
 		args:     query.args,
-		model:    query.Model,
+		entity:   query.Entity,
 	}
 }
 
@@ -1444,8 +1444,8 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 	}
 
 	// For certain types, we need to parse them into a format the runtime understands.
-	for _, f := range statement.model.GetFields() {
-		if f.GetType().GetType() == proto.Type_TYPE_MODEL {
+	for _, f := range statement.entity.GetFields() {
+		if f.GetType().GetType() == proto.Type_TYPE_ENTITY {
 			continue
 		}
 

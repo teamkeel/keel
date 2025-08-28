@@ -271,7 +271,7 @@ var computedTestCases = []computedTestCase{
 	{
 		name:        "concating strings",
 		keelSchema:  testSchema,
-		field:       "name Text @computed(\"Product: \" + item.product.name)",
+		field:       "productName Text @computed(\"Product: \" + item.product.name)",
 		expectedSql: `'Product: ' || (SELECT "product"."name" FROM "product" WHERE "product"."id" IS NOT DISTINCT FROM r."product_id")`,
 	},
 	{
@@ -285,6 +285,53 @@ var computedTestCases = []computedTestCase{
 		keelSchema:  testSchema,
 		field:       "isComplete Boolean @computed(item.orderStatus == OrderStatus.Delivered)",
 		expectedSql: `r."order_status" IS NOT DISTINCT FROM 'Delivered'`,
+	},
+	{
+		name: "computed on task using model fields",
+		keelSchema: `
+			task DispatchInvoice {
+				fields {
+					invoice Invoice
+					#placeholder#
+				}
+			}
+			model Invoice {
+				fields {
+					item Item[]
+				}
+			}
+			model Item {
+				fields {
+					invoice Invoice
+					product Product
+				}
+			}
+			model Product {
+				fields {
+					name Text
+					price Decimal
+				}
+			}`,
+		field:       "total Decimal @computed(SUM(dispatchInvoice.invoice.item.product.price))",
+		expectedSql: `(SELECT COALESCE(SUM("invoice$item$product"."price"), 0) FROM "invoice" LEFT JOIN "item" AS "invoice$item" ON "invoice$item"."invoice_id" = "invoice"."id" LEFT JOIN "product" AS "invoice$item$product" ON "invoice$item$product"."id" = "invoice$item"."product_id" WHERE "invoice"."invoice_id" IS NOT DISTINCT FROM r."id")`,
+	},
+	{
+		name: "computed on model using task fields",
+		keelSchema: `
+			task DispatchInvoice {
+				fields {
+					invoice Invoice
+					isComplete Boolean
+				}
+			}
+			model Invoice {
+				fields {
+					dispatchInvoice DispatchInvoice[]
+					#placeholder#
+				}
+			}`,
+		field:       "dispatches Number @computed(COUNTIF(invoice.dispatchInvoice.invoice, invoice.dispatchInvoice.isComplete))",
+		expectedSql: `(SELECT COALESCE(COUNT("dispatch_invoice"."invoice_id"), 0) FROM "dispatch_invoice" WHERE "dispatch_invoice"."invoice_id" IS NOT DISTINCT FROM r."id" AND "dispatch_invoice"."is_complete" IS NOT DISTINCT FROM true)`,
 	},
 }
 
@@ -309,14 +356,24 @@ func TestGeneratedComputed(t *testing.T) {
 			schema, err := builder.MakeFromInputs(schemaFiles)
 			assert.NoError(t, err)
 
-			model := schema.GetModels()[0]
 			fieldName := strings.Split(testCase.field, " ")[0]
-			field := proto.FindField(schema.GetModels(), model.GetName(), fieldName)
+
+			var field *proto.Field
+			var entity proto.Entity
+			for _, e := range schema.Entities() {
+				if e.FindField(fieldName) != nil {
+					field = e.FindField(fieldName)
+					entity = e
+					break
+				}
+			}
+			assert.NotNil(t, field)
+			assert.NotNil(t, entity)
 
 			expression, err := parser.ParseExpression(field.GetComputedExpression().GetSource())
 			assert.NoError(t, err)
 
-			sql, err := resolve.RunCelVisitor(expression, actions.GenerateComputedFunction(context.Background(), schema, model, field))
+			sql, err := resolve.RunCelVisitor(expression, actions.GenerateComputedFunction(context.Background(), schema, entity, field))
 			assert.NoError(t, err)
 
 			assert.Equal(t, testCase.expectedSql, sql, "expected `%s` but got `%s`", testCase.expectedSql, sql)

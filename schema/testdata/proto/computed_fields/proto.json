@@ -4,17 +4,17 @@
       "name": "Invoice",
       "fields": [
         {
-          "modelName": "Invoice",
+          "entityName": "Invoice",
           "name": "items",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Item",
+            "type": "TYPE_ENTITY",
+            "entityName": "Item",
             "repeated": true
           },
           "inverseFieldName": "invoice"
         },
         {
-          "modelName": "Invoice",
+          "entityName": "Invoice",
           "name": "total",
           "type": {
             "type": "TYPE_DECIMAL"
@@ -24,7 +24,7 @@
           }
         },
         {
-          "modelName": "Invoice",
+          "entityName": "Invoice",
           "name": "totalNotDeleted",
           "type": {
             "type": "TYPE_DECIMAL"
@@ -34,7 +34,7 @@
           }
         },
         {
-          "modelName": "Invoice",
+          "entityName": "Invoice",
           "name": "count",
           "type": {
             "type": "TYPE_INT"
@@ -44,7 +44,7 @@
           }
         },
         {
-          "modelName": "Invoice",
+          "entityName": "Invoice",
           "name": "countNotDeleted",
           "type": {
             "type": "TYPE_INT"
@@ -54,7 +54,7 @@
           }
         },
         {
-          "modelName": "Invoice",
+          "entityName": "Invoice",
           "name": "avg",
           "type": {
             "type": "TYPE_DECIMAL"
@@ -64,7 +64,7 @@
           }
         },
         {
-          "modelName": "Invoice",
+          "entityName": "Invoice",
           "name": "avgNotDeleted",
           "type": {
             "type": "TYPE_DECIMAL"
@@ -74,7 +74,7 @@
           }
         },
         {
-          "modelName": "Invoice",
+          "entityName": "Invoice",
           "name": "median",
           "type": {
             "type": "TYPE_DECIMAL"
@@ -84,7 +84,7 @@
           }
         },
         {
-          "modelName": "Invoice",
+          "entityName": "Invoice",
           "name": "medianNotDeleted",
           "type": {
             "type": "TYPE_DECIMAL"
@@ -94,7 +94,7 @@
           }
         },
         {
-          "modelName": "Invoice",
+          "entityName": "Invoice",
           "name": "min",
           "type": {
             "type": "TYPE_DECIMAL"
@@ -104,7 +104,7 @@
           }
         },
         {
-          "modelName": "Invoice",
+          "entityName": "Invoice",
           "name": "minNotDeleted",
           "type": {
             "type": "TYPE_DECIMAL"
@@ -114,7 +114,7 @@
           }
         },
         {
-          "modelName": "Invoice",
+          "entityName": "Invoice",
           "name": "max",
           "type": {
             "type": "TYPE_DECIMAL"
@@ -124,7 +124,7 @@
           }
         },
         {
-          "modelName": "Invoice",
+          "entityName": "Invoice",
           "name": "maxNotDeleted",
           "type": {
             "type": "TYPE_DECIMAL"
@@ -134,7 +134,7 @@
           }
         },
         {
-          "modelName": "Invoice",
+          "entityName": "Invoice",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -146,7 +146,7 @@
           }
         },
         {
-          "modelName": "Invoice",
+          "entityName": "Invoice",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -156,7 +156,7 @@
           }
         },
         {
-          "modelName": "Invoice",
+          "entityName": "Invoice",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -171,49 +171,49 @@
       "name": "Item",
       "fields": [
         {
-          "modelName": "Item",
+          "entityName": "Item",
           "name": "invoice",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Invoice"
+            "type": "TYPE_ENTITY",
+            "entityName": "Invoice"
           },
           "foreignKeyFieldName": "invoiceId",
           "inverseFieldName": "items"
         },
         {
-          "modelName": "Item",
+          "entityName": "Item",
           "name": "invoiceId",
           "type": {
             "type": "TYPE_ID"
           },
           "foreignKeyInfo": {
-            "relatedModelName": "Invoice",
-            "relatedModelField": "id"
+            "relatedEntityName": "Invoice",
+            "relatedEntityField": "id"
           }
         },
         {
-          "modelName": "Item",
+          "entityName": "Item",
           "name": "description",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "modelName": "Item",
+          "entityName": "Item",
           "name": "price",
           "type": {
             "type": "TYPE_DECIMAL"
           }
         },
         {
-          "modelName": "Item",
+          "entityName": "Item",
           "name": "quantity",
           "type": {
             "type": "TYPE_INT"
           }
         },
         {
-          "modelName": "Item",
+          "entityName": "Item",
           "name": "total",
           "type": {
             "type": "TYPE_DECIMAL"
@@ -223,14 +223,14 @@
           }
         },
         {
-          "modelName": "Item",
+          "entityName": "Item",
           "name": "isDeleted",
           "type": {
             "type": "TYPE_BOOL"
           }
         },
         {
-          "modelName": "Item",
+          "entityName": "Item",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -242,7 +242,7 @@
           }
         },
         {
-          "modelName": "Item",
+          "entityName": "Item",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -252,7 +252,7 @@
           }
         },
         {
-          "modelName": "Item",
+          "entityName": "Item",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -276,7 +276,7 @@
       "name": "Identity",
       "fields": [
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "email",
           "type": {
             "type": "TYPE_STRING"
@@ -285,7 +285,7 @@
           "uniqueWith": ["issuer"]
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "emailVerified",
           "type": {
             "type": "TYPE_BOOL"
@@ -297,7 +297,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "password",
           "type": {
             "type": "TYPE_PASSWORD"
@@ -305,7 +305,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "externalId",
           "type": {
             "type": "TYPE_STRING"
@@ -313,7 +313,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "issuer",
           "type": {
             "type": "TYPE_STRING"
@@ -322,7 +322,7 @@
           "uniqueWith": ["email"]
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "name",
           "type": {
             "type": "TYPE_STRING"
@@ -330,7 +330,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "givenName",
           "type": {
             "type": "TYPE_STRING"
@@ -338,7 +338,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "familyName",
           "type": {
             "type": "TYPE_STRING"
@@ -346,7 +346,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "middleName",
           "type": {
             "type": "TYPE_STRING"
@@ -354,7 +354,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "nickName",
           "type": {
             "type": "TYPE_STRING"
@@ -362,7 +362,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "profile",
           "type": {
             "type": "TYPE_STRING"
@@ -370,7 +370,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "picture",
           "type": {
             "type": "TYPE_STRING"
@@ -378,7 +378,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "website",
           "type": {
             "type": "TYPE_STRING"
@@ -386,7 +386,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "gender",
           "type": {
             "type": "TYPE_STRING"
@@ -394,7 +394,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "zoneInfo",
           "type": {
             "type": "TYPE_STRING"
@@ -402,7 +402,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "locale",
           "type": {
             "type": "TYPE_STRING"
@@ -410,7 +410,7 @@
           "optional": true
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -422,7 +422,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -432,7 +432,7 @@
           }
         },
         {
-          "modelName": "Identity",
+          "entityName": "Identity",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"

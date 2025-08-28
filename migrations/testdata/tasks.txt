@@ -1,0 +1,100 @@
+===
+
+model Person {
+    fields {
+        name Text
+        code Text
+    }
+}
+
+task ProcessPerson {
+    fields {
+        person Person
+        personCode Text @unique
+        companyCode Text
+        comments Text @default("none")
+        file File
+    }
+
+    @unique([personCode, companyCode])
+}
+
+===
+
+CREATE TABLE "identity" (
+"email" TEXT,
+"email_verified" BOOL NOT NULL DEFAULT false,
+"password" TEXT,
+"external_id" TEXT,
+"issuer" TEXT,
+"name" TEXT,
+"given_name" TEXT,
+"family_name" TEXT,
+"middle_name" TEXT,
+"nick_name" TEXT,
+"profile" TEXT,
+"picture" TEXT,
+"website" TEXT,
+"gender" TEXT,
+"zone_info" TEXT,
+"locale" TEXT,
+"id" TEXT NOT NULL DEFAULT ksuid(),
+"created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+"updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE "identity" ADD CONSTRAINT identity_id_pkey PRIMARY KEY ("id");
+ALTER TABLE "identity" ADD CONSTRAINT identity_email_issuer_udx UNIQUE ("email", "issuer");
+CREATE TABLE "keel_audit" (
+"id" TEXT NOT NULL DEFAULT ksuid(),
+"table_name" TEXT NOT NULL,
+"op" TEXT NOT NULL,
+"data" jsonb NOT NULL,
+"created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+"identity_id" TEXT,
+"trace_id" TEXT,
+"event_processed_at" TIMESTAMPTZ
+);
+ALTER TABLE "keel_audit" ADD CONSTRAINT keel_audit_id_pkey PRIMARY KEY ("id");
+CREATE TABLE "person" (
+"name" TEXT NOT NULL,
+"code" TEXT NOT NULL,
+"id" TEXT NOT NULL DEFAULT ksuid(),
+"created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+"updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE "person" ADD CONSTRAINT person_id_pkey PRIMARY KEY ("id");
+CREATE TABLE "process_person" (
+"person_id" TEXT NOT NULL,
+"person_code" TEXT NOT NULL,
+"company_code" TEXT NOT NULL,
+"comments" TEXT NOT NULL DEFAULT 'none',
+"file" JSONB NOT NULL,
+"id" TEXT NOT NULL DEFAULT ksuid(),
+"created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+"updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE "process_person" ADD CONSTRAINT process_person_person_code_udx UNIQUE ("person_code");
+ALTER TABLE "process_person" ADD CONSTRAINT process_person_id_pkey PRIMARY KEY ("id");
+ALTER TABLE "process_person" ADD CONSTRAINT process_person_company_code_person_code_udx UNIQUE ("company_code", "person_code");
+ALTER TABLE "process_person" ADD FOREIGN KEY ("person_id") REFERENCES "person"("id") ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE;
+CREATE TRIGGER identity_create AFTER INSERT ON "identity" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER identity_update AFTER UPDATE ON "identity" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER identity_delete AFTER DELETE ON "identity" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER identity_updated_at BEFORE UPDATE ON "identity" FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
+CREATE TRIGGER person_create AFTER INSERT ON "person" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER person_update AFTER UPDATE ON "person" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER person_delete AFTER DELETE ON "person" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER person_updated_at BEFORE UPDATE ON "person" FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
+CREATE TRIGGER process_person_create AFTER INSERT ON "process_person" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER process_person_update AFTER UPDATE ON "process_person" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER process_person_delete AFTER DELETE ON "process_person" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER process_person_updated_at BEFORE UPDATE ON "process_person" FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
+
+===
+
+[
+    {"Model":"Identity","Field":"","Type":"ADDED"},
+    {"Model":"KeelAudit","Field":"","Type":"ADDED"},
+    {"Model":"Person","Field":"","Type":"ADDED"},
+    {"Model":"ProcessPerson","Field":"","Type":"ADDED"}
+]

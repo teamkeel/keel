@@ -91,19 +91,19 @@ func (v *setQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
 		return err
 	}
 
-	if model != nil && expressions.IsModelDbColumn(model, normalised) && len(normalised) > 2 {
+	if model != nil && expressions.IsEntityDbColumn(model, normalised) && len(normalised) > 2 {
 		switch v.action.GetType() {
 		case proto.ActionType_ACTION_TYPE_CREATE:
 			// This section performs a field lookup on a to-be related model as an inline query
 
-			field := proto.FindField(v.schema.GetModels(), model.GetName(), ident.Fragments[1])
-			model = v.schema.FindModel(field.GetType().GetModelName().GetValue())
+			field := model.FindField(ident.Fragments[1])
+			model = v.schema.FindModel(field.GetType().GetEntityName().GetValue())
 			query := NewQuery(model)
 
-			relatedModelField := proto.FindField(v.schema.GetModels(), v.model.GetName(), normalised[1])
+			relatedModelField := v.model.FindField(normalised[1])
 
 			subFragments := normalised[1:]
-			subFragments[0] = strcase.ToLowerCamel(relatedModelField.GetType().GetModelName().GetValue())
+			subFragments[0] = strcase.ToLowerCamel(relatedModelField.GetType().GetEntityName().GetValue())
 
 			err := query.AddJoinFromFragments(v.schema, subFragments)
 			if err != nil {

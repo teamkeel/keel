@@ -30,7 +30,7 @@
             "fieldLocation": {
               "path": "$.items"
             },
-            "fieldType": "TYPE_MODEL",
+            "fieldType": "TYPE_ENTITY",
             "repeated": true,
             "displayName": "Items",
             "visible": true,
@@ -617,7 +617,7 @@
             "fieldLocation": {
               "path": "$.results[*].items"
             },
-            "fieldType": "TYPE_MODEL",
+            "fieldType": "TYPE_ENTITY",
             "repeated": true,
             "displayName": "Items",
             "visible": true,

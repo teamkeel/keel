@@ -79,6 +79,12 @@ type Visitor struct {
 
 	EnterFlowInput func(n *parser.FlowInputNode)
 	LeaveFlowInput func(n *parser.FlowInputNode)
+
+	EnterTask func(n *parser.TaskNode)
+	LeaveTask func(n *parser.TaskNode)
+
+	EnterTaskSection func(n *parser.TaskSectionNode)
+	LeaveTaskSection func(n *parser.TaskSectionNode)
 }
 
 type VisitorFunc func([]*parser.AST, *errorhandling.ValidationErrors) Visitor

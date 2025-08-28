@@ -10,6 +10,17 @@ model Order {
     )
 }
 
+task NewOrder {
+    fields {
+        customer Customer
+    }
+
+    @permission(
+        //expect-error:162:163:AttributeExpressionError:field 'postCod' does not exist
+        expression: newOrder.customer.address.firstLine == "123 Fake Street" || (newOrder.customer.address.secondLine == "Fake Town" && newOrder.customer.address.postCod == "ABC123")
+    )
+}
+
 model Customer {
     fields {
         name Text

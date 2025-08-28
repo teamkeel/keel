@@ -59,7 +59,7 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 	writeFunctionHookTypes(sdkTypes)
 	writeRouteFunctionTypes(sdkTypes)
 
-	writeTableConfig(sdk, schema.GetModels())
+	writeTableConfig(schema, sdk, schema.GetModels())
 	writeAPIFactory(sdk, schema)
 
 	sdk.Writeln("export * from '@teamkeel/functions-runtime';")
@@ -210,7 +210,7 @@ func writeTableInterface(w *codegen.Writer, model *proto.Model) {
 	w.Writef("export interface %sTable {\n", model.GetName())
 	w.Indent()
 	for _, field := range model.GetFields() {
-		if field.GetType().GetType() == proto.Type_TYPE_MODEL {
+		if field.GetType().GetType() == proto.Type_TYPE_ENTITY {
 			continue
 		}
 
@@ -241,7 +241,7 @@ func writeModelInterface(w *codegen.Writer, model *proto.Model, isClientPackage 
 	w.Writef("export interface %s {\n", model.GetName())
 	w.Indent()
 	for _, field := range model.GetFields() {
-		if field.GetType().GetType() == proto.Type_TYPE_MODEL {
+		if field.GetType().GetType() == proto.Type_TYPE_ENTITY {
 			continue
 		}
 
@@ -269,7 +269,7 @@ func writeUpdateValuesType(w *codegen.Writer, model *proto.Model) {
 	w.Writef("export type %sUpdateValues = {\n", model.GetName())
 	w.Indent()
 	for _, field := range model.GetFields() {
-		if field.GetType().GetType() == proto.Type_TYPE_MODEL {
+		if field.GetType().GetType() == proto.Type_TYPE_ENTITY {
 			continue
 		}
 
@@ -324,7 +324,7 @@ func writeEmbeddedModelFields(w *codegen.Writer, schema *proto.Schema, model *pr
 		}
 
 		fieldEmbeddings := []string{}
-		if field.GetType().GetType() == proto.Type_TYPE_MODEL {
+		if field.GetType().GetType() == proto.Type_TYPE_ENTITY {
 			found := false
 
 			for _, embed := range embeddings {
@@ -349,7 +349,7 @@ func writeEmbeddedModelFields(w *codegen.Writer, schema *proto.Schema, model *pr
 		if len(fieldEmbeddings) == 0 {
 			w.Write(toTypeScriptType(field.GetType(), false, false, false))
 		} else {
-			fieldModel := schema.FindModel(field.GetType().GetModelName().GetValue())
+			fieldModel := schema.FindModel(field.GetType().GetEntityName().GetValue())
 			writeEmbeddedModelFields(w, schema, fieldModel, fieldEmbeddings)
 		}
 
@@ -395,12 +395,12 @@ func writeCreateValuesType(w *codegen.Writer, schema *proto.Schema, model *proto
 
 		w.Write(": ")
 
-		if field.GetType().GetType() == proto.Type_TYPE_MODEL {
+		if field.GetType().GetType() == proto.Type_TYPE_ENTITY {
 			if field.IsHasMany() {
 				w.Write("Array<")
 			}
 
-			relation := schema.FindModel(field.GetType().GetModelName().GetValue())
+			relation := schema.FindEntity(field.GetType().GetEntityName().GetValue())
 
 			// For a has-many we need to omit the fields that relate to _this_ model.
 			// For example if we're making the create values type for author, and this
@@ -408,7 +408,7 @@ func writeCreateValuesType(w *codegen.Writer, schema *proto.Schema, model *proto
 			// to expect you to provide "author" or "authorId" - as that field will be filled
 			// in when the author record is created
 			if field.IsHasMany() {
-				inverseField := proto.FindField(schema.GetModels(), relation.GetName(), field.GetInverseFieldName().GetValue())
+				inverseField := relation.FindField(field.GetInverseFieldName().GetValue())
 				w.Writef("Omit<%sCreateValues, '%s' | '%s'>", relation.GetName(), inverseField.GetName(), inverseField.GetForeignKeyFieldName().GetValue())
 			} else {
 				w.Writef("%sCreateValues", relation.GetName())
@@ -455,11 +455,11 @@ func writeCreateValuesType(w *codegen.Writer, schema *proto.Schema, model *proto
 
 		fkName := field.GetForeignKeyFieldName().GetValue()
 
-		relation := schema.FindModel(field.GetType().GetModelName().GetValue())
+		relation := schema.FindModel(field.GetType().GetEntityName().GetValue())
 		relationPk := relation.PrimaryKeyFieldName()
 
 		w.Writef("// Either %s or %s can be provided but not both\n", field.GetName(), fkName)
-		w.Writef("| {%s: %sCreateValues | {%s: string}, %s?: undefined}\n", field.GetName(), field.GetType().GetModelName().GetValue(), relationPk, fkName)
+		w.Writef("| {%s: %sCreateValues | {%s: string}, %s?: undefined}\n", field.GetName(), field.GetType().GetEntityName().GetValue(), relationPk, fkName)
 		w.Writef("| {%s: string, %s?: undefined}\n", fkName, field.GetName())
 
 		w.Dedent()
@@ -523,9 +523,9 @@ func writeWhereConditionsInterface(w *codegen.Writer, model *proto.Model) {
 		w.Write(field.GetName())
 		w.Write("?")
 		w.Write(": ")
-		if field.GetType().GetType() == proto.Type_TYPE_MODEL {
+		if field.GetType().GetType() == proto.Type_TYPE_ENTITY {
 			// Embed related models where conditions
-			w.Writef("%sWhereConditions", field.GetType().GetModelName().GetValue())
+			w.Writef("%sWhereConditions", field.GetType().GetEntityName().GetValue())
 		} else {
 			w.Write(toTypeScriptType(field.GetType(), false, false, false))
 
@@ -672,7 +672,7 @@ func writeUniqueConditionsInterface(w *codegen.Writer, model *proto.Model) {
 			seenCompountUnique[k] = true
 
 			for _, f := range fields {
-				if f.GetType().GetType() == proto.Type_TYPE_MODEL {
+				if f.GetType().GetType() == proto.Type_TYPE_ENTITY {
 					if f.GetForeignKeyFieldName() == nil {
 						// I'm not sure this can happen, but rather than have a cryptic nil-pointer error we'll
 						// panic with a hopefully more helpful error
@@ -700,7 +700,7 @@ func writeUniqueConditionsInterface(w *codegen.Writer, model *proto.Model) {
 			// means given a book id you can find a single author
 			entries = append(entries, &F{
 				key:   f.GetName(),
-				value: fmt.Sprintf("%sUniqueConditions", f.GetType().GetModelName().GetValue()),
+				value: fmt.Sprintf("%sUniqueConditions", f.GetType().GetEntityName().GetValue()),
 			})
 		}
 
@@ -1157,7 +1157,7 @@ func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("export { createContextAPI, createJobContextAPI, createSubscriberContextAPI, createFlowContextAPI };")
 }
 
-func writeTableConfig(w *codegen.Writer, models []*proto.Model) {
+func writeTableConfig(schema *proto.Schema, w *codegen.Writer, models []*proto.Model) {
 	w.Write("const tableConfigMap = ")
 
 	// In case the words map and string over and over aren't clear enough
@@ -1167,13 +1167,13 @@ func writeTableConfig(w *codegen.Writer, models []*proto.Model) {
 
 	for _, model := range models {
 		for _, field := range model.GetFields() {
-			if field.GetType().GetType() != proto.Type_TYPE_MODEL {
+			if field.GetType().GetType() != proto.Type_TYPE_ENTITY {
 				continue
 			}
 
 			relationshipConfig := map[string]string{
-				"referencesTable": casing.ToSnake(field.GetType().GetModelName().GetValue()),
-				"foreignKey":      casing.ToSnake(proto.GetForeignKeyFieldName(models, field)),
+				"referencesTable": casing.ToSnake(field.GetType().GetEntityName().GetValue()),
+				"foreignKey":      casing.ToSnake(schema.GetForeignKeyFieldName(field)),
 			}
 
 			switch {
@@ -1798,12 +1798,12 @@ func toTypeScriptType(t *proto.TypeInfo, includeCompatibleTypes bool, isTestingP
 		}
 	case proto.Type_TYPE_MESSAGE:
 		ret = t.GetMessageName().GetValue()
-	case proto.Type_TYPE_MODEL:
+	case proto.Type_TYPE_ENTITY:
 		// models are imported from the sdk
 		if isTestingPackage {
-			ret = fmt.Sprintf("sdk.%s", t.GetModelName().GetValue())
+			ret = fmt.Sprintf("sdk.%s", t.GetEntityName().GetValue())
 		} else {
-			ret = t.GetModelName().GetValue()
+			ret = t.GetEntityName().GetValue()
 		}
 	case proto.Type_TYPE_SORT_DIRECTION:
 		if isClientPackage {

@@ -12,6 +12,18 @@ model Person {
     @unique([thingB, thingC, thingA])
 }
 
+task ProcessPerson {
+    fields {
+        // deliberately not in alphabetical order to test ordering of constraint columns
+        thingC Text
+        thingB Text
+        thingA Text
+    }
+
+    // deliberately different order from the fields order
+    @unique([thingB, thingC, thingA])
+}
+
 === 
 
 CREATE TABLE "identity" (
@@ -58,19 +70,34 @@ CREATE TABLE "person" (
 );
 ALTER TABLE "person" ADD CONSTRAINT person_id_pkey PRIMARY KEY ("id");
 ALTER TABLE "person" ADD CONSTRAINT person_thing_a_thing_b_thing_c_udx UNIQUE ("thing_a", "thing_b", "thing_c");
-CREATE TRIGGER person_create AFTER INSERT ON "person" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
-CREATE TRIGGER person_update AFTER UPDATE ON "person" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
-CREATE TRIGGER person_delete AFTER DELETE ON "person" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
-CREATE TRIGGER person_updated_at BEFORE UPDATE ON "person" FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
+CREATE TABLE "process_person" (
+"thing_c" TEXT NOT NULL,
+"thing_b" TEXT NOT NULL,
+"thing_a" TEXT NOT NULL,
+"id" TEXT NOT NULL DEFAULT ksuid(),
+"created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+"updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE "process_person" ADD CONSTRAINT process_person_id_pkey PRIMARY KEY ("id");
+ALTER TABLE "process_person" ADD CONSTRAINT process_person_thing_a_thing_b_thing_c_udx UNIQUE ("thing_a", "thing_b", "thing_c");
 CREATE TRIGGER identity_create AFTER INSERT ON "identity" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
 CREATE TRIGGER identity_update AFTER UPDATE ON "identity" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
 CREATE TRIGGER identity_delete AFTER DELETE ON "identity" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
 CREATE TRIGGER identity_updated_at BEFORE UPDATE ON "identity" FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
+CREATE TRIGGER person_create AFTER INSERT ON "person" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER person_update AFTER UPDATE ON "person" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER person_delete AFTER DELETE ON "person" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER person_updated_at BEFORE UPDATE ON "person" FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
+CREATE TRIGGER process_person_create AFTER INSERT ON "process_person" REFERENCING NEW TABLE AS new_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER process_person_update AFTER UPDATE ON "process_person" REFERENCING NEW TABLE AS new_table OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER process_person_delete AFTER DELETE ON "process_person" REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE PROCEDURE process_audit();
+CREATE TRIGGER process_person_updated_at BEFORE UPDATE ON "process_person" FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
 
 === 
 
 [
     {"Model":"Identity","Field":"","Type":"ADDED"},
     {"Model":"KeelAudit","Field":"","Type":"ADDED"},
-    {"Model":"Person","Field":"","Type":"ADDED"}
+    {"Model":"Person","Field":"","Type":"ADDED"},
+    {"Model":"ProcessPerson","Field":"","Type":"ADDED"}
 ]

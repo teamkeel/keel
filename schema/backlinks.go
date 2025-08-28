@@ -70,7 +70,7 @@ func (scm *Builder) insertBackLinkField(
 	// duplicate field name error that is confusing. This is will be an error but will
 	// be caught by relationship validation since it is not possible for Identity
 	// to have any fields which use a user-defined model
-	if query.Field(identityModel, backlinkName) != nil {
+	if identityModel.Field(backlinkName) != nil {
 		return nil
 	}
 

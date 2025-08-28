@@ -28,6 +28,13 @@ func NameClashesRule(asts []*parser.AST, errs *errorhandling.ValidationErrors) V
 				errs.AppendError(err)
 			}
 		},
+		EnterTask: func(t *parser.TaskNode) {
+			err := checkName(t.Name.Value, t.Name.Node)
+
+			if err != nil {
+				errs.AppendError(err)
+			}
+		},
 		EnterMessage: func(m *parser.MessageNode) {
 			err := checkMessageName(asts, m)
 

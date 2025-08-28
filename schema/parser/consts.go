@@ -4,6 +4,7 @@ package parser
 const (
 	KeywordModel   = "model"
 	KeywordModels  = "models"
+	KeywordTask    = "task"
 	KeywordApi     = "api"
 	KeywordMessage = "message"
 	KeywordField   = "field"

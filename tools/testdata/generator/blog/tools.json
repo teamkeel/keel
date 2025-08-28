@@ -236,7 +236,7 @@
             "fieldLocation": {
               "path": "$.comments"
             },
-            "fieldType": "TYPE_MODEL",
+            "fieldType": "TYPE_ENTITY",
             "repeated": true,
             "displayName": "Comments",
             "displayOrder": 8,
@@ -652,7 +652,7 @@
             "fieldLocation": {
               "path": "$.comments"
             },
-            "fieldType": "TYPE_MODEL",
+            "fieldType": "TYPE_ENTITY",
             "repeated": true,
             "displayName": "Comments",
             "displayOrder": 8,
@@ -1592,7 +1592,7 @@
             "fieldLocation": {
               "path": "$.results[*].comments"
             },
-            "fieldType": "TYPE_MODEL",
+            "fieldType": "TYPE_ENTITY",
             "repeated": true,
             "displayName": "Comments",
             "displayOrder": 8,
@@ -2237,7 +2237,7 @@
             "fieldLocation": {
               "path": "$.results[*].comments"
             },
-            "fieldType": "TYPE_MODEL",
+            "fieldType": "TYPE_ENTITY",
             "repeated": true,
             "displayName": "Comments",
             "displayOrder": 8,
@@ -2712,7 +2712,7 @@
             "fieldLocation": {
               "path": "$.comments"
             },
-            "fieldType": "TYPE_MODEL",
+            "fieldType": "TYPE_ENTITY",
             "repeated": true,
             "displayName": "Comments",
             "displayOrder": 8,

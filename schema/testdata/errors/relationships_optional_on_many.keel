@@ -1,6 +1,6 @@
 model Author {
     fields {
-        //expect-error:9:14:RelationshipError:Cannot define a repeated model field as optional
+        //expect-error:9:14:RelationshipError:Cannot define a repeated field as optional
         posts Post[]?
     }
 }

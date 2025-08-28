@@ -11,7 +11,7 @@ func (f *Field) IsFile() bool {
 
 // IsTypeModel returns true of the field's type is Model.
 func (f *Field) IsTypeModel() bool {
-	return f.GetType().GetType() == Type_TYPE_MODEL
+	return f.GetType().GetType() == Type_TYPE_ENTITY
 }
 
 // IsTypeRepeated returns true if the field is specified as
@@ -21,15 +21,15 @@ func (f *Field) IsRepeated() bool {
 }
 
 func (f *Field) IsHasMany() bool {
-	return f.GetType().GetType() == Type_TYPE_MODEL && f.GetForeignKeyFieldName() == nil && f.GetType().GetRepeated()
+	return f.GetType().GetType() == Type_TYPE_ENTITY && f.GetForeignKeyFieldName() == nil && f.GetType().GetRepeated()
 }
 
 func (f *Field) IsHasOne() bool {
-	return f.GetType().GetType() == Type_TYPE_MODEL && f.GetForeignKeyFieldName() == nil && !f.GetType().GetRepeated()
+	return f.GetType().GetType() == Type_TYPE_ENTITY && f.GetForeignKeyFieldName() == nil && !f.GetType().GetRepeated()
 }
 
 func (f *Field) IsBelongsTo() bool {
-	return f.GetType().GetType() == Type_TYPE_MODEL && f.GetForeignKeyFieldName() != nil && !f.GetType().GetRepeated()
+	return f.GetType().GetType() == Type_TYPE_ENTITY && f.GetForeignKeyFieldName() != nil && !f.GetType().GetRepeated()
 }
 
 func (f *Field) IsForeignKey() bool {

@@ -134,7 +134,7 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 	//   - create a new row and relate it to the current row (either referencedBy or references), OR
 	//   - determine that it is a primary key reference, do not create a row, and return the FK to the referencing row.
 	for _, input := range message.GetFields() {
-		field := proto.FindField(scope.Schema.GetModels(), model.GetName(), input.GetName())
+		field := model.FindField(input.GetName())
 
 		// If the input is not targeting a model field, then it is either a:
 		//  - Message, with nested fields which we must recurse into, or an
@@ -142,7 +142,7 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 		if !input.IsModelField() {
 			if input.GetType().GetType() == proto.Type_TYPE_MESSAGE {
 				target := append(newRow.target, casing.ToLowerCamel(input.GetName()))
-				messageModel := scope.Schema.FindModel(field.GetType().GetModelName().GetValue())
+				messageModel := scope.Schema.FindModel(field.GetType().GetEntityName().GetValue())
 				nestedMessage := scope.Schema.FindMessage(input.GetType().GetMessageName().GetValue())
 
 				var foreignKeys map[string]any
@@ -183,8 +183,8 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 						// If there are multiple relationships to the same model, then field.InverseFieldName will be
 						// populated and will provide the disambiguation as to which foreign key field to use.
 						foriegnKeyModelField := lo.Filter(messageModel.GetFields(), func(f *proto.Field, i int) bool {
-							return f.GetType().GetType() == proto.Type_TYPE_MODEL &&
-								f.GetType().GetModelName().GetValue() == model.GetName() &&
+							return f.GetType().GetType() == proto.Type_TYPE_ENTITY &&
+								f.GetType().GetEntityName().GetValue() == model.GetName() &&
 								field != f && // For self-referencing models
 								(field.GetInverseFieldName() == nil || f.GetForeignKeyFieldName().GetValue() == fmt.Sprintf("%sId", field.GetInverseFieldName().GetValue()))
 						})
@@ -246,8 +246,8 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 						if row != nil {
 							// Retrieve the foreign key model field on the this model.
 							foriegnKeyModelField := lo.Filter(model.GetFields(), func(f *proto.Field, _ int) bool {
-								return f.GetType().GetType() == proto.Type_TYPE_MODEL &&
-									f.GetType().GetModelName().GetValue() == messageModel.GetName() &&
+								return f.GetType().GetType() == proto.Type_TYPE_ENTITY &&
+									f.GetType().GetEntityName().GetValue() == messageModel.GetName() &&
 									f.GetName() == input.GetName()
 							})
 
@@ -275,7 +275,7 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 			continue
 		}
 
-		if messageAssociating(scope, message, model) && len(currentTarget) > 1 {
+		if messageAssociating(message, model) && len(currentTarget) > 1 {
 			// We know this needs to be a FK on the referencing row.
 			fieldName := fmt.Sprintf("%sId", input.GetTarget()[len(input.GetTarget())-2])
 
@@ -346,8 +346,8 @@ func targetAssociating(scope *Scope, target []string) bool {
 			if f.GetName() == t {
 				if f.GetType().GetType() == proto.Type_TYPE_MESSAGE {
 					message = scope.Schema.FindMessage(f.GetType().GetMessageName().GetValue())
-					field := proto.FindField(scope.Schema.GetModels(), model.GetName(), t)
-					model = scope.Schema.FindModel(field.GetType().GetModelName().GetValue())
+					field := model.FindField(t)
+					model = scope.Schema.FindModel(field.GetType().GetEntityName().GetValue())
 				}
 				found = true
 				break
@@ -358,19 +358,19 @@ func targetAssociating(scope *Scope, target []string) bool {
 		}
 	}
 
-	return messageAssociating(scope, message, model)
+	return messageAssociating(message, model)
 }
 
 // If this (nested) message going to be used to establish a related association, or
 // are we creating the related data?
-func messageAssociating(scope *Scope, message *proto.Message, model *proto.Model) bool {
+func messageAssociating(message *proto.Message, model *proto.Model) bool {
 	for _, input := range message.GetFields() {
 		// Skip named/non-model inputs
 		if input.Target == nil {
 			continue
 		}
 
-		field := proto.FindField(scope.Schema.GetModels(), model.GetName(), input.GetName())
+		field := model.FindField(input.GetName())
 
 		// If any non-id field is being set, then we are not associating.
 		// This indicates that we are creating.

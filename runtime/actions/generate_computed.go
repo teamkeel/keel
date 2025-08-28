@@ -18,11 +18,11 @@ import (
 )
 
 // GenerateComputedFunction visits the expression and generates a SQL expression.
-func GenerateComputedFunction(ctx context.Context, schema *proto.Schema, model *proto.Model, field *proto.Field) resolve.Visitor[string] {
+func GenerateComputedFunction(ctx context.Context, schema *proto.Schema, entity proto.Entity, field *proto.Field) resolve.Visitor[string] {
 	return &computedQueryGen{
 		ctx:       ctx,
 		schema:    schema,
-		model:     model,
+		entity:    entity,
 		field:     field,
 		sql:       "",
 		functions: arraystack.New(),
@@ -35,7 +35,7 @@ var _ resolve.Visitor[string] = new(computedQueryGen)
 type computedQueryGen struct {
 	ctx       context.Context
 	schema    *proto.Schema
-	model     *proto.Model
+	entity    proto.Entity
 	field     *proto.Field
 	sql       string
 	functions *arraystack.Stack
@@ -184,12 +184,12 @@ func (v *computedQueryGen) VisitLiteral(value any) error {
 }
 
 func (v *computedQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
-	model := v.schema.FindModel(strcase.ToCamel(ident.Fragments[0]))
+	entity := v.schema.FindEntity(strcase.ToCamel(ident.Fragments[0]))
 
-	if model == nil {
+	if entity == nil {
 		enum := v.schema.FindEnum(ident.Fragments[0])
 		if enum == nil {
-			return fmt.Errorf("model or enum not found: %s", ident.Fragments[0])
+			return fmt.Errorf("model, task, or enum not found: %s", ident.Fragments[0])
 		}
 
 		var value string
@@ -208,7 +208,7 @@ func (v *computedQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
 		return nil
 	}
 
-	field := proto.FindField(v.schema.GetModels(), model.GetName(), ident.Fragments[1])
+	field := entity.FindField(ident.Fragments[1])
 
 	normalised, err := NormaliseFragments(v.schema, ident.Fragments)
 	if err != nil {
@@ -229,18 +229,24 @@ func (v *computedQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
 				return errors.New("argument stack is empty")
 			}
 
-			model = v.schema.FindModel(field.GetType().GetModelName().GetValue())
+			entity = v.schema.FindEntity(field.GetType().GetEntityName().GetValue())
 
 			switch arg.(int) {
 			case 1: //the first arg sets the SELECT
-				query := NewQuery(model, EmbedLiterals())
+				query := NewQuery(entity, EmbedLiterals())
 
-				relatedModelField := proto.FindField(v.schema.GetModels(), v.model.GetName(), normalised[1])
-				foreignKeyField := proto.GetForeignKeyFieldName(v.schema.GetModels(), relatedModelField)
+				relatedEntityField := v.entity.FindField(normalised[1])
+				if relatedEntityField == nil {
+					return fmt.Errorf("field %s not found on %s", normalised[1], v.entity.GetName())
+				}
 
-				r := proto.FindField(v.schema.GetModels(), v.model.GetName(), normalised[1])
+				foreignKeyField := v.schema.GetForeignKeyFieldName(relatedEntityField)
+				if foreignKeyField == "" {
+					return fmt.Errorf("foreign key field not found for %s", normalised[1])
+				}
+
 				subFragments := normalised[1:]
-				subFragments[0] = strcase.ToLowerCamel(r.GetType().GetModelName().GetValue())
+				subFragments[0] = strcase.ToLowerCamel(relatedEntityField.GetType().GetEntityName().GetValue())
 
 				err := query.AddJoinFromFragments(v.schema, subFragments)
 				if err != nil {
@@ -282,13 +288,13 @@ func (v *computedQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
 				}
 				query.And()
 
-				v.filter = GenerateFilterQuery(v.ctx, query, v.schema, model, nil, map[string]any{})
+				v.filter = GenerateFilterQuery(v.ctx, query, v.schema, entity, nil, map[string]any{})
 
 			case 2: // the second arg sets the WHERE
 
-				r := proto.FindField(v.schema.GetModels(), v.model.GetName(), normalised[1])
+				r := v.entity.FindField(normalised[1])
 				subFragments := normalised[1:]
-				subFragments[0] = strcase.ToLowerCamel(r.GetType().GetModelName().GetValue())
+				subFragments[0] = strcase.ToLowerCamel(r.GetType().GetEntityName().GetValue())
 
 				newIdent := &parser.ExpressionIdent{
 					Fragments: subFragments,
@@ -298,12 +304,12 @@ func (v *computedQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
 			}
 		} else {
 			// Join together all the tables based on the ident fragments
-			model = v.schema.FindModel(field.GetType().GetModelName().GetValue())
-			query := NewQuery(model)
+			entity = v.schema.FindEntity(field.GetType().GetEntityName().GetValue())
+			query := NewQuery(entity)
 
-			relatedModelField := proto.FindField(v.schema.GetModels(), v.model.GetName(), normalised[1])
+			relatedEntityField := v.entity.FindField(normalised[1])
 			subFragments := normalised[1:]
-			subFragments[0] = strcase.ToLowerCamel(relatedModelField.GetType().GetModelName().GetValue())
+			subFragments[0] = strcase.ToLowerCamel(relatedEntityField.GetType().GetEntityName().GetValue())
 
 			err := query.AddJoinFromFragments(v.schema, subFragments)
 			if err != nil {
@@ -316,7 +322,7 @@ func (v *computedQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
 			query.Select(ExpressionField(fragments, fieldName, false))
 
 			// Filter by this model's row's ID
-			foreignKeyField := proto.GetForeignKeyFieldName(v.schema.GetModels(), relatedModelField)
+			foreignKeyField := v.schema.GetForeignKeyFieldName(relatedEntityField)
 
 			fk := fmt.Sprintf("r.\"%s\"", strcase.ToSnake(foreignKeyField))
 			err = query.Where(IdField(), Equals, Raw(fk))
@@ -333,7 +339,7 @@ func (v *computedQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
 }
 
 func (v *computedQueryGen) isToManyLookup(idents *parser.ExpressionIdent) (bool, error) {
-	model := v.schema.FindModel(strcase.ToCamel(idents.Fragments[0]))
+	entity := v.schema.FindEntity(strcase.ToCamel(idents.Fragments[0]))
 
 	fragments, err := NormaliseFragments(v.schema, idents.Fragments)
 	if err != nil {
@@ -342,11 +348,11 @@ func (v *computedQueryGen) isToManyLookup(idents *parser.ExpressionIdent) (bool,
 
 	for i := 1; i < len(fragments)-1; i++ {
 		currentFragment := fragments[i]
-		field := proto.FindField(v.schema.GetModels(), model.GetName(), currentFragment)
-		if field.GetType().GetType() == proto.Type_TYPE_MODEL && field.GetType().GetRepeated() {
+		field := entity.FindField(currentFragment)
+		if field.GetType().GetType() == proto.Type_TYPE_ENTITY && field.GetType().GetRepeated() {
 			return true, nil
 		}
-		model = v.schema.FindModel(field.GetType().GetModelName().GetValue())
+		entity = v.schema.FindEntity(field.GetType().GetEntityName().GetValue())
 	}
 
 	return false, nil

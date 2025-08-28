@@ -7,25 +7,26 @@ import (
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
-// ModelNamesMaxLengthRule will validate that model names are smaller than the maximum allowed by postgres (63 bytes).
+// NamesMaxLengthRule will validate that model and task names are smaller than the maximum allowed by postgres (63 bytes).
 //
 // The maximum field length is given by: 63 - 11 (to accommodate for the longest trigger name suffix: _updated_at) hard limit.
 // This maximum length is applied to the snake cased version of the field name.
-func ModelNamesMaxLengthRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
+func NamesMaxLengthRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	const (
 		maxBytes  = 63
 		maxSuffix = "_updated_at"
 	)
 
-	for _, model := range query.Models(asts) {
-		identifier := casing.ToSnake(model.Name.Value) + maxSuffix
+	for _, entity := range query.Entities(asts) {
+		identifier := casing.ToSnake(entity.GetName()) + maxSuffix
 
 		if len(identifier) > maxBytes {
 			errs.Append(errorhandling.ErrorModelNamesMaxLength,
 				map[string]string{
-					"Name": model.Name.Value,
+					"Name":      entity.GetName(),
+					"DefinedOn": entity.EntityType(),
 				},
-				model.Name,
+				entity.Node().Name,
 			)
 		}
 	}
