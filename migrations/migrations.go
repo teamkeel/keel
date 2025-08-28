@@ -51,6 +51,9 @@ var (
 
 	//go:embed flows.sql
 	flowsTables string
+
+	//go:embed tasks.sql
+	tasksTables string
 )
 
 type DatabaseChange struct {
@@ -128,10 +131,6 @@ func (m *Migrations) Apply(ctx context.Context, dryRun bool) error {
 	sql.WriteString(fmt.Sprintf("INSERT INTO keel_schema (schema) VALUES (%s);", escapedJSON))
 	sql.WriteString("\n")
 
-	// Flows tables
-	sql.WriteString(flowsTables)
-	sql.WriteString("\n")
-
 	sql.WriteString("CREATE TABLE IF NOT EXISTS keel_refresh_token (token TEXT NOT NULL PRIMARY KEY, identity_id TEXT NOT NULL, created_at TIMESTAMP, expires_at TIMESTAMP);\n")
 	sql.WriteString("\n")
 
@@ -149,6 +148,14 @@ func (m *Migrations) Apply(ctx context.Context, dryRun bool) error {
 
 	// Data migration when migrating to new authentication methods.
 	sql.WriteString("UPDATE identity SET issuer = 'https://keel.so' WHERE issuer = 'keel';\n")
+
+	// Flows tables
+	sql.WriteString(flowsTables)
+	sql.WriteString("\n")
+
+	// Tasks tables
+	sql.WriteString(tasksTables)
+	sql.WriteString("\n")
 
 	if dryRun {
 		sql.WriteString("ROLLBACK TRANSACTION;\n")
