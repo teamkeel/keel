@@ -266,32 +266,6 @@ func FindModels(allModels []*Model, namesToFind []string) (foundModels []*Model)
 	return foundModels
 }
 
-// func FindField(models []*Model, modelName string, fieldName string) *Field {
-// 	model := FindModel(models, modelName)
-// 	for _, field := range model.GetFields() {
-// 		if field.GetName() == fieldName {
-// 			return field
-// 		}
-// 	}
-// 	return nil
-// }
-
-// // ModelHasField returns true IF the schema contains a model of the given name AND
-// // that model has a field of the given name.
-// func ModelHasField(schema *Schema, model string, field string) bool {
-// 	for _, m := range schema.GetModels() {
-// 		if m.GetName() != model {
-// 			continue
-// 		}
-// 		for _, f := range m.GetFields() {
-// 			if f.GetName() == field {
-// 				return true
-// 			}
-// 		}
-// 	}
-// 	return false
-// }
-
 // EnumExists returns true if the given schema contains a
 // enum with the given name.
 func EnumExists(enums []*Enum, name string) bool {
