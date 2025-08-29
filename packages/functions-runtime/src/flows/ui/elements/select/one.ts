@@ -13,9 +13,10 @@ type ElementDataType = string | number | boolean | Date;
 export type UiElementSelectOne = <
   const TValue extends ElementDataType,
   N extends string,
+  O extends boolean = false,
 >(
   name: N,
-  options?: BaseInputConfig<TValue> & {
+  options?: BaseInputConfig<TValue, O> & {
     options: (
       | {
           label: string;
@@ -24,7 +25,7 @@ export type UiElementSelectOne = <
       | TValue
     )[];
   }
-) => InputElementResponse<N, TValue>;
+) => InputElementResponse<N, O extends true ? TValue | undefined : TValue>;
 
 // The shape of the response over the API
 export interface UiElementSelectOneApiResponse

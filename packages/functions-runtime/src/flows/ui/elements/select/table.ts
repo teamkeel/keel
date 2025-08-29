@@ -15,18 +15,37 @@ export type UiElementSelectTable = <
   const T extends Record<string, any>,
   N extends string,
   const M extends SelectMode = "multi",
+  const O extends boolean = false,
 >(
   name: N,
-  options: TableOptions<T, M>
-) => InputElementResponse<N, M extends "single" ? T : T[]>;
+  options: TableOptions<T, O, M>
+) => InputElementResponse<
+  N,
+  M extends "single" ? (O extends true ? T | undefined : T) : T[]
+>;
 
 export type TableOptions<
   T extends Record<string, any>,
-  M extends SelectMode = "multi",
-> = Omit<BaseInputConfig<T>, "defaultValue" | "label"> &
-  TableData<T> & {
-    mode?: M;
-  };
+  O extends boolean,
+  M extends SelectMode,
+> = Omit<
+  BaseInputConfig<
+    M extends "single" ? (O extends true ? T | undefined : T) : T[],
+    O
+  >,
+  "defaultValue" | "label"
+> &
+  TableData<T> &
+  (
+    | {
+        mode?: M;
+      }
+    | {
+        mode: "multi";
+        max?: number;
+        min?: number;
+      }
+  );
 
 // The shape of the response over the API
 export interface UiElementSelectTableApiResponse
@@ -34,7 +53,7 @@ export interface UiElementSelectTableApiResponse
     BaseUiInputResponse<"ui.select.table", any>,
     "defaultValue" | "label"
   > {
-  data: any[];
+  data: Record<string, any>[];
   columns: TableColumn[];
   mode: SelectMode;
 }

@@ -2,10 +2,14 @@ import { describe, expect, test } from "vitest";
 import { SelectMode, selectTable, TableOptions } from "./table";
 
 // Use the usage input and return the ui config response
-const testTableAPI = <T extends Record<string, any>, M extends SelectMode>(
-  options: TableOptions<T, M>
+const testTableAPI = <
+  T extends Record<string, any>,
+  M extends SelectMode,
+  O extends boolean,
+>(
+  options: TableOptions<T, O, M>
 ) => {
-  return selectTable("name", options as TableOptions<any>).uiConfig;
+  return selectTable("name", options as TableOptions<any, any, any>).uiConfig;
 };
 
 describe("select.table element", () => {
