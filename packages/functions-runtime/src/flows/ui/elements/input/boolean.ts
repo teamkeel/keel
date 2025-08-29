@@ -37,6 +37,7 @@ export const booleanInput: InputElementImplementation<
       mode: options?.mode || "checkbox",
     } satisfies UiElementInputBooleanApiResponse,
     validate: options?.validate,
+    onLeave: options?.onLeave,
     getData: (x: any) => x,
   };
 };

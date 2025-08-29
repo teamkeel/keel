@@ -177,11 +177,16 @@ export interface BaseInputConfig<T> {
   optional?: boolean;
   disabled?: boolean;
   validate?: ValidateFn<T>;
+  onLeave?: CallbackFn<T, T>;
 }
 
 export type ValidateFn<T> = (
   data: T
 ) => Promise<boolean | string> | boolean | string;
+
+export type CallbackFn<InputT, OutputT> = (
+  data: InputT
+) => Promise<OutputT> | OutputT;
 
 // Base response for all inputs
 export interface BaseUiInputResponse<K, TData> {
@@ -288,6 +293,7 @@ export type InputElementImplementationResponse<TApiResponse, TData> = {
   uiConfig: TApiResponse;
   getData: (data: TData) => TData;
   validate?: ValidateFn<TData>;
+  onLeave?: CallbackFn<TData, TData>;
 };
 
 export type IteratorElementImplementation<
@@ -303,6 +309,7 @@ export type IteratorElementImplementationResponse<TApiResponse, TData> = {
   uiConfig: TApiResponse;
   getData: (data: TData) => TData;
   validate?: ValidateFn<TData>;
+  onLeave?: CallbackFn<TData, TData>;
 };
 
 export type DisplayElementImplementation<

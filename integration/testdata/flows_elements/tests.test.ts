@@ -2,6 +2,101 @@ import { resetDatabase, models, flows } from "@teamkeel/testing";
 import { beforeEach, expect, test } from "vitest";
 
 beforeEach(resetDatabase);
+test("flows - callback flow", async () => {
+  let flow = await flows.callbackFlow.start({});
+  expect(flow).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "AWAITING_INPUT",
+    name: "CallbackFlow",
+    startedBy: null,
+    input: {},
+    data: null,
+    steps: [
+      {
+        id: expect.any(String),
+        name: "my page",
+        runId: expect.any(String),
+        stage: null,
+        status: "PENDING",
+        type: "UI",
+        value: null,
+        error: null,
+        startTime: expect.any(Date),
+        endTime: null,
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        ui: {
+          __type: "ui.page",
+          content: [
+            {
+              __type: "ui.input.number",
+              defaultValue: 1,
+              disabled: false,
+              label: "How many numbers?",
+              name: "numberInput",
+              optional: false,
+            },
+            {
+              __type: "ui.input.boolean",
+              disabled: false,
+              label: "True?",
+              mode: "checkbox",
+              name: "boolInput",
+              optional: false,
+            },
+          ],
+          hasValidationErrors: false,
+        },
+      },
+    ],
+    createdAt: expect.any(Date),
+    updatedAt: expect.any(Date),
+    config: {
+      title: "Callback flow",
+    },
+  });
+
+  let callbackResponse = await flows.callbackFlow.callback(
+    flow.id,
+    flow.steps[0].id,
+    "numberInput",
+    "onLeave",
+    12
+  );
+  expect(callbackResponse).toEqual(24);
+
+  callbackResponse = await flows.callbackFlow.callback(
+    flow.id,
+    flow.steps[0].id,
+    "numberInput",
+    "onLeave",
+    50
+  );
+  expect(callbackResponse).toEqual(100);
+
+  callbackResponse = await flows.callbackFlow.callback(
+    flow.id,
+    flow.steps[0].id,
+    "boolInput",
+    "onLeave",
+    false
+  );
+  expect(callbackResponse).toEqual(true);
+
+  await expect(
+    flows.callbackFlow.callback(
+      flow.id,
+      flow.steps[0].id,
+      "wrong",
+      "onLeave",
+      false
+    )
+  ).toHaveError({
+    code: "ERR_UNKNOWN",
+    message: "Element with name wrong not found",
+  });
+});
 
 test("flows - iterator element", async () => {
   let flow = await flows.iterator.start({});
