@@ -767,7 +767,9 @@
       "properties": {
         "data": {
           "type": "array",
-          "items": true
+          "items": {
+            "$ref": "#/$defs/Record<string,any>"
+          }
         },
         "columns": {
           "type": "array",
@@ -821,6 +823,10 @@
         "name",
         "optional"
       ]
+    },
+    "Record<string,any>": {
+      "type": "object",
+      "additionalProperties": false
     },
     "SelectMode": {
       "enum": [

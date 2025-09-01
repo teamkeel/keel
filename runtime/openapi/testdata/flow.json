@@ -658,11 +658,11 @@
             "required": ["title"]
           },
           "createdAt": { "type": "string", "format": "date-time" },
-          "startTime": { "type": "string", "format": "date-time" },
           "data": { "type": ["object", "null"] },
           "id": { "type": "string" },
           "input": { "type": ["object", "null"], "additionalProperties": true },
           "name": { "type": "string" },
+          "startTime": { "type": "string", "format": "date-time" },
           "startedBy": { "type": ["string", "null"] },
           "status": {
             "type": "string",
@@ -801,6 +801,10 @@
           "KeyValueMode": {
             "type": "string",
             "enum": ["card", "grid", "list"]
+          },
+          "Record\u003cstring,any\u003e": {
+            "type": "object",
+            "additionalProperties": false
           },
           "SelectMode": { "type": "string", "enum": ["multi", "single"] },
           "UiCompleteApiResponse": {
@@ -1304,7 +1308,12 @@
                   "required": ["index", "name"]
                 }
               },
-              "data": { "type": "array", "items": {} },
+              "data": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/__UiConfigSchemas/$defs/Record\u003cstring,any\u003e"
+                }
+              },
               "disabled": { "type": "boolean" },
               "helpText": { "type": "string" },
               "mode": {
