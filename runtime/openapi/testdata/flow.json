@@ -806,14 +806,39 @@
           "UiCompleteApiResponse": {
             "type": "object",
             "properties": {
-              "__type": { "type": "string", "const": "ui.complete" },
-              "autoClose": { "type": "boolean" },
+              "stage": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
               "content": {
                 "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementApiResponses"
               },
-              "description": { "type": "string" },
-              "stage": { "type": "string" },
-              "title": { "type": "string" }
+              "autoClose": {
+                "type": "boolean"
+              },
+              "allowRestart": {
+                "additionalProperties": false,
+                "type": "object",
+                "properties": {
+                  "inputs": {},
+                  "mode": {
+                    "enum": ["auto", "manual"],
+                    "type": "string"
+                  },
+                  "buttonLabel": {
+                    "type": "string"
+                  }
+                }
+              },
+              "__type": {
+                "type": "string",
+                "const": "ui.complete"
+              }
             },
             "additionalProperties": false,
             "required": ["__type", "content"]

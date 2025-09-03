@@ -27,6 +27,24 @@
         "autoClose": {
           "type": "boolean"
         },
+        "allowRestart": {
+          "additionalProperties": false,
+          "type": "object",
+          "properties": {
+            "inputs": true,
+            "mode": {
+              "description": "If auto, the flow will restart automatically with a notification instead of a completion screen.\nIf manual, a button will be shown on the completion screen.\nDefault is manual.",
+              "enum": [
+                "auto",
+                "manual"
+              ],
+              "type": "string"
+            },
+            "buttonLabel": {
+              "type": "string"
+            }
+          }
+        },
         "__type": {
           "type": "string",
           "const": "ui.complete"
