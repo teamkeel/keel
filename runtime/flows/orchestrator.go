@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/scheduler"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/relvacode/iso8601"
+	"github.com/teamkeel/keel/events"
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
@@ -348,6 +349,15 @@ func (o *Orchestrator) CallFlow(ctx context.Context, run *Run, inputs map[string
 		span.SetStatus(codes.Error, err.Error())
 		span.SetAttributes(attribute.String("response.body", string(b)))
 		return nil, err
+	}
+
+	// after successful invocation of the flow, we need to trigger the event subscribers for this schema
+	// Generate and send any events for this context.
+	// Failure to generate events fail silently.
+	eventsErr := events.SendEvents(ctx, o.schema)
+	if eventsErr != nil {
+		span.RecordError(eventsErr)
+		span.SetStatus(codes.Error, eventsErr.Error())
 	}
 
 	return &respBody, nil

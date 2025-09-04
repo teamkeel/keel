@@ -1,8 +1,11 @@
 import { withDatabase } from "./database";
+import { withAuditContext } from "./auditing";
 
-function tryExecuteFlow(db, cb) {
+function tryExecuteFlow(db, request, cb) {
   return withDatabase(db, false, async () => {
-    return cb();
+    return withAuditContext(request, async () => {
+      return cb();
+    });
   });
 }
 

@@ -97,7 +97,7 @@ async function handleFlow(request: any, config: any) {
           undefined;
 
         try {
-          response = await tryExecuteFlow(db, async () => {
+          response = await tryExecuteFlow(db, request, async () => {
             return flowFunction(ctx, inputs);
           });
         } catch (e) {
