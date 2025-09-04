@@ -170,11 +170,11 @@ export interface IteratorElementResponse<N extends string, E extends UIElements>
 }
 
 // Config that applied to all inputs
-export interface BaseInputConfig<T> {
+export interface BaseInputConfig<T, O extends boolean = boolean> {
   label?: string;
   defaultValue?: T;
   helpText?: string;
-  optional?: boolean;
+  optional?: O;
   disabled?: boolean;
   validate?: ValidateFn<T>;
 }
