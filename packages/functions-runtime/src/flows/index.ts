@@ -80,12 +80,12 @@ const defaultOpts = {
   timeout: 60000,
 };
 
-export interface FlowContext<C extends FlowConfig, E, S, Id> {
+export interface FlowContext<C extends FlowConfig, E, S, Id, I> {
   // Defines a function step that will be run in the flow.
   step: Step<C>;
   // Defines a UI step that will be run in the flow.
   ui: UI<C>;
-  complete: Complete<C>;
+  complete: Complete<C, I>;
   env: E;
   now: Date;
   secrets: S;
@@ -155,10 +155,10 @@ export interface FlowConfigAPI {
   description?: string;
 }
 
-export type FlowFunction<C extends FlowConfig, E, S, Id, I = {}> = (
-  ctx: FlowContext<C, E, S, Id>,
+export type FlowFunction<C extends FlowConfig, E, S, Id, I = undefined> = (
+  ctx: FlowContext<C, E, S, Id, I>,
   inputs: I
-) => Promise<CompleteOptions<C> | any | void>;
+) => Promise<CompleteOptions<C, I> | any | void>;
 
 // Extract the stage keys from the flow config supporting either a string or an object with a key property
 export type ExtractStageKeys<T extends FlowConfig> = T extends {
@@ -186,7 +186,7 @@ type StageConfigObject = {
 
 type StageConfig = string | StageConfigObject;
 
-export function createFlowContext<C extends FlowConfig, E, S, I>(
+export function createFlowContext<C extends FlowConfig, E, S, Id, I>(
   runId: string,
   data: any,
   action: string | null,
@@ -195,9 +195,9 @@ export function createFlowContext<C extends FlowConfig, E, S, I>(
     env: E;
     now: Date;
     secrets: S;
-    identity: I;
+    identity: Id;
   }
-): FlowContext<C, E, S, I> {
+): FlowContext<C, E, S, Id, I> {
   // Track step and page names to prevent duplicates
   const usedNames = new Set<string>();
 

@@ -93,7 +93,8 @@ async function handleFlow(request: any, config: any) {
         // parse request params to convert objects into rich field types (e.g. InlineFile)
         const inputs = parseInputs(request.meta?.inputs);
 
-        let response: CompleteOptions<FlowConfig> | any | void = undefined;
+        let response: CompleteOptions<FlowConfig, unknown> | any | void =
+          undefined;
 
         try {
           response = await tryExecuteFlow(db, async () => {
