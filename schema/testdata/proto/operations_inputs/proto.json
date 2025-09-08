@@ -26,6 +26,14 @@
         },
         {
           "entityName": "Foo",
+          "name": "f4",
+          "type": {
+            "type": "TYPE_MARKDOWN"
+          },
+          "optional": true
+        },
+        {
+          "entityName": "Foo",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -497,6 +505,62 @@
       ]
     },
     {
+      "name": "QueryInput",
+      "fields": [
+        {
+          "messageName": "QueryInput",
+          "name": "equals",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true,
+          "nullable": true
+        },
+        {
+          "messageName": "QueryInput",
+          "name": "notEquals",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true,
+          "nullable": true
+        },
+        {
+          "messageName": "QueryInput",
+          "name": "startsWith",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "QueryInput",
+          "name": "endsWith",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "QueryInput",
+          "name": "contains",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "QueryInput",
+          "name": "oneOf",
+          "type": {
+            "type": "TYPE_STRING",
+            "repeated": true
+          },
+          "optional": true
+        }
+      ]
+    },
+    {
       "name": "OpBWhere",
       "fields": [
         {
@@ -516,6 +580,15 @@
             "messageName": "IntQueryInput"
           },
           "target": ["f2"]
+        },
+        {
+          "messageName": "OpBWhere",
+          "name": "f4",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "QueryInput"
+          },
+          "target": ["f4"]
         }
       ]
     },

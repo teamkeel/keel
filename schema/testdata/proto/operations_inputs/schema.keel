@@ -3,11 +3,12 @@ model Foo {
         f1 Text
         f2 Number
         f3 File
+        f4 Markdown?
     }
 
     actions {
         get opA(id)
-        list opB(f1, f2)
+        list opB(f1, f2, f4)
         update opC(id) with (f1)
         create opD() with (f1, f2, f3)
     }
