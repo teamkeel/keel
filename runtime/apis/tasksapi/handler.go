@@ -1,0 +1,154 @@
+package tasksapi
+
+import (
+	"errors"
+	"net/http"
+	"path"
+	"strings"
+
+	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/actions"
+	"github.com/teamkeel/keel/runtime/apis/httpjson"
+	"github.com/teamkeel/keel/runtime/auth"
+	"github.com/teamkeel/keel/runtime/common"
+	"github.com/teamkeel/keel/runtime/locale"
+	"github.com/teamkeel/keel/runtime/tasks"
+	"go.opentelemetry.io/otel"
+)
+
+var tracer = otel.Tracer("github.com/teamkeel/keel/runtime/apis/tasksapi")
+
+func Handler(s *proto.Schema) common.HandlerFunc {
+	return func(r *http.Request) common.Response {
+		ctx, span := tracer.Start(r.Context(), "TasksAPI")
+		defer span.End()
+
+		identity, err := actions.HandleAuthorizationHeader(ctx, s, r.Header)
+		if err != nil {
+			return httpjson.NewErrorResponse(ctx, err, nil)
+		}
+		if identity != nil {
+			ctx = auth.WithIdentity(ctx, identity)
+		}
+
+		path := path.Clean(r.URL.EscapedPath())
+		pathParts := strings.Split(strings.TrimPrefix(path, "/topics/"), "/")
+
+		topic := s.FindTask(pathParts[0])
+		if topic == nil {
+			return httpjson.NewErrorResponse(ctx, common.NewNotFoundError("Not found"), nil)
+		}
+
+		// authorise that the user is allowed to access this topic
+		authorised, err := tasks.AuthoriseTopic(ctx, s, topic)
+		if err != nil {
+			return httpjson.NewErrorResponse(ctx, err, nil)
+		}
+		if !authorised {
+			return httpjson.NewErrorResponse(ctx, common.NewPermissionError(), nil)
+		}
+
+		switch len(pathParts) {
+		case 1:
+			// GET topics/{name} - Retrieves specific topic with basic metric data
+			if r.Method != http.MethodGet {
+				return httpjson.NewErrorResponse(ctx, common.NewHttpMethodNotAllowedError("only HTTP GET accepted"), nil)
+			}
+			tData, err := tasks.GetTopic(ctx, topic, false)
+			if err != nil {
+				return httpjson.NewErrorResponse(ctx, err, nil)
+			}
+
+			return common.NewJsonResponse(http.StatusOK, tData, nil)
+		case 2:
+			// GET topics/{name}/stats - Retrieves the topic’s detailed metric data
+			// TODO: POST topics/{name}/tasks - Creates a new task for the queue
+			// TODO: GET topics/{name}/tasks - Retrieves all tasks in a topic’s queue
+			switch pathParts[1] {
+			case "stats":
+				// GET topics/{name}/stats - Retrieves the topic’s detailed metric data
+				if r.Method != http.MethodGet {
+					return httpjson.NewErrorResponse(ctx, common.NewHttpMethodNotAllowedError("only HTTP GET accepted"), nil)
+				}
+				tData, err := tasks.GetTopic(ctx, topic, true)
+				if err != nil {
+					return httpjson.NewErrorResponse(ctx, err, nil)
+				}
+
+				return common.NewJsonResponse(http.StatusOK, tData, nil)
+			case "tasks":
+				//TODO:
+				return httpjson.NewErrorResponse(ctx, common.NewNotFoundError("Not found"), nil)
+			}
+
+		case 3:
+			// TODO: POST topics/{name}/tasks/next - Assigns next task to me (or returns my current task)
+
+			return httpjson.NewErrorResponse(ctx, common.NewNotFoundError("Not found"), nil)
+		case 4:
+			// PUT topics/{name}/tasks/{id}/complete - Completes a task
+			// TODO: PUT topics/{name}/tasks/{id}/defer - Defers a task until a later period
+			// TODO: PUT topics/{name}/tasks/{id}/cancel - Cancels a task
+			// TODO: PUT topics/{name}/tasks/{id}/assign - Assigns the task to a new identity
+			if r.Method != http.MethodPut {
+				return httpjson.NewErrorResponse(ctx, common.NewHttpMethodNotAllowedError("only HTTP PUT accepted"), nil)
+			}
+			switch pathParts[3] {
+			case "complete":
+				task, err := tasks.CompleteTask(ctx, topic, pathParts[2])
+				if err != nil {
+					if errors.Is(err, tasks.ErrTaskNotFound) {
+						return httpjson.NewErrorResponse(ctx, common.NewNotFoundError("Not found"), nil)
+					}
+
+					return httpjson.NewErrorResponse(ctx, err, nil)
+				}
+				return common.NewJsonResponse(http.StatusOK, task, nil)
+			}
+		}
+
+		return httpjson.NewErrorResponse(ctx, common.NewNotFoundError("Not found"), nil)
+	}
+}
+
+// ListTopicsHandler handles a request to /topics and returns data about all topics defined in the schema.
+func ListTopicsHandler(p *proto.Schema) common.HandlerFunc {
+	return func(r *http.Request) common.Response {
+		ctx, span := tracer.Start(r.Context(), "TopicsAPI")
+		defer span.End()
+
+		identity, err := actions.HandleAuthorizationHeader(ctx, p, r.Header)
+		if err != nil {
+			return httpjson.NewErrorResponse(ctx, err, nil)
+		}
+		if identity != nil {
+			ctx = auth.WithIdentity(ctx, identity)
+		}
+
+		// handle any Time-Zone headers
+		location, err := locale.HandleTimezoneHeader(ctx, r.Header)
+		if err != nil {
+			return httpjson.NewErrorResponse(ctx, common.NewInputMalformedError(err.Error()), nil)
+		}
+		ctx = locale.WithTimeLocation(ctx, location)
+
+		if r.Method != http.MethodGet {
+			return httpjson.NewErrorResponse(ctx, common.NewHttpMethodNotAllowedError("only HTTP GET accepted"), nil)
+		}
+
+		authorisedTopics, err := tasks.AuthorisedTopics(ctx, p)
+		if err != nil {
+			return httpjson.NewErrorResponse(ctx, err, nil)
+		}
+
+		topics := []*tasks.Topic{}
+		for _, t := range authorisedTopics {
+			topic, err := tasks.GetTopic(ctx, t, false)
+			if err != nil {
+				return httpjson.NewErrorResponse(ctx, err, nil)
+			}
+			topics = append(topics, topic)
+		}
+		return common.NewJsonResponse(http.StatusOK, map[string]any{"topics": topics}, nil)
+	}
+}

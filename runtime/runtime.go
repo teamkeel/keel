@@ -20,6 +20,7 @@ import (
 	"github.com/teamkeel/keel/runtime/apis/graphql"
 	"github.com/teamkeel/keel/runtime/apis/httpjson"
 	"github.com/teamkeel/keel/runtime/apis/jsonrpc"
+	"github.com/teamkeel/keel/runtime/apis/tasksapi"
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"go.opentelemetry.io/otel"
@@ -44,12 +45,14 @@ func GetVersion() string {
 func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 	var apiHandler common.HandlerFunc
 	var flowsHandler common.HandlerFunc
+	var tasksHandler common.HandlerFunc
 	var authHandler func(http.ResponseWriter, *http.Request) common.Response
 	var router *httprouter.Router
 	if currSchema != nil {
 		apiHandler = NewApiHandler(currSchema)
 		flowsHandler = NewFlowsHandler(currSchema)
 		authHandler = NewAuthHandler(currSchema)
+		tasksHandler = NewTasksHandler(currSchema)
 		router = NewRouter(currSchema)
 	}
 
@@ -61,7 +64,7 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 			attribute.String("runtime_version", Version),
 		)
 
-		if apiHandler == nil || authHandler == nil || flowsHandler == nil {
+		if apiHandler == nil || authHandler == nil || flowsHandler == nil || tasksHandler == nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte("cannot serve requests when handlers are not set up"))
 			return
@@ -72,6 +75,8 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 		var response common.Response
 		path := r.URL.Path
 		switch {
+		case strings.HasPrefix(path, "/topics"):
+			response = tasksHandler(r)
 		case strings.HasPrefix(path, "/flows"):
 			response = flowsHandler(r)
 		case strings.HasPrefix(path, "/auth"):
@@ -215,6 +220,37 @@ func NewFlowsHandler(s *proto.Schema) common.HandlerFunc {
 		for k := range r.Header {
 			headers[k] = r.Header.Values(k)
 		}
+		ctx = runtimectx.WithRequestHeaders(ctx, headers)
+		r = r.WithContext(ctx)
+
+		return handler(r)
+	})
+}
+
+// NewTasksHandler handles requests to the tasks api.
+func NewTasksHandler(s *proto.Schema) common.HandlerFunc {
+	defaultTasksHandler := tasksapi.Handler(s)
+
+	explicitHandlers := map[string]common.HandlerFunc{
+		"/topics": tasksapi.ListTopicsHandler(s),
+		// 	"/topics/openapi.json": tasksapi.OpenAPISchemaHandler(s),
+	}
+
+	return withRequestResponseLogging(func(r *http.Request) common.Response {
+		ctx := r.Context()
+
+		handler, ok := explicitHandlers[strings.ToLower(r.URL.Path)]
+		if !ok {
+			handler = defaultTasksHandler
+		}
+
+		// Collect request headers and add to runtime context
+		// These are exposed in custom functions and in expressions
+		headers := map[string][]string{}
+		for k := range r.Header {
+			headers[k] = r.Header.Values(k)
+		}
+
 		ctx = runtimectx.WithRequestHeaders(ctx, headers)
 		r = r.WithContext(ctx)
 

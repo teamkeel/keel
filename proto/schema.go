@@ -189,7 +189,19 @@ func (s *Schema) FindJob(name string) *Job {
 	job, _ := lo.Find(s.GetJobs(), func(m *Job) bool {
 		return m.GetName() == name
 	})
+
 	return job
+}
+
+// FindTask finds the task with the given name. Returns nil if a task is not found. The matching is case insensitive.
+func (s *Schema) FindTask(name string) *Task {
+	for _, t := range s.GetTasks() {
+		if strings.EqualFold(t.GetName(), name) {
+			return t
+		}
+	}
+
+	return nil
 }
 
 // FindEventSubscribers locates the subscribers for the given event.
