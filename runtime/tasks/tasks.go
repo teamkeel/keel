@@ -3,11 +3,16 @@ package tasks
 import (
 	"context"
 	"errors"
+	"slices"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/proto"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -44,10 +49,84 @@ func (t *Task) isCompleted() bool {
 	return t.Status == StatusCompleted
 }
 
+type paginationFields struct {
+	Limit  int
+	After  *string
+	Before *string
+}
+
+// Parse will set the values for the pagination fields from the given map.
+func (p *paginationFields) Parse(inputs map[string]any) {
+	for f, v := range inputs {
+		switch f {
+		case "limit":
+			switch val := v.(type) {
+			case int64:
+				p.Limit = int(val)
+			case int:
+				p.Limit = val
+			case float64:
+				p.Limit = int(val)
+			case string:
+				if num, err := strconv.Atoi(val); err == nil {
+					p.Limit = num
+				}
+			}
+		case "after":
+			if val, ok := v.(string); ok {
+				p.After = &val
+			}
+		case "before":
+			if val, ok := v.(string); ok {
+				p.Before = &val
+			}
+		}
+	}
+}
+
+// GetLimit returns a limit of items to be returned. If no limit set in the pagination fields, a default of 10 will be used.
+func (p *paginationFields) GetLimit() int {
+	// default to 10
+	if p == nil || p.Limit < 1 {
+		return 10
+	}
+
+	return p.Limit
+}
+
+func (p *paginationFields) IsBackwards() bool {
+	return p.Before != nil
+}
+
+type filterFields struct {
+	TopicName string
+	Statuses  []Status
+}
+
+// Parse will set the values for the filter fields from the given map; the only applicable field is `Status`.
+func (ff *filterFields) Parse(inputs map[string]any) {
+	for f, v := range inputs {
+		switch f {
+		case "status":
+			switch val := v.(type) {
+			case string:
+				sts := strings.Split(val, ",")
+				for _, s := range sts {
+					ff.Statuses = append(ff.Statuses, Status(s))
+				}
+			case []string:
+				for _, s := range val {
+					ff.Statuses = append(ff.Statuses, Status(s))
+				}
+			}
+		}
+	}
+}
+
 var ErrTaskNotFound = errors.New("task not found")
 
-// GetTask returns the task with the given ID and topic
-func GetTask(ctx context.Context, pbTask *proto.Task, id string) (*Task, error) {
+// getTask returns the task with the given ID and topic
+func getTask(ctx context.Context, pbTask *proto.Task, id string) (*Task, error) {
 	if pbTask == nil {
 		return nil, nil
 	}
@@ -69,16 +148,99 @@ func GetTask(ctx context.Context, pbTask *proto.Task, id string) (*Task, error) 
 	return &task, nil
 }
 
+// getTasks will list the tasks according to the given filters using cursor pagination.
+func getTasks(ctx context.Context, filters *filterFields, page *paginationFields) ([]*Task, error) {
+	database, err := db.GetDatabase(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var tasks []*Task
+
+	q := database.GetDB().Limit(page.GetLimit())
+
+	if filters != nil {
+		if filters.TopicName != "" {
+			q = q.Where("name = ?", filters.TopicName)
+		}
+		if len(filters.Statuses) > 0 {
+			q = q.Where("status IN ?", filters.Statuses)
+		}
+	}
+
+	if page != nil {
+		if page.IsBackwards() {
+			q = q.Order("created_at ASC")
+		} else {
+			q = q.Order("created_at DESC")
+		}
+
+		if page.Before != nil {
+			q.Where("created_at > (?)", database.GetDB().Model(&Task{}).Select("created_at").Where("id = ?", *page.Before))
+		}
+		if page.After != nil {
+			q.Where("created_at < (?)", database.GetDB().Model(&Task{}).Select("created_at").Where("id = ?", *page.After))
+		}
+	} else {
+		// default order
+		q = q.Order("created_at DESC")
+	}
+
+	result := q.Find(&tasks)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	if page.IsBackwards() {
+		slices.Reverse(tasks)
+	}
+
+	return tasks, nil
+}
+
+// ListTasks for a given topic
+func ListTasks(ctx context.Context, pbTask *proto.Task, inputs map[string]any) (tasks []*Task, err error) {
+	ctx, span := tracer.Start(ctx, "ListTasks")
+	defer span.End()
+
+	defer func() {
+		if err != nil {
+			span.RecordError(err, trace.WithStackTrace(true))
+			span.SetStatus(codes.Error, err.Error())
+		}
+	}()
+
+	pf := paginationFields{}
+	pf.Parse(inputs)
+
+	ff := filterFields{TopicName: pbTask.GetName()}
+	ff.Parse(inputs)
+
+	tasks, err = getTasks(ctx, &ff, &pf)
+
+	return
+}
+
 // CompleteTask marks the given task as completed and returns it. If task is not found, nil, nil is returned
-func CompleteTask(ctx context.Context, pbTask *proto.Task, id string) (*Task, error) {
-	t, err := GetTask(ctx, pbTask, id)
+func CompleteTask(ctx context.Context, pbTask *proto.Task, id string) (task *Task, err error) {
+	ctx, span := tracer.Start(ctx, "CompleteTask")
+	defer span.End()
+
+	defer func() {
+		if err != nil {
+			span.RecordError(err, trace.WithStackTrace(true))
+			span.SetStatus(codes.Error, err.Error())
+		}
+	}()
+
+	task, err = getTask(ctx, pbTask, id)
 	if err != nil {
 		return nil, err
 	}
 
 	// if task already completed, return it
-	if t.isCompleted() {
-		return t, nil
+	if task.isCompleted() {
+		return task, nil
 	}
 
 	// mark task as completed
@@ -89,7 +251,7 @@ func CompleteTask(ctx context.Context, pbTask *proto.Task, id string) (*Task, er
 
 	now := time.Now()
 	err = dbase.GetDB().
-		Model(&t).
+		Model(&task).
 		Clauses(clause.Returning{}).
 		Where("name = ? AND id = ?", pbTask.GetName(), id).
 		Updates(Task{Status: StatusCompleted, ResolvedAt: &now}).
@@ -102,5 +264,5 @@ func CompleteTask(ctx context.Context, pbTask *proto.Task, id string) (*Task, er
 		}
 	}
 
-	return t, nil
+	return
 }

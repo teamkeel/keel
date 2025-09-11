@@ -63,7 +63,7 @@ func Handler(s *proto.Schema) common.HandlerFunc {
 		case 2:
 			// GET topics/{name}/stats - Retrieves the topic’s detailed metric data
 			// TODO: POST topics/{name}/tasks - Creates a new task for the queue
-			// TODO: GET topics/{name}/tasks - Retrieves all tasks in a topic’s queue
+			// GET topics/{name}/tasks - Retrieves all tasks in a topic’s queue
 			switch pathParts[1] {
 			case "stats":
 				// GET topics/{name}/stats - Retrieves the topic’s detailed metric data
@@ -77,13 +77,25 @@ func Handler(s *proto.Schema) common.HandlerFunc {
 
 				return common.NewJsonResponse(http.StatusOK, tData, nil)
 			case "tasks":
-				//TODO:
-				return httpjson.NewErrorResponse(ctx, common.NewNotFoundError("Not found"), nil)
+				switch r.Method {
+				case http.MethodGet:
+					// GET topics/{name}/tasks - Retrieves all tasks in a topic’s queue
+					tasks, err := tasks.ListTasks(ctx, topic, common.ParseQueryParams(r))
+					if err != nil {
+						return httpjson.NewErrorResponse(ctx, err, nil)
+					}
+
+					return common.NewJsonResponse(http.StatusOK, tasks, nil)
+				case http.MethodPost:
+					// TODO: POST topics/{name}/tasks - Creates a new task for the queue
+					return httpjson.NewErrorResponse(ctx, common.NewNotFoundError("Not found"), nil)
+				}
+
+				return httpjson.NewErrorResponse(ctx, common.NewHttpMethodNotAllowedError("only HTTP GET or POST accepted"), nil)
 			}
 
 		case 3:
 			// TODO: POST topics/{name}/tasks/next - Assigns next task to me (or returns my current task)
-
 			return httpjson.NewErrorResponse(ctx, common.NewNotFoundError("Not found"), nil)
 		case 4:
 			// PUT topics/{name}/tasks/{id}/complete - Completes a task
@@ -103,6 +115,7 @@ func Handler(s *proto.Schema) common.HandlerFunc {
 
 					return httpjson.NewErrorResponse(ctx, err, nil)
 				}
+
 				return common.NewJsonResponse(http.StatusOK, task, nil)
 			}
 		}
