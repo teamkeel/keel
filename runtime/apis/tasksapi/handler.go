@@ -13,6 +13,7 @@ import (
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/locale"
 	"github.com/teamkeel/keel/runtime/tasks"
+	"github.com/teamkeel/keel/schema/parser"
 	"go.opentelemetry.io/otel"
 )
 
@@ -93,7 +94,6 @@ func Handler(s *proto.Schema) common.HandlerFunc {
 
 				return httpjson.NewErrorResponse(ctx, common.NewHttpMethodNotAllowedError("only HTTP GET or POST accepted"), nil)
 			}
-
 		case 3:
 			// TODO: POST topics/{name}/tasks/next - Assigns next task to me (or returns my current task)
 			return httpjson.NewErrorResponse(ctx, common.NewNotFoundError("Not found"), nil)
@@ -107,7 +107,12 @@ func Handler(s *proto.Schema) common.HandlerFunc {
 			}
 			switch pathParts[3] {
 			case "complete":
-				task, err := tasks.CompleteTask(ctx, topic, pathParts[2])
+				identityID := identity[parser.FieldNameId].(string)
+				if identityID == "" {
+					return httpjson.NewErrorResponse(ctx, common.NewPermissionError(), nil)
+				}
+
+				task, err := tasks.CompleteTask(ctx, topic, pathParts[2], identityID)
 				if err != nil {
 					if errors.Is(err, tasks.ErrTaskNotFound) {
 						return httpjson.NewErrorResponse(ctx, common.NewNotFoundError("Not found"), nil)

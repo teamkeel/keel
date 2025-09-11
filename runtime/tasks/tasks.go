@@ -49,6 +49,20 @@ func (t *Task) isCompleted() bool {
 	return t.Status == StatusCompleted
 }
 
+// TaskStatus represents a log of status updates for a particular task.
+type TaskStatus struct {
+	ID         string    `gorm:"column:id;primaryKey;->" json:"id"` // readonly
+	TaskID     string    `gorm:"column:keel_task_id" json:"taskId"`
+	Status     Status    `gorm:"column:status" json:"status"`
+	AssignedTo *string   `gorm:"column:assigned_to" json:"assignedTo,omitempty"`
+	SetBy      string    `gorm:"column:set_by" json:"setBy"`
+	CreatedAt  time.Time `gorm:"column:created_at" json:"createdAt"`
+}
+
+func (TaskStatus) TableName() string {
+	return "keel.task_status"
+}
+
 type paginationFields struct {
 	Limit  int
 	After  *string
@@ -221,8 +235,8 @@ func ListTasks(ctx context.Context, pbTask *proto.Task, inputs map[string]any) (
 	return
 }
 
-// CompleteTask marks the given task as completed and returns it. If task is not found, nil, nil is returned
-func CompleteTask(ctx context.Context, pbTask *proto.Task, id string) (task *Task, err error) {
+// CompleteTask marks the given task as completed and returns it. If task is not found, nil, nil is returned.
+func CompleteTask(ctx context.Context, pbTask *proto.Task, id string, identityID string) (task *Task, err error) {
 	ctx, span := tracer.Start(ctx, "CompleteTask")
 	defer span.End()
 
@@ -249,19 +263,32 @@ func CompleteTask(ctx context.Context, pbTask *proto.Task, id string) (task *Tas
 		return nil, err
 	}
 
-	now := time.Now()
-	err = dbase.GetDB().
-		Model(&task).
-		Clauses(clause.Returning{}).
-		Where("name = ? AND id = ?", pbTask.GetName(), id).
-		Updates(Task{Status: StatusCompleted, ResolvedAt: &now}).
-		Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrTaskNotFound
-		} else {
-			return nil, err
+	err = dbase.GetDB().Transaction(func(tx *gorm.DB) error {
+		now := time.Now()
+		errTx := tx.
+			Model(&task).
+			Clauses(clause.Returning{}).
+			Where("name = ? AND id = ?", pbTask.GetName(), id).
+			Updates(Task{Status: StatusCompleted, ResolvedAt: &now}).
+			Error
+		if errTx != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return ErrTaskNotFound
+			} else {
+				return errTx
+			}
 		}
+
+		// we now save the status in the log
+		return tx.Save(TaskStatus{
+			TaskID:    task.ID,
+			Status:    StatusCompleted,
+			SetBy:     identityID,
+			CreatedAt: now,
+		}).Error
+	})
+	if err != nil {
+		return nil, err
 	}
 
 	return
