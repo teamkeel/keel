@@ -326,7 +326,12 @@ func DeferTask(ctx context.Context, pbTask *proto.Task, id string, deferUntil ti
 			Model(&task).
 			Clauses(clause.Returning{}).
 			Where("name = ? AND id = ?", pbTask.GetName(), id).
-			Updates(Task{Status: StatusDeferred, DeferredUntil: &deferUntil}).
+			Updates(map[string]any{
+				"status":         StatusDeferred,
+				"deferred_until": &deferUntil,
+				"assigned_to":    nil,
+				"assigned_at":    nil,
+			}).
 			Error
 		if errTx != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {

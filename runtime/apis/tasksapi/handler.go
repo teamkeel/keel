@@ -101,8 +101,7 @@ func Handler(s *proto.Schema) common.HandlerFunc {
 		case 4:
 			// PUT topics/{name}/tasks/{id}/complete - Completes a task
 			// PUT topics/{name}/tasks/{id}/defer - Defers a task until a later period
-			// TODO: PUT topics/{name}/tasks/{id}/cancel - Cancels a task
-			// TODO: PUT topics/{name}/tasks/{id}/assign - Assigns the task to a new identity
+			// PUT topics/{name}/tasks/{id}/assign - Assigns the task to a new identity
 			if r.Method != http.MethodPut {
 				return httpjson.NewErrorResponse(ctx, common.NewHttpMethodNotAllowedError("only HTTP PUT accepted"), nil)
 			}
