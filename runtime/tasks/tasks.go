@@ -33,8 +33,8 @@ type Task struct {
 	Name          string     `gorm:"column:name" json:"name"`
 	Status        Status     `gorm:"column:status" json:"status"`
 	FlowRunID     *string    `gorm:"column:flow_run_id" json:"flowRunId,omitempty"`
-	CreatedAt     time.Time  `gorm:"column:created_at" json:"createdAt"`
-	UpdatedAt     time.Time  `gorm:"column:updated_at" json:"updatedAt"`
+	CreatedAt     time.Time  `gorm:"column:created_at;->" json:"createdAt"`
+	UpdatedAt     time.Time  `gorm:"column:updated_at;->" json:"updatedAt"`
 	AssignedTo    *string    `gorm:"column:assigned_to" json:"assignedTo,omitempty"`
 	AssignedAt    *time.Time `gorm:"column:assigned_at" json:"assignedAt,omitempty"`
 	ResolvedAt    *time.Time `gorm:"column:resolved_at" json:"resolvedAt,omitempty"`
@@ -51,12 +51,12 @@ func (t *Task) isCompleted() bool {
 
 // TaskStatus represents a log of status updates for a particular task.
 type TaskStatus struct {
-	ID         string    `gorm:"column:id;primaryKey;->" json:"id"` // readonly
+	ID         string    `gorm:"column:id;primaryKey;->" json:"id"`
 	TaskID     string    `gorm:"column:keel_task_id" json:"taskId"`
 	Status     Status    `gorm:"column:status" json:"status"`
 	AssignedTo *string   `gorm:"column:assigned_to" json:"assignedTo,omitempty"`
 	SetBy      string    `gorm:"column:set_by" json:"setBy"`
-	CreatedAt  time.Time `gorm:"column:created_at" json:"createdAt"`
+	CreatedAt  time.Time `gorm:"column:created_at;->" json:"createdAt"`
 }
 
 func (TaskStatus) TableName() string {
@@ -281,10 +281,9 @@ func CompleteTask(ctx context.Context, pbTask *proto.Task, id string, identityID
 
 		// we now save the status in the log
 		return tx.Save(TaskStatus{
-			TaskID:    task.ID,
-			Status:    StatusCompleted,
-			SetBy:     identityID,
-			CreatedAt: now,
+			TaskID: task.ID,
+			Status: StatusCompleted,
+			SetBy:  identityID,
 		}).Error
 	})
 	if err != nil {
@@ -323,7 +322,6 @@ func DeferTask(ctx context.Context, pbTask *proto.Task, id string, deferUntil ti
 	}
 
 	err = dbase.GetDB().Transaction(func(tx *gorm.DB) error {
-		now := time.Now()
 		errTx := tx.
 			Model(&task).
 			Clauses(clause.Returning{}).
@@ -340,10 +338,68 @@ func DeferTask(ctx context.Context, pbTask *proto.Task, id string, deferUntil ti
 
 		// we now save the status in the log
 		return tx.Save(TaskStatus{
-			TaskID:    task.ID,
-			Status:    StatusDeferred,
-			SetBy:     identityID,
-			CreatedAt: now,
+			TaskID: task.ID,
+			Status: StatusDeferred,
+			SetBy:  identityID,
+		}).Error
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return
+}
+
+// AssignTask marks the given task as assigned to the given identity and returns it.
+func AssignTask(ctx context.Context, pbTask *proto.Task, id string, assignedTo, identityID string) (task *Task, err error) {
+	ctx, span := tracer.Start(ctx, "AssignTask")
+	defer span.End()
+
+	defer func() {
+		if err != nil {
+			span.RecordError(err, trace.WithStackTrace(true))
+			span.SetStatus(codes.Error, err.Error())
+		}
+	}()
+
+	task, err = getTask(ctx, pbTask, id)
+	if err != nil {
+		return nil, err
+	}
+
+	// if task already completed, return error
+	if task.isCompleted() {
+		return nil, errors.New("task already completed")
+	}
+
+	// mark task as deferred
+	dbase, err := db.GetDatabase(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	err = dbase.GetDB().Transaction(func(tx *gorm.DB) error {
+		now := time.Now()
+		errTx := tx.
+			Model(&task).
+			Clauses(clause.Returning{}).
+			Where("name = ? AND id = ?", pbTask.GetName(), id).
+			Updates(Task{Status: StatusAssigned, AssignedTo: &assignedTo, AssignedAt: &now}).
+			Error
+		if errTx != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return ErrTaskNotFound
+			} else {
+				return errTx
+			}
+		}
+
+		// we now save the status in the log
+		return tx.Save(TaskStatus{
+			TaskID:     task.ID,
+			Status:     StatusAssigned,
+			AssignedTo: &assignedTo,
+			SetBy:      identityID,
 		}).Error
 	})
 	if err != nil {

@@ -100,7 +100,7 @@ func Handler(s *proto.Schema) common.HandlerFunc {
 			return httpjson.NewErrorResponse(ctx, common.NewNotFoundError("Not found"), nil)
 		case 4:
 			// PUT topics/{name}/tasks/{id}/complete - Completes a task
-			// TODO: PUT topics/{name}/tasks/{id}/defer - Defers a task until a later period
+			// PUT topics/{name}/tasks/{id}/defer - Defers a task until a later period
 			// TODO: PUT topics/{name}/tasks/{id}/cancel - Cancels a task
 			// TODO: PUT topics/{name}/tasks/{id}/assign - Assigns the task to a new identity
 			if r.Method != http.MethodPut {
@@ -148,6 +148,34 @@ func Handler(s *proto.Schema) common.HandlerFunc {
 
 				// defer task
 				task, err := tasks.DeferTask(ctx, topic, pathParts[2], deferUntil, identityID)
+				if err != nil {
+					if errors.Is(err, tasks.ErrTaskNotFound) {
+						return httpjson.NewErrorResponse(ctx, common.NewNotFoundError("Not found"), nil)
+					}
+
+					return httpjson.NewErrorResponse(ctx, err, nil)
+				}
+
+				return common.NewJsonResponse(http.StatusOK, task, nil)
+			case "assign":
+				// parse input
+				inputs, err := common.ParseRequestData(r)
+				if err != nil {
+					return httpjson.NewErrorResponse(ctx, common.NewInputMalformedError("error parsing POST body"), nil)
+				}
+
+				inputsMap, ok := inputs.(map[string]any)
+				if inputs == nil || !ok {
+					return httpjson.NewErrorResponse(ctx, common.NewInputMalformedError("data not correctly formatted"), nil)
+				}
+
+				assignedTo, ok := inputsMap["assigned_to"].(string)
+				if !ok {
+					return httpjson.NewErrorResponse(ctx, common.NewInputMalformedError("data not correctly formatted"), nil)
+				}
+
+				// assign task
+				task, err := tasks.AssignTask(ctx, topic, pathParts[2], assignedTo, identityID)
 				if err != nil {
 					if errors.Is(err, tasks.ErrTaskNotFound) {
 						return httpjson.NewErrorResponse(ctx, common.NewNotFoundError("Not found"), nil)
