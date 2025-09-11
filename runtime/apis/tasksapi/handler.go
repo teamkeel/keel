@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
@@ -105,14 +106,48 @@ func Handler(s *proto.Schema) common.HandlerFunc {
 			if r.Method != http.MethodPut {
 				return httpjson.NewErrorResponse(ctx, common.NewHttpMethodNotAllowedError("only HTTP PUT accepted"), nil)
 			}
+
+			identityID := identity[parser.FieldNameId].(string)
+			if identityID == "" {
+				return httpjson.NewErrorResponse(ctx, common.NewPermissionError(), nil)
+			}
+
 			switch pathParts[3] {
 			case "complete":
-				identityID := identity[parser.FieldNameId].(string)
-				if identityID == "" {
-					return httpjson.NewErrorResponse(ctx, common.NewPermissionError(), nil)
+				task, err := tasks.CompleteTask(ctx, topic, pathParts[2], identityID)
+				if err != nil {
+					if errors.Is(err, tasks.ErrTaskNotFound) {
+						return httpjson.NewErrorResponse(ctx, common.NewNotFoundError("Not found"), nil)
+					}
+
+					return httpjson.NewErrorResponse(ctx, err, nil)
 				}
 
-				task, err := tasks.CompleteTask(ctx, topic, pathParts[2], identityID)
+				return common.NewJsonResponse(http.StatusOK, task, nil)
+			case "defer":
+				// parse input
+				inputs, err := common.ParseRequestData(r)
+				if err != nil {
+					return httpjson.NewErrorResponse(ctx, common.NewInputMalformedError("error parsing POST body"), nil)
+				}
+
+				inputsMap, ok := inputs.(map[string]any)
+				if inputs == nil || !ok {
+					return httpjson.NewErrorResponse(ctx, common.NewInputMalformedError("data not correctly formatted"), nil)
+				}
+
+				strDate, ok := inputsMap["defer_until"].(string)
+				if !ok {
+					return httpjson.NewErrorResponse(ctx, common.NewInputMalformedError("data not correctly formatted"), nil)
+				}
+
+				deferUntil, err := time.Parse(time.RFC3339, strDate)
+				if err != nil {
+					return httpjson.NewErrorResponse(ctx, common.NewInputMalformedError("date not correctly formatted"), nil)
+				}
+
+				// defer task
+				task, err := tasks.DeferTask(ctx, topic, pathParts[2], deferUntil, identityID)
 				if err != nil {
 					if errors.Is(err, tasks.ErrTaskNotFound) {
 						return httpjson.NewErrorResponse(ctx, common.NewNotFoundError("Not found"), nil)

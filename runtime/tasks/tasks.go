@@ -235,7 +235,7 @@ func ListTasks(ctx context.Context, pbTask *proto.Task, inputs map[string]any) (
 	return
 }
 
-// CompleteTask marks the given task as completed and returns it. If task is not found, nil, nil is returned.
+// CompleteTask marks the given task as completed and returns it.
 func CompleteTask(ctx context.Context, pbTask *proto.Task, id string, identityID string) (task *Task, err error) {
 	ctx, span := tracer.Start(ctx, "CompleteTask")
 	defer span.End()
@@ -283,6 +283,65 @@ func CompleteTask(ctx context.Context, pbTask *proto.Task, id string, identityID
 		return tx.Save(TaskStatus{
 			TaskID:    task.ID,
 			Status:    StatusCompleted,
+			SetBy:     identityID,
+			CreatedAt: now,
+		}).Error
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return
+}
+
+// DeferTask marks the given task as deferred until the given date and returns it.
+func DeferTask(ctx context.Context, pbTask *proto.Task, id string, deferUntil time.Time, identityID string) (task *Task, err error) {
+	ctx, span := tracer.Start(ctx, "DeferTask")
+	defer span.End()
+
+	defer func() {
+		if err != nil {
+			span.RecordError(err, trace.WithStackTrace(true))
+			span.SetStatus(codes.Error, err.Error())
+		}
+	}()
+
+	task, err = getTask(ctx, pbTask, id)
+	if err != nil {
+		return nil, err
+	}
+
+	// if task already completed, return error
+	if task.isCompleted() {
+		return nil, errors.New("task already completed")
+	}
+
+	// mark task as deferred
+	dbase, err := db.GetDatabase(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	err = dbase.GetDB().Transaction(func(tx *gorm.DB) error {
+		now := time.Now()
+		errTx := tx.
+			Model(&task).
+			Clauses(clause.Returning{}).
+			Where("name = ? AND id = ?", pbTask.GetName(), id).
+			Updates(Task{Status: StatusDeferred, DeferredUntil: &deferUntil}).
+			Error
+		if errTx != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return ErrTaskNotFound
+			} else {
+				return errTx
+			}
+		}
+
+		// we now save the status in the log
+		return tx.Save(TaskStatus{
+			TaskID:    task.ID,
+			Status:    StatusDeferred,
 			SetBy:     identityID,
 			CreatedAt: now,
 		}).Error
