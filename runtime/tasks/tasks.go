@@ -29,15 +29,15 @@ const (
 )
 
 type Task struct {
-	ID            string     `gorm:"column:id;primaryKey" json:"id"`
-	Name          string     `gorm:"column:name" json:"name"`
-	Status        Status     `gorm:"column:status" json:"status"`
-	FlowRunID     *string    `gorm:"column:flow_run_id" json:"flowRunId,omitempty"`
-	CreatedAt     time.Time  `gorm:"column:created_at;->" json:"createdAt"`
-	UpdatedAt     time.Time  `gorm:"column:updated_at;->" json:"updatedAt"`
-	AssignedTo    *string    `gorm:"column:assigned_to" json:"assignedTo,omitempty"`
-	AssignedAt    *time.Time `gorm:"column:assigned_at" json:"assignedAt,omitempty"`
-	ResolvedAt    *time.Time `gorm:"column:resolved_at" json:"resolvedAt,omitempty"`
+	ID            string     `gorm:"column:id;primaryKey"  json:"id"`
+	Name          string     `gorm:"column:name"           json:"name"`
+	Status        Status     `gorm:"column:status"         json:"status"`
+	FlowRunID     *string    `gorm:"column:flow_run_id"    json:"flowRunId,omitempty"`
+	CreatedAt     time.Time  `gorm:"column:created_at;->"  json:"createdAt"`
+	UpdatedAt     time.Time  `gorm:"column:updated_at;->"  json:"updatedAt"`
+	AssignedTo    *string    `gorm:"column:assigned_to"    json:"assignedTo,omitempty"`
+	AssignedAt    *time.Time `gorm:"column:assigned_at"    json:"assignedAt,omitempty"`
+	ResolvedAt    *time.Time `gorm:"column:resolved_at"    json:"resolvedAt,omitempty"`
 	DeferredUntil *time.Time `gorm:"column:deferred_until" json:"deferredUntil,omitempty"`
 }
 
@@ -52,11 +52,11 @@ func (t *Task) isCompleted() bool {
 // TaskStatus represents a log of status updates for a particular task.
 type TaskStatus struct {
 	ID         string    `gorm:"column:id;primaryKey;->" json:"id"`
-	TaskID     string    `gorm:"column:keel_task_id" json:"taskId"`
-	Status     Status    `gorm:"column:status" json:"status"`
-	AssignedTo *string   `gorm:"column:assigned_to" json:"assignedTo,omitempty"`
-	SetBy      string    `gorm:"column:set_by" json:"setBy"`
-	CreatedAt  time.Time `gorm:"column:created_at;->" json:"createdAt"`
+	TaskID     string    `gorm:"column:keel_task_id"     json:"taskId"`
+	Status     Status    `gorm:"column:status"           json:"status"`
+	AssignedTo *string   `gorm:"column:assigned_to"      json:"assignedTo,omitempty"`
+	SetBy      string    `gorm:"column:set_by"           json:"setBy"`
+	CreatedAt  time.Time `gorm:"column:created_at;->"    json:"createdAt"`
 }
 
 func (TaskStatus) TableName() string {
@@ -139,7 +139,7 @@ func (ff *filterFields) Parse(inputs map[string]any) {
 
 var ErrTaskNotFound = errors.New("task not found")
 
-// getTask returns the task with the given ID and topic
+// getTask returns the task with the given ID and topic.
 func getTask(ctx context.Context, pbTask *proto.Task, id string) (*Task, error) {
 	if pbTask == nil {
 		return nil, nil
@@ -212,7 +212,7 @@ func getTasks(ctx context.Context, filters *filterFields, page *paginationFields
 	return tasks, nil
 }
 
-// ListTasks for a given topic
+// ListTasks for a given topic.
 func ListTasks(ctx context.Context, pbTask *proto.Task, inputs map[string]any) (tasks []*Task, err error) {
 	ctx, span := tracer.Start(ctx, "ListTasks")
 	defer span.End()

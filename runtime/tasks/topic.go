@@ -30,7 +30,7 @@ type Stats struct {
 	CompletionTime99     *time.Duration `json:"completionTime99P,omitempty"`
 }
 
-// GetTopic returns the topic data (with metrics)
+// GetTopic returns the topic data (with metrics).
 func GetTopic(ctx context.Context, pbTask *proto.Task, withStats bool) (*Topic, error) {
 	topic := &Topic{
 		Name: pbTask.GetName(),
@@ -55,7 +55,7 @@ func GetTopic(ctx context.Context, pbTask *proto.Task, withStats bool) (*Topic, 
 	return topic, nil
 }
 
-// getMetrics will retrieve the metrics for the given topic
+// getMetrics will retrieve the metrics for the given topic.
 func getMetrics(ctx context.Context, topic *Topic) (*Metrics, error) {
 	if topic == nil {
 		return nil, nil
@@ -87,7 +87,7 @@ func getMetrics(ctx context.Context, topic *Topic) (*Metrics, error) {
 	return &metrics, nil
 }
 
-// getStats will retrieve the stats for the given topic
+// getStats will retrieve the stats for the given topic.
 func getStats(ctx context.Context, topic *Topic) (*Stats, error) {
 	if topic == nil {
 		return nil, nil
