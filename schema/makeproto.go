@@ -958,7 +958,7 @@ func (scm *Builder) makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.
 		switch typeInfo.GetType() {
 		case proto.Type_TYPE_ID:
 
-		case proto.Type_TYPE_STRING:
+		case proto.Type_TYPE_STRING, proto.Type_TYPE_MARKDOWN:
 			allQueryMsg = makeStringArrayQueryInputMessage(allQueryMsgName)
 			anyQueryMsg = makeStringArrayQueryInputMessage(anyQueryMsgName)
 		case proto.Type_TYPE_INT:
@@ -1038,7 +1038,7 @@ func (scm *Builder) makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.
 	switch typeInfo.GetType() {
 	case proto.Type_TYPE_ID:
 		return makeIDQueryInputMessage(msgName, typeInfo.GetEntityName()), nil
-	case proto.Type_TYPE_STRING:
+	case proto.Type_TYPE_STRING, proto.Type_TYPE_MARKDOWN:
 		return makeStringQueryInputMessage(msgName), nil
 	case proto.Type_TYPE_INT:
 		return makeIntQueryInputMessage(msgName), nil
