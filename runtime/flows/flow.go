@@ -286,7 +286,7 @@ func updateRun(ctx context.Context, runID string, status Status, config any) (*R
 	var run Run
 
 	err = database.GetDB().Transaction(func(tx *gorm.DB) error {
-		if err := database.GetDB().
+		if err := tx.
 			Model(&run).
 			Clauses(clause.Returning{}).
 			Where("id = ?", runID).
