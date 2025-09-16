@@ -111,7 +111,7 @@ func Handler(s *proto.Schema) common.HandlerFunc {
 					if ok {
 						date, err := time.Parse(time.RFC3339, strDate)
 						if err != nil {
-							return httpjson.NewErrorResponse(ctx, common.NewInputMalformedError("date not correctly formatted"), nil)
+							return httpjson.NewErrorResponse(ctx, common.NewInputMalformedError("defer_until not correctly formatted"), nil)
 						}
 						deferUntil = &date
 					}
