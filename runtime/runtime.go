@@ -232,8 +232,8 @@ func NewTasksHandler(s *proto.Schema) common.HandlerFunc {
 	defaultTasksHandler := tasksapi.Handler(s)
 
 	explicitHandlers := map[string]common.HandlerFunc{
-		"/topics": tasksapi.ListTopicsHandler(s),
-		// 	"/topics/openapi.json": tasksapi.OpenAPISchemaHandler(s),
+		"/topics/json":              tasksapi.ListTopicsHandler(s),
+		"/topics/json/openapi.json": tasksapi.OpenAPISchemaHandler(s),
 	}
 
 	return withRequestResponseLogging(func(r *http.Request) common.Response {

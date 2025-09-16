@@ -18,11 +18,13 @@ import (
 // There are multiple types of openAPI schemas:
 // * API schema - the openAPI schema generated for the runtime API
 // * Job schemas - generated for each job defined in the keel schema
-// * Flow schema - generated for all the workflows defined in your schema
+// * Flow schema - generated for the Flows API for all the flows defined in your schema
+// * Task schema - generated for the Tasks API for tasks defined in your schema
 //
 // Test cases will detect what type of schema is asserted by looking at the prefix of the files:
 //   - if the file starts with "job", the schema for the first job defined will be tested
 //   - if the file starts with "flow", the schema for all the flows will be tested
+//   - if the file starts with "task", the schema for the tasks API will be tested
 //   - then default to the keel api schema
 func TestGeneration(t *testing.T) {
 	entries, err := os.ReadDir("./testdata")
@@ -33,12 +35,13 @@ func TestGeneration(t *testing.T) {
 		jobType  schemaType = "job"
 		apiType  schemaType = "api"
 		flowType schemaType = "flow"
+		taskType schemaType = "task"
 	)
 
 	type testCase struct {
 		keelSchema string
 		jsonSchema string
-		schemaType schemaType // job, flow or keel
+		schemaType schemaType // job, flow, task or keel
 	}
 
 	cases := map[string]*testCase{}
@@ -64,6 +67,8 @@ func TestGeneration(t *testing.T) {
 			c.schemaType = jobType
 		case strings.HasPrefix(caseName, "flow"):
 			c.schemaType = flowType
+		case strings.HasPrefix(caseName, "task"):
+			c.schemaType = taskType
 		default:
 			c.schemaType = apiType
 		}
@@ -83,6 +88,8 @@ func TestGeneration(t *testing.T) {
 				jsonSchema = openapi.GenerateJob(context.Background(), schema, schema.GetJobs()[0].GetName())
 			case flowType:
 				jsonSchema = openapi.GenerateFlows(context.Background(), schema)
+			case taskType:
+				jsonSchema = openapi.GenerateTasks(context.Background(), schema)
 			}
 
 			actual, err := json.Marshal(jsonSchema)
