@@ -10,6 +10,8 @@ import (
 
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/auth"
+	"github.com/teamkeel/keel/schema/parser"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
@@ -459,4 +461,96 @@ func AssignTask(ctx context.Context, pbTask *proto.Task, id string, assignedTo, 
 	}
 
 	return
+}
+
+// NextTask will assign and return the next available task to the authenticated identity.
+func NextTask(ctx context.Context) (task *Task, err error) {
+	ctx, span := tracer.Start(ctx, "NextTask")
+	defer span.End()
+
+	defer func() {
+		if err != nil {
+			span.RecordError(err, trace.WithStackTrace(true))
+			span.SetStatus(codes.Error, err.Error())
+		}
+	}()
+
+	identity, err := auth.GetIdentity(ctx)
+	if err != nil {
+		return nil, err
+	}
+	identityID, _ := identity[parser.FieldNameId].(string)
+	if identityID == "" {
+		return nil, errors.New("missing identity id in context")
+	}
+
+	dbase, err := db.GetDatabase(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var result *Task
+
+	err = dbase.GetDB().Transaction(func(tx *gorm.DB) error {
+		// 1) Check for an existing assigned task for this identity
+		var existing Task
+		errTx := tx.
+			Where("assigned_to = ? AND status = ?", identityID, StatusAssigned).
+			Order("assigned_at DESC NULLS LAST").
+			Limit(1).
+			Take(&existing).Error
+		if errTx == nil {
+			result = &existing
+			return nil
+		}
+		if !errors.Is(errTx, gorm.ErrRecordNotFound) {
+			return errTx
+		}
+
+		// 2) Find a candidate task to assign using row-level locking with SKIP LOCKED
+		var candidate Task
+		errTx = tx.
+			Clauses(clause.Locking{Strength: "UPDATE", Options: "SKIP LOCKED"}).
+			Where("assigned_to IS NULL").
+			Where("status = ? OR (status = ? AND deferred_until <= now())", StatusNew, StatusDeferred).
+			Order("created_at ASC, id ASC").
+			Limit(1).
+			Take(&candidate).Error
+		if errTx != nil {
+			if errors.Is(errTx, gorm.ErrRecordNotFound) {
+				return ErrTaskNotFound
+			}
+			return errTx
+		}
+
+		// 3) Update the candidate to ASSIGNED and set assigned fields, returning the updated row
+		now := time.Now()
+		errTx = tx.
+			Model(&candidate).
+			Clauses(clause.Returning{}).
+			Where("id = ?", candidate.ID).
+			Updates(Task{Status: StatusAssigned, AssignedTo: &identityID, AssignedAt: &now}).
+			Error
+		if errTx != nil {
+			return errTx
+		}
+
+		// 4) Insert status log entry
+		if errTx = tx.Save(TaskStatus{
+			TaskID:     candidate.ID,
+			Status:     StatusAssigned,
+			AssignedTo: &identityID,
+			SetBy:      identityID,
+		}).Error; errTx != nil {
+			return errTx
+		}
+
+		result = &candidate
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
