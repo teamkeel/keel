@@ -29,16 +29,16 @@ const (
 )
 
 type Task struct {
-	ID            string     `gorm:"column:id;primaryKey"  json:"id"`
-	Name          string     `gorm:"column:name"           json:"name"`
-	Status        Status     `gorm:"column:status"         json:"status"`
-	FlowRunID     *string    `gorm:"column:flow_run_id"    json:"flowRunId,omitempty"`
-	CreatedAt     time.Time  `gorm:"column:created_at;->"  json:"createdAt"`
-	UpdatedAt     time.Time  `gorm:"column:updated_at;->"  json:"updatedAt"`
-	AssignedTo    *string    `gorm:"column:assigned_to"    json:"assignedTo,omitempty"`
-	AssignedAt    *time.Time `gorm:"column:assigned_at"    json:"assignedAt,omitempty"`
-	ResolvedAt    *time.Time `gorm:"column:resolved_at"    json:"resolvedAt,omitempty"`
-	DeferredUntil *time.Time `gorm:"column:deferred_until" json:"deferredUntil,omitempty"`
+	ID            string     `gorm:"column:id;primaryKey;->" json:"id"`
+	Name          string     `gorm:"column:name"             json:"name"`
+	Status        Status     `gorm:"column:status"           json:"status"`
+	FlowRunID     *string    `gorm:"column:flow_run_id"      json:"flowRunId,omitempty"`
+	CreatedAt     time.Time  `gorm:"column:created_at;->"    json:"createdAt"`
+	UpdatedAt     time.Time  `gorm:"column:updated_at;->"    json:"updatedAt"`
+	AssignedTo    *string    `gorm:"column:assigned_to"      json:"assignedTo,omitempty"`
+	AssignedAt    *time.Time `gorm:"column:assigned_at"      json:"assignedAt,omitempty"`
+	ResolvedAt    *time.Time `gorm:"column:resolved_at"      json:"resolvedAt,omitempty"`
+	DeferredUntil *time.Time `gorm:"column:deferred_until"   json:"deferredUntil,omitempty"`
 }
 
 func (Task) TableName() string {
@@ -231,6 +231,53 @@ func ListTasks(ctx context.Context, pbTask *proto.Task, inputs map[string]any) (
 	ff.Parse(inputs)
 
 	tasks, err = getTasks(ctx, &ff, &pf)
+
+	return
+}
+
+// CreateTask creates a new task and returns it.
+func CreateTask(ctx context.Context, pbTask *proto.Task, identityID string, deferUntil *time.Time) (task *Task, err error) {
+	ctx, span := tracer.Start(ctx, "CreateTask")
+	defer span.End()
+
+	defer func() {
+		if err != nil {
+			span.RecordError(err, trace.WithStackTrace(true))
+			span.SetStatus(codes.Error, err.Error())
+		}
+	}()
+
+	dbase, err := db.GetDatabase(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	task = &Task{
+		Name:   pbTask.GetName(),
+		Status: StatusNew,
+	}
+
+	if deferUntil != nil {
+		task.DeferredUntil = deferUntil
+		task.Status = StatusDeferred
+	}
+
+	err = dbase.GetDB().Transaction(func(tx *gorm.DB) error {
+		if err := tx.
+			Clauses(clause.Returning{}).
+			Create(&task).Error; err != nil {
+			return err
+		}
+
+		return tx.Save(TaskStatus{
+			TaskID: task.ID,
+			Status: task.Status,
+			SetBy:  identityID,
+		}).Error
+	})
+	if err != nil {
+		return nil, err
+	}
 
 	return
 }

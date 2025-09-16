@@ -33,6 +33,11 @@ func Handler(s *proto.Schema) common.HandlerFunc {
 			ctx = auth.WithIdentity(ctx, identity)
 		}
 
+		identityID := identity[parser.FieldNameId].(string)
+		if identityID == "" {
+			return httpjson.NewErrorResponse(ctx, common.NewPermissionError(), nil)
+		}
+
 		path := path.Clean(r.URL.EscapedPath())
 		pathParts := strings.Split(strings.TrimPrefix(path, "/topics/"), "/")
 
@@ -89,8 +94,38 @@ func Handler(s *proto.Schema) common.HandlerFunc {
 
 					return common.NewJsonResponse(http.StatusOK, tasks, nil)
 				case http.MethodPost:
-					// TODO: POST topics/{name}/tasks - Creates a new task for the queue
-					return httpjson.NewErrorResponse(ctx, common.NewNotFoundError("Not found"), nil)
+					// POST topics/{name}/tasks - Creates a new task for the queue
+					// parse input
+					inputs, err := common.ParseRequestData(r)
+					if err != nil {
+						return httpjson.NewErrorResponse(ctx, common.NewInputMalformedError("error parsing POST body"), nil)
+					}
+
+					inputsMap, ok := inputs.(map[string]any)
+					if inputs == nil || !ok {
+						return httpjson.NewErrorResponse(ctx, common.NewInputMalformedError("data not correctly formatted"), nil)
+					}
+
+					var deferUntil *time.Time
+					strDate, ok := inputsMap["defer_until"].(string)
+					if ok {
+						date, err := time.Parse(time.RFC3339, strDate)
+						if err != nil {
+							return httpjson.NewErrorResponse(ctx, common.NewInputMalformedError("date not correctly formatted"), nil)
+						}
+						deferUntil = &date
+					}
+
+					task, err := tasks.CreateTask(ctx, topic, identityID, deferUntil)
+					if err != nil {
+						if errors.Is(err, tasks.ErrTaskNotFound) {
+							return httpjson.NewErrorResponse(ctx, common.NewNotFoundError("Not found"), nil)
+						}
+
+						return httpjson.NewErrorResponse(ctx, err, nil)
+					}
+
+					return common.NewJsonResponse(http.StatusOK, task, nil)
 				}
 
 				return httpjson.NewErrorResponse(ctx, common.NewHttpMethodNotAllowedError("only HTTP GET or POST accepted"), nil)
@@ -104,11 +139,6 @@ func Handler(s *proto.Schema) common.HandlerFunc {
 			// PUT topics/{name}/tasks/{id}/assign - Assigns the task to a new identity
 			if r.Method != http.MethodPut {
 				return httpjson.NewErrorResponse(ctx, common.NewHttpMethodNotAllowedError("only HTTP PUT accepted"), nil)
-			}
-
-			identityID := identity[parser.FieldNameId].(string)
-			if identityID == "" {
-				return httpjson.NewErrorResponse(ctx, common.NewPermissionError(), nil)
 			}
 
 			switch pathParts[3] {
