@@ -513,7 +513,7 @@ func NextTask(ctx context.Context) (task *Task, err error) {
 			Clauses(clause.Locking{Strength: "UPDATE", Options: "SKIP LOCKED"}).
 			Where("assigned_to IS NULL").
 			Where("status = ? OR (status = ? AND deferred_until <= now())", StatusNew, StatusDeferred).
-			Order("created_at ASC, id ASC").
+			Order("created_at ASC, id ASC"). // TODO: custom sort order
 			Limit(1).
 			Take(&candidate).Error
 		if errTx != nil {
