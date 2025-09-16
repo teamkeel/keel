@@ -10,8 +10,6 @@ import (
 
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/runtime/auth"
-	"github.com/teamkeel/keel/schema/parser"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
@@ -464,7 +462,7 @@ func AssignTask(ctx context.Context, pbTask *proto.Task, id string, assignedTo, 
 }
 
 // NextTask will assign and return the next available task to the authenticated identity.
-func NextTask(ctx context.Context) (task *Task, err error) {
+func NextTask(ctx context.Context, identityID string) (task *Task, err error) {
 	ctx, span := tracer.Start(ctx, "NextTask")
 	defer span.End()
 
@@ -474,15 +472,6 @@ func NextTask(ctx context.Context) (task *Task, err error) {
 			span.SetStatus(codes.Error, err.Error())
 		}
 	}()
-
-	identity, err := auth.GetIdentity(ctx)
-	if err != nil {
-		return nil, err
-	}
-	identityID, _ := identity[parser.FieldNameId].(string)
-	if identityID == "" {
-		return nil, errors.New("missing identity id in context")
-	}
 
 	dbase, err := db.GetDatabase(ctx)
 	if err != nil {

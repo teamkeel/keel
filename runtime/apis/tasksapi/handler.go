@@ -139,9 +139,8 @@ func Handler(s *proto.Schema) common.HandlerFunc {
 					return httpjson.NewErrorResponse(ctx, common.NewHttpMethodNotAllowedError("only HTTP POST accepted"), nil)
 				}
 
-				task, err := tasks.NextTask(ctx)
+				task, err := tasks.NextTask(ctx, identityID)
 				if err != nil {
-
 					if errors.Is(err, tasks.ErrTaskNotFound) {
 						return common.NewJsonResponse(http.StatusNotFound, map[string]any{}, nil)
 					}
