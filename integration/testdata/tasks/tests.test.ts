@@ -134,7 +134,7 @@ async function createTask({ topic, token }) {
 }
 
 async function listTasks({ topic, token }) {
-  const url = `${process.env.KEEL_TESTING_API_URL}/topics/${topic}/tasks`;
+  const url = `${process.env.KEEL_TESTING_API_URL}/topics/json/${topic}/tasks`;
 
   const res = await fetch(url, {
     method: "GET",
