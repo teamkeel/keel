@@ -142,7 +142,7 @@ func Handler(s *proto.Schema) common.HandlerFunc {
 				task, err := tasks.NextTask(ctx, identityID)
 				if err != nil {
 					if errors.Is(err, tasks.ErrTaskNotFound) {
-						return common.NewJsonResponse(http.StatusNotFound, map[string]any{}, nil)
+						return httpjson.NewErrorResponse(ctx, common.NewNotFoundError("Not found"), nil)
 					}
 
 					return httpjson.NewErrorResponse(ctx, err, nil)
