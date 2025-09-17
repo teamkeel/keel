@@ -34,7 +34,10 @@ test("tasks - next - no tasks exist", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
   const res = await nextTask({ topic: "DispatchOrder", token: token });
   expect(res.status).toBe(404);
-  expect(res.body).toEqual({});
+  expect(res.body).toEqual({
+    code: "ERR_RECORD_NOT_FOUND",
+    message: "Not found",
+  });
 });
 
 test("tasks - next - successfully assigned", async () => {
