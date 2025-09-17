@@ -118,7 +118,7 @@ async function getToken({ email }) {
 }
 
 async function createTask({ topic, token }) {
-  const url = `${process.env.KEEL_TESTING_API_URL}/topics/${topic}/tasks`;
+  const url = `${process.env.KEEL_TESTING_API_URL}/topics/json/${topic}/tasks`;
   const res = await fetch(url, {
     method: "POST",
     headers: {
