@@ -157,8 +157,8 @@ func (m *Migrations) Apply(ctx context.Context, dryRun bool) error {
 	sql.WriteString(tasksTables)
 	sql.WriteString("\n")
 
-	// Link task models to task table
-	for _, task := range m.Schema.Tasks {
+	// Link task entities to the task table
+	for _, task := range m.Schema.GetTasks() {
 		sql.WriteString(fmt.Sprintf("ALTER TABLE %s ADD COLUMN IF NOT EXISTS \"_task_id\" TEXT NOT NULL REFERENCES %s(%s);", Identifier(task.GetName()), `"keel"."task"`, Identifier("id")))
 	}
 
