@@ -1,0 +1,13 @@
+task DispatchOrder {
+    fields {
+        name Text
+    }
+
+    @permission(roles: [User])
+}
+
+role User {
+    domains {
+        "keel.xyz"
+    }   
+}

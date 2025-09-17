@@ -133,8 +133,25 @@ func Handler(s *proto.Schema) common.HandlerFunc {
 				return httpjson.NewErrorResponse(ctx, common.NewHttpMethodNotAllowedError("only HTTP GET or POST accepted"), nil)
 			}
 		case 3:
-			// TODO: POST topics/{name}/tasks/next - Assigns next task to me (or returns my current task)
-			return httpjson.NewErrorResponse(ctx, common.NewNotFoundError("Not found"), nil)
+			switch pathParts[2] {
+			case "next":
+				if r.Method != http.MethodPost {
+					return httpjson.NewErrorResponse(ctx, common.NewHttpMethodNotAllowedError("only HTTP POST accepted"), nil)
+				}
+
+				task, err := tasks.NextTask(ctx, identityID)
+				if err != nil {
+					if errors.Is(err, tasks.ErrTaskNotFound) {
+						return httpjson.NewErrorResponse(ctx, common.NewNotFoundError("Not found"), nil)
+					}
+
+					return httpjson.NewErrorResponse(ctx, err, nil)
+				}
+
+				return common.NewJsonResponse(http.StatusOK, task, nil)
+			default:
+				return httpjson.NewErrorResponse(ctx, common.NewNotFoundError("Not found"), nil)
+			}
 		case 4:
 			// PUT topics/{name}/tasks/{id}/complete - Completes a task
 			// PUT topics/{name}/tasks/{id}/defer - Defers a task until a later period
