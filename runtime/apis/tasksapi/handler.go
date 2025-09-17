@@ -13,9 +13,11 @@ import (
 	"github.com/teamkeel/keel/runtime/auth"
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/locale"
+	"github.com/teamkeel/keel/runtime/openapi"
 	"github.com/teamkeel/keel/runtime/tasks"
 	"github.com/teamkeel/keel/schema/parser"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 var tracer = otel.Tracer("github.com/teamkeel/keel/runtime/apis/tasksapi")
@@ -39,7 +41,7 @@ func Handler(s *proto.Schema) common.HandlerFunc {
 		}
 
 		path := path.Clean(r.URL.EscapedPath())
-		pathParts := strings.Split(strings.TrimPrefix(path, "/topics/"), "/")
+		pathParts := strings.Split(strings.TrimPrefix(path, "/topics/json/"), "/")
 
 		topic := s.FindTask(pathParts[0])
 		if topic == nil {
@@ -69,7 +71,7 @@ func Handler(s *proto.Schema) common.HandlerFunc {
 			return common.NewJsonResponse(http.StatusOK, tData, nil)
 		case 2:
 			// GET topics/{name}/stats - Retrieves the topic’s detailed metric data
-			// TODO: POST topics/{name}/tasks - Creates a new task for the queue
+			// POST topics/{name}/tasks - Creates a new task for the queue
 			// GET topics/{name}/tasks - Retrieves all tasks in a topic’s queue
 			switch pathParts[1] {
 			case "stats":
@@ -224,7 +226,7 @@ func Handler(s *proto.Schema) common.HandlerFunc {
 // ListTopicsHandler handles a request to /topics and returns data about all topics defined in the schema.
 func ListTopicsHandler(p *proto.Schema) common.HandlerFunc {
 	return func(r *http.Request) common.Response {
-		ctx, span := tracer.Start(r.Context(), "TopicsAPI")
+		ctx, span := tracer.Start(r.Context(), "TasksAPI")
 		defer span.End()
 
 		identity, err := actions.HandleAuthorizationHeader(ctx, p, r.Header)
@@ -260,5 +262,22 @@ func ListTopicsHandler(p *proto.Schema) common.HandlerFunc {
 			topics = append(topics, topic)
 		}
 		return common.NewJsonResponse(http.StatusOK, map[string]any{"topics": topics}, nil)
+	}
+}
+
+func OpenAPISchemaHandler(p *proto.Schema) common.HandlerFunc {
+	return func(r *http.Request) common.Response {
+		ctx, span := tracer.Start(r.Context(), "TasksAPI")
+		defer span.End()
+		span.SetAttributes(
+			attribute.String("api.protocol", "HTTP JSON"),
+		)
+
+		if r.Method != http.MethodGet {
+			return httpjson.NewErrorResponse(ctx, common.NewHttpMethodNotAllowedError("only HTTP GET accepted"), nil)
+		}
+
+		sch := openapi.GenerateTasks(ctx, p)
+		return common.NewJsonResponse(http.StatusOK, sch, nil)
 	}
 }

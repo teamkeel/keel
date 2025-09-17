@@ -1,0 +1,10 @@
+task ProcessOrder {
+    fields {
+        externalId Text
+        customerName Text
+        deliveryAddress Text
+        dueDate Date?
+    }
+    @unique([externalId, customerName])
+    @permission(expression: ctx.isAuthenticated)
+}
