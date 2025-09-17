@@ -151,7 +151,7 @@ async function listTasks({ topic, token }) {
 }
 
 async function nextTask({ topic, token }) {
-  const url = `${process.env.KEEL_TESTING_API_URL}/topics/${topic}/tasks/next`;
+  const url = `${process.env.KEEL_TESTING_API_URL}/topics/json/${topic}/tasks/next`;
   const res = await fetch(url, {
     method: "POST",
     headers: {
