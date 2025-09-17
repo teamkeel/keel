@@ -157,6 +157,11 @@ func (m *Migrations) Apply(ctx context.Context, dryRun bool) error {
 	sql.WriteString(tasksTables)
 	sql.WriteString("\n")
 
+	// Link task models to task table
+	for _, task := range m.Schema.Tasks {
+		sql.WriteString(fmt.Sprintf("ALTER TABLE %s ADD COLUMN IF NOT EXISTS \"_task_id\" TEXT NOT NULL REFERENCES %s(%s);", Identifier(task.GetName()), `"keel"."task"`, Identifier("id")))
+	}
+
 	if dryRun {
 		sql.WriteString("ROLLBACK TRANSACTION;\n")
 	}
@@ -356,6 +361,12 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 
 		// Drop columns if fields removed from models or tasks
 		for _, column := range tableColumns {
+			// Ignore any columns that start with an underscore as these are internal columns
+			// and not managed by the schema definition
+			if strings.HasPrefix(column.ColumnName, "_") {
+				continue
+			}
+
 			// Detect a sequence column by seeing if there is _another_ column with the same name plus the sequence suffix.
 			// For sequence columns we don't need to drop the actual column, we just need to drop the __sequence column
 			// and CASCADE will cause the actual column to be removed
