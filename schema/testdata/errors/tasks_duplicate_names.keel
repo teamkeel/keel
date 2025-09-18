@@ -1,0 +1,43 @@
+flow MyFlow {
+    
+}
+
+//expect-error:9:18:NamingError:There already exists a task with the name 'MyMessage'
+message MyMessage{
+    field Text
+}
+
+task MyTask {
+    fields {
+        name Text
+    }
+}
+
+//expect-error:6:17:NamingError:There already exists a task with the name 'MyDuplicate'
+task MyDuplicate {
+    fields {
+        name Text
+    }
+}
+
+//expect-error:6:17:NamingError:There already exists a task with the name 'MyDuplicate'
+task MyDuplicate {
+    fields {
+        name Text
+    }
+}
+
+//expect-error:6:15:NamingError:There already exists a message with the name 'MyMessage'
+task MyMessage {
+    fields {
+        name Text
+    }
+}
+
+//expect-error:6:12:NamingError:There already exists a flow with the name 'MyFlow'
+task MyFlow {
+    fields {
+        name Text
+    }
+}
+

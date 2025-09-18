@@ -120,7 +120,7 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 		sdk.Writeln("")
 	}
 
-	for _, flow := range schema.GetFlows() {
+	for _, flow := range schema.GetAllFlows() {
 		writeFlowFunctionWrapperType(sdkTypes, flow)
 		sdk.Writef("export const %s = (config, fn) => { return { config, fn }; };", strcase.ToCamel(flow.GetName()))
 		sdk.Writeln("")
@@ -1496,7 +1496,7 @@ func generateTestingPackage(schema *proto.Schema) codegen.GeneratedFiles {
 	js.Writeln("export const subscribers = new SubscriberExecutor({});")
 	js.Writeln("export const flows = {")
 	js.Indent()
-	for _, flow := range schema.GetFlows() {
+	for _, flow := range schema.GetAllFlows() {
 		js.Writef("%s: new FlowExecutor({ name: \"%s\" }),", casing.ToLowerCamel(flow.GetName()), flow.GetName())
 		js.Writeln("")
 	}
@@ -1694,7 +1694,7 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 
 	w.Writeln("export type Flows = {")
 	w.Indent()
-	for _, flow := range schema.GetFlows() {
+	for _, flow := range schema.GetAllFlows() {
 		input := flow.GetInputMessageName()
 		if input == "" {
 			w.Writef("%s: FlowExecutor<{}>;", casing.ToLowerCamel(flow.GetName()))

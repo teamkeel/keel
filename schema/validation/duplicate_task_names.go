@@ -29,7 +29,7 @@ func DuplicateTaskNames(asts []*parser.AST, errs *errorhandling.ValidationErrors
 							errorhandling.NamingError,
 							errorhandling.ErrorDetails{
 								Message: message,
-								Hint:    "Use unique names between models, enums, messages and tasks",
+								Hint:    "Use unique names between models, enums, messages, flows and tasks",
 							},
 							n.Name,
 						),
@@ -45,7 +45,7 @@ func DuplicateTaskNames(asts []*parser.AST, errs *errorhandling.ValidationErrors
 							errorhandling.NamingError,
 							errorhandling.ErrorDetails{
 								Message: fmt.Sprintf("There already exists an enum with the name '%s'", n.Name.Value),
-								Hint:    "Use unique names between models, enums, messages and tasks",
+								Hint:    "Use unique names between models, enums, messages, flows and tasks",
 							},
 							n.Name,
 						),
@@ -68,7 +68,23 @@ func DuplicateTaskNames(asts []*parser.AST, errs *errorhandling.ValidationErrors
 							errorhandling.NamingError,
 							errorhandling.ErrorDetails{
 								Message: m,
-								Hint:    "Use unique names between models, enums, messages and tasks",
+								Hint:    "Use unique names between models, enums, messages, flows and tasks",
+							},
+							n.Name,
+						),
+					)
+					break
+				}
+			}
+
+			for _, flow := range query.Flows(asts) {
+				if flow.Name.Value == n.Name.Value {
+					errs.AppendError(
+						errorhandling.NewValidationErrorWithDetails(
+							errorhandling.NamingError,
+							errorhandling.ErrorDetails{
+								Message: fmt.Sprintf("There already exists a flow with the name '%s'", n.Name.Value),
+								Hint:    "Use unique names between models, enums, messages, flows and tasks",
 							},
 							n.Name,
 						),

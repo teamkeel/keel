@@ -421,6 +421,7 @@ func generateFunctionsHandler(schema *proto.Schema, cfg *config.ProjectConfig, p
 	jobs := []string{}
 	subscribers := []string{}
 	flows := []string{}
+	taskFlows := []string{}
 	routes := []string{}
 	actionTypes := map[string]string{}
 
@@ -475,6 +476,16 @@ func generateFunctionsHandler(schema *proto.Schema, cfg *config.ProjectConfig, p
 		}
 	}
 
+	for _, task := range schema.GetTasks() {
+		name := strcase.ToLowerCamel(task.GetFlow().GetName())
+
+		// Check if the file actually exists before requiring it
+		path := filepath.Join(projectRoot, "tasks", name+".ts")
+		if _, err := os.Stat(path); err == nil {
+			taskFlows = append(taskFlows, name)
+		}
+	}
+
 	for _, route := range schema.GetRoutes() {
 		routes = append(routes, route.GetHandler())
 	}
@@ -487,6 +498,7 @@ func generateFunctionsHandler(schema *proto.Schema, cfg *config.ProjectConfig, p
 		"Subscribers": subscribers,
 		"Jobs":        jobs,
 		"Flows":       flows,
+		"TaskFlows":   taskFlows,
 		"Routes":      routes,
 		"ActionTypes": actionTypes,
 	})

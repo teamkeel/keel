@@ -37,6 +37,9 @@ const flows = {
 {{ range .Flows }}
   {{ . }}: require("../../flows/{{ . }}").default,
 {{ end }}
+{{ range .TaskFlows }}
+  {{ . }}: require("../../tasks/{{ . }}").default,
+{{ end }}
 };
 
 const routes = {

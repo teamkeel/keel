@@ -17,6 +17,7 @@ const (
 	AuthHooksDir   = "functions/auth"
 	JobsDir        = "jobs"
 	FlowsDir       = "flows"
+	TasksDir       = "tasks"
 	SubscribersDir = "subscribers"
 	RoutesDir      = "routes"
 )
@@ -47,6 +48,10 @@ func Scaffold(dir string, schema *proto.Schema, cfg *config.ProjectConfig) (code
 		{
 			path:     FlowsDir,
 			required: len(schema.GetFlows()) > 0,
+		},
+		{
+			path:     TasksDir,
+			required: len(schema.GetTasks()) > 0,
 		},
 		{
 			path:     SubscribersDir,
@@ -128,6 +133,17 @@ export default AfterIdentityCreated(async (ctx) => {
 			generatedFiles = append(generatedFiles, &codegen.GeneratedFile{
 				Path:     path,
 				Contents: writeFlowWrapper(flow),
+			})
+		}
+	}
+
+	for _, task := range schema.GetTasks() {
+		path := filepath.Join(TasksDir, fmt.Sprintf("%s.ts", casing.ToLowerCamel(task.GetFlow().GetName())))
+		_, err := os.Stat(filepath.Join(dir, path))
+		if os.IsNotExist(err) {
+			generatedFiles = append(generatedFiles, &codegen.GeneratedFile{
+				Path:     path,
+				Contents: writeFlowWrapper(task.GetFlow()),
 			})
 		}
 	}
