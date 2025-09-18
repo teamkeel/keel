@@ -1960,11 +1960,14 @@ flow MyFlow {
 		age Number
 	}
 }
-flow MyFlowWithoutInputs {}`
+flow MyFlowWithoutInputs {}
+task MyTask {}
+`
 
 	expected := `
 export declare const MyFlow: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C, Environment, Secrets, Identity, MyFlowMessage>) };
-export declare const MyFlowWithoutInputs: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C, Environment, Secrets, Identity, never>) };`
+export declare const MyFlowWithoutInputs: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C, Environment, Secrets, Identity, never>) };
+export declare const MyTask: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C, Environment, Secrets, Identity, never>) };`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		for _, f := range s.GetAllFlows() {
