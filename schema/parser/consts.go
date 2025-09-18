@@ -101,6 +101,7 @@ const (
 )
 
 var (
+	// FieldNames is an array of built-in fields that are set implicitly for all entities.
 	FieldNames = []string{FieldNameId, FieldNameCreatedAt, FieldNameUpdatedAt}
 )
 

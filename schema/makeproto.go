@@ -1473,7 +1473,6 @@ func (scm *Builder) makeTask(decl *parser.DeclarationNode) {
 		case section.Fields != nil:
 			fields := scm.makeFields(section.Fields, protoTask.GetName())
 			protoTask.Fields = append(protoTask.Fields, fields...)
-
 		case section.Attribute != nil:
 			scm.applyTaskAttribute(protoTask, section.Attribute)
 		default:
@@ -1482,7 +1481,55 @@ func (scm *Builder) makeTask(decl *parser.DeclarationNode) {
 		}
 	}
 
+	// if we can have a input message, let's add it to the schema
+	if message := scm.makeTaskInputMessage(protoTask); message != nil {
+		protoTask.InputMessageName = message.GetName()
+		scm.proto.Messages = append(scm.proto.Messages, message)
+	}
+
 	scm.proto.Tasks = append(scm.proto.Tasks, protoTask)
+}
+
+// makeTaskInputMessage will create a proto input message which can be used to create a new task of the given type.
+func (scm *Builder) makeTaskInputMessage(protoTask *proto.Task) *proto.Message {
+	messageName := makeMessageName(protoTask.GetName())
+	message := proto.Message{
+		Name:   messageName,
+		Fields: []*proto.MessageField{},
+	}
+	for _, field := range protoTask.GetFields() {
+		// built-in fields are ignored
+		if lo.Contains(parser.FieldNames, field.GetName()) {
+			continue
+		}
+
+		// sequence & computed fields are ignored
+		if field.GetSequence() != nil || field.GetComputedExpression() != nil {
+			continue
+		}
+
+		// entity fields are ignored, only FK fields will remain; e.g. order is ignored, orderID type ID will remain
+		if field.GetType().GetType() == proto.Type_TYPE_ENTITY {
+			continue
+		}
+
+		protoField := &proto.MessageField{
+			Name:        field.GetName(),
+			MessageName: messageName,
+			Type:        field.GetType(),
+			// fields with default values are also optional
+			Optional: field.GetOptional() || field.GetDefaultValue() != nil,
+		}
+
+		message.Fields = append(message.Fields, protoField)
+	}
+
+	if len(message.GetFields()) > 0 {
+		return &message
+	}
+
+	// no fields = no message
+	return nil
 }
 
 func (scm *Builder) makeRole(decl *parser.DeclarationNode) {
