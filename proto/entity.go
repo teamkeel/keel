@@ -141,3 +141,15 @@ func (t *Task) FindField(name string) *Field {
 func (t *Task) HasField(field string) bool {
 	return t.FindField(field) != nil
 }
+
+// GetFlow generates and returns the flow associated with this topic.
+func (t *Task) GetFlow() *Flow {
+	if t == nil {
+		return nil
+	}
+
+	return &Flow{
+		Name:        t.GetName(),
+		Permissions: t.GetPermissions(),
+	}
+}

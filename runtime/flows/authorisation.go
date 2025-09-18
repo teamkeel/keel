@@ -85,7 +85,7 @@ func AuthoriseFlow(ctx context.Context, schema *proto.Schema, flow *proto.Flow) 
 // AuthorisedFlows returns a list of flows from the given schema for which the current context user is authorised to view.
 func AuthorisedFlows(ctx context.Context, schema *proto.Schema) ([]*proto.Flow, error) {
 	flows := []*proto.Flow{}
-	for _, f := range schema.GetFlows() {
+	for _, f := range schema.GetAllFlows() {
 		authorised, err := AuthoriseFlow(ctx, schema, f)
 		if err != nil {
 			return nil, err
