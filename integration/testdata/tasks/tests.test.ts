@@ -47,7 +47,7 @@ test("tasks - create", async () => {
     {
       id: expect.any(String),
       orderDate: new Date(2025, 6, 15),
-      shipByDate: new Date(2025, 6, 30), 
+      shipByDate: new Date(2025, 6, 30),
       createdAt: expect.any(Date),
       updatedAt: expect.any(Date),
       keelTaskId: resCreate.body.id,
