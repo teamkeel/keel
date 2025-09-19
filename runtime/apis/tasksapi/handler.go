@@ -169,6 +169,17 @@ func Handler(s *proto.Schema) common.HandlerFunc {
 			}
 
 			switch pathParts[3] {
+			case "start":
+				task, err := tasks.StartTask(ctx, topic, pathParts[2])
+				if err != nil {
+					if errors.Is(err, tasks.ErrTaskNotFound) {
+						return httpjson.NewErrorResponse(ctx, common.NewNotFoundError("Not found"), nil)
+					}
+
+					return httpjson.NewErrorResponse(ctx, err, nil)
+				}
+
+				return common.NewJsonResponse(http.StatusOK, task, nil)
 			case "complete":
 				task, err := tasks.CompleteTask(ctx, topic, pathParts[2], identityID)
 				if err != nil {

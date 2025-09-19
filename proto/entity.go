@@ -149,7 +149,8 @@ func (t *Task) GetFlow() *Flow {
 	}
 
 	return &Flow{
-		Name:        t.GetName(),
-		Permissions: t.GetPermissions(),
+		Name:             t.GetName(),
+		Permissions:      t.GetPermissions(),
+		InputMessageName: "TaskFlowInputMessage",
 	}
 }

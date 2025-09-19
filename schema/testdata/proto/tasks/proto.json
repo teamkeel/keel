@@ -358,6 +358,19 @@
           "optional": true
         }
       ]
+    },
+    {
+      "name": "TaskFlowInputMessage",
+      "fields": [
+        {
+          "messageName": "TaskFlowInputMessage",
+          "name": "entityId",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "nullable": true
+        }
+      ]
     }
   ],
   "tasks": [

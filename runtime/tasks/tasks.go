@@ -11,7 +11,9 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/flows"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm"
@@ -28,6 +30,9 @@ const (
 	StatusDeferred  Status = "DEFERRED"
 	StatusCompleted Status = "COMPLETED"
 )
+
+// EntityFieldNameTaskID is the field name used in the entity table to link to a keel task
+const EntityFieldNameTaskID string = "keel_task_id"
 
 type Task struct {
 	ID            string     `gorm:"column:id;primaryKey;->" json:"id"`
@@ -153,6 +158,31 @@ func getTask(ctx context.Context, pbTask *proto.Task, id string) (*Task, error) 
 	return &task, nil
 }
 
+// getTaskEntityID returns the ID of the entity holding the data relating to this task.
+func getTaskEntityID(ctx context.Context, pbTask *proto.Task, id string) (*string, error) {
+	dbase, err := db.GetDatabase(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var entityID *string
+
+	err = dbase.GetDB().
+		Table(strcase.ToSnake(pbTask.GetName())).
+		Select("id").
+		Where(fmt.Sprintf("%s = ?", EntityFieldNameTaskID), id).
+		Scan(&entityID).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+
+		return nil, err
+	}
+
+	return entityID, nil
+}
+
 // getTaskQueue will retrieve the queue of tasks for the given topic.
 func getTaskQueue(ctx context.Context, pbTask *proto.Task, filters *filterFields, page *paginationFields) ([]*Task, error) {
 	database, err := db.GetDatabase(ctx)
@@ -165,7 +195,7 @@ func getTaskQueue(ctx context.Context, pbTask *proto.Task, filters *filterFields
 	q := database.GetDB().Limit(page.GetLimit())
 
 	q.Select("keel.task.*")
-	q.Joins(fmt.Sprintf("INNER JOIN %s ON keel.task.id = %s.keel_task_id", strcase.ToSnake(pbTask.GetName()), strcase.ToSnake(pbTask.GetName())))
+	q.Joins(fmt.Sprintf("INNER JOIN %s ON keel.task.id = %s.%s", strcase.ToSnake(pbTask.GetName()), strcase.ToSnake(pbTask.GetName()), EntityFieldNameTaskID))
 	q = q.Where("name = ?", pbTask.GetName())
 
 	if filters != nil {
@@ -265,7 +295,7 @@ func CreateTask(ctx context.Context, pbTask *proto.Task, identityID string, defe
 			return err
 		}
 
-		d := map[string]any{"keel_task_id": task.ID}
+		d := map[string]any{EntityFieldNameTaskID: task.ID}
 		for key, value := range data {
 			d[strcase.ToSnake(key)] = value
 		}
@@ -277,6 +307,72 @@ func CreateTask(ctx context.Context, pbTask *proto.Task, identityID string, defe
 
 		return nil
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	return
+}
+
+// StartTask triggers a flow run for the given task and assigns the run id to it.
+func StartTask(ctx context.Context, pbTask *proto.Task, id string) (task *Task, err error) {
+	ctx, span := tracer.Start(ctx, "StartTask")
+	defer span.End()
+
+	defer func() {
+		if err != nil {
+			span.RecordError(err, trace.WithStackTrace(true))
+			span.SetStatus(codes.Error, err.Error())
+		}
+	}()
+
+	task, err = getTask(ctx, pbTask, id)
+	if err != nil {
+		return nil, err
+	}
+
+	// if task already completed, return it
+	if task.isCompleted() {
+		return task, nil
+	}
+
+	// if the task already has a flow run, cancel that previous run
+	if task.FlowRunID != nil {
+		if _, err := flows.CancelFlowRun(ctx, *task.FlowRunID); err != nil {
+			// record error on trace
+			span.AddEvent("errors", trace.WithAttributes(attribute.String("error", err.Error())))
+		}
+	}
+
+	// retrieve the task entity' id
+	entityID, err := getTaskEntityID(ctx, pbTask, id)
+	if err != nil {
+		return nil, err
+	}
+
+	flowInputs := map[string]any{}
+	if entityID != nil {
+		flowInputs["entityId"] = *entityID
+	}
+
+	// start the flow
+	run, err := flows.StartFlow(ctx, pbTask.GetFlow(), flowInputs)
+	if err != nil {
+		return nil, err
+	}
+
+	// set the flow run id on the task
+	dbase, err := db.GetDatabase(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	err = dbase.GetDB().
+		Model(&task).
+		Clauses(clause.Returning{}).
+		Where("name = ? AND id = ?", pbTask.GetName(), id).
+		Updates(Task{FlowRunID: &run.ID}).
+		Error
 	if err != nil {
 		return nil, err
 	}
