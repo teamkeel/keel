@@ -48,6 +48,9 @@ message Task {
 
     // A ordered list of order by statements.
     repeated OrderByStatement order_by = 4;
+    
+    // The message used to create a task; generated from the task's fields.
+    string input_message_name = 5;
 }
 
 message Field {
