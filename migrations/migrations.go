@@ -159,7 +159,7 @@ func (m *Migrations) Apply(ctx context.Context, dryRun bool) error {
 
 	// Link task entities to the task table
 	for _, task := range m.Schema.GetTasks() {
-		sql.WriteString(fmt.Sprintf("ALTER TABLE %s ADD COLUMN IF NOT EXISTS \"_task_id\" TEXT NOT NULL REFERENCES %s(%s);", Identifier(task.GetName()), `"keel"."task"`, Identifier("id")))
+		sql.WriteString(fmt.Sprintf("ALTER TABLE %s ADD COLUMN IF NOT EXISTS \"keel_task_id\" TEXT NOT NULL REFERENCES %s(%s);", Identifier(task.GetName()), `"keel"."task"`, Identifier("id")))
 	}
 
 	if dryRun {
@@ -361,9 +361,9 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 
 		// Drop columns if fields removed from models or tasks
 		for _, column := range tableColumns {
-			// Ignore any columns that start with an underscore as these are internal columns
+			// Ignore any columns that start with keel as these are internal columns
 			// and not managed by the schema definition
-			if strings.HasPrefix(column.ColumnName, "_") {
+			if strings.HasPrefix(column.ColumnName, "keel") {
 				continue
 			}
 

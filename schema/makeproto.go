@@ -2094,6 +2094,16 @@ func (scm *Builder) applyTaskAttribute(protoTask *proto.Task, attribute *parser.
 		perm := scm.permissionAttributeToProtoPermission(attribute)
 		perm.EntityName = protoTask.GetName()
 		protoTask.Permissions = append(protoTask.Permissions, perm)
+	case parser.AttributeOrderBy:
+		for _, arg := range attribute.Arguments {
+			field := arg.Label.Value
+			direction := arg.Expression.String()
+			orderBy := &proto.OrderByStatement{
+				FieldName: field,
+				Direction: mapToOrderByDirection(direction),
+			}
+			protoTask.OrderBy = append(protoTask.OrderBy, orderBy)
+		}
 	}
 }
 

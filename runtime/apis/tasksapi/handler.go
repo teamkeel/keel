@@ -89,7 +89,7 @@ func Handler(s *proto.Schema) common.HandlerFunc {
 				switch r.Method {
 				case http.MethodGet:
 					// GET topics/{name}/tasks - Retrieves all tasks in a topic’s queue
-					tasks, err := tasks.ListTasks(ctx, topic, common.ParseQueryParams(r))
+					tasks, err := tasks.GetTaskQueue(ctx, topic, common.ParseQueryParams(r))
 					if err != nil {
 						return httpjson.NewErrorResponse(ctx, err, nil)
 					}
@@ -118,7 +118,15 @@ func Handler(s *proto.Schema) common.HandlerFunc {
 						deferUntil = &date
 					}
 
-					task, err := tasks.CreateTask(ctx, topic, identityID, deferUntil)
+					data := map[string]any{}
+					if inputsMap["data"] != nil {
+						data, ok = inputsMap["data"].(map[string]any)
+						if !ok {
+							return httpjson.NewErrorResponse(ctx, common.NewInputMalformedError("data not correctly formatted"), nil)
+						}
+					}
+
+					task, err := tasks.CreateTask(ctx, topic, identityID, deferUntil, data)
 					if err != nil {
 						if errors.Is(err, tasks.ErrTaskNotFound) {
 							return httpjson.NewErrorResponse(ctx, common.NewNotFoundError("Not found"), nil)
@@ -139,7 +147,7 @@ func Handler(s *proto.Schema) common.HandlerFunc {
 					return httpjson.NewErrorResponse(ctx, common.NewHttpMethodNotAllowedError("only HTTP POST accepted"), nil)
 				}
 
-				task, err := tasks.NextTask(ctx, identityID)
+				task, err := tasks.NextTask(ctx, topic, identityID)
 				if err != nil {
 					if errors.Is(err, tasks.ErrTaskNotFound) {
 						return httpjson.NewErrorResponse(ctx, common.NewNotFoundError("Not found"), nil)

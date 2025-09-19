@@ -43,7 +43,11 @@ message Task {
     // The fields this task contains
     repeated Field fields = 2;
 
+    // A list of permission rules for this task.
     repeated PermissionRule permissions = 3;
+
+    // A ordered list of order by statements.
+    repeated OrderByStatement order_by = 4;
 }
 
 message Field {

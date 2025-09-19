@@ -1,0 +1,12 @@
+
+task ProcessOrder {
+    fields {
+        //expect-error:5:25:E011:field 'shipByDate' has an unrecognised attribute @orderBy
+        shipByDate Date @orderBy
+        orderDate Date
+    }
+
+    @orderBy(shipByDate: desc)
+    //expect-error:5:13:AttributeNotAllowedError:@orderBy can only be defined once per task
+    @orderBy(orderDate: desc)
+}
