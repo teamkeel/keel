@@ -90,6 +90,11 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 	// Generate the input messages for all subscribers in the schema.
 	scm.makeSubscriberInputMessages()
 
+	// Generate the input message for task flows, only if tasks are defined
+	if len(scm.proto.GetTasks()) > 0 {
+		scm.makeTaskFlowInputMessage()
+	}
+
 	return scm.proto
 }
 
@@ -1588,6 +1593,25 @@ func (scm *Builder) makeAnyType() {
 	}
 
 	scm.proto.Messages = append(scm.proto.Messages, anyMsg)
+}
+
+// makeTaskFlowInputMessage adds a new generic input message for flows generated for tasks.
+func (scm *Builder) makeTaskFlowInputMessage() {
+	msg := &proto.Message{
+		Name: "TaskFlowInputMessage",
+		Fields: []*proto.MessageField{
+			{
+				MessageName: "TaskFlowInputMessage",
+				Name:        "entityId",
+				Type: &proto.TypeInfo{
+					Type: proto.Type_TYPE_STRING,
+				},
+				Nullable: true,
+			},
+		},
+	}
+
+	scm.proto.Messages = append(scm.proto.Messages, msg)
 }
 
 func (scm *Builder) makeMessage(decl *parser.DeclarationNode) {
