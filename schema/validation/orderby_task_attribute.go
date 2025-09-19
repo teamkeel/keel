@@ -10,29 +10,26 @@ import (
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
-func OrderByAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
-	var currentModel *parser.ModelNode
-	var currentOperation *parser.ActionNode
+func OrderByTaskAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
+	var currentTask *parser.TaskNode
 	var currentAttribute *parser.AttributeNode
-	var orderByAttributeDefined bool
 	var argumentLabels []string
+	var orderByAttributeDefined bool
 
 	return Visitor{
-		EnterModel: func(model *parser.ModelNode) {
-			currentModel = model
+		EnterTask: func(task *parser.TaskNode) {
+			currentTask = task
+			orderByAttributeDefined = false
 		},
 		LeaveModel: func(_ *parser.ModelNode) {
-			currentModel = nil
+			currentTask = nil
 		},
-		EnterAction: func(action *parser.ActionNode) {
-			currentOperation = action
-			orderByAttributeDefined = false
-		},
-		LeaveAction: func(_ *parser.ActionNode) {
-			currentOperation = nil
-			orderByAttributeDefined = false
-		},
+
 		EnterAttribute: func(attribute *parser.AttributeNode) {
+			if currentTask == nil {
+				return
+			}
+
 			currentAttribute = attribute
 			argumentLabels = []string{}
 
@@ -40,25 +37,11 @@ func OrderByAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErro
 				return
 			}
 
-			if currentOperation == nil {
-				return
-			}
-
-			if currentOperation.Type.Value != parser.ActionTypeList {
-				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
-					errorhandling.AttributeNotAllowedError,
-					errorhandling.ErrorDetails{
-						Message: "@orderBy can only be used on list actions",
-					},
-					attribute.Name,
-				))
-			}
-
 			if orderByAttributeDefined {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeNotAllowedError,
 					errorhandling.ErrorDetails{
-						Message: "@orderBy can only be defined once per action",
+						Message: "@orderBy can only be defined once per task",
 					},
 					attribute.Name,
 				))
@@ -77,6 +60,10 @@ func OrderByAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErro
 			}
 		},
 		EnterAttributeArgument: func(arg *parser.AttributeArgumentNode) {
+			if currentTask == nil {
+				return
+			}
+
 			if currentAttribute.Name.Value != parser.AttributeOrderBy {
 				return
 			}
@@ -85,17 +72,17 @@ func OrderByAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErro
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeArgumentError,
 					errorhandling.ErrorDetails{
-						Message: "@orderBy arguments must be specified with a label corresponding with a field on this model",
-						Hint:    "For example, @orderBy(surname: asc, firstName: asc)",
+						Message: "@orderBy arguments must be specified with a label corresponding with a field on this task",
+						Hint:    "For example, @orderBy(shipByDate: desc, orderDate: desc)",
 					},
 					arg,
 				))
 				return
 			}
 
-			modelField := currentModel.Field(arg.Label.Value)
+			field := currentTask.Field(arg.Label.Value)
 
-			if modelField == nil {
+			if field == nil {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeArgumentError,
 					errorhandling.ErrorDetails{
@@ -106,7 +93,7 @@ func OrderByAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErro
 				return
 			}
 
-			if query.IsHasOneModelField(asts, modelField) || query.IsHasManyModelField(asts, modelField) {
+			if query.IsHasOneModelField(asts, field) || query.IsHasManyModelField(asts, field) {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeArgumentError,
 					errorhandling.ErrorDetails{
@@ -117,7 +104,7 @@ func OrderByAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErro
 				return
 			}
 
-			if modelField.Repeated {
+			if field.Repeated {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeArgumentError,
 					errorhandling.ErrorDetails{

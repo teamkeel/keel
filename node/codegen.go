@@ -939,6 +939,10 @@ func writeDatabaseInterface(w *codegen.Writer, schema *proto.Schema) {
 		w.Writef("%s: %sTable;", casing.ToSnake(model.GetName()), model.GetName())
 		w.Writeln("")
 	}
+	for _, task := range schema.GetTasks() {
+		w.Writef("%s: %sTable;", casing.ToSnake(task.GetName()), task.GetName())
+		w.Writeln("")
+	}
 	w.Dedent()
 	w.Writeln("}")
 	w.Writeln("export declare function useDatabase(): Kysely<database>;")

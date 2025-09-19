@@ -1,0 +1,43 @@
+model Order {
+}
+
+task ProcessOrder {
+    fields {
+        shipByDate Date
+        orderDate Date
+        order Order
+    }
+
+    //expect-error:5:13:AttributeArgumentError:@orderBy requires at least one argument
+    @orderBy
+    //expect-error:5:13:AttributeNotAllowedError:@orderBy can only be defined once per task
+    //expect-error:14:24:AttributeArgumentError:@orderBy arguments must be specified with a label corresponding with a field on this task
+    @orderBy(shipByDate)
+    //expect-error:5:13:AttributeNotAllowedError:@orderBy can only be defined once per task
+    @orderBy(
+        shipByDate: asc,
+        //expect-error:9:13:AttributeArgumentError:@orderBy argument label 'nope' must correspond to a field on this model
+        nope: asc
+    )
+    //expect-error:5:13:AttributeNotAllowedError:@orderBy can only be defined once per task
+    @orderBy(
+        shipByDate: asc,
+        //expect-error:9:14:AttributeArgumentError:@orderBy does not support ordering of relationships fields
+        order: asc
+    )
+    //expect-error:5:13:AttributeNotAllowedError:@orderBy can only be defined once per task
+    @orderBy(
+        shipByDate: asc,
+        //expect-error:9:19:AttributeArgumentError:@orderBy argument name 'shipByDate' already defined
+        shipByDate: asc
+    )
+    //expect-error:5:13:AttributeNotAllowedError:@orderBy can only be defined once per task
+    //expect-error:26:31:AttributeArgumentError:@orderBy argument value must either be asc or desc
+    @orderBy(shipByDate: "asc")
+    //expect-error:5:13:AttributeNotAllowedError:@orderBy can only be defined once per task
+    //expect-error:26:29:AttributeArgumentError:@orderBy argument value must either be asc or desc
+    @orderBy(shipByDate: 123)
+    //expect-error:5:13:AttributeNotAllowedError:@orderBy can only be defined once per task
+    //expect-error:26:29:AttributeArgumentError:@orderBy argument value must either be asc or desc
+    @orderBy(shipByDate: ASC)
+}

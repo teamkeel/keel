@@ -1,9 +1,15 @@
+task NoFields {
+    @permission(roles: [User])
+}
+
 task DispatchOrder {
     fields {
-        name Text
+        orderDate Date
+        shipByDate Date
     }
 
     @permission(roles: [User])
+    @orderBy(shipByDate: asc, orderDate: asc)
 }
 
 role User {
