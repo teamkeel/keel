@@ -46,8 +46,8 @@ test("tasks - create", async () => {
   expect(tasks).toEqual([
     {
       id: expect.any(String),
-      orderDate: new Date(2025, 6, 14), // TODO: this should be 15 and not 14
-      shipByDate: new Date(2025, 6, 29), // TODO: this should be 30 and not 29
+      orderDate: new Date(2025, 6, 15),
+      shipByDate: new Date(2025, 6, 30), 
       createdAt: expect.any(Date),
       updatedAt: expect.any(Date),
       keelTaskId: resCreate.body.id,
