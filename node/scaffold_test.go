@@ -232,7 +232,7 @@ const config = {
 	// See https://docs.keel.so/flows for options
 } as const satisfies FlowConfig;
 
-export default MyTask(config, async (ctx) => {
+export default MyTask(config, async (ctx, inputs) => {
 
 });`,
 			Path: "tasks/myTask.ts",
