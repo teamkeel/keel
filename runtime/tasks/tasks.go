@@ -31,7 +31,7 @@ const (
 	StatusCompleted Status = "COMPLETED"
 )
 
-// EntityFieldNameTaskID is the field name used in the entity table to link to a keel task
+// EntityFieldNameTaskID is the field name used in the entity table to link to a keel task.
 const EntityFieldNameTaskID string = "keel_task_id"
 
 type Task struct {
