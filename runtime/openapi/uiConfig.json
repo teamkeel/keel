@@ -114,6 +114,9 @@
         },
         {
           "$ref": "#/$defs/UiElementPickListApiResponse"
+        },
+        {
+          "$ref": "#/$defs/UiElementBulkScanApiResponse"
         }
       ]
     },
@@ -1039,6 +1042,55 @@
         "data",
         "name"
       ]
+    },
+    "UiElementBulkScanApiResponse": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "unit": {
+          "type": "string"
+        },
+        "max": {
+          "type": "number"
+        },
+        "min": {
+          "type": "number"
+        },
+        "duplicateHandling": {
+          "$ref": "#/$defs/BulkScanDuplicateMode"
+        },
+        "__type": {
+          "type": "string",
+          "const": "ui.interactive.bulkScan"
+        },
+        "name": {
+          "type": "string"
+        },
+        "validationError": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "__type",
+        "duplicateHandling",
+        "name"
+      ]
+    },
+    "BulkScanDuplicateMode": {
+      "description": "Defines how duplicate scans should be handled.",
+      "default": "none",
+      "enum": [
+        "none",
+        "rejectDuplicates",
+        "trackQuantity"
+      ],
+      "type": "string"
     },
     "UiPageApiResponse": {
       "type": "object",

@@ -905,6 +905,9 @@
               },
               {
                 "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementPickListApiResponse"
+              },
+              {
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementBulkScanApiResponse"
               }
             ]
           },
@@ -1242,6 +1245,46 @@
             },
             "additionalProperties": false,
             "required": ["__type", "data", "name"]
+          },
+          "UiElementBulkScanApiResponse": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "unit": {
+                "type": "string"
+              },
+              "max": {
+                "type": "number"
+              },
+              "min": {
+                "type": "number"
+              },
+              "duplicateHandling": {
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/BulkScanDuplicateMode"
+              },
+              "__type": {
+                "type": "string",
+                "const": "ui.interactive.bulkScan"
+              },
+              "name": {
+                "type": "string"
+              },
+              "validationError": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "duplicateHandling", "name"]
+          },
+          "BulkScanDuplicateMode": {
+            "default": "none",
+            "enum": ["none", "rejectDuplicates", "trackQuantity"],
+            "type": "string"
           },
           "UiElementPrintApiResponse": {
             "type": "object",

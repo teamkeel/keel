@@ -35,7 +35,8 @@ describe("pick list element", () => {
       expectTypeOf(res.pickList.items).branded.toEqualTypeOf<
         {
           id: string;
-          qty: number;
+          quantity: number;
+          targetQuantity: number;
         }[]
       >;
     });
