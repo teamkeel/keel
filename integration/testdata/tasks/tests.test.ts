@@ -1,4 +1,4 @@
-import { resetDatabase, models } from "@teamkeel/testing";
+import { resetDatabase, models, flows } from "@teamkeel/testing";
 import { useDatabase } from "@teamkeel/sdk";
 import { beforeEach, expect, test } from "vitest";
 
@@ -83,6 +83,76 @@ test("tasks - create - no fields", async () => {
       updatedAt: expect.any(String),
     },
   ]);
+});
+
+test("tasks - start", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  const resCreate = await createTask({
+    topic: "NoFields",
+    body: {},
+    token: token,
+  });
+  expect(resCreate.status).toBe(200);
+  expect(resCreate.body).toEqual({
+    createdAt: expect.any(String),
+    id: expect.any(String),
+    name: "NoFields",
+    status: "NEW",
+    updatedAt: expect.any(String),
+  });
+
+  const taskId = resCreate.body.id;
+
+  const res = await startTask({ topic: "NoFields", token: token, id: taskId });
+  expect(res.status).toBe(200);
+  expect(res.body).toEqual({
+    createdAt: expect.any(String),
+    id: expect.any(String),
+    name: "NoFields",
+    status: "NEW",
+    updatedAt: expect.any(String),
+    flowRunId: expect.any(String),
+  });
+
+  const flowRunId = res.body.flowRunId;
+  const flow = await flows.noFields
+    .withAuthToken(token)
+    .untilFinished(flowRunId);
+
+  expect(flow).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "COMPLETED",
+    name: "NoFields",
+    startedBy: expect.any(String),
+    input: {
+      entityId: expect.any(String),
+    },
+    data: null,
+    config: {
+      title: "No fields",
+    },
+    steps: [
+      {
+        id: expect.any(String),
+        name: "return task entity id",
+        runId: expect.any(String),
+        status: "COMPLETED",
+        type: "FUNCTION",
+        value: expect.any(String),
+        error: null,
+        stage: null,
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        ui: null,
+      },
+    ],
+    createdAt: expect.any(Date),
+    updatedAt: expect.any(Date),
+  });
 });
 
 test("tasks - list", async () => {
@@ -304,6 +374,22 @@ async function nextTask({ topic, token }) {
   const url = `${process.env.KEEL_TESTING_API_URL}/topics/json/${topic}/tasks/next`;
   const res = await fetch(url, {
     method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+  });
+
+  return {
+    status: res.status,
+    body: await res.json(),
+  };
+}
+
+async function startTask({ topic, token, id }) {
+  const url = `${process.env.KEEL_TESTING_API_URL}/topics/json/${topic}/tasks/${id}/start`;
+  const res = await fetch(url, {
+    method: "PUT",
     headers: {
       "Content-Type": "application/json",
       Authorization: "Bearer " + token,
