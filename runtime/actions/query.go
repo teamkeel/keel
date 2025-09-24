@@ -1507,7 +1507,7 @@ func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows
 				} else {
 					switch f.GetType().GetType() {
 					case proto.Type_TYPE_VECTOR:
-						row[col], err = ParsePostgresArray[float64](val.(string), func(s string) (float64, error) {
+						row[col], err = ParsePostgresArray(val.(string), func(s string) (float64, error) {
 							return strconv.ParseFloat(s, 64)
 						})
 					case proto.Type_TYPE_FILE:
