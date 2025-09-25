@@ -77,6 +77,10 @@ import {
   UiElementPickList,
   UiElementPickListApiResponse,
 } from "./elements/interactive/pickList";
+import {
+  UiElementBulkScan,
+  UiElementBulkScanApiResponse,
+} from "./elements/interactive/bulkScan";
 
 export interface UI<C extends FlowConfig> {
   page: UiPage<C>;
@@ -119,6 +123,7 @@ type UiDisplayElements = {
 type UiInteractiveElements = {
   print: UiElementPrint;
   pickList: UiElementPickList;
+  bulkScan: UiElementBulkScan;
 };
 
 // The base input element function. All inputs must be named and can optionally have a config
@@ -233,6 +238,7 @@ export type UIApiResponses = {
   interactive: {
     print: UiElementPrintApiResponse;
     pickList: UiElementPickListApiResponse;
+    bulkScan: UiElementBulkScanApiResponse;
   };
 };
 
@@ -264,7 +270,8 @@ export type UiElementApiResponse =
 
   // Interactive elements
   | UiElementPrintApiResponse
-  | UiElementPickListApiResponse;
+  | UiElementPickListApiResponse
+  | UiElementBulkScanApiResponse;
 
 export type UiElementApiResponses = UiElementApiResponse[];
 
