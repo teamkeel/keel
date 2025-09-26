@@ -333,6 +333,277 @@ test("flows - only pages", async () => {
   });
 });
 
+test("flows - back on pages", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  const f = await flows.onlyPages.withAuthToken(token).start({});
+
+  expect(f).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "AWAITING_INPUT",
+    name: "OnlyPages",
+    startedBy: expect.any(String),
+    input: {},
+    data: null,
+    steps: [
+      {
+        id: expect.any(String),
+        name: "first page",
+        runId: expect.any(String),
+        stage: null,
+        status: "PENDING",
+        type: "UI",
+        value: null,
+        error: null,
+        startTime: expect.any(Date),
+        endTime: null,
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        ui: {
+          __type: "ui.page",
+          content: [
+            { __type: "ui.display.grid", data: [{ title: "A thing" }] },
+          ],
+          hasValidationErrors: false,
+          title: "Grid of things",
+        },
+      },
+    ],
+    createdAt: expect.any(Date),
+    updatedAt: expect.any(Date),
+    config: {
+      title: "Only pages",
+    },
+  });
+
+  // Provide the values for the pending UI step
+  const updatedFlow = await flows.onlyPages
+    .withAuthToken(token)
+    .putStepValues(f.id, f.steps[0].id, {});
+
+  expect(updatedFlow).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "AWAITING_INPUT",
+    name: "OnlyPages",
+    startedBy: expect.any(String),
+    input: {},
+    data: null,
+    steps: [
+      {
+        id: expect.any(String),
+        name: "first page",
+        runId: expect.any(String),
+        stage: null,
+        status: "COMPLETED",
+        type: "UI",
+        value: {},
+        error: null,
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        ui: null,
+      },
+      {
+        id: expect.any(String),
+        name: "question",
+        runId: expect.any(String),
+        stage: null,
+        status: "PENDING",
+        type: "UI",
+        value: null,
+        error: null,
+        startTime: expect.any(Date),
+        endTime: null,
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        ui: {
+          __type: "ui.page",
+          content: [
+            {
+              __type: "ui.input.boolean",
+              label: "Did you like the things?",
+              disabled: false,
+              mode: "checkbox",
+              name: "yesno",
+              optional: false,
+            },
+          ],
+          hasValidationErrors: false,
+          title: "My flow",
+        },
+      },
+    ],
+    createdAt: expect.any(Date),
+    updatedAt: expect.any(Date),
+    config: {
+      title: "Only pages",
+    },
+  });
+
+  // go back one step
+  const backFlow = await flows.onlyPages
+    .withAuthToken(token)
+    .back(updatedFlow.id);
+  expect(backFlow).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "AWAITING_INPUT",
+    name: "OnlyPages",
+    startedBy: expect.any(String),
+    input: {},
+    data: null,
+    steps: [
+      {
+        id: expect.any(String),
+        name: "first page",
+        runId: expect.any(String),
+        stage: null,
+        status: "PENDING",
+        type: "UI",
+        value: null,
+        error: null,
+        startTime: expect.any(Date),
+        endTime: null,
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        ui: {
+          __type: "ui.page",
+          content: [
+            { __type: "ui.display.grid", data: [{ title: "A thing" }] },
+          ],
+          hasValidationErrors: false,
+          title: "Grid of things",
+        },
+      },
+    ],
+    createdAt: expect.any(Date),
+    updatedAt: expect.any(Date),
+    config: {
+      title: "Only pages",
+    },
+  });
+
+  // Provide the values for the pending UI step
+  const updatedAgainFlow = await flows.onlyPages
+    .withAuthToken(token)
+    .putStepValues(f.id, f.steps[0].id, {});
+
+  expect(updatedAgainFlow).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "AWAITING_INPUT",
+    name: "OnlyPages",
+    startedBy: expect.any(String),
+    input: {},
+    data: null,
+    steps: [
+      {
+        id: expect.any(String),
+        name: "first page",
+        runId: expect.any(String),
+        stage: null,
+        status: "COMPLETED",
+        type: "UI",
+        value: {},
+        error: null,
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        ui: null,
+      },
+      {
+        id: expect.any(String),
+        name: "question",
+        runId: expect.any(String),
+        stage: null,
+        status: "PENDING",
+        type: "UI",
+        value: null,
+        error: null,
+        startTime: expect.any(Date),
+        endTime: null,
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        ui: {
+          __type: "ui.page",
+          content: [
+            {
+              __type: "ui.input.boolean",
+              label: "Did you like the things?",
+              disabled: false,
+              mode: "checkbox",
+              name: "yesno",
+              optional: false,
+            },
+          ],
+          hasValidationErrors: false,
+          title: "My flow",
+        },
+      },
+    ],
+    createdAt: expect.any(Date),
+    updatedAt: expect.any(Date),
+    config: {
+      title: "Only pages",
+    },
+  });
+
+  const finalFlow = await flows.onlyPages
+    .withAuthToken(token)
+    .putStepValues(updatedFlow.id, updatedFlow.steps[1].id, { yesno: true });
+
+  expect(finalFlow).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "COMPLETED",
+    name: "OnlyPages",
+    startedBy: expect.any(String),
+    input: {},
+    data: null,
+    steps: [
+      {
+        id: expect.any(String),
+        name: "first page",
+        runId: expect.any(String),
+        stage: null,
+        status: "COMPLETED",
+        type: "UI",
+        value: {},
+        error: null,
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        ui: null,
+      },
+      {
+        id: expect.any(String),
+        name: "question",
+        runId: expect.any(String),
+        stage: null,
+        status: "COMPLETED",
+        type: "UI",
+        value: { yesno: true },
+        error: null,
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        ui: null,
+      },
+    ],
+    createdAt: expect.any(Date),
+    updatedAt: expect.any(Date),
+    config: {
+      title: "Only pages",
+    },
+  });
+});
+
 test("flows - stepless flow", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 

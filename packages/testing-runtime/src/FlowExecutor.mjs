@@ -81,6 +81,13 @@ export class FlowExecutor {
     }).then(handleResponse);
   }
 
+  async back(id) {
+    return fetch(this._flowUrl + "/" + id + "/back", {
+      method: "POST",
+      headers: this.headers(),
+    }).then(handleResponse);
+  }
+
   async putStepValues(id, stepId, values, action) {
     let url = this._flowUrl + "/" + id + "/" + stepId;
 
