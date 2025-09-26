@@ -297,8 +297,30 @@ func BackFlowRun(ctx context.Context, runID string) (run *Run, err error) {
 		return
 	}
 
-	// return fresh state
+	// get a fresh state
 	run, err = getRun(ctx, runID)
+	if err != nil {
+		return
+	}
+
+	// and now invoke the flow runtime to retrieve UI components...
+	var o *Orchestrator
+	o, err = GetOrchestrator(ctx)
+	if err != nil {
+		err = fmt.Errorf("retrieving context flow orchestrator: %w", err)
+		return
+	}
+
+	// retrieving the step component from the flow runtime
+	resp, err := o.CallFlow(ctx, run, run.Input.(map[string]any), nil, "")
+	if err != nil {
+		err = fmt.Errorf("retrieving ui component: %w", err)
+		return
+	}
+
+	// setting the flow config and ui component on the pending UI step
+	run.SetUIComponents(resp.getUIComponents())
+
 	return
 }
 
