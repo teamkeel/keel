@@ -494,6 +494,62 @@
         }
       ]
     },
+    "/flows/json/{flow}/{runId}/back": {
+      "post": {
+        "operationId": "backFlowRun",
+        "responses": {
+          "200": {
+            "description": "Flow Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Run" }
+              }
+            }
+          },
+          "400": {
+            "description": "Flow Response Errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": { "type": "string" },
+                    "data": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
+                          }
+                        }
+                      }
+                    },
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "flow",
+          "in": "path",
+          "required": true,
+          "description": "",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "runId",
+          "in": "path",
+          "required": true,
+          "description": "",
+          "schema": { "type": "string" }
+        }
+      ]
+    },
     "/flows/json/{flow}/{runId}/cancel": {
       "post": {
         "operationId": "cancelFlowRun",
@@ -897,43 +953,32 @@
             "type": "object",
             "additionalProperties": false
           },
+          "ScanDuplicateMode": {
+            "type": "string",
+            "enum": ["none", "rejectDuplicates", "trackQuantity"],
+            "default": "none"
+          },
           "SelectMode": { "type": "string", "enum": ["multi", "single"] },
           "UiCompleteApiResponse": {
             "type": "object",
             "properties": {
-              "stage": {
-                "type": "string"
+              "__type": { "type": "string", "const": "ui.complete" },
+              "allowRestart": {
+                "type": "object",
+                "properties": {
+                  "buttonLabel": { "type": "string" },
+                  "inputs": {},
+                  "mode": { "type": "string", "enum": ["auto", "manual"] }
+                },
+                "additionalProperties": false
               },
-              "title": {
-                "type": "string"
-              },
-              "description": {
-                "type": "string"
-              },
+              "autoClose": { "type": "boolean" },
               "content": {
                 "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementApiResponses"
               },
-              "autoClose": {
-                "type": "boolean"
-              },
-              "allowRestart": {
-                "additionalProperties": false,
-                "type": "object",
-                "properties": {
-                  "inputs": {},
-                  "mode": {
-                    "enum": ["auto", "manual"],
-                    "type": "string"
-                  },
-                  "buttonLabel": {
-                    "type": "string"
-                  }
-                }
-              },
-              "__type": {
-                "type": "string",
-                "const": "ui.complete"
-              }
+              "description": { "type": "string" },
+              "stage": { "type": "string" },
+              "title": { "type": "string" }
             },
             "additionalProperties": false,
             "required": ["__type", "content"]
@@ -1177,6 +1222,25 @@
             "additionalProperties": false,
             "required": ["__type", "disabled", "label", "name", "optional"]
           },
+          "UiElementInputScanApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": { "type": "string", "const": "ui.input.scan" },
+              "description": { "type": "string" },
+              "duplicateHandling": {
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/ScanDuplicateMode"
+              },
+              "max": { "type": "number" },
+              "min": { "type": "number" },
+              "mode": { "type": "string", "enum": ["multi", "single"] },
+              "name": { "type": "string" },
+              "title": { "type": "string" },
+              "unit": { "type": "string" },
+              "validationError": { "type": "string" }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "duplicateHandling", "mode", "name"]
+          },
           "UiElementInputTextApiResponse": {
             "type": "object",
             "properties": {
@@ -1336,50 +1400,6 @@
             },
             "additionalProperties": false,
             "required": ["__type", "data", "name"]
-          },
-          "UiElementInputScanApiResponse": {
-            "type": "object",
-            "properties": {
-              "mode": {
-                "enum": ["multi", "single"],
-                "type": "string"
-              },
-              "title": {
-                "type": "string"
-              },
-              "description": {
-                "type": "string"
-              },
-              "unit": {
-                "type": "string"
-              },
-              "max": {
-                "type": "number"
-              },
-              "min": {
-                "type": "number"
-              },
-              "duplicateHandling": {
-                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/ScanDuplicateMode"
-              },
-              "__type": {
-                "type": "string",
-                "const": "ui.input.scan"
-              },
-              "name": {
-                "type": "string"
-              },
-              "validationError": {
-                "type": "string"
-              }
-            },
-            "additionalProperties": false,
-            "required": ["__type", "duplicateHandling", "mode", "name"]
-          },
-          "ScanDuplicateMode": {
-            "default": "none",
-            "enum": ["none", "rejectDuplicates", "trackQuantity"],
-            "type": "string"
           },
           "UiElementPrintApiResponse": {
             "type": "object",
