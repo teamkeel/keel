@@ -103,6 +103,45 @@ func (r *Run) PendingUIStep() *Step {
 	return nil
 }
 
+// LastCompletedUIStep returns the last completed step for this flow run.
+func (r *Run) LastCompletedUIStep() *Step {
+	if r == nil {
+		return nil
+	}
+
+	var lastStep *Step
+
+	for _, step := range r.Steps {
+		if step.Status == StepStatusCompleted && step.Type == StepTypeUI {
+			if lastStep == nil {
+				lastStep = &step
+			} else {
+				if step.CreatedAt.After(lastStep.CreatedAt) {
+					lastStep = &step
+				}
+			}
+		}
+	}
+
+	return lastStep
+}
+
+// setComputedFields will set the fields on the flow run that must be computed from the current run state.
+// e.g. a step's allowBack field is computed.
+func (r *Run) setComputedFields() {
+	completedUIStep := r.LastCompletedUIStep()
+	pendingUIStep := r.PendingUIStep()
+
+	if completedUIStep != nil && pendingUIStep != nil {
+		tv := true
+		for i := range r.Steps {
+			if r.Steps[i].ID == pendingUIStep.ID {
+				r.Steps[i].AllowBack = &tv
+			}
+		}
+	}
+}
+
 type FlowStats struct {
 	Name           string             `json:"name"`
 	LastRun        *time.Time         `json:"lastRun"`
@@ -135,19 +174,20 @@ const (
 )
 
 type Step struct {
-	ID        string     `json:"id"        gorm:"primaryKey;not null;default:null"`
+	ID        string     `json:"id"                  gorm:"primaryKey;not null;default:null"`
 	Name      string     `json:"name"`
 	RunID     string     `json:"runId"`
 	Status    StepStatus `json:"status"`
 	Type      StepType   `json:"type"`
-	Value     JSON       `json:"value"     gorm:"type:jsonb;serializer:json"`
+	Value     JSON       `json:"value"               gorm:"type:jsonb;serializer:json"`
 	Stage     *string    `json:"stage"`
 	Error     *string    `json:"error"`
 	StartTime *time.Time `json:"startTime"`
 	EndTime   *time.Time `json:"endTime"`
 	CreatedAt time.Time  `json:"createdAt"`
 	UpdatedAt time.Time  `json:"updatedAt"`
-	UI        JSON       `json:"ui"        gorm:"type:jsonb;serializer:json"`
+	UI        JSON       `json:"ui"                  gorm:"type:jsonb;serializer:json"`
+	AllowBack *bool      `json:"allowBack,omitempty" gorm:"-"` // if the step can be reverted.
 }
 
 func (Step) TableName() string {
@@ -256,6 +296,8 @@ func getRun(ctx context.Context, runID string) (*Run, error) {
 		return nil, result.Error
 	}
 
+	run.setComputedFields()
+
 	return &run, nil
 }
 
@@ -314,6 +356,32 @@ func updateRun(ctx context.Context, runID string, status Status, config any) (*R
 	return &run, err
 }
 
+// resetSteps will delete the given stepsand reset the last step to pending.
+func resetSteps(ctx context.Context, runID string, deleteSteps []string, lastStepID string) error {
+	database, err := db.GetDatabase(ctx)
+	if err != nil {
+		return err
+	}
+
+	return database.GetDB().Transaction(func(tx *gorm.DB) error {
+		if err := tx.Model(&Step{}).
+			Where("id = ?", lastStepID).
+			Updates(map[string]any{
+				"value":    nil,
+				"end_time": nil,
+				"status":   StepStatusPending,
+			}).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Where("run_id = ? AND id IN ?", runID, deleteSteps).Delete(&Step{}).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
+}
+
 // completeRun will complete a flow run.
 func completeRun(ctx context.Context, runID string, config any, data any) (*Run, error) {
 	database, err := db.GetDatabase(ctx)
@@ -359,6 +427,8 @@ func createRun(ctx context.Context, flow *proto.Flow, inputs any, traceparent st
 	if result.Error != nil {
 		return nil, result.Error
 	}
+
+	run.setComputedFields()
 
 	return &run, nil
 }
