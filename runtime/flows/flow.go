@@ -126,6 +126,22 @@ func (r *Run) LastCompletedUIStep() *Step {
 	return lastStep
 }
 
+// setComputedFields will set the fields on the flow run that must be computed from the current run state.
+// e.g. a step's allowBack field is computed.
+func (r *Run) setComputedFields() {
+	completedUIStep := r.LastCompletedUIStep()
+	pendingUIStep := r.PendingUIStep()
+
+	if completedUIStep != nil && pendingUIStep != nil {
+		tv := true
+		for i := range r.Steps {
+			if r.Steps[i].ID == pendingUIStep.ID {
+				r.Steps[i].AllowBack = &tv
+			}
+		}
+	}
+}
+
 type FlowStats struct {
 	Name           string             `json:"name"`
 	LastRun        *time.Time         `json:"lastRun"`
@@ -158,19 +174,20 @@ const (
 )
 
 type Step struct {
-	ID        string     `json:"id"        gorm:"primaryKey;not null;default:null"`
+	ID        string     `json:"id"                  gorm:"primaryKey;not null;default:null"`
 	Name      string     `json:"name"`
 	RunID     string     `json:"runId"`
 	Status    StepStatus `json:"status"`
 	Type      StepType   `json:"type"`
-	Value     JSON       `json:"value"     gorm:"type:jsonb;serializer:json"`
+	Value     JSON       `json:"value"               gorm:"type:jsonb;serializer:json"`
 	Stage     *string    `json:"stage"`
 	Error     *string    `json:"error"`
 	StartTime *time.Time `json:"startTime"`
 	EndTime   *time.Time `json:"endTime"`
 	CreatedAt time.Time  `json:"createdAt"`
 	UpdatedAt time.Time  `json:"updatedAt"`
-	UI        JSON       `json:"ui"        gorm:"type:jsonb;serializer:json"`
+	UI        JSON       `json:"ui"                  gorm:"type:jsonb;serializer:json"`
+	AllowBack *bool      `json:"allowBack,omitempty" gorm:"-"` // if the step can be reverted.
 }
 
 func (Step) TableName() string {
@@ -278,6 +295,8 @@ func getRun(ctx context.Context, runID string) (*Run, error) {
 
 		return nil, result.Error
 	}
+
+	run.setComputedFields()
 
 	return &run, nil
 }
@@ -408,6 +427,8 @@ func createRun(ctx context.Context, flow *proto.Flow, inputs any, traceparent st
 	if result.Error != nil {
 		return nil, result.Error
 	}
+
+	run.setComputedFields()
 
 	return &run, nil
 }
