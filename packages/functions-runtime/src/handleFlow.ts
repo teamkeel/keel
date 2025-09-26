@@ -20,6 +20,7 @@ import {
   StepCreatedDisrupt,
   UIRenderDisrupt,
   ExhuastedRetriesDisrupt,
+  CallbackDisrupt,
 } from "./flows/disrupts";
 import { sentenceCase } from "change-case";
 
@@ -66,6 +67,8 @@ async function handleFlow(request: any, config: any) {
           request.meta.runId,
           request.meta.data,
           request.meta.action,
+          request.meta.callback,
+          request.meta.element,
           span.spanContext().spanId,
           createFlowContextAPI({
             meta: request.meta,
@@ -109,6 +112,14 @@ async function handleFlow(request: any, config: any) {
               config: flowConfig,
               executeAfter: e.executeAfter,
             });
+          }
+
+          // The flow is disrupted as it has just executed a UI callback.
+          if (e instanceof CallbackDisrupt) {
+            if (e.error) {
+              return createJSONRPCErrorResponse(request.id, 500, e.response);
+            }
+            return createJSONRPCSuccessResponse(request.id, e.response);
           }
 
           // The flow is disrupted by a pending UI step

@@ -401,7 +401,7 @@ type FlowInvocationArgs struct {
 	// Inputs for the flow run.
 	Inputs map[string]any
 	// Data that is being sent to the flow as part of a step's input (for UI steps, this represents the user submitted data).
-	Data map[string]any
+	Data any
 	// Action chosen by the user. Applicable only for UI steps that have multiple actions defined.
 	Action *string
 	// Element is the name of the UI Element on which we're executing a UI callback. If set, a Callback must also be set.
@@ -449,6 +449,11 @@ func CallFlow(ctx context.Context, args FlowInvocationArgs) (any, *FunctionsRunt
 	if args.Action != nil {
 		meta["action"] = *args.Action
 		span.SetAttributes(attribute.String("action", *args.Action))
+	}
+
+	if args.Callback != nil && args.Element != nil {
+		meta["callback"] = *args.Callback
+		meta["element"] = *args.Element
 	}
 
 	req := &FunctionsRuntimeRequest{

@@ -6,6 +6,8 @@ export const testFlowContext = <T extends FlowConfig>(config?: T) =>
     "test-run-id",
     {},
     null,
+    null,
+    null,
     "test-span-id",
     {
       env: {},

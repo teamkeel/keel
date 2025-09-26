@@ -627,6 +627,97 @@
           "schema": { "type": "string" }
         }
       ]
+    },
+    "/flows/json/{flow}/{runId}/{stepId}/callback": {
+      "post": {
+        "operationId": "callback",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": ["object", "string", "number", "boolean", "array"],
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Callback Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": ["object", "string", "number", "boolean", "array"],
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Callback Response Errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": { "type": "string" },
+                    "data": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
+                          }
+                        }
+                      }
+                    },
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "flow",
+          "in": "path",
+          "required": true,
+          "description": "",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "runId",
+          "in": "path",
+          "required": true,
+          "description": "",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "stepId",
+          "in": "path",
+          "required": true,
+          "description": "",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": true,
+          "description": "",
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "element",
+          "in": "query",
+          "required": true,
+          "description": "",
+          "schema": { "type": "string" }
+        }
+      ]
     }
   },
   "components": {

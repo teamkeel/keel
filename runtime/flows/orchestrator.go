@@ -365,7 +365,7 @@ func (o *Orchestrator) CallFlow(ctx context.Context, run *Run, inputs map[string
 
 // CallbackFlow calls the functions runtime in the context of a flow callback: the FE will call a UI element's callback
 // function to perform some user defined logic and returns it's response.
-func (o *Orchestrator) CallbackFlow(ctx context.Context, run *Run, data map[string]any, element, callback string) (any, error) {
+func (o *Orchestrator) CallbackFlow(ctx context.Context, run *Run, data any, element, callback string) (any, error) {
 	ctx, span := tracer.Start(ctx, "CallbackFlow")
 	defer span.End()
 

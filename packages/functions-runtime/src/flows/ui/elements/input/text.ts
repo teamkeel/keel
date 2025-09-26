@@ -46,6 +46,7 @@ export const textInput: InputElementImplementation<
       minLength: options?.minLength,
     } satisfies UiElementInputTextApiResponse,
     validate: options?.validate,
+    onLeave: options?.onLeave,
     getData: (x: ElementDataType) => x,
   };
 };

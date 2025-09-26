@@ -490,5 +490,76 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 		},
 	}
 
+	spec.Paths["/flows/json/{flow}/{runId}/{stepId}/callback"] = PathItemObject{
+		Parameters: []ParameterObject{
+			{
+				Name:     "flow",
+				In:       "path",
+				Required: true,
+				Schema: jsonschema.JSONSchema{
+					Type: "string",
+				},
+			},
+			{
+				Name:     "runId",
+				In:       "path",
+				Required: true,
+				Schema: jsonschema.JSONSchema{
+					Type: "string",
+				},
+			},
+			{
+				Name:     "stepId",
+				In:       "path",
+				Required: true,
+				Schema:   jsonschema.JSONSchema{Type: "string"},
+			},
+			{
+				Name:     "callback",
+				In:       "query",
+				Required: true,
+				Schema: jsonschema.JSONSchema{
+					Type: "string",
+				},
+			},
+			{
+				Name:     "element",
+				In:       "query",
+				Required: true,
+				Schema: jsonschema.JSONSchema{
+					Type: "string",
+				},
+			},
+		},
+		Post: &OperationObject{
+			OperationID: StringPointer("callback"),
+			RequestBody: &RequestBodyObject{
+				Content: map[string]MediaTypeObject{
+					"application/json": {
+						Schema: jsonschema.JSONSchema{Type: []string{"object", "string", "number", "boolean", "array"}, AdditionalProperties: BoolPointer(true)},
+					},
+				},
+			},
+			Responses: map[string]ResponseObject{
+				"200": {
+					Description: "Callback Response",
+					Content: map[string]MediaTypeObject{
+						"application/json": {
+							Schema: jsonschema.JSONSchema{Type: []string{"object", "string", "number", "boolean", "array"}, AdditionalProperties: BoolPointer(true)},
+						},
+					},
+				},
+				"400": {
+					Description: "Callback Response Errors",
+					Content: map[string]MediaTypeObject{
+						"application/json": {
+							Schema: responseErrorSchema,
+						},
+					},
+				},
+			},
+		},
+	}
+
 	return spec
 }
