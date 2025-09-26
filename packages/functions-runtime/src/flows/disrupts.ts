@@ -29,3 +29,12 @@ export class ExhuastedRetriesDisrupt extends FlowDisrupt {
     super();
   }
 }
+
+export class CallbackDisrupt extends FlowDisrupt {
+  constructor(
+    public readonly response: any,
+    public readonly error: boolean
+  ) {
+    super();
+  }
+}
