@@ -444,6 +444,27 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 		},
 	}
 
+	spec.Paths["/flows/json/{flow}/{runId}/back"] = PathItemObject{
+		Parameters: []ParameterObject{
+			{
+				Name:     "flow",
+				In:       "path",
+				Required: true,
+				Schema:   jsonschema.JSONSchema{Type: "string"},
+			},
+			{
+				Name:     "runId",
+				In:       "path",
+				Required: true,
+				Schema:   jsonschema.JSONSchema{Type: "string"},
+			},
+		},
+		Post: &OperationObject{
+			OperationID: StringPointer("backFlowRun"),
+			Responses:   flowRunResponse,
+		},
+	}
+
 	spec.Paths["/flows/json/{flow}/{runId}/{stepId}"] = PathItemObject{
 		Parameters: []ParameterObject{
 			{

@@ -103,6 +103,29 @@ func (r *Run) PendingUIStep() *Step {
 	return nil
 }
 
+// LastCompletedUIStep returns the last completed step for this flow run.
+func (r *Run) LastCompletedUIStep() *Step {
+	if r == nil {
+		return nil
+	}
+
+	var lastStep *Step
+
+	for _, step := range r.Steps {
+		if step.Status == StepStatusCompleted && step.Type == StepTypeUI {
+			if lastStep == nil {
+				lastStep = &step
+			} else {
+				if step.CreatedAt.After(lastStep.CreatedAt) {
+					lastStep = &step
+				}
+			}
+		}
+	}
+
+	return lastStep
+}
+
 type FlowStats struct {
 	Name           string             `json:"name"`
 	LastRun        *time.Time         `json:"lastRun"`
@@ -312,6 +335,32 @@ func updateRun(ctx context.Context, runID string, status Status, config any) (*R
 	})
 
 	return &run, err
+}
+
+// resetSteps will delete the given stepsand reset the last step to pending.
+func resetSteps(ctx context.Context, runID string, deleteSteps []string, lastStepID string) error {
+	database, err := db.GetDatabase(ctx)
+	if err != nil {
+		return err
+	}
+
+	return database.GetDB().Transaction(func(tx *gorm.DB) error {
+		if err := tx.Model(&Step{}).
+			Where("id = ?", lastStepID).
+			Updates(map[string]any{
+				"value":    nil,
+				"end_time": nil,
+				"status":   StepStatusPending,
+			}).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Where("run_id = ? AND id IN ?", runID, deleteSteps).Delete(&Step{}).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
 }
 
 // completeRun will complete a flow run.
