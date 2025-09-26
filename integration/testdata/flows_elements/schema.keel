@@ -2,6 +2,10 @@ flow Iterator {
     @permission(expression: true)
 }
 
+flow BulkScan {
+    @permission(expression: true)
+}
+
 flow CallbackFlow {
     @permission(expression: true)
 }
