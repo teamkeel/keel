@@ -133,6 +133,7 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 			"ui":        {Ref: "#/components/schemas/UiConfig"},
 			"error":     {Type: []string{"string", "null"}},
 			"stage":     {Type: []string{"string", "null"}},
+			"allowBack": {Type: []string{"boolean", "null"}},
 		},
 		Required: []string{"id", "runId", "status", "name", "type", "createdAt", "updatedAt", "value", "ui", "startTime", "endTime", "error"},
 	}

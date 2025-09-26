@@ -876,6 +876,7 @@
       "Step": {
         "type": "object",
         "properties": {
+          "allowBack": { "type": ["boolean", "null"] },
           "createdAt": { "type": "string", "format": "date-time" },
           "endTime": { "type": ["string", "null"], "format": "date-time" },
           "error": { "type": ["string", "null"] },

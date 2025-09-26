@@ -257,6 +257,7 @@ test("flows - only pages", async () => {
         endTime: null,
         createdAt: expect.any(Date),
         updatedAt: expect.any(Date),
+        allowBack: true,
         ui: {
           __type: "ui.page",
           content: [
@@ -419,6 +420,7 @@ test("flows - back on pages", async () => {
         endTime: null,
         createdAt: expect.any(Date),
         updatedAt: expect.any(Date),
+        allowBack: true,
         ui: {
           __type: "ui.page",
           content: [
@@ -528,6 +530,7 @@ test("flows - back on pages", async () => {
         endTime: null,
         createdAt: expect.any(Date),
         updatedAt: expect.any(Date),
+        allowBack: true,
         ui: {
           __type: "ui.page",
           content: [
@@ -1856,6 +1859,7 @@ test("flows - multiple actions - continue", async () => {
         endTime: null,
         createdAt: expect.any(Date),
         updatedAt: expect.any(Date),
+        allowBack: true,
         ui: {
           __type: "ui.page",
           content: [
