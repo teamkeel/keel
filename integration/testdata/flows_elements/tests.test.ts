@@ -98,6 +98,191 @@ test("flows - callback flow", async () => {
   });
 });
 
+test("flows - bulkScan element", async () => {
+  let flow = await flows.bulkScan.start({});
+  expect(flow).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "AWAITING_INPUT",
+    name: "BulkScan",
+    startedBy: null,
+    input: {},
+    data: null,
+    steps: [
+      {
+        id: expect.any(String),
+        name: "bulkScan page without actions",
+        runId: expect.any(String),
+        stage: null,
+        status: "PENDING",
+        type: "UI",
+        value: null,
+        error: null,
+        startTime: expect.any(Date),
+        endTime: null,
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        ui: {
+          __type: "ui.page",
+          content: [
+            {
+              __type: "ui.interactive.bulkScan",
+              duplicateHandling: "none",
+              name: "bulkScan",
+            },
+          ],
+          hasValidationErrors: false,
+        },
+      },
+    ],
+    createdAt: expect.any(Date),
+    updatedAt: expect.any(Date),
+    config: {
+      title: "Bulk scan",
+    },
+  });
+
+  // Provide the values for the pending UI step
+  flow = await flows.bulkScan.putStepValues(flow.id, flow.steps[0].id, {
+    bulkScan: {
+      scans: ["123", "456", "789"],
+    },
+  });
+  expect(flow).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "AWAITING_INPUT",
+    name: "BulkScan",
+    startedBy: null,
+    input: {},
+    data: null,
+    steps: [
+      {
+        id: expect.any(String),
+        name: "bulkScan page without actions",
+        runId: expect.any(String),
+        stage: null,
+        status: "COMPLETED",
+        type: "UI",
+        value: {
+          bulkScan: {
+            scans: ["123", "456", "789"],
+          },
+        },
+        error: null,
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        ui: null,
+      },
+      {
+        id: expect.any(String),
+        name: "bulkScan page with actions",
+        runId: expect.any(String),
+        stage: null,
+        status: "PENDING",
+        type: "UI",
+        value: null,
+        error: null,
+        startTime: expect.any(Date),
+        endTime: null,
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        ui: {
+          __type: "ui.page",
+          actions: [
+            {
+              label: "finish",
+              mode: "primary",
+              value: "finish",
+            },
+          ],
+          content: [
+            {
+              __type: "ui.interactive.bulkScan",
+              duplicateHandling: "none",
+              name: "bulkScan",
+            },
+          ],
+          hasValidationErrors: false,
+        },
+      },
+    ],
+    createdAt: expect.any(Date),
+    updatedAt: expect.any(Date),
+    config: {
+      title: "Bulk scan",
+    },
+  });
+
+  // Provide the values for the pending UI step
+  flow = await flows.bulkScan.putStepValues(
+    flow.id,
+    flow.steps[1].id,
+    {
+      bulkScan: {
+        scans: ["abc", "def", "ghi"],
+      },
+    },
+    "finish"
+  );
+  expect(flow).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "COMPLETED",
+    name: "BulkScan",
+    startedBy: null,
+    input: {},
+    data: null,
+    steps: [
+      {
+        id: expect.any(String),
+        name: "bulkScan page without actions",
+        runId: expect.any(String),
+        stage: null,
+        status: "COMPLETED",
+        type: "UI",
+        value: {
+          bulkScan: {
+            scans: ["123", "456", "789"],
+          },
+        },
+        error: null,
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        ui: null,
+      },
+      {
+        id: expect.any(String),
+        name: "bulkScan page with actions",
+        runId: expect.any(String),
+        stage: null,
+        status: "COMPLETED",
+        type: "UI",
+        value: {
+          bulkScan: {
+            scans: ["abc", "def", "ghi"],
+          },
+        },
+        error: null,
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        ui: null,
+      },
+    ],
+    createdAt: expect.any(Date),
+    updatedAt: expect.any(Date),
+    config: {
+      title: "Bulk scan",
+    },
+  });
+});
+
 test("flows - iterator element", async () => {
   let flow = await flows.iterator.start({});
 
@@ -175,27 +360,22 @@ test("flows - iterator element", async () => {
   });
 
   // Provide the values for the pending UI step
-  flow = await flows.iterator.putStepValues(
-    flow.id,
-    flow.steps[0].id,
-
-    {
-      "my iterator": [
-        {
-          sku: "SHOES",
-          quantity: 1,
-        },
-        {
-          sku: "SHIRTS",
-          quantity: 5,
-        },
-        {
-          sku: "PANTS",
-          quantity: 3,
-        },
-      ],
-    }
-  );
+  flow = await flows.iterator.putStepValues(flow.id, flow.steps[0].id, {
+    "my iterator": [
+      {
+        sku: "SHOES",
+        quantity: 1,
+      },
+      {
+        sku: "SHIRTS",
+        quantity: 5,
+      },
+      {
+        sku: "PANTS",
+        quantity: 3,
+      },
+    ],
+  });
   expect(flow).toEqual({
     id: expect.any(String),
     traceId: expect.any(String),
