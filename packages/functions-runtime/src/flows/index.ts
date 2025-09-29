@@ -28,7 +28,7 @@ import { iterator } from "./ui/elements/iterator";
 import { print } from "./ui/elements/interactive/print";
 import { pickList } from "./ui/elements/interactive/pickList";
 import { NonRetriableError } from "./errors";
-import { bulkScan } from "./ui/elements/interactive/bulkScan";
+import { scan } from "./ui/elements/input/scan";
 
 export const enum STEP_STATUS {
   NEW = "NEW",
@@ -520,6 +520,7 @@ export function createFlowContext<C extends FlowConfig, E, S, Id, I>(
         number: numberInput as any,
         boolean: booleanInput as any,
         dataGrid: dataGridInput as any,
+        scan: scan as any,
       },
       display: {
         divider: divider as any,
@@ -541,7 +542,6 @@ export function createFlowContext<C extends FlowConfig, E, S, Id, I>(
       interactive: {
         print: print as any,
         pickList: pickList as any,
-        bulkScan: bulkScan as any,
       },
     },
   };

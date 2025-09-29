@@ -983,6 +983,9 @@
                 "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementInputDataGridApiResponse"
               },
               {
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementInputScanApiResponse"
+              },
+              {
                 "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementSelectOneApiResponse"
               },
               {
@@ -996,9 +999,6 @@
               },
               {
                 "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementPickListApiResponse"
-              },
-              {
-                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementBulkScanApiResponse"
               }
             ]
           },
@@ -1337,9 +1337,13 @@
             "additionalProperties": false,
             "required": ["__type", "data", "name"]
           },
-          "UiElementBulkScanApiResponse": {
+          "UiElementInputScanApiResponse": {
             "type": "object",
             "properties": {
+              "mode": {
+                "enum": ["multi", "single"],
+                "type": "string"
+              },
               "title": {
                 "type": "string"
               },
@@ -1356,11 +1360,11 @@
                 "type": "number"
               },
               "duplicateHandling": {
-                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/BulkScanDuplicateMode"
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/ScanDuplicateMode"
               },
               "__type": {
                 "type": "string",
-                "const": "ui.interactive.bulkScan"
+                "const": "ui.input.scan"
               },
               "name": {
                 "type": "string"
@@ -1370,9 +1374,9 @@
               }
             },
             "additionalProperties": false,
-            "required": ["__type", "duplicateHandling", "name"]
+            "required": ["__type", "duplicateHandling", "mode", "name"]
           },
-          "BulkScanDuplicateMode": {
+          "ScanDuplicateMode": {
             "default": "none",
             "enum": ["none", "rejectDuplicates", "trackQuantity"],
             "type": "string"

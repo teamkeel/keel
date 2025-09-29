@@ -101,6 +101,9 @@
           "$ref": "#/$defs/UiElementInputDataGridApiResponse"
         },
         {
+          "$ref": "#/$defs/UiElementInputScanApiResponse"
+        },
+        {
           "$ref": "#/$defs/UiElementSelectOneApiResponse"
         },
         {
@@ -114,9 +117,6 @@
         },
         {
           "$ref": "#/$defs/UiElementPickListApiResponse"
-        },
-        {
-          "$ref": "#/$defs/UiElementBulkScanApiResponse"
         }
       ]
     },
@@ -683,6 +683,63 @@
       ],
       "type": "string"
     },
+    "UiElementInputScanApiResponse": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "enum": [
+            "multi",
+            "single"
+          ],
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "unit": {
+          "type": "string"
+        },
+        "max": {
+          "type": "number"
+        },
+        "min": {
+          "type": "number"
+        },
+        "duplicateHandling": {
+          "$ref": "#/$defs/ScanDuplicateMode"
+        },
+        "__type": {
+          "type": "string",
+          "const": "ui.input.scan"
+        },
+        "name": {
+          "type": "string"
+        },
+        "validationError": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "__type",
+        "duplicateHandling",
+        "mode",
+        "name"
+      ]
+    },
+    "ScanDuplicateMode": {
+      "description": "Defines how duplicate scans should be handled.",
+      "default": "none",
+      "enum": [
+        "none",
+        "rejectDuplicates",
+        "trackQuantity"
+      ],
+      "type": "string"
+    },
     "UiElementSelectOneApiResponse": {
       "type": "object",
       "properties": {
@@ -1042,55 +1099,6 @@
         "data",
         "name"
       ]
-    },
-    "UiElementBulkScanApiResponse": {
-      "type": "object",
-      "properties": {
-        "title": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "unit": {
-          "type": "string"
-        },
-        "max": {
-          "type": "number"
-        },
-        "min": {
-          "type": "number"
-        },
-        "duplicateHandling": {
-          "$ref": "#/$defs/BulkScanDuplicateMode"
-        },
-        "__type": {
-          "type": "string",
-          "const": "ui.interactive.bulkScan"
-        },
-        "name": {
-          "type": "string"
-        },
-        "validationError": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "__type",
-        "duplicateHandling",
-        "name"
-      ]
-    },
-    "BulkScanDuplicateMode": {
-      "description": "Defines how duplicate scans should be handled.",
-      "default": "none",
-      "enum": [
-        "none",
-        "rejectDuplicates",
-        "trackQuantity"
-      ],
-      "type": "string"
     },
     "UiPageApiResponse": {
       "type": "object",
