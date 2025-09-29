@@ -144,6 +144,7 @@ declare class FlowExecutor<Input = {}> {
   start(inputs: Input): Promise<FlowRun<Input>>;
   get(id: string): Promise<FlowRun<Input>>;
   cancel(id: string): Promise<FlowRun<Input>>;
+  back(id: string): Promise<FlowRun<Input>>;
   putStepValues(
     id: string,
     stepId: string,

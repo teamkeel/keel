@@ -1148,6 +1148,9 @@
         "validationError": {
           "type": "string"
         },
+        "allowBack": {
+          "type": "boolean"
+        },
         "__type": {
           "type": "string",
           "const": "ui.page"
