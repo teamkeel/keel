@@ -111,7 +111,7 @@ test("flows - bulkScan element", async () => {
     steps: [
       {
         id: expect.any(String),
-        name: "bulkScan page without actions",
+        name: "multi scan page",
         runId: expect.any(String),
         stage: null,
         status: "PENDING",
@@ -126,8 +126,9 @@ test("flows - bulkScan element", async () => {
           __type: "ui.page",
           content: [
             {
-              __type: "ui.interactive.bulkScan",
-              duplicateHandling: "none",
+              __type: "ui.input.scan",
+              duplicateHandling: "rejectDuplicates",
+              mode: "multi",
               name: "bulkScan",
             },
           ],
@@ -159,7 +160,7 @@ test("flows - bulkScan element", async () => {
     steps: [
       {
         id: expect.any(String),
-        name: "bulkScan page without actions",
+        name: "multi scan page",
         runId: expect.any(String),
         stage: null,
         status: "COMPLETED",
@@ -178,7 +179,7 @@ test("flows - bulkScan element", async () => {
       },
       {
         id: expect.any(String),
-        name: "bulkScan page with actions",
+        name: "single scan page",
         runId: expect.any(String),
         stage: null,
         status: "PENDING",
@@ -200,9 +201,10 @@ test("flows - bulkScan element", async () => {
           ],
           content: [
             {
-              __type: "ui.interactive.bulkScan",
+              __type: "ui.input.scan",
               duplicateHandling: "none",
-              name: "bulkScan",
+              mode: "single",
+              name: "singleScan",
             },
           ],
           hasValidationErrors: false,
@@ -221,9 +223,7 @@ test("flows - bulkScan element", async () => {
     flow.id,
     flow.steps[1].id,
     {
-      bulkScan: {
-        scans: ["abc", "def", "ghi"],
-      },
+      bulkScan: "abc",
     },
     "finish"
   );
@@ -238,7 +238,7 @@ test("flows - bulkScan element", async () => {
     steps: [
       {
         id: expect.any(String),
-        name: "bulkScan page without actions",
+        name: "multi scan page",
         runId: expect.any(String),
         stage: null,
         status: "COMPLETED",
@@ -257,15 +257,13 @@ test("flows - bulkScan element", async () => {
       },
       {
         id: expect.any(String),
-        name: "bulkScan page with actions",
+        name: "single scan page",
         runId: expect.any(String),
         stage: null,
         status: "COMPLETED",
         type: "UI",
         value: {
-          bulkScan: {
-            scans: ["abc", "def", "ghi"],
-          },
+          bulkScan: "abc",
         },
         error: null,
         startTime: expect.any(Date),

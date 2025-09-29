@@ -78,9 +78,9 @@ import {
   UiElementPickListApiResponse,
 } from "./elements/interactive/pickList";
 import {
-  UiElementBulkScan,
-  UiElementBulkScanApiResponse,
-} from "./elements/interactive/bulkScan";
+  UiElementScan,
+  UiElementInputScanApiResponse,
+} from "./elements/input/scan";
 
 export interface UI<C extends FlowConfig> {
   page: UiPage<C>;
@@ -97,6 +97,7 @@ type UiInputsElements = {
   number: UiElementInputNumber;
   boolean: UiElementInputBoolean;
   dataGrid: UiElementInputDataGrid;
+  scan: UiElementScan;
 };
 
 // Select elements that are named and return values
@@ -123,7 +124,6 @@ type UiDisplayElements = {
 type UiInteractiveElements = {
   print: UiElementPrint;
   pickList: UiElementPickList;
-  bulkScan: UiElementBulkScan;
 };
 
 // The base input element function. All inputs must be named and can optionally have a config
@@ -234,6 +234,7 @@ export type UIApiResponses = {
     number: UiElementInputNumberApiResponse;
     boolean: UiElementInputBooleanApiResponse;
     dataGrid: UiElementInputDataGridApiResponse;
+    scan: UiElementInputScanApiResponse;
   };
   select: {
     one: UiElementSelectOneApiResponse;
@@ -243,7 +244,6 @@ export type UIApiResponses = {
   interactive: {
     print: UiElementPrintApiResponse;
     pickList: UiElementPickListApiResponse;
-    bulkScan: UiElementBulkScanApiResponse;
   };
 };
 
@@ -265,6 +265,7 @@ export type UiElementApiResponse =
   | UiElementInputNumberApiResponse
   | UiElementInputBooleanApiResponse
   | UiElementInputDataGridApiResponse
+  | UiElementInputScanApiResponse
 
   // Select elements
   | UiElementSelectOneApiResponse
@@ -275,8 +276,7 @@ export type UiElementApiResponse =
 
   // Interactive elements
   | UiElementPrintApiResponse
-  | UiElementPickListApiResponse
-  | UiElementBulkScanApiResponse;
+  | UiElementPickListApiResponse;
 
 export type UiElementApiResponses = UiElementApiResponse[];
 

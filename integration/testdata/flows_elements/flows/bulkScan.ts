@@ -5,12 +5,17 @@ const config = {
 } as const satisfies FlowConfig;
 
 export default BulkScan(config, async (ctx) => {
-  await ctx.ui.page("bulkScan page without actions", {
-    content: [ctx.ui.interactive.bulkScan("bulkScan")],
+  await ctx.ui.page("multi scan page", {
+    content: [
+      ctx.ui.inputs.scan("bulkScan", {
+        mode: "multi",
+        duplicateHandling: "rejectDuplicates",
+      }),
+    ],
   });
 
-  await ctx.ui.page("bulkScan page with actions", {
-    content: [ctx.ui.interactive.bulkScan("bulkScan")],
+  await ctx.ui.page("single scan page", {
+    content: [ctx.ui.inputs.scan("singleScan", { mode: "single" })],
     actions: ["finish"],
   });
 
