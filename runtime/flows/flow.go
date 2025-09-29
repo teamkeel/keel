@@ -142,12 +142,6 @@ func (r *Run) LastCompletedUIStep() *Step {
 	return lastStep
 }
 
-// setComputedFields will set the fields on the flow run that must be computed from the current run state.
-// e.g. a step's allowBack field is computed.
-func (r *Run) setComputedFields() {
-	// computed fields currently derived at the point UI is attached in SetUIComponents
-}
-
 type FlowStats struct {
 	Name           string             `json:"name"`
 	LastRun        *time.Time         `json:"lastRun"`
@@ -302,8 +296,6 @@ func getRun(ctx context.Context, runID string) (*Run, error) {
 		return nil, result.Error
 	}
 
-	run.setComputedFields()
-
 	return &run, nil
 }
 
@@ -433,8 +425,6 @@ func createRun(ctx context.Context, flow *proto.Flow, inputs any, traceparent st
 	if result.Error != nil {
 		return nil, result.Error
 	}
-
-	run.setComputedFields()
 
 	return &run, nil
 }

@@ -23,6 +23,5 @@ export default MultipleActions({}, async (ctx, inputs) => {
         label: "Name",
       }),
     ],
-    allowBack: true,
   });
 });

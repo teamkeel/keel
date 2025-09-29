@@ -260,6 +260,7 @@ test("flows - only pages", async () => {
         allowBack: true,
         ui: {
           __type: "ui.page",
+          allowBack: true,
           content: [
             {
               __type: "ui.input.boolean",
@@ -423,6 +424,7 @@ test("flows - back on pages", async () => {
         allowBack: true,
         ui: {
           __type: "ui.page",
+          allowBack: true,
           content: [
             {
               __type: "ui.input.boolean",
@@ -533,6 +535,7 @@ test("flows - back on pages", async () => {
         allowBack: true,
         ui: {
           __type: "ui.page",
+          allowBack: true,
           content: [
             {
               __type: "ui.input.boolean",
@@ -1859,7 +1862,6 @@ test("flows - multiple actions - continue", async () => {
         endTime: null,
         createdAt: expect.any(Date),
         updatedAt: expect.any(Date),
-        allowBack: true,
         ui: {
           __type: "ui.page",
           content: [
