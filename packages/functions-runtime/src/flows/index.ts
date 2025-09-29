@@ -513,7 +513,10 @@ export function createFlowContext<C extends FlowConfig, E, S, Id, I>(
           .returningAll()
           .executeTakeFirst();
 
-        return { data, action };
+        if (action) {
+          return { data, action };
+        }
+        return data;
       }) as UiPage<C>,
       inputs: {
         text: textInput as any,
