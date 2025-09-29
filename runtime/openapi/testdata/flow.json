@@ -1566,7 +1566,8 @@
               "hasValidationErrors": { "type": "boolean" },
               "stage": { "type": "string" },
               "title": { "type": "string" },
-              "validationError": { "type": "string" }
+              "validationError": { "type": "string" },
+              "allowBack": { "type": "boolean" }
             },
             "additionalProperties": false,
             "required": ["__type", "content", "hasValidationErrors"]

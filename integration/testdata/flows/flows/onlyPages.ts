@@ -21,5 +21,6 @@ export default OnlyPages({}, async (ctx, inputs) => {
         label: "Did you like the things?",
       }),
     ],
+    allowBack: true,
   });
 });

@@ -81,7 +81,23 @@ func (r *Run) SetUIComponents(c *FlowUIComponents) {
 	if r.HasPendingUIStep() && c.UI != nil {
 		for i, step := range r.Steps {
 			if step.Type == StepTypeUI && step.Status == StepStatusPending {
+				// attach UI config
 				r.Steps[i].UI = c.UI
+
+				// compute allowBack from the UI config if it's a ui.page with allowBack=true
+				// and only if there is a previously completed UI step to go back to
+				completedUIStep := r.LastCompletedUIStep()
+				if completedUIStep != nil {
+					if uiMap, ok := r.Steps[i].UI.(map[string]any); ok {
+						// check __type and allowBack flag
+						if t, ok := uiMap["__type"].(string); ok && t == "ui.page" {
+							if ab, ok := uiMap["allowBack"].(bool); ok && ab {
+								tv := true
+								r.Steps[i].AllowBack = &tv
+							}
+						}
+					}
+				}
 			}
 		}
 	}
@@ -129,17 +145,7 @@ func (r *Run) LastCompletedUIStep() *Step {
 // setComputedFields will set the fields on the flow run that must be computed from the current run state.
 // e.g. a step's allowBack field is computed.
 func (r *Run) setComputedFields() {
-	completedUIStep := r.LastCompletedUIStep()
-	pendingUIStep := r.PendingUIStep()
-
-	if completedUIStep != nil && pendingUIStep != nil {
-		tv := true
-		for i := range r.Steps {
-			if r.Steps[i].ID == pendingUIStep.ID {
-				r.Steps[i].AllowBack = &tv
-			}
-		}
-	}
+	// computed fields currently derived at the point UI is attached in SetUIComponents
 }
 
 type FlowStats struct {
