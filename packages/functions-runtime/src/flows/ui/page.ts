@@ -27,6 +27,7 @@ type PageOptions<
   actions?: A;
   // When true, let the use go back a step if there is a previous step
   allowBack?: boolean;
+  fullWidth?: boolean;
 };
 
 export type UiPage<C extends FlowConfig> = <
@@ -57,6 +58,7 @@ export interface UiPageApiResponse extends BaseUiDisplayResponse<"ui.page"> {
   hasValidationErrors: boolean;
   validationError?: string;
   allowBack?: boolean;
+  fullWidth?: boolean;
 }
 
 export async function callbackFn<T extends UIElements>(
@@ -163,6 +165,7 @@ export async function page<
       hasValidationErrors,
       validationError,
       allowBack: options.allowBack,
+      fullWidth: options.fullWidth,
     },
     hasValidationErrors,
   };

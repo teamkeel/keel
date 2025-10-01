@@ -27,6 +27,9 @@
         "autoClose": {
           "type": "boolean"
         },
+        "fullWidth": {
+          "type": "boolean"
+        },
         "allowRestart": {
           "additionalProperties": false,
           "type": "object",
@@ -1149,6 +1152,9 @@
           "type": "string"
         },
         "allowBack": {
+          "type": "boolean"
+        },
+        "fullWidth": {
           "type": "boolean"
         },
         "__type": {

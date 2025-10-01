@@ -32,6 +32,8 @@ export type CompleteOptions<C extends FlowConfig, I> = {
    * If set, you cannot return content as this will not be shown. */
   autoClose?: boolean;
 
+  fullWidth?: boolean;
+
   /** Restart the flow once complete.
    * Title and description will be shown in a notification if provided.
    * If set, the flow will be restarted with the inputs provided.
@@ -62,6 +64,7 @@ export type CompleteOptions<C extends FlowConfig, I> = {
   | {
       autoClose?: false;
       content?: DisplayElementResponse[];
+      fullWidth?: boolean;
     }
 );
 
@@ -76,6 +79,7 @@ export interface UiCompleteApiResponse
   description?: string;
   content: UiElementApiResponses;
   autoClose?: boolean;
+  fullWidth?: boolean;
   allowRestart?: {
     inputs?: any;
   } & RestartConfig;
@@ -100,6 +104,7 @@ export async function complete<C extends FlowConfig, I>(
     description: options.description,
     content: contentUiConfig || [],
     autoClose: options.autoClose,
+    fullWidth: options.fullWidth,
     allowRestart:
       typeof options.allowRestart === "boolean"
         ? options.allowRestart
