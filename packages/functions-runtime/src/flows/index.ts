@@ -29,6 +29,7 @@ import { print } from "./ui/elements/interactive/print";
 import { pickList } from "./ui/elements/interactive/pickList";
 import { NonRetriableError } from "./errors";
 import { scan } from "./ui/elements/input/scan";
+import { file } from "./ui/elements/display/file";
 
 export const enum STEP_STATUS {
   NEW = "NEW",
@@ -170,8 +171,8 @@ export type ExtractStageKeys<T extends FlowConfig> = T extends {
     ? U extends string
       ? U
       : U extends { key: infer K extends string }
-      ? K
-      : never
+        ? K
+        : never
     : never
   : never;
 
@@ -533,6 +534,7 @@ export function createFlowContext<C extends FlowConfig, E, S, Id, I>(
         grid: grid as any,
         list: list as any,
         keyValue: keyValue as any,
+        file: file as any,
       },
       select: {
         one: selectOne as any,

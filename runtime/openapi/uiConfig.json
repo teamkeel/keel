@@ -89,6 +89,9 @@
           "$ref": "#/$defs/UiElementKeyValueApiResponse"
         },
         {
+          "$ref": "#/$defs/UiElementFileApiResponse"
+        },
+        {
           "$ref": "#/$defs/UiElementInputTextApiResponse"
         },
         {
@@ -461,6 +464,51 @@
         "list"
       ],
       "type": "string"
+    },
+    "UiElementFileApiResponse": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "file": {
+          "additionalProperties": false,
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string"
+            },
+            "filename": {
+              "type": "string"
+            },
+            "contentType": {
+              "type": "string"
+            },
+            "size": {
+              "type": "number"
+            },
+            "url": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "contentType",
+            "filename",
+            "key",
+            "size",
+            "url"
+          ]
+        },
+        "__type": {
+          "type": "string",
+          "const": "ui.display.file"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "__type",
+        "title"
+      ]
     },
     "UiElementInputTextApiResponse": {
       "type": "object",
