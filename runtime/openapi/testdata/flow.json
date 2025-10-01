@@ -1017,6 +1017,9 @@
                 "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementKeyValueApiResponse"
               },
               {
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementFileApiResponse"
+              },
+              {
                 "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementInputTextApiResponse"
               },
               {
@@ -1241,6 +1244,42 @@
             },
             "additionalProperties": false,
             "required": ["__type", "duplicateHandling", "mode", "name"]
+          },
+          "UiElementFileApiResponse": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": "string"
+              },
+              "file": {
+                "additionalProperties": false,
+                "type": "object",
+                "properties": {
+                  "key": {
+                    "type": "string"
+                  },
+                  "filename": {
+                    "type": "string"
+                  },
+                  "contentType": {
+                    "type": "string"
+                  },
+                  "size": {
+                    "type": "number"
+                  },
+                  "url": {
+                    "type": "string"
+                  }
+                },
+                "required": ["contentType", "filename", "key", "size", "url"]
+              },
+              "__type": {
+                "type": "string",
+                "const": "ui.display.file"
+              }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "title"]
           },
           "UiElementInputTextApiResponse": {
             "type": "object",

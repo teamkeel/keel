@@ -81,6 +81,10 @@ import {
   UiElementScan,
   UiElementInputScanApiResponse,
 } from "./elements/input/scan";
+import {
+  UiElementFile,
+  UiElementFileApiResponse,
+} from "./elements/display/file";
 
 export interface UI<C extends FlowConfig> {
   page: UiPage<C>;
@@ -118,6 +122,7 @@ type UiDisplayElements = {
   list: UiElementList;
   table: UiElementTable;
   keyValue: UiElementKeyValue;
+  file: UiElementFile;
 };
 
 // Interactive elements may return values, others do not
@@ -228,6 +233,7 @@ export type UIApiResponses = {
     list: UiElementListApiResponse;
     table: UiElementTableApiResponse;
     keyValue: UiElementKeyValueApiResponse;
+    file: UiElementFileApiResponse;
   };
   input: {
     text: UiElementInputTextApiResponse;
@@ -259,6 +265,7 @@ export type UiElementApiResponse =
   | UiElementListApiResponse
   | UiElementTableApiResponse
   | UiElementKeyValueApiResponse
+  | UiElementFileApiResponse
 
   // Input elements
   | UiElementInputTextApiResponse
