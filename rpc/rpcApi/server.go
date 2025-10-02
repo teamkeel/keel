@@ -109,6 +109,10 @@ func (s *Server) ListTraces(ctx context.Context, input *rpc.ListTracesRequest) (
 			if v.RootName == "GET /_health" {
 				continue
 			}
+			// filter out flows API requests
+			if strings.Contains(v.RootName, "flows/json") {
+				continue
+			}
 			if strings.HasSuffix(v.RootName, "openapi.json") {
 				continue
 			}
