@@ -974,6 +974,9 @@
                 "additionalProperties": false
               },
               "autoClose": { "type": "boolean" },
+              "fullWidth": {
+                "type": "boolean"
+              },
               "content": {
                 "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementApiResponses"
               },
@@ -1606,7 +1609,10 @@
               "stage": { "type": "string" },
               "title": { "type": "string" },
               "validationError": { "type": "string" },
-              "allowBack": { "type": "boolean" }
+              "allowBack": { "type": "boolean" },
+              "fullWidth": {
+                "type": "boolean"
+              }
             },
             "additionalProperties": false,
             "required": ["__type", "content", "hasValidationErrors"]
