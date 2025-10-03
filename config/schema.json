@@ -35,18 +35,24 @@
         "required": ["name"]
       }
     },
-    "printers": {
-      "type": ["array", "null"],
-      "items": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
+    "hardware": {
+      "type": ["object", "null"],
+      "properties": {
+        "printers": {
+          "type": ["array", "null"],
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false,
+            "required": ["name"]
           }
-        },
-        "additionalProperties": false,
-        "required": ["name"]
-      }
+        }
+      },
+      "additionalProperties": false
     },
     "useDefaultApi": {
       "type": "boolean"

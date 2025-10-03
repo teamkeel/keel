@@ -211,7 +211,7 @@ environment:
 # Visit https://docs.keel.so/secrets for more information about secrets
 secrets:
 
-printers:
+hardware:
 `,
 		})
 		return
