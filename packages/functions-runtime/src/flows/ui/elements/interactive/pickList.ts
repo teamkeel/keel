@@ -25,6 +25,7 @@ type PickListResponseItem = {
   id: string;
   quantity: number;
   targetQuantity: number;
+  scannedBarcodes?: string[];
 };
 
 type PickListItem = {
@@ -85,7 +86,9 @@ export const pickList: InputElementImplementation<
           (item: any) =>
             typeof item !== "object" ||
             typeof item.id !== "string" ||
-            typeof item.qty !== "number"
+            typeof item.quantity !== "number" ||
+            typeof item.targetQuantity !== "number" ||
+            (item.scannedBarcodes && !Array.isArray(item.scannedBarcodes))
         )
       ) {
         return "Invalid data";
