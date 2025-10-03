@@ -83,16 +83,32 @@ const defaultOpts = {
   timeout: 60000,
 };
 
-export interface FlowContext<C extends FlowConfig, E, S, Id, I> {
+export interface FlowContext<
+  C extends FlowConfig,
+  E,
+  S,
+  Id,
+  I,
+  H extends NullableHardware,
+> {
   // Defines a function step that will be run in the flow.
   step: Step<C>;
   // Defines a UI step that will be run in the flow.
-  ui: UI<C>;
+  ui: UI<C, H>;
   complete: Complete<C, I>;
   env: E;
   now: Date;
   secrets: S;
   identity: Id;
+}
+
+export type NullableHardware = Hardware | undefined;
+
+export type Hardware = {
+  printers: Printer[];
+};
+export interface Printer {
+  name: string;
 }
 
 // Steps can only return values that can be serialized to JSON and then
@@ -158,8 +174,15 @@ export interface FlowConfigAPI {
   description?: string;
 }
 
-export type FlowFunction<C extends FlowConfig, E, S, Id, I = undefined> = (
-  ctx: FlowContext<C, E, S, Id, I>,
+export type FlowFunction<
+  C extends FlowConfig,
+  E,
+  S,
+  Id,
+  I = undefined,
+  H extends NullableHardware = undefined,
+> = (
+  ctx: FlowContext<C, E, S, Id, I, H>,
   inputs: I
 ) => Promise<CompleteOptions<C, I> | any | void>;
 
@@ -189,7 +212,14 @@ type StageConfigObject = {
 
 type StageConfig = string | StageConfigObject;
 
-export function createFlowContext<C extends FlowConfig, E, S, Id, I>(
+export function createFlowContext<
+  C extends FlowConfig,
+  E,
+  S,
+  Id,
+  I,
+  H extends NullableHardware,
+>(
   runId: string,
   data: any,
   action: string | null,
@@ -202,7 +232,7 @@ export function createFlowContext<C extends FlowConfig, E, S, Id, I>(
     secrets: S;
     identity: Id;
   }
-): FlowContext<C, E, S, Id, I> {
+): FlowContext<C, E, S, Id, I, H> {
   // Track step and page names to prevent duplicates
   const usedNames = new Set<string>();
 
