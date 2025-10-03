@@ -1,8 +1,8 @@
-import { createFlowContext, FlowFunction } from ".";
+import { createFlowContext, FlowFunction, NullableHardware } from ".";
 import { FlowConfig } from ".";
 
 export const testFlowContext = <T extends FlowConfig>(config?: T) =>
-  createFlowContext<T, {}, {}, {}, { testInput: string }>(
+  createFlowContext<T, {}, {}, {}, { testInput: string }, undefined>(
     "test-run-id",
     {},
     null,
@@ -17,9 +17,13 @@ export const testFlowContext = <T extends FlowConfig>(config?: T) =>
     }
   );
 
-export const testFlow = <const C extends FlowConfig, I>(
+export const testFlow = <
+  const C extends FlowConfig,
+  I,
+  H extends NullableHardware,
+>(
   config: C,
-  fn: FlowFunction<C, {}, {}, {}, I>
+  fn: FlowFunction<C, {}, {}, {}, I, H>
 ) => {
   return { config, fn };
 };

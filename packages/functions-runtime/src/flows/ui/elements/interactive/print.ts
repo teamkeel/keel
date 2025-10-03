@@ -3,20 +3,22 @@ import {
   DisplayElementImplementation,
   DisplayElementWithRequiredConfig,
 } from "../..";
-import { File } from "../../../../File";
+import { Hardware, NullableHardware } from "../../../index";
 
-export type UiElementPrint = DisplayElementWithRequiredConfig<{
-  jobs: PrintData[] | PrintData;
-  title?: string;
-  description?: string;
-  /** If true, the jobs will be automatically printed. */
-  autoPrint?: boolean;
-  /** If true, the flow will continue after the jobs are complete. */
-  autoContinue?: boolean;
-}>;
+export type UiElementPrint<H extends NullableHardware> =
+  DisplayElementWithRequiredConfig<{
+    jobs: PrintData<H>[] | PrintData<H>;
+    title?: string;
+    description?: string;
+    /** If true, the jobs will be automatically printed. */
+    autoPrint?: boolean;
+    /** If true, the flow will continue after the jobs are complete. */
+    autoContinue?: boolean;
+  }>;
 
-type PrintData = {
+type PrintData<H extends NullableHardware> = {
   type: "zpl";
+  printer?: H extends Hardware ? H["printers"][number]["name"] : never;
   name?: string;
   data: string | string[];
 };
@@ -43,20 +45,20 @@ type PrintData = {
 //     };
 
 // The shape of the response over the API
-export interface UiElementPrintApiResponse
-  extends BaseUiDisplayResponse<"ui.interactive.print"> {
+export interface UiElementPrintApiResponse<>extends BaseUiDisplayResponse<"ui.interactive.print"> {
   title?: string;
   description?: string;
   data: {
     type: "url" | "text" | "html" | "zpl";
     data?: string[];
     url?: string;
+    printer?: string;
   }[];
   autoPrint: boolean;
 }
 
 export const print: DisplayElementImplementation<
-  UiElementPrint,
+  UiElementPrint<NullableHardware>,
   UiElementPrintApiResponse
 > = async (options) => {
   const dataConfig = Array.isArray(options.jobs)
@@ -83,6 +85,7 @@ export const print: DisplayElementImplementation<
         type: d.type,
         name: d.name,
         data: Array.isArray(d.data) ? d.data : [d.data],
+        printer: d.printer,
       };
     }
 

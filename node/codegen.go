@@ -136,6 +136,8 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 	writeDatabaseInterface(sdkTypes, schema)
 	writeAPIDeclarations(sdkTypes, schema)
 
+	writeHardwareTypes(sdkTypes, cfg)
+
 	return []*codegen.GeneratedFile{
 		{
 			Path:     ".build/sdk/index.js",
@@ -150,6 +152,32 @@ func generateSdkPackage(schema *proto.Schema, cfg *config.ProjectConfig) codegen
 			Contents: `{"name": "@teamkeel/sdk"}`,
 		},
 	}
+}
+
+func writeHardwareTypes(w *codegen.Writer, cfg *config.ProjectConfig) {
+	w.Writeln("type Hardware = {")
+	w.Indent()
+	if cfg != nil && cfg.Hardware != nil {
+		w.Writeln("printers: [")
+		w.Indent()
+		for _, printer := range cfg.Hardware.Printers {
+			w.Writeln("{")
+			w.Indent()
+			w.Writef("name: \"%s\",", printer.Name)
+			w.Writeln("")
+			w.Dedent()
+			w.Writeln("},")
+		}
+		w.Dedent()
+		w.Writeln("]")
+		w.Dedent()
+	} else {
+		w.Writeln("printers: []")
+		w.Dedent()
+	}
+	w.Dedent()
+	w.Writeln("}")
+	w.Writeln("")
 }
 
 func writeRouteFunctionTypes(w *codegen.Writer) {
@@ -1439,7 +1467,7 @@ func writeFlowFunctionWrapperType(w *codegen.Writer, flow *proto.Flow) {
 		inputsType = flow.GetInputMessageName()
 	}
 
-	w.Writef("export declare const %s: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C, Environment, Secrets, Identity, %s>) };", flow.GetName(), inputsType)
+	w.Writef("export declare const %s: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C, Environment, Secrets, Identity, %s, Hardware>) };", flow.GetName(), inputsType)
 
 	w.Writeln("")
 }
