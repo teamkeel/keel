@@ -35,6 +35,19 @@
         "required": ["name"]
       }
     },
+    "printers": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "required": ["name"]
+      }
+    },
     "useDefaultApi": {
       "type": "boolean"
     },

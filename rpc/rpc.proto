@@ -93,6 +93,9 @@ service API {
 	rpc ListFields(ListFieldsRequest) returns (ListFieldsResponse);
 	// Configure the formatting of all model & enum fields
 	rpc ConfigureFields(ConfigureFieldsRequest) returns (ConfigureFieldsResponse);
+
+	// List configured printers
+	rpc ListPrinters(ListPrintersRequest) returns (ListPrintersResponse);
 }
 
 message ListToolsRequest {}
@@ -138,4 +141,16 @@ message ConfigureFieldsRequest {
 
 message ConfigureFieldsResponse {
 	repeated tools.Field fields = 1;	
+}
+
+message ListPrintersRequest {
+	string environment_id = 1;
+}
+
+message ListPrintersResponse {
+	repeated Printer printers = 1;
+}
+
+message Printer {
+	string name = 1;
 }

@@ -310,3 +310,19 @@ func (s *Server) makeToolsService(ctx context.Context) (*tools.Service, error) {
 
 	return tools.NewService(tools.WithFileStorage(projectDir), tools.WithConfig(config), tools.WithSchema(schema)), nil
 }
+
+func (s *Server) ListPrinters(ctx context.Context, req *rpc.ListPrintersRequest) (*rpc.ListPrintersResponse, error) {
+	config, err := GetConfig(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := rpc.ListPrintersResponse{}
+	for _, p := range config.Printers {
+		resp.Printers = append(resp.Printers, &rpc.Printer{
+			Name: p.Name,
+		})
+	}
+
+	return &resp, nil
+}
