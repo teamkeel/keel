@@ -11,9 +11,10 @@ import { ImageConfig } from "../common";
 export type UiElementPickList = <
   N extends string,
   T extends Record<string, any>,
+  const M extends pickListMode = "both",
 >(
   name: N,
-  options: ListOptions<T>
+  options: PickListOptions<M, T>
 ) => InputElementResponse<
   N,
   {
@@ -37,11 +38,38 @@ type PickListItem = {
   barcodes?: string[];
 };
 
-type ListOptions<T> = {
+/**
+ * Defines how duplicate scans should be handled.
+ * @default "increaseQuantity"
+ */
+type scanDuplicateMode =
+  /** Increase quantity when duplicates are scanned */
+  | "increaseQuantity"
+  /** Reject duplicate scans with an error message */
+  | "rejectDuplicates";
+
+/**
+ * Defines how picking items should be handled.
+ * @default "both"
+ */
+type pickListMode = 
+  /** Picking items can be done using the add/remove buttons and by scanning barcodes */
+  "both" | 
+  /** Picking items can be done only by scanning barcodes */
+  "scan" | 
+  /** Picking items can be done only by using the add/remove buttons */
+  "manual";
+
+type PickListOptions<M, T> = {
   data: T[];
   render: (data: T) => PickListItem;
+  mode?: M | pickListMode;
   validate?: ValidateFn<PickListResponseItem[]>;
-};
+} & (M extends "scan" | "both"
+  ? {
+      duplicateHandling?: scanDuplicateMode;
+    }
+  : {});
 
 // The shape of the response over the API
 export interface UiElementPickListApiResponse
