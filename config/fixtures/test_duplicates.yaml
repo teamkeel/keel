@@ -1,6 +1,7 @@
 # environment.1.name: Duplicate name TEST
 # secrets.2.name: Duplicate name API_KEY
 # auth.providers.1.name: Duplicate name google
+# hardware.printers.2.name: Duplicate name labelPrinter
 
 environment:
   - name: "TEST"
@@ -12,6 +13,12 @@ secrets:
   - name: API_KEY
   - name: OTHER
   - name: API_KEY
+
+hardware:
+  printers:
+    - name: labelPrinter
+    - name: shipping
+    - name: labelPrinter
 
 auth:
   providers:

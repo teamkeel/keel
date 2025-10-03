@@ -12,7 +12,7 @@ type RDSInstanceTypeFormat struct{}
 
 var rdsInstanceTypeFormatRegex = regexp.MustCompile(`^db\.[\w\d]+\.[\w\d]+$`)
 
-func (f RDSInstanceTypeFormat) IsFormat(input interface{}) bool {
+func (f RDSInstanceTypeFormat) IsFormat(input any) bool {
 	v, ok := input.(string)
 	if !ok {
 		return false
