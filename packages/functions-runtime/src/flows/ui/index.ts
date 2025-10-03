@@ -1,4 +1,4 @@
-import { FlowConfig } from "..";
+import { FlowConfig, Hardware, NullableHardware } from "..";
 import {
   UiElementSelectOne,
   UiElementSelectOneApiResponse,
@@ -86,13 +86,13 @@ import {
   UiElementFileApiResponse,
 } from "./elements/display/file";
 
-export interface UI<C extends FlowConfig> {
+export interface UI<C extends FlowConfig, H extends NullableHardware> {
   page: UiPage<C>;
   display: UiDisplayElements;
   inputs: UiInputsElements;
   select: UiSelectElements;
   iterator: UiElementIterator;
-  interactive: UiInteractiveElements;
+  interactive: UiInteractiveElements<H>;
 }
 
 // Input elements that are named and return values
@@ -126,8 +126,8 @@ type UiDisplayElements = {
 };
 
 // Interactive elements may return values, others do not
-type UiInteractiveElements = {
-  print: UiElementPrint;
+type UiInteractiveElements<H extends NullableHardware> = {
+  print: UiElementPrint<H>;
   pickList: UiElementPickList;
 };
 
