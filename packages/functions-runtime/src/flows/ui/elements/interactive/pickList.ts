@@ -40,7 +40,7 @@ type PickListItem = {
 type ListOptions<T> = {
   data: T[];
   render: (data: T) => PickListItem;
-  validate?: ValidateFn<PickListResponseItem>;
+  validate?: ValidateFn<PickListResponseItem[]>;
 };
 
 // The shape of the response over the API
