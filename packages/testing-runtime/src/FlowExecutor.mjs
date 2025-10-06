@@ -1,3 +1,4 @@
+import jwt from "jsonwebtoken";
 import { parseInputs, parseOutputs, reviver } from "./parsing.mjs";
 
 export class FlowExecutor {
