@@ -6,7 +6,11 @@ import {
 import { createDatabaseClient } from "./database";
 import { errorToJSONRPCResponse, RuntimeErrors } from "./errors";
 import * as opentelemetry from "@opentelemetry/api";
-import { withSpan } from "./tracing";
+import {
+  withSpan,
+  KEEL_INTERNAL_ATTR,
+  KEEL_INTERNAL_CHILDREN,
+} from "./tracing";
 import { tryExecuteFlow } from "./tryExecuteFlow";
 import { parseInputs } from "./parsing";
 import { createFlowContext, FlowConfig, STEP_STATUS, STEP_TYPE } from "./flows";
@@ -34,7 +38,9 @@ async function handleFlow(request: any, config: any) {
   // Run the whole request with the extracted context
   return opentelemetry.context.with(activeContext, () => {
     // Wrapping span for the whole request
-    return withSpan(request.method, async (span: any) => {
+    return withSpan(request.method, async (span: opentelemetry.Span) => {
+      span.setAttribute(KEEL_INTERNAL_ATTR, true);
+
       let db = null;
       let flowConfig = null;
       const runId = request.meta?.runId;
@@ -106,6 +112,9 @@ async function handleFlow(request: any, config: any) {
         } catch (e) {
           // The flow is disrupted as a new step has been created
           if (e instanceof StepCreatedDisrupt) {
+            // the step was just created, so this span should be internal
+            span.setAttribute(KEEL_INTERNAL_ATTR, KEEL_INTERNAL_CHILDREN);
+
             return createJSONRPCSuccessResponse(request.id, {
               runId: runId,
               runCompleted: false,
@@ -132,11 +141,13 @@ async function handleFlow(request: any, config: any) {
             });
           }
 
-          span.recordException(e);
-          span.setStatus({
-            code: opentelemetry.SpanStatusCode.ERROR,
-            message: e instanceof Error ? e.message : "unknown error",
-          });
+          if (e instanceof Error) {
+            span.recordException(e);
+            span.setStatus({
+              code: opentelemetry.SpanStatusCode.ERROR,
+              message: e instanceof Error ? e.message : "unknown error",
+            });
+          }
 
           // The flow has failed due to exhausted step retries
           if (e instanceof ExhuastedRetriesDisrupt) {

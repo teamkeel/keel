@@ -328,6 +328,8 @@ func BackFlowRun(ctx context.Context, runID string) (run *Run, err error) {
 // updated run state.
 func UpdateStep(ctx context.Context, runID string, stepID string, data map[string]any, action string) (run *Run, err error) {
 	ctx, span := tracer.Start(ctx, "UpdateStep")
+	span.SetAttributes(attribute.Bool(util.TracingAttrKeelInternal, true))
+
 	defer span.End()
 
 	defer func() {
