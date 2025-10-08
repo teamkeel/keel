@@ -69,6 +69,7 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 			"input":     {Type: []string{"object", "null"}, AdditionalProperties: BoolPointer(true)},
 			"startedBy": {Type: []string{"string", "null"}},
 			"data":      {Type: []string{"object", "null"}},
+			"error":     {Type: []string{"string", "null"}},
 		},
 		Required: []string{"id", "status", "name", "traceId", "createdAt", "updatedAt", "steps", "config", "input"},
 	}

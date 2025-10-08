@@ -17,6 +17,7 @@ test("flows - scalar step", async () => {
     name: "ScalarStep",
     traceId: expect.any(String),
     input: {},
+    error: null,
     data: null,
     startedBy: expect.any(String),
     steps: [
@@ -62,6 +63,7 @@ test("flows - only functions with config", async () => {
       name: "My Thing",
       age: 25,
     },
+    error: null,
     data: null,
     steps: [
       {
@@ -114,6 +116,7 @@ test("flows - only functions with config", async () => {
       name: "My Thing",
       age: 25,
     },
+    error: null,
     data: null,
     steps: [
       {
@@ -183,6 +186,7 @@ test("flows - only pages", async () => {
     name: "OnlyPages",
     startedBy: expect.any(String),
     input: {},
+    error: null,
     data: null,
     steps: [
       {
@@ -227,6 +231,7 @@ test("flows - only pages", async () => {
     name: "OnlyPages",
     startedBy: expect.any(String),
     input: {},
+    error: null,
     data: null,
     steps: [
       {
@@ -294,6 +299,7 @@ test("flows - only pages", async () => {
     name: "OnlyPages",
     startedBy: expect.any(String),
     input: {},
+    error: null,
     data: null,
     steps: [
       {
@@ -347,6 +353,7 @@ test("flows - back on pages", async () => {
     name: "OnlyPages",
     startedBy: expect.any(String),
     input: {},
+    error: null,
     data: null,
     steps: [
       {
@@ -391,6 +398,7 @@ test("flows - back on pages", async () => {
     name: "OnlyPages",
     startedBy: expect.any(String),
     input: {},
+    error: null,
     data: null,
     steps: [
       {
@@ -458,6 +466,7 @@ test("flows - back on pages", async () => {
     name: "OnlyPages",
     startedBy: expect.any(String),
     input: {},
+    error: null,
     data: null,
     steps: [
       {
@@ -502,6 +511,7 @@ test("flows - back on pages", async () => {
     name: "OnlyPages",
     startedBy: expect.any(String),
     input: {},
+    error: null,
     data: null,
     steps: [
       {
@@ -569,6 +579,7 @@ test("flows - back on pages", async () => {
     name: "OnlyPages",
     startedBy: expect.any(String),
     input: {},
+    error: null,
     data: null,
     steps: [
       {
@@ -621,6 +632,7 @@ test("flows - stepless flow", async () => {
   expect(flow).toEqual({
     id: f.id,
     input: {},
+    error: null,
     data: null,
     name: "Stepless",
     startedBy: expect.any(String),
@@ -651,6 +663,7 @@ test("flows - first step is a function", async () => {
     name: "SingleStep",
     startedBy: expect.any(String),
     status: "RUNNING",
+    error: null,
     data: null,
     steps: [
       {
@@ -687,6 +700,7 @@ test("flows - first step is a function", async () => {
     name: "SingleStep",
     startedBy: expect.any(String),
     status: "COMPLETED",
+    error: null,
     data: null,
     steps: [
       {
@@ -731,6 +745,7 @@ test("flows - alternating step types", async () => {
       name: "Keelson",
       age: 23,
     },
+    error: null,
     data: null,
     name: "MixedStepTypes",
     startedBy: expect.any(String),
@@ -777,6 +792,7 @@ test("flows - alternating step types", async () => {
       name: "Keelson",
       age: 23,
     },
+    error: null,
     data: null,
     config: {
       title: "Mixed step types",
@@ -875,6 +891,7 @@ test("flows - alternating step types", async () => {
       name: "Keelson",
       age: 23,
     },
+    error: null,
     data: null,
     steps: [
       step1, // Step 1 should not have changed
@@ -1147,6 +1164,7 @@ test("flows - all inputs", async () => {
       myEnum: MyEnum.Value1,
       markdown: "**Hello**",
     },
+    error: "date is not 2021-01-01",
     data: null,
     steps: [],
     config: {
@@ -1186,6 +1204,7 @@ test("flows - with completion", async () => {
     ],
     createdAt: res.createdAt,
     updatedAt: expect.any(Date),
+    error: null,
     data: null,
     config: {
       stages: [
@@ -1214,6 +1233,7 @@ test("flows - with completion", async () => {
     status: "COMPLETED",
     name: "WithCompletion",
     startedBy: expect.any(String),
+    error: null,
     input: {},
     steps: [
       {
@@ -1311,6 +1331,7 @@ test("flows - with completion - no contents and no returns", async () => {
     ],
     createdAt: res.createdAt,
     updatedAt: expect.any(Date),
+    error: null,
     data: null,
     config: {
       title: "With completion minimal",
@@ -1328,6 +1349,7 @@ test("flows - with completion - no contents and no returns", async () => {
     name: "WithCompletionMinimal",
     startedBy: expect.any(String),
     input: {},
+    error: null,
     steps: [
       {
         id: expect.any(String),
@@ -1387,6 +1409,7 @@ test("flows - with returned data", async () => {
     ],
     createdAt: res.createdAt,
     updatedAt: expect.any(Date),
+    error: null,
     data: null,
     config: {
       title: "With returned data",
@@ -1423,6 +1446,7 @@ test("flows - with returned data", async () => {
     ],
     createdAt: res.createdAt,
     updatedAt: expect.any(Date),
+    error: null,
     data: "hello",
     config: {
       title: "With returned data",
@@ -1634,6 +1658,7 @@ test("flows - env step", async () => {
     status: "COMPLETED",
     name: "EnvStep",
     input: {},
+    error: null,
     data: null,
     startedBy: expect.any(String),
     steps: [
@@ -1687,6 +1712,7 @@ test("flows - multiple actions - finish", async () => {
     name: "MultipleActions",
     startedBy: expect.any(String),
     input: {},
+    error: null,
     data: null,
     steps: [
       {
@@ -1748,6 +1774,7 @@ test("flows - multiple actions - finish", async () => {
     name: "MultipleActions",
     startedBy: expect.any(String),
     input: {},
+    error: null,
     data: null,
     steps: expect.any(Array),
     createdAt: expect.any(Date),
@@ -1769,6 +1796,7 @@ test("flows - multiple actions - continue", async () => {
     name: "MultipleActions",
     startedBy: expect.any(String),
     input: {},
+    error: null,
     data: null,
     steps: [
       {
@@ -1832,6 +1860,7 @@ test("flows - multiple actions - continue", async () => {
     name: "MultipleActions",
     startedBy: expect.any(String),
     input: {},
+    error: null,
     data: null,
     steps: [
       {
@@ -1896,6 +1925,7 @@ test("flows - multiple actions - continue", async () => {
     name: "MultipleActions",
     startedBy: expect.any(String),
     input: {},
+    error: null,
     data: null,
     steps: [
       {
@@ -1960,6 +1990,7 @@ test("flows - cancelling - with pending ui step", async () => {
       name: "Keelson",
       age: 23,
     },
+    error: null,
     data: null,
     config: {
       title: "Mixed step types",
@@ -2063,6 +2094,7 @@ test("flows - multiple actions - invalid action", async () => {
     name: "MultipleActions",
     startedBy: expect.any(String),
     input: {},
+    error: null,
     data: null,
     steps: [
       {
@@ -2126,6 +2158,7 @@ test("flows - multiple actions - invalid action", async () => {
     name: "MultipleActions",
     startedBy: expect.any(String),
     input: {},
+    error: null,
     data: null,
     steps: [
       {

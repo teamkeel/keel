@@ -15,6 +15,7 @@ test("flows - user defined delay retry", async () => {
     startedBy: expect.any(String),
     name: "UserDelays",
     input: {},
+    error: null,
     data: null,
     steps: [
       {
@@ -52,6 +53,7 @@ test("flows - user defined delay retry", async () => {
     name: "UserDelays",
     startedBy: expect.any(String),
     input: {},
+    error: null,
     data: null,
     steps: [
       {
@@ -155,6 +157,7 @@ test("flows - constant delay retry", async () => {
     startedBy: expect.any(String),
     name: "DelayedRetries",
     input: {},
+    error: null,
     data: null,
     steps: [
       {
@@ -192,6 +195,7 @@ test("flows - constant delay retry", async () => {
     name: "DelayedRetries",
     startedBy: expect.any(String),
     input: {},
+    error: null,
     data: null,
     steps: [
       {
@@ -271,6 +275,7 @@ test("flows - error in step with retries", async () => {
     startedBy: expect.any(String),
     name: "ErrorInStep",
     input: {},
+    error: null,
     data: null,
     steps: [
       {
@@ -308,6 +313,7 @@ test("flows - error in step with retries", async () => {
     name: "ErrorInStep",
     startedBy: expect.any(String),
     input: {},
+    error: "flow failed due to exhausted step retries",
     data: null,
     steps: [
       {
@@ -406,6 +412,7 @@ test("flows - on failure callback", async () => {
     startedBy: expect.any(String),
     name: "OnFailureCallback",
     input: {},
+    error: null,
     data: null,
     steps: [
       {
@@ -443,6 +450,7 @@ test("flows - on failure callback", async () => {
     name: "OnFailureCallback",
     startedBy: expect.any(String),
     input: {},
+    error: "flow failed due to exhausted step retries",
     data: null,
     steps: [
       {
@@ -512,6 +520,7 @@ test("flows - do not retry", async () => {
     startedBy: expect.any(String),
     name: "DoNotRetry",
     input: {},
+    error: null,
     data: null,
     steps: [
       {
@@ -549,6 +558,7 @@ test("flows - do not retry", async () => {
     name: "DoNotRetry",
     startedBy: expect.any(String),
     input: {},
+    error: "flow failed due to exhausted step retries",
     data: null,
     steps: [
       {
@@ -588,6 +598,7 @@ test("flows - eventual step success", async () => {
     startedBy: expect.any(String),
     name: "EventualStepSuccess",
     input: {},
+    error: null,
     data: null,
     steps: [
       {
@@ -624,6 +635,7 @@ test("flows - eventual step success", async () => {
     name: "EventualStepSuccess",
     startedBy: expect.any(String),
     input: {},
+    error: null,
     data: null,
     steps: [
       {
@@ -721,6 +733,7 @@ test("flows - error in flow", async () => {
     name: "ErrorInFlow",
     startedBy: expect.any(String),
     input: {},
+    error: "Error in flow",
     data: null,
     steps: [],
     createdAt: expect.any(Date),
@@ -742,6 +755,7 @@ test("flows - timeout step", async () => {
     name: "TimeoutStep",
     startedBy: expect.any(String),
     input: {},
+    error: null,
     data: null,
     steps: [
       {
@@ -779,6 +793,7 @@ test("flows - timeout step", async () => {
     name: "TimeoutStep",
     startedBy: expect.any(String),
     input: {},
+    error: "flow failed due to exhausted step retries",
     data: null,
     steps: [
       {
@@ -877,6 +892,7 @@ test("flows - error in validation", async () => {
 
   expect(flow).toEqual({
     createdAt: expect.any(Date),
+    error: "something has gone wrong",
     data: null,
     id: expect.any(String),
     input: {},
@@ -919,6 +935,7 @@ test("flows - duplicate step name", async () => {
     name: "DuplicateStepName",
     startedBy: expect.any(String),
     input: {},
+    error: null,
     data: null,
     steps: [
       {
@@ -955,6 +972,7 @@ test("flows - duplicate step name", async () => {
     name: "DuplicateStepName",
     startedBy: expect.any(String),
     input: {},
+    error: "Duplicate step name: my step",
     data: null,
     steps: [
       {
@@ -1007,6 +1025,7 @@ test("flows - duplicate step name and UI name", async () => {
     name: "DuplicateStepUiName",
     startedBy: expect.any(String),
     input: {},
+    error: null,
     data: null,
     steps: [
       {
@@ -1043,6 +1062,7 @@ test("flows - duplicate step name and UI name", async () => {
     name: "DuplicateStepUiName",
     startedBy: expect.any(String),
     input: {},
+    error: "Duplicate step name: my step",
     data: null,
     steps: [
       {

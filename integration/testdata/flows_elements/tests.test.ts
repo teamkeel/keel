@@ -11,6 +11,7 @@ test("flows - callback flow", async () => {
     name: "CallbackFlow",
     startedBy: null,
     input: {},
+    error: null,
     data: null,
     steps: [
       {
@@ -107,6 +108,7 @@ test("flows - bulkScan element", async () => {
     name: "BulkScan",
     startedBy: null,
     input: {},
+    error: null,
     data: null,
     steps: [
       {
@@ -156,6 +158,7 @@ test("flows - bulkScan element", async () => {
     name: "BulkScan",
     startedBy: null,
     input: {},
+    error: null,
     data: null,
     steps: [
       {
@@ -234,6 +237,7 @@ test("flows - bulkScan element", async () => {
     name: "BulkScan",
     startedBy: null,
     input: {},
+    error: null,
     data: null,
     steps: [
       {
@@ -291,6 +295,7 @@ test("flows - iterator element", async () => {
     name: "Iterator",
     startedBy: null,
     input: {},
+    error: null,
     data: null,
     steps: [
       {
@@ -381,6 +386,7 @@ test("flows - iterator element", async () => {
     name: "Iterator",
     startedBy: null,
     input: {},
+    error: null,
     data: null,
     steps: [
       {
@@ -449,6 +455,7 @@ test("flows - iterator element - iterator and element validation errors", async 
     name: "Iterator",
     startedBy: null,
     input: {},
+    error: null,
     data: null,
     steps: [
       {

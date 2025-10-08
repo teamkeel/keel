@@ -32,6 +32,7 @@ ALTER TABLE "keel"."flow_run" ADD COLUMN IF NOT EXISTS "traceparent" TEXT;
 ALTER TABLE "keel"."flow_run" ADD COLUMN IF NOT EXISTS "started_by" TEXT;
 ALTER TABLE "keel"."flow_run" ADD COLUMN IF NOT EXISTS "data" JSONB DEFAULT NULL;
 ALTER TABLE "keel"."flow_run" ADD COLUMN IF NOT EXISTS "config" JSONB DEFAULT NULL;
+ALTER TABLE "keel"."flow_run" ADD COLUMN IF NOT EXISTS "error" TEXT;
 
 ALTER TABLE "keel"."flow_step" ADD COLUMN IF NOT EXISTS "action" TEXT;
 ALTER TABLE "keel"."flow_step" ADD COLUMN IF NOT EXISTS "ui" JSONB DEFAULT NULL;
