@@ -47,18 +47,20 @@ test("withSpan span time", async () => {
 test("withSpan on error", async () => {
   try {
     await tracing.withSpan("name", async () => {
-      throw "err";
+      throw Error("this is an error");
     });
     // previous line should have an error thrown
     expect(true).toEqual(false);
   } catch (e) {
-    expect(e).toEqual("err");
+    expect(e).toEqual(Error("this is an error"));
     expect(spanEvents.map((e) => e.event)).toEqual(["onStart", "onEnd"]);
     const lastSpanEvents = spanEvents.pop().span.events;
     expect(lastSpanEvents).length(1);
     expect(lastSpanEvents[0].name).toEqual("exception");
     expect(lastSpanEvents[0].attributes).toEqual({
-      "exception.message": "err",
+      "exception.message": "this is an error",
+      "exception.stacktrace": expect.any(String),
+      "exception.type": "Error",
     });
   }
 });

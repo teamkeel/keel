@@ -10,12 +10,14 @@ async function withSpan(name, fn) {
       // await the thing (this means we can use try/catch)
       return await fn(span);
     } catch (err) {
-      // record any errors
-      span.recordException(err);
-      span.setStatus({
-        code: opentelemetry.SpanStatusCode.ERROR,
-        message: err.message,
-      });
+      if (err instanceof Error) {
+        // record any errors
+        span.recordException(err);
+        span.setStatus({
+          code: opentelemetry.SpanStatusCode.ERROR,
+          message: err.message,
+        });
+      }
       // re-throw the error
       throw err;
     } finally {
@@ -173,4 +175,18 @@ function spanNameForModelAPI(modelName, action) {
   return `Database ${modelName}.${action}`;
 }
 
-export { getTracer, withSpan, init, forceFlush, spanNameForModelAPI };
+// This attribute marks just this current span as internal; if the value
+const KEEL_INTERNAL_ATTR = "keel_internal";
+
+// This value, when set on an KEEL_INTERNAL_ATTR marks that all children spans are also internal
+const KEEL_INTERNAL_CHILDREN = "includeChildrenSpans";
+
+export {
+  getTracer,
+  withSpan,
+  init,
+  forceFlush,
+  spanNameForModelAPI,
+  KEEL_INTERNAL_ATTR,
+  KEEL_INTERNAL_CHILDREN,
+};

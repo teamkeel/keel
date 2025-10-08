@@ -287,6 +287,8 @@ func (o *Orchestrator) CallFlow(ctx context.Context, run *Run, inputs map[string
 	ctx, span := tracer.Start(ctx, "CallFlow")
 	defer span.End()
 
+	span.SetAttributes(attribute.Bool(util.TracingAttrKeelInternal, true))
+
 	if run == nil {
 		return nil, fmt.Errorf("invalid run")
 	}
@@ -354,11 +356,16 @@ func (o *Orchestrator) CallFlow(ctx context.Context, run *Run, inputs map[string
 	// after successful invocation of the flow, we need to trigger the event subscribers for this schema
 	// Generate and send any events for this context.
 	// Failure to generate events fail silently.
+	ctx, spanEv := tracer.Start(ctx, "TriggerEventSubscribers")
+
+	spanEv.SetAttributes(attribute.String(util.TracingAttrKeelInternal, util.TracingAttrValIncludeChildren))
+
 	eventsErr := events.SendEvents(ctx, o.schema)
 	if eventsErr != nil {
 		span.RecordError(eventsErr)
 		span.SetStatus(codes.Error, eventsErr.Error())
 	}
+	spanEv.End()
 
 	return &respBody, nil
 }

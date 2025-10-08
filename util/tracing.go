@@ -10,6 +10,9 @@ import (
 
 var traceCtxRegExp = regexp.MustCompile("^(?P<version>[0-9a-f]{2})-(?P<traceID>[a-f0-9]{32})-(?P<spanID>[a-f0-9]{16})-(?P<traceFlags>[a-f0-9]{2})(?:-.*)?$")
 
+const TracingAttrKeelInternal = "keel_internal"
+const TracingAttrValIncludeChildren = "includeChildrenSpans"
+
 // Retrieves traceparent, or empty string if no span exists.
 // Uses standard format: {version}-{trace_id}-{span_id}-{trace_flags}
 // See specification: https://www.w3.org/TR/trace-context/#traceparent-header-field-values
