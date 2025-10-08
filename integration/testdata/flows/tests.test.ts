@@ -2048,7 +2048,7 @@ test("flows - cancelling - with pending ui step", async () => {
     createdAt: expect.any(Date),
     updatedAt: expect.any(Date),
     startTime: expect.any(Date),
-    endTime: null,
+    endTime: expect.any(Date),
   });
 });
 
