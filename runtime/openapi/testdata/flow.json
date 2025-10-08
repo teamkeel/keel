@@ -806,6 +806,7 @@
           },
           "createdAt": { "type": "string", "format": "date-time" },
           "data": { "type": ["object", "null"] },
+          "error": { "type": ["string", "null"] },
           "id": { "type": "string" },
           "input": { "type": ["object", "null"], "additionalProperties": true },
           "name": { "type": "string" },

@@ -57,6 +57,7 @@ type Run struct {
 	UpdatedAt   time.Time `json:"updatedAt"`
 	Config      JSON      `json:"config"    gorm:"type:jsonb;serializer:json"`
 	StartedBy   *string   `json:"startedBy"`
+	Error       *string   `json:"error"`
 }
 
 func (Run) TableName() string {
@@ -317,7 +318,7 @@ func GetTraceparent(ctx context.Context, runID string) (string, error) {
 
 // updateRun will update the status of a flow run.
 // If the flow's status is set to cancelled, any pending steps of that flow's run will be set to cancelled as well.
-func updateRun(ctx context.Context, runID string, status Status, config any) (*Run, error) {
+func updateRun(ctx context.Context, runID string, status Status, config any, errMessage *string) (*Run, error) {
 	database, err := db.GetDatabase(ctx)
 	if err != nil {
 		return nil, err
@@ -333,6 +334,7 @@ func updateRun(ctx context.Context, runID string, status Status, config any) (*R
 			Updates(Run{
 				Status: status,
 				Config: config,
+				Error:  errMessage,
 			}).Error; err != nil {
 			return err
 		}

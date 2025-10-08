@@ -129,6 +129,7 @@ test("tasks - start", async () => {
     input: {
       entityId: expect.any(String),
     },
+    error: null,
     data: null,
     config: {
       title: "No fields",
