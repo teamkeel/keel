@@ -339,10 +339,12 @@ func updateRun(ctx context.Context, runID string, status Status, config any) (*R
 
 		// if we've cancelled the flow, we need to cancel any UI steps that are PENDING
 		if status == StatusCancelled {
+			now := time.Now()
 			if err := tx.Model(&Step{}).
 				Where("run_id = ? AND type = ? AND status = ?", runID, StepTypeUI, StepStatusPending).
 				Updates(Step{
-					Status: StepStatusCancelled,
+					Status:  StepStatusCancelled,
+					EndTime: &now,
 				}).Error; err != nil {
 				return err
 			}
