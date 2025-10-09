@@ -1422,7 +1422,8 @@
                   "required": ["id", "targetQuantity"]
                 }
               },
-              "mode": {
+              "name": { "type": "string" },
+              "supportedInputs": {
                 "type": "object",
                 "properties": {
                   "manual": { "type": "boolean" },
@@ -1431,11 +1432,10 @@
                 "additionalProperties": false,
                 "required": ["manual", "scanner"]
               },
-              "name": { "type": "string" },
               "validationError": { "type": "string" }
             },
             "additionalProperties": false,
-            "required": ["__type", "data", "mode", "name"]
+            "required": ["__type", "data", "name", "supportedInputs"]
           },
           "UiElementPrintApiResponse": {
             "type": "object",

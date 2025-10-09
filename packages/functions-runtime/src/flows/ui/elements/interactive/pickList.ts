@@ -11,7 +11,7 @@ import { ImageConfig } from "../common";
 export type UiElementPickList = <
   N extends string,
   T extends Record<string, any>,
-  const M extends PickListModes = { scanner: true; manual: true },
+  const M extends PickListInputModes = { scanner: true; manual: true },
 >(
   name: N,
   options: PickListOptions<M, T>
@@ -51,17 +51,17 @@ type scanDuplicateMode =
 /**
  * Defines how picking items should be handled. By default, all modes are enabled.
  */
-type PickListModes = {
+type PickListInputModes = {
   /** Picking items can be done by scanning barcodes */
   scanner: boolean;
   /** Picking items can be done by using the add/remove buttons */
   manual: boolean;
 };
 
-type PickListOptions<M extends PickListModes, T> = {
+type PickListOptions<M extends PickListInputModes, T> = {
   data: T[];
   render: (data: T) => PickListItem;
-  mode?: M | PickListModes;
+  mode?: M | PickListInputModes;
   validate?: ValidateFn<PickListResponseItem>;
 } & (M["scanner"] extends true
   ? {
@@ -73,7 +73,7 @@ type PickListOptions<M extends PickListModes, T> = {
 export interface UiElementPickListApiResponse
   extends BaseUiMinimalInputResponse<"ui.interactive.pickList"> {
   data: PickListItem[];
-  mode: PickListModes;
+  supportedInputs: PickListInputModes;
 }
 
 export const pickList: InputElementImplementation<
@@ -86,7 +86,7 @@ export const pickList: InputElementImplementation<
     uiConfig: {
       __type: "ui.interactive.pickList",
       name,
-      mode: options.mode || {
+      supportedInputs: options.mode || {
         scanner: true,
         manual: true,
       },

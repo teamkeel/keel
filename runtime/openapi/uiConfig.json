@@ -1136,7 +1136,7 @@
             ]
           }
         },
-        "mode": {
+        "supportedInputs": {
           "description": "Defines how picking items should be handled. By default, all modes are enabled.",
           "type": "object",
           "properties": {
@@ -1170,8 +1170,8 @@
       "required": [
         "__type",
         "data",
-        "mode",
-        "name"
+        "name",
+        "supportedInputs"
       ]
     },
     "UiPageApiResponse": {
