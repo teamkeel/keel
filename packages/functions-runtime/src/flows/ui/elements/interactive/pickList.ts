@@ -49,12 +49,12 @@ type scanDuplicateMode =
   | "rejectDuplicates";
 
 /**
- * Defines how picking items should be handled.
+ * Defines how picking items should be handled. By default, all modes are enabled.
  */
 type PickListModes = {
-  /** Picking items can be done only by scanning barcodes */
+  /** Picking items can be done by scanning barcodes */
   scanner: boolean;
-  /** Picking items can be done only by using the add/remove buttons */
+  /** Picking items can be done by using the add/remove buttons */
   manual: boolean;
 };
 
