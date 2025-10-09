@@ -73,6 +73,7 @@ type PickListOptions<M extends PickListModes, T> = {
 export interface UiElementPickListApiResponse
   extends BaseUiMinimalInputResponse<"ui.interactive.pickList"> {
   data: PickListItem[];
+  mode: PickListModes;
 }
 
 export const pickList: InputElementImplementation<
@@ -85,6 +86,10 @@ export const pickList: InputElementImplementation<
     uiConfig: {
       __type: "ui.interactive.pickList",
       name,
+      mode: options.mode || {
+        scanner: true,
+        manual: true,
+      },
       data: options.data.map((item: any) => {
         const rendered = options.render(item);
         return {

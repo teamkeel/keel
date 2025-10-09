@@ -975,13 +975,11 @@
                 "additionalProperties": false
               },
               "autoClose": { "type": "boolean" },
-              "fullWidth": {
-                "type": "boolean"
-              },
               "content": {
                 "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementApiResponses"
               },
               "description": { "type": "string" },
+              "fullWidth": { "type": "boolean" },
               "stage": { "type": "string" },
               "title": { "type": "string" }
             },
@@ -1091,6 +1089,27 @@
             },
             "additionalProperties": false,
             "required": ["__type"]
+          },
+          "UiElementFileApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": { "type": "string", "const": "ui.display.file" },
+              "file": {
+                "type": "object",
+                "properties": {
+                  "contentType": { "type": "string" },
+                  "filename": { "type": "string" },
+                  "key": { "type": "string" },
+                  "size": { "type": "number" },
+                  "url": { "type": "string" }
+                },
+                "additionalProperties": false,
+                "required": ["contentType", "filename", "key", "size", "url"]
+              },
+              "title": { "type": "string" }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "title"]
           },
           "UiElementGridApiResponse": {
             "type": "object",
@@ -1249,42 +1268,6 @@
             "additionalProperties": false,
             "required": ["__type", "duplicateHandling", "mode", "name"]
           },
-          "UiElementFileApiResponse": {
-            "type": "object",
-            "properties": {
-              "title": {
-                "type": "string"
-              },
-              "file": {
-                "additionalProperties": false,
-                "type": "object",
-                "properties": {
-                  "key": {
-                    "type": "string"
-                  },
-                  "filename": {
-                    "type": "string"
-                  },
-                  "contentType": {
-                    "type": "string"
-                  },
-                  "size": {
-                    "type": "number"
-                  },
-                  "url": {
-                    "type": "string"
-                  }
-                },
-                "required": ["contentType", "filename", "key", "size", "url"]
-              },
-              "__type": {
-                "type": "string",
-                "const": "ui.display.file"
-              }
-            },
-            "additionalProperties": false,
-            "required": ["__type", "title"]
-          },
           "UiElementInputTextApiResponse": {
             "type": "object",
             "properties": {
@@ -1439,11 +1422,20 @@
                   "required": ["id", "targetQuantity"]
                 }
               },
+              "mode": {
+                "type": "object",
+                "properties": {
+                  "manual": { "type": "boolean" },
+                  "scanner": { "type": "boolean" }
+                },
+                "additionalProperties": false,
+                "required": ["manual", "scanner"]
+              },
               "name": { "type": "string" },
               "validationError": { "type": "string" }
             },
             "additionalProperties": false,
-            "required": ["__type", "data", "name"]
+            "required": ["__type", "data", "mode", "name"]
           },
           "UiElementPrintApiResponse": {
             "type": "object",
@@ -1456,12 +1448,12 @@
                   "type": "object",
                   "properties": {
                     "data": { "type": "array", "items": { "type": "string" } },
+                    "printer": { "type": "string" },
                     "type": {
                       "type": "string",
                       "enum": ["html", "text", "url", "zpl"]
                     },
-                    "url": { "type": "string" },
-                    "printer": { "type": "string" }
+                    "url": { "type": "string" }
                   },
                   "additionalProperties": false,
                   "required": ["type"]
@@ -1603,18 +1595,16 @@
                   "required": ["label", "value"]
                 }
               },
+              "allowBack": { "type": "boolean" },
               "content": {
                 "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementApiResponses"
               },
               "description": { "type": "string" },
+              "fullWidth": { "type": "boolean" },
               "hasValidationErrors": { "type": "boolean" },
               "stage": { "type": "string" },
               "title": { "type": "string" },
-              "validationError": { "type": "string" },
-              "allowBack": { "type": "boolean" },
-              "fullWidth": {
-                "type": "boolean"
-              }
+              "validationError": { "type": "string" }
             },
             "additionalProperties": false,
             "required": ["__type", "content", "hasValidationErrors"]
