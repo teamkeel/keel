@@ -63,7 +63,7 @@ type PickListOptions<M extends PickListModes, T> = {
   render: (data: T) => PickListItem;
   mode?: M | PickListModes;
   validate?: ValidateFn<PickListResponseItem>;
-} & (M['scanner'] extends true
+} & (M["scanner"] extends true
   ? {
       duplicateHandling?: scanDuplicateMode;
     }
