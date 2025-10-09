@@ -61,7 +61,7 @@ type PickListInputModes = {
 type PickListOptions<M extends PickListInputModes, T> = {
   data: T[];
   render: (data: T) => PickListItem;
-  mode?: M | PickListInputModes;
+  supportedInputs?: M | PickListInputModes;
   validate?: ValidateFn<PickListResponseItem>;
 } & (M["scanner"] extends true
   ? {
@@ -86,7 +86,7 @@ export const pickList: InputElementImplementation<
     uiConfig: {
       __type: "ui.interactive.pickList",
       name,
-      supportedInputs: options.mode || {
+      supportedInputs: options.supportedInputs || {
         scanner: true,
         manual: true,
       },
