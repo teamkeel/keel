@@ -11,7 +11,7 @@ import { ImageConfig } from "../common";
 export type UiElementPickList = <
   N extends string,
   T extends Record<string, any>,
-  const M extends pickListMode = "both",
+  const M extends PickListModes = { scanner: true; manual: true },
 >(
   name: N,
   options: PickListOptions<M, T>
@@ -50,22 +50,20 @@ type scanDuplicateMode =
 
 /**
  * Defines how picking items should be handled.
- * @default "both"
  */
-type pickListMode = 
-  /** Picking items can be done using the add/remove buttons and by scanning barcodes */
-  "both" | 
+type PickListModes = {
   /** Picking items can be done only by scanning barcodes */
-  "scan" | 
+  scanner: boolean;
   /** Picking items can be done only by using the add/remove buttons */
-  "manual";
+  manual: boolean;
+};
 
-type PickListOptions<M, T> = {
+type PickListOptions<M extends PickListModes, T> = {
   data: T[];
   render: (data: T) => PickListItem;
-  mode?: M | pickListMode;
-  validate?: ValidateFn<PickListResponseItem[]>;
-} & (M extends "scan" | "both"
+  mode?: M | PickListModes;
+  validate?: ValidateFn<PickListResponseItem>;
+} & (M['scanner'] extends true
   ? {
       duplicateHandling?: scanDuplicateMode;
     }
