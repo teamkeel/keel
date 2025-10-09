@@ -1422,6 +1422,10 @@
                   "required": ["id", "targetQuantity"]
                 }
               },
+              "duplicateHandling": {
+                "type": "string",
+                "enum": ["increaseQuantity", "rejectDuplicates"]
+              },
               "name": { "type": "string" },
               "supportedInputs": {
                 "type": "object",

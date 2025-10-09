@@ -1155,6 +1155,13 @@
             "scanner"
           ]
         },
+        "duplicateHandling": {
+          "enum": [
+            "increaseQuantity",
+            "rejectDuplicates"
+          ],
+          "type": "string"
+        },
         "__type": {
           "type": "string",
           "const": "ui.interactive.pickList"

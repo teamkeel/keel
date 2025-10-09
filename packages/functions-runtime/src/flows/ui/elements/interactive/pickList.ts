@@ -42,7 +42,7 @@ type PickListItem = {
  * Defines how duplicate scans should be handled.
  * @default "increaseQuantity"
  */
-type scanDuplicateMode =
+type ScanDuplicateMode =
   /** Increase quantity when duplicates are scanned */
   | "increaseQuantity"
   /** Reject duplicate scans with an error message */
@@ -61,19 +61,17 @@ type PickListInputModes = {
 type PickListOptions<M extends PickListInputModes, T> = {
   data: T[];
   render: (data: T) => PickListItem;
-  supportedInputs?: M | PickListInputModes;
+  supportedInputs?: M;
   validate?: ValidateFn<PickListResponseItem>;
-} & (M["scanner"] extends true
-  ? {
-      duplicateHandling?: scanDuplicateMode;
-    }
-  : {});
+  duplicateHandling?: ScanDuplicateMode | undefined;
+};
 
 // The shape of the response over the API
 export interface UiElementPickListApiResponse
   extends BaseUiMinimalInputResponse<"ui.interactive.pickList"> {
   data: PickListItem[];
   supportedInputs: PickListInputModes;
+  duplicateHandling?: ScanDuplicateMode | undefined;
 }
 
 export const pickList: InputElementImplementation<
@@ -90,6 +88,7 @@ export const pickList: InputElementImplementation<
         scanner: true,
         manual: true,
       },
+      duplicateHandling: options.duplicateHandling,
       data: options.data.map((item: any) => {
         const rendered = options.render(item);
         return {

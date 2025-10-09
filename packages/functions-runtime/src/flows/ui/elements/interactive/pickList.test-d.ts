@@ -9,6 +9,7 @@ describe("pick list element", () => {
           scanner: true,
           manual: true,
         },
+        duplicateHandling: "increaseQuantity",
         data: [
           {
             id: "1",
