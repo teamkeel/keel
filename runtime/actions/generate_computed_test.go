@@ -287,6 +287,37 @@ var computedTestCases = []computedTestCase{
 		expectedSql: `r."order_status" IS NOT DISTINCT FROM 'Delivered'`,
 	},
 	{
+		name: "enums sumif",
+		keelSchema: `
+			model Customer {
+				fields {
+					#placeholder#
+					orders Order[]
+				}
+			}
+			model Order {
+				fields {
+					name Text
+					customer Customer
+					status OrderStatus
+					items OrderItem[]
+				}
+			}
+			model OrderItem {
+				fields {
+					order Order
+					price Decimal
+				}
+			}
+			enum OrderStatus {
+				Delivered
+				Pending
+			}
+		`,
+		field:       "totalSales Decimal @computed(SUMIF(customer.orders.items.price, customer.orders.status == OrderStatus.Delivered))",
+		expectedSql: `(SELECT COALESCE(SUM("order$items"."price"), 0) FROM "order" LEFT JOIN "order_item" AS "order$items" ON "order$items"."order_id" = "order"."id" WHERE "order"."customer_id" IS NOT DISTINCT FROM r."id" AND "order"."status" IS NOT DISTINCT FROM 'Delivered')`,
+	},
+	{
 		name: "computed on task using model fields",
 		keelSchema: `
 			task DispatchInvoice {
