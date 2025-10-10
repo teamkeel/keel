@@ -1136,6 +1136,32 @@
             ]
           }
         },
+        "supportedInputs": {
+          "description": "Defines how picking items should be handled. By default, all modes are enabled.",
+          "type": "object",
+          "properties": {
+            "scanner": {
+              "description": "Picking items can be done by scanning barcodes",
+              "type": "boolean"
+            },
+            "manual": {
+              "description": "Picking items can be done by using the add/remove buttons",
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "manual",
+            "scanner"
+          ]
+        },
+        "duplicateHandling": {
+          "enum": [
+            "increaseQuantity",
+            "rejectDuplicates"
+          ],
+          "type": "string"
+        },
         "__type": {
           "type": "string",
           "const": "ui.interactive.pickList"
@@ -1151,7 +1177,8 @@
       "required": [
         "__type",
         "data",
-        "name"
+        "name",
+        "supportedInputs"
       ]
     },
     "UiPageApiResponse": {

@@ -11,9 +11,10 @@ import { ImageConfig } from "../common";
 export type UiElementPickList = <
   N extends string,
   T extends Record<string, any>,
+  const M extends PickListInputModes = { scanner: true; manual: true },
 >(
   name: N,
-  options: ListOptions<T>
+  options: PickListOptions<M, T>
 ) => InputElementResponse<
   N,
   {
@@ -37,16 +38,40 @@ type PickListItem = {
   barcodes?: string[];
 };
 
-type ListOptions<T> = {
+/**
+ * Defines how duplicate scans should be handled.
+ * @default "increaseQuantity"
+ */
+type ScanDuplicateMode =
+  /** Increase quantity when duplicates are scanned */
+  | "increaseQuantity"
+  /** Reject duplicate scans with an error message */
+  | "rejectDuplicates";
+
+/**
+ * Defines how picking items should be handled. By default, all modes are enabled.
+ */
+type PickListInputModes = {
+  /** Picking items can be done by scanning barcodes */
+  scanner: boolean;
+  /** Picking items can be done by using the add/remove buttons */
+  manual: boolean;
+};
+
+type PickListOptions<M extends PickListInputModes, T> = {
   data: T[];
   render: (data: T) => PickListItem;
-  validate?: ValidateFn<PickListResponseItem[]>;
+  supportedInputs?: M;
+  validate?: ValidateFn<PickListResponseItem>;
+  duplicateHandling?: ScanDuplicateMode | undefined;
 };
 
 // The shape of the response over the API
 export interface UiElementPickListApiResponse
   extends BaseUiMinimalInputResponse<"ui.interactive.pickList"> {
   data: PickListItem[];
+  supportedInputs: PickListInputModes;
+  duplicateHandling?: ScanDuplicateMode | undefined;
 }
 
 export const pickList: InputElementImplementation<
@@ -59,6 +84,11 @@ export const pickList: InputElementImplementation<
     uiConfig: {
       __type: "ui.interactive.pickList",
       name,
+      supportedInputs: options.supportedInputs || {
+        scanner: true,
+        manual: true,
+      },
+      duplicateHandling: options.duplicateHandling,
       data: options.data.map((item: any) => {
         const rendered = options.render(item);
         return {
