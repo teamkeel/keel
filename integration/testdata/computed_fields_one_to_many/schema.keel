@@ -1,12 +1,14 @@
 model Invoice {
     fields {
         items Item[]
-        shipping Number 
+        shipping Number
         hasItems Boolean @computed(COUNTIF(invoice.items, invoice.items.isDeleted == false) > 0)
         total Decimal @computed(SUM(invoice.items.product.price) + invoice.shipping)
         numberOfItems Decimal @computed(COUNT(invoice.items.product))
         totalActive Decimal @computed(SUMIF(invoice.items.product.price, !invoice.items.isDeleted) + invoice.shipping)
         numberOfActiveItems Decimal @computed(COUNTIF(invoice.items.product.price, invoice.items.isDeleted == false && invoice.items.product.price > 0))
+        status InvoiceStatus @default(InvoiceStatus.Draft)
+        isDeleted Boolean @default(false)
     }
     actions {
         get getInvoice(id) {
@@ -18,7 +20,15 @@ model Invoice {
         list listInvoices() {
             @permission(expression: true)
         }
+        update updateInvoice(id) with (status?, isDeleted?) {
+            @permission(expression: true)
+        }
     }
+}
+
+enum InvoiceStatus {
+    Draft
+    Paid
 }
 
 model Item {
@@ -26,12 +36,14 @@ model Item {
         invoice Invoice
         product Product
         isDeleted Boolean @default(false)
+        price Decimal?
+        quantity Number @default(1)
     }
     actions {
         get getItem(id) {
             @permission(expression: true)
         }
-        create createItem() with (product.id, invoice.id) {
+        create createItem() with (product.id, invoice.id, price?, quantity?) {
             @permission(expression: true)
         }
         update removeItem(id) {
@@ -44,6 +56,9 @@ model Item {
 model Product {
     fields {
         price Decimal
+        items Item[]
+        totalValueSold Decimal @computed(SUMIF(product.items.invoice.total, product.items.invoice.status == InvoiceStatus.Paid && !product.items.invoice.isDeleted && !product.items.isDeleted))
+        totalUnitsSold Number @computed(SUMIF(product.items.quantity, product.items.invoice.status == InvoiceStatus.Paid && !product.items.invoice.isDeleted && !product.items.isDeleted))
     }
     actions {
         get getProduct(id) {
