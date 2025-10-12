@@ -1489,7 +1489,7 @@ test("flows - authorised listing flows", async () => {
   await models.user.create({ team: "myTeam", identityId: identity!.id });
 
   const resListAdmin = await listFlows({ token: adminToken });
-  expect(resListAdmin.body.flows.length).toBe(17);
+  expect(resListAdmin.body.flows.length).toBe(18);
   expect(resListAdmin.body.flows[0].name).toBe("ScalarStep");
   expect(resListAdmin.body.flows[1].name).toBe("MixedStepTypes");
   expect(resListAdmin.body.flows[2].name).toBe("Stepless");
@@ -1506,7 +1506,8 @@ test("flows - authorised listing flows", async () => {
   expect(resListAdmin.body.flows[13].name).toBe("WithCompletion");
   expect(resListAdmin.body.flows[14].name).toBe("WithCompletionMinimal");
   expect(resListAdmin.body.flows[15].name).toBe("WithReturnedData");
-  expect(resListAdmin.body.flows[16].name).toBe("ExpressionPermissionIsTrue");
+  expect(resListAdmin.body.flows[16].name).toBe("DataWrapperConsistency");
+  expect(resListAdmin.body.flows[17].name).toBe("ExpressionPermissionIsTrue");
 
   const resListUser = await listFlows({ token: userToken });
   expect(resListUser.status).toBe(200);
