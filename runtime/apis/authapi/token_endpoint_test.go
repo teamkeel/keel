@@ -335,6 +335,108 @@ func TestTokenExchange_ValidNewIdentityNoProfileClaims(t *testing.T) {
 	require.False(t, ok)
 }
 
+func TestTokenExchange_ValidNewIdentityNoEmailClaims(t *testing.T) {
+	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
+	defer database.Close()
+
+	// OIDC test server
+	server, err := oauthtest.NewServer()
+	require.NoError(t, err)
+	defer server.Close()
+
+	// Set up auth config
+	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
+		Providers: []config.Provider{
+			{
+				Type:      config.OpenIdConnectProvider,
+				Name:      "my-oidc",
+				ClientId:  "oidc-client-id",
+				IssuerUrl: server.Issuer,
+			},
+		},
+	})
+
+	server.SetUser("id|285620", &oauth.UserClaims{})
+
+	// Get ID token from server
+	idToken, err := server.FetchIdToken("id|285620", []string{"oidc-client-id"})
+	require.NoError(t, err)
+
+	// Make a token exchange grant request
+	request := makeTokenExchangeFormRequest(ctx, idToken, nil)
+
+	// Handle runtime request, expecting TokenResponse
+	validResponse, httpResponse, err := handleRuntimeRequest[authapi.TokenResponse](schema, request)
+	require.NoError(t, err)
+
+	require.Equal(t, http.StatusOK, httpResponse.StatusCode)
+	require.NotEmpty(t, validResponse.AccessToken)
+	require.Equal(t, "bearer", validResponse.TokenType)
+	require.NotEmpty(t, validResponse.ExpiresIn)
+	require.NotEmpty(t, validResponse.RefreshToken)
+	require.True(t, validResponse.Created)
+	require.True(t, common.HasContentType(httpResponse.Header, "application/json"))
+
+	sub, err := oauth.ValidateAccessToken(ctx, validResponse.AccessToken)
+	require.NoError(t, err)
+
+	var identities []map[string]any
+	database.GetDB().Raw("SELECT * FROM identity").Scan(&identities)
+	require.Len(t, identities, 1)
+
+	id, ok := identities[0]["id"].(string)
+	require.True(t, ok)
+	require.Equal(t, id, sub)
+
+	_, ok = identities[0]["email"].(string)
+	require.False(t, ok)
+
+	externalId, ok := identities[0]["external_id"].(string)
+	require.True(t, ok)
+	require.Equal(t, "id|285620", externalId)
+
+	issuer, ok := identities[0]["issuer"].(string)
+	require.True(t, ok)
+	require.Equal(t, issuer, server.Issuer)
+
+	emailVerified, ok := identities[0]["email_verified"].(bool)
+	require.True(t, ok)
+	require.Equal(t, false, emailVerified)
+
+	_, ok = identities[0]["name"].(string)
+	require.False(t, ok)
+
+	_, ok = identities[0]["given_name"].(string)
+	require.False(t, ok)
+
+	_, ok = identities[0]["family_name"].(string)
+	require.False(t, ok)
+
+	_, ok = identities[0]["middle_name"].(string)
+	require.False(t, ok)
+
+	_, ok = identities[0]["nick_name"].(string)
+	require.False(t, ok)
+
+	_, ok = identities[0]["profile"].(string)
+	require.False(t, ok)
+
+	_, ok = identities[0]["picture"].(string)
+	require.False(t, ok)
+
+	_, ok = identities[0]["website"].(string)
+	require.False(t, ok)
+
+	_, ok = identities[0]["gender"].(string)
+	require.False(t, ok)
+
+	_, ok = identities[0]["zone_info"].(string)
+	require.False(t, ok)
+
+	_, ok = identities[0]["locale"].(string)
+	require.False(t, ok)
+}
+
 func TestTokenExchangeWithJson_ValidNewIdentity(t *testing.T) {
 	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
 	defer database.Close()

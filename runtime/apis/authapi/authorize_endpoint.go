@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"slices"
 	"strings"
 
 	"github.com/coreos/go-oidc/v3/oidc"
@@ -86,6 +87,16 @@ func AuthorizeHandler(schema *proto.Schema) common.HandlerFunc {
 			return common.InternalServerErrorResponse(ctx, err)
 		}
 
+		scopes := []string{"openid", "email", "profile"}
+		if provider.Scopes != nil {
+			scopes = provider.Scopes
+
+			// The openid scope is required for OIDC
+			if !slices.Contains(scopes, "openid") {
+				scopes = append(scopes, "openid")
+			}
+		}
+
 		// RedirectURL is needed for provider to redirect back to Keel
 		// Secret is _not_ required when getting auth code
 		oauthConfig := &oauth2.Config{
@@ -94,7 +105,7 @@ func AuthorizeHandler(schema *proto.Schema) common.HandlerFunc {
 				AuthURL:  oidcProvider.Endpoint().AuthURL,
 				TokenURL: oidcProvider.Endpoint().TokenURL,
 			},
-			Scopes:      []string{"openid", "email", "profile"},
+			Scopes:      scopes,
 			RedirectURL: callbackUrl.String(),
 		}
 
@@ -210,7 +221,7 @@ func CallbackHandler(schema *proto.Schema) common.HandlerFunc {
 		// Verify the ID token with the OIDC provider
 		idToken, err := verifier.Verify(ctx, rawIDToken)
 		if err != nil {
-			return redirectErrResponse(ctx, redirectUrl, AuthorizationErrAccessDenied, "falied to verify ID token with OIDC provider", err)
+			return redirectErrResponse(ctx, redirectUrl, AuthorizationErrAccessDenied, "failed to verify ID token with OIDC provider", err)
 		}
 
 		// Extract standardClaims

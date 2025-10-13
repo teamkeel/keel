@@ -11,6 +11,7 @@ auth:
     - type: google
       name: google_client
       clientId: foo_1
+      scopes: [openid, email, profile]
 
     # Built-in Google provider
     - type: google

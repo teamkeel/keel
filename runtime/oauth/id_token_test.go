@@ -47,6 +47,38 @@ func TestIdTokenAuth_Valid(t *testing.T) {
 	require.NotNil(t, idToken)
 }
 
+func TestIdTokenAuthNoEmail_Valid(t *testing.T) {
+	ctx := context.Background()
+
+	// OIDC test server
+	server, err := oauthtest.NewServer()
+	require.NoError(t, err)
+	defer server.Close()
+
+	// Set up auth config
+	ctx = runtimectx.WithOAuthConfig(ctx, &config.AuthConfig{
+		Providers: []config.Provider{
+			{
+				Type:      config.OpenIdConnectProvider,
+				Name:      "my-oidc",
+				ClientId:  "oidc-client-id",
+				IssuerUrl: server.Issuer,
+			},
+		},
+	})
+
+	server.SetUser("id|285620", &oauth.UserClaims{})
+
+	// Get ID token from server
+	idTokenRaw, err := server.FetchIdToken("id|285620", []string{"oidc-client-id"})
+	require.NoError(t, err)
+
+	idToken, err := oauth.VerifyIdToken(ctx, idTokenRaw)
+
+	require.NoError(t, err)
+	require.NotNil(t, idToken)
+}
+
 func TestIdTokenAuthMultipleIssuers_Valid(t *testing.T) {
 	ctx := context.Background()
 
