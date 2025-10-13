@@ -464,8 +464,11 @@ export function createFlowContext<
             span.setAttribute(KEEL_INTERNAL_ATTR, KEEL_INTERNAL_CHILDREN);
 
             if (step.action) {
+              // When actions are present, the flow always returns { data, action }
+              // so we need to maintain that structure when returning from DB
               return { data: step.value, action: step.action };
             }
+            // Without actions, just return the data directly
             return step.value;
           }
 
@@ -565,7 +568,11 @@ export function createFlowContext<
             .returningAll()
             .executeTakeFirst();
 
-          return { data, action };
+          // Only return the { data, action } wrapper when actions are defined
+          if (action) {
+            return { data, action };
+          }
+          return data;
         });
       }) as UiPage<C>,
       inputs: {

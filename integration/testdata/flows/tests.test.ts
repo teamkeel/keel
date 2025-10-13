@@ -1489,7 +1489,7 @@ test("flows - authorised listing flows", async () => {
   await models.user.create({ team: "myTeam", identityId: identity!.id });
 
   const resListAdmin = await listFlows({ token: adminToken });
-  expect(resListAdmin.body.flows.length).toBe(17);
+  expect(resListAdmin.body.flows.length).toBe(18);
   expect(resListAdmin.body.flows[0].name).toBe("ScalarStep");
   expect(resListAdmin.body.flows[1].name).toBe("MixedStepTypes");
   expect(resListAdmin.body.flows[2].name).toBe("Stepless");
@@ -1507,6 +1507,7 @@ test("flows - authorised listing flows", async () => {
   expect(resListAdmin.body.flows[14].name).toBe("WithCompletionMinimal");
   expect(resListAdmin.body.flows[15].name).toBe("WithReturnedData");
   expect(resListAdmin.body.flows[16].name).toBe("ExpressionPermissionIsTrue");
+  expect(resListAdmin.body.flows[17].name).toBe("DataWrapperConsistency");
 
   const resListUser = await listFlows({ token: userToken });
   expect(resListUser.status).toBe(200);
@@ -2259,6 +2260,91 @@ test("flows - stats", async () => {
       totalRuns: 1,
     },
   ]);
+});
+
+test("flows - data wrapper consistency", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  let f = await flows.dataWrapperConsistency.withAuthToken(token).start({});
+
+  // First page: no actions - should be awaiting input
+  expect(f).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "AWAITING_INPUT",
+    name: "DataWrapperConsistency",
+    startedBy: expect.any(String),
+    input: {},
+    error: null,
+    data: null,
+    steps: [
+      {
+        id: expect.any(String),
+        name: "no-actions-page",
+        runId: f.id,
+        stage: null,
+        status: "PENDING",
+        type: "UI",
+        value: null,
+        error: null,
+        startTime: expect.any(Date),
+        endTime: null,
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        ui: expect.any(Object),
+      },
+    ],
+    createdAt: expect.any(Date),
+    updatedAt: expect.any(Date),
+    config: {
+      title: "Data wrapper consistency",
+    },
+  });
+
+  // Submit first page (no actions) - data should NOT have wrapper
+  f = await flows.dataWrapperConsistency
+    .withAuthToken(token)
+    .putStepValues(f.id, f.steps[0].id, { name: "John", age: 30 });
+
+  expect(f.steps[0].status).toBe("COMPLETED");
+  expect(f.steps[0].value).toEqual({ name: "John", age: 30 }); // No wrapper!
+  expect(f.status).toBe("AWAITING_INPUT");
+
+  const step1Id = f.steps[0].id;
+
+  // Second page: with actions - should be awaiting input
+  expect(f.steps[1].status).toBe("PENDING");
+  expect(f.steps[1].ui).toHaveProperty("actions");
+
+  // Submit second page (with actions) - should have wrapper when action is provided
+  f = await flows.dataWrapperConsistency
+    .withAuthToken(token)
+    .putStepValues(f.id, f.steps[1].id, { city: "London" }, "next");
+
+  expect(f.steps[1].status).toBe("COMPLETED");
+  expect(f.steps[1].value).toEqual({ city: "London" }); // Just data, stored without wrapper
+
+  // Now let's verify consistency by fetching the flow again
+  const finalFlow = await flows.dataWrapperConsistency
+    .withAuthToken(token)
+    .untilFinished(f.id);
+
+  // Check that when retrieved from DB, the data maintains the same structure
+  expect(finalFlow.steps[0].value).toEqual({ name: "John", age: 30 }); // Still no wrapper
+  expect(finalFlow.steps[1].value).toEqual({ city: "London" }); // Still no wrapper
+
+  // Verify the final completion data has the expected structure
+  expect(finalFlow.data).toHaveProperty("noActionsResult");
+  expect(finalFlow.data).toHaveProperty("withActionsResult");
+
+  // No actions result should be plain data
+  expect(finalFlow.data.noActionsResult).toEqual({ name: "John", age: 30 });
+
+  // With actions result should have { data, action } structure
+  expect(finalFlow.data.withActionsResult).toHaveProperty("data");
+  expect(finalFlow.data.withActionsResult).toHaveProperty("action");
+  expect(finalFlow.data.withActionsResult.data).toEqual({ city: "London" });
+  expect(finalFlow.data.withActionsResult.action).toBe("next");
 });
 
 async function getToken({ email }) {
