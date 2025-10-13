@@ -9,14 +9,14 @@ import (
 
 const (
 	// MinCompressionSize is the minimum response size in bytes before compression is applied
-	// Responses smaller than this are not worth compressing due to overhead
+	// Responses smaller than this are not worth compressing due to overhead.
 	MinCompressionSize = 1024
 
-	// DefaultCompressionLevel provides a good balance between speed and compression ratio
+	// DefaultCompressionLevel provides a good balance between speed and compression ratio.
 	DefaultCompressionLevel = gzip.DefaultCompression
 )
 
-// AcceptsGzip checks if the client accepts gzip encoding based on the Accept-Encoding header
+// AcceptsGzip checks if the client accepts gzip encoding based on the Accept-Encoding header.
 func AcceptsGzip(headers http.Header) bool {
 	acceptEncoding := headers.Get("Accept-Encoding")
 	if acceptEncoding == "" {
@@ -35,7 +35,7 @@ func AcceptsGzip(headers http.Header) bool {
 	return false
 }
 
-// ShouldCompress determines if a response should be compressed based on size and client support
+// ShouldCompress determines if a response should be compressed based on size and client support.
 func ShouldCompress(body []byte, headers http.Header) bool {
 	// Check if the response is large enough to benefit from compression
 	if len(body) < MinCompressionSize {
@@ -49,14 +49,10 @@ func ShouldCompress(body []byte, headers http.Header) bool {
 
 	// Check if content is already compressed
 	contentEncoding := headers.Get("Content-Encoding")
-	if contentEncoding != "" {
-		return false
-	}
-
-	return true
+	return contentEncoding == ""
 }
 
-// Compress compresses the given byte slice using gzip
+// Compress compresses the given byte slice using gzip.
 func Compress(body []byte) ([]byte, error) {
 	var buf bytes.Buffer
 	writer, err := gzip.NewWriterLevel(&buf, DefaultCompressionLevel)
@@ -66,7 +62,7 @@ func Compress(body []byte) ([]byte, error) {
 
 	_, err = writer.Write(body)
 	if err != nil {
-		writer.Close()
+		_ = writer.Close()
 		return nil, err
 	}
 
@@ -78,7 +74,7 @@ func Compress(body []byte) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-// SetCompressionHeaders sets the appropriate headers for a compressed response
+// SetCompressionHeaders sets the appropriate headers for a compressed response.
 func SetCompressionHeaders(headers http.Header) {
 	headers.Set("Content-Encoding", "gzip")
 	// Indicate that the response varies based on Accept-Encoding
