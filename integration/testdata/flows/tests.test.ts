@@ -1506,8 +1506,8 @@ test("flows - authorised listing flows", async () => {
   expect(resListAdmin.body.flows[13].name).toBe("WithCompletion");
   expect(resListAdmin.body.flows[14].name).toBe("WithCompletionMinimal");
   expect(resListAdmin.body.flows[15].name).toBe("WithReturnedData");
-  expect(resListAdmin.body.flows[16].name).toBe("DataWrapperConsistency");
-  expect(resListAdmin.body.flows[17].name).toBe("ExpressionPermissionIsTrue");
+  expect(resListAdmin.body.flows[16].name).toBe("ExpressionPermissionIsTrue");
+  expect(resListAdmin.body.flows[17].name).toBe("DataWrapperConsistency");
 
   const resListUser = await listFlows({ token: userToken });
   expect(resListUser.status).toBe(200);
