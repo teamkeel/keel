@@ -43,6 +43,7 @@ func TestSsoLogin_Success(t *testing.T) {
 				Name:      "myoidc",
 				ClientId:  "oidc-client-id",
 				IssuerUrl: server.Issuer,
+				Scopes:    []string{"email"},
 			},
 		},
 		Claims: []config.IdentityClaim{
@@ -170,6 +171,142 @@ func TestSsoLogin_Success(t *testing.T) {
 	locale, ok := identities[0]["locale"].(string)
 	require.True(t, ok)
 	require.Equal(t, "locale claim", locale)
+
+	teamId, ok := identities[0]["team_id"].(string)
+	require.True(t, ok)
+	require.Equal(t, "342352392354", teamId)
+
+	customClaim, ok := identities[0]["custom_claim"].(string)
+	require.True(t, ok)
+	require.Equal(t, "custom value", customClaim)
+
+	notExists := identities[0]["not_exists"]
+	require.Nil(t, notExists)
+}
+
+func TestSsoLoginNoEmail_Success(t *testing.T) {
+	// OIDC test server
+	server, err := oauthtest.NewServer()
+	require.NoError(t, err)
+	defer server.Close()
+
+	// Redirect handler
+	redirectHandler := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+	require.NoError(t, err)
+
+	// Set up auth config
+	redirectUrl := redirectHandler.URL + "/signedup"
+	ctx := runtimectx.WithOAuthConfig(context.TODO(), &config.AuthConfig{
+		RedirectUrl: &redirectUrl,
+		Providers: []config.Provider{
+			{
+				Type:      config.OpenIdConnectProvider,
+				Name:      "myoidc",
+				ClientId:  "oidc-client-id",
+				IssuerUrl: server.Issuer,
+			},
+		},
+		Claims: []config.IdentityClaim{
+			{Key: "https://slack.com/#teamID", Field: "teamId"},
+			{Key: "custom_claim", Field: "customClaim"},
+			{Key: "not_exists", Field: "notExists"},
+		},
+	})
+
+	ctx, database, schema := keeltesting.MakeContext(t, ctx, authTestSchema, true)
+	defer database.Close()
+
+	// Set secret for client
+	ctx = runtimectx.WithSecrets(ctx, map[string]string{
+		fmt.Sprintf("AUTH_PROVIDER_SECRET_%s", strings.ToUpper("myoidc")): "secret",
+	})
+
+	httpHandler := func(w http.ResponseWriter, r *http.Request) {
+		h := runtime.NewHttpHandler(schema)
+		r = r.WithContext(ctx)
+		h.ServeHTTP(w, r)
+	}
+	runtime := httptest.NewServer(http.HandlerFunc(httpHandler))
+	require.NoError(t, err)
+	defer runtime.Close()
+
+	t.Setenv("KEEL_API_URL", runtime.URL)
+
+	server.WithOAuthClient(&oauthtest.OAuthClient{
+		ClientId:     "oidc-client-id",
+		ClientSecret: "secret",
+		RedirectUrl:  runtime.URL + "/auth/callback/myoidc",
+	})
+
+	server.SetUser("id|285620", &oauth.UserClaims{})
+
+	// Make an SSO login request
+	request, err := http.NewRequest(http.MethodPost, runtime.URL+"/auth/authorize/myoidc", nil)
+	require.NoError(t, err)
+
+	httpResponse, err := runtime.Client().Do(request)
+	require.NoError(t, err)
+
+	require.Equal(t, http.StatusOK, httpResponse.StatusCode)
+	require.Equal(t, http.StatusFound, httpResponse.Request.Response.StatusCode)
+	require.Contains(t, httpResponse.Request.Response.Header["Location"][0], redirectUrl+"?code=")
+
+	var identities []map[string]any
+	database.GetDB().Raw("SELECT * FROM identity").Scan(&identities)
+	require.Len(t, identities, 1)
+
+	_, ok := identities[0]["id"].(string)
+	require.True(t, ok)
+
+	_, ok = identities[0]["email"].(string)
+	require.False(t, ok)
+
+	externalId, ok := identities[0]["external_id"].(string)
+	require.True(t, ok)
+	require.Equal(t, "id|285620", externalId)
+
+	issuer, ok := identities[0]["issuer"].(string)
+	require.True(t, ok)
+	require.Equal(t, issuer, server.Issuer)
+
+	emailVerified, ok := identities[0]["email_verified"].(bool)
+	require.True(t, ok)
+	require.Equal(t, false, emailVerified)
+
+	_, ok = identities[0]["name"].(string)
+	require.False(t, ok)
+
+	_, ok = identities[0]["given_name"].(string)
+	require.False(t, ok)
+
+	_, ok = identities[0]["family_name"].(string)
+	require.False(t, ok)
+
+	_, ok = identities[0]["middle_name"].(string)
+	require.False(t, ok)
+
+	_, ok = identities[0]["nick_name"].(string)
+	require.False(t, ok)
+
+	_, ok = identities[0]["profile"].(string)
+	require.False(t, ok)
+
+	_, ok = identities[0]["picture"].(string)
+	require.False(t, ok)
+
+	_, ok = identities[0]["website"].(string)
+	require.False(t, ok)
+
+	_, ok = identities[0]["gender"].(string)
+	require.False(t, ok)
+
+	_, ok = identities[0]["zone_info"].(string)
+	require.False(t, ok)
+
+	_, ok = identities[0]["locale"].(string)
+	require.False(t, ok)
 
 	teamId, ok := identities[0]["team_id"].(string)
 	require.True(t, ok)
