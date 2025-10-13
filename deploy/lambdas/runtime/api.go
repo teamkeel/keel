@@ -14,6 +14,7 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/sirupsen/logrus"
 	"github.com/teamkeel/keel/runtime"
+	"github.com/teamkeel/keel/runtime/compression"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
@@ -126,9 +127,37 @@ func (h *Handler) APIHandler(ctx context.Context, request events.LambdaFunctionU
 		responseHeaders[k] = v[0]
 	}
 
+	// Apply gzip compression if appropriate
+	responseBody := crw.Body.Bytes()
+	isBase64Encoded := false
+
+	if compression.ShouldCompress(responseBody, headers) {
+		compressed, err := compression.Compress(responseBody)
+		if err != nil {
+			span.RecordError(err)
+			h.log.WithError(err).Error("failed to compress response")
+		} else {
+			responseBody = compressed
+			isBase64Encoded = true
+			compression.SetCompressionHeaders(crw.HeaderMap)
+
+			// Update response headers with compression headers
+			responseHeaders = map[string]string{}
+			for k, v := range crw.HeaderMap {
+				responseHeaders[k] = v[0]
+			}
+		}
+	}
+
+	responseBodyStr := string(responseBody)
+	if isBase64Encoded {
+		responseBodyStr = base64.StdEncoding.EncodeToString(responseBody)
+	}
+
 	return events.LambdaFunctionURLResponse{
-		StatusCode: crw.StatusCode,
-		Body:       crw.Body.String(),
-		Headers:    responseHeaders,
+		StatusCode:      crw.StatusCode,
+		Body:            responseBodyStr,
+		Headers:         responseHeaders,
+		IsBase64Encoded: isBase64Encoded,
 	}, nil
 }

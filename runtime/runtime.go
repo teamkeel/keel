@@ -22,6 +22,7 @@ import (
 	"github.com/teamkeel/keel/runtime/apis/jsonrpc"
 	"github.com/teamkeel/keel/runtime/apis/tasksapi"
 	"github.com/teamkeel/keel/runtime/common"
+	"github.com/teamkeel/keel/runtime/compression"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -103,12 +104,25 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 			}
 		}
 
+		// Apply gzip compression if appropriate
+		body := response.Body
+		if compression.ShouldCompress(body, r.Header) {
+			compressed, err := compression.Compress(body)
+			if err != nil {
+				span.RecordError(err)
+				log.WithError(err).Error("failed to compress response")
+			} else {
+				body = compressed
+				compression.SetCompressionHeaders(w.Header())
+			}
+		}
+
 		span.SetAttributes(
 			attribute.Int("response.status", response.Status),
 		)
 
 		w.WriteHeader(response.Status)
-		_, _ = w.Write(response.Body)
+		_, _ = w.Write(body)
 	}
 
 	return http.HandlerFunc(httpHandler)
