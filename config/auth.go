@@ -61,10 +61,11 @@ type TokensConfig struct {
 }
 
 type Provider struct {
-	Type      string `yaml:"type"`
-	Name      string `yaml:"name"`
-	ClientId  string `yaml:"clientId"`
-	IssuerUrl string `yaml:"issuerUrl,omitempty"`
+	Type      string   `yaml:"type"`
+	Name      string   `yaml:"name"`
+	ClientId  string   `yaml:"clientId"`
+	IssuerUrl string   `yaml:"issuerUrl,omitempty"`
+	Scopes    []string `yaml:"scopes,omitempty"`
 }
 
 type IdentityClaim struct {

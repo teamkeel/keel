@@ -1,0 +1,10 @@
+# hardware.printers.0.name: Invalid type. Expected: string, given: integer
+# hardware.printers.2: Additional property value is not allowed
+
+hardware: 
+  printers:
+    - name: 123
+    - name: "validName"
+    - name: SOME_OTHER_KEY
+      value: "Value cannot be provided for secrets"
+    - name: My Printer

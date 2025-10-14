@@ -117,12 +117,11 @@ func CreateIdentityWithClaims(ctx context.Context, schema *proto.Schema, externa
 	query := NewQuery(identityModel)
 
 	query.AddWriteValues(map[string]*QueryOperand{
-		// default 'email' scope claims
 		parser.IdentityFieldNameExternalId: Value(externalId),
 		parser.IdentityFieldNameIssuer:     Value(issuer),
 
-		// default 'profile' scope claims
-		parser.IdentityFieldNameEmail:         Value(standardClaims.Email),
+		// default 'email' scope claims
+		parser.IdentityFieldNameEmail:         ValueOrNullIfEmpty(standardClaims.Email),
 		parser.IdentityFieldNameEmailVerified: Value(standardClaims.EmailVerified),
 
 		// default 'profile' scope claims
@@ -179,7 +178,7 @@ func UpdateIdentityWithClaims(ctx context.Context, schema *proto.Schema, externa
 
 	query.AddWriteValues(map[string]*QueryOperand{
 		// default 'email' scope claims
-		parser.IdentityFieldNameEmail:         Value(standardClaims.Email),
+		parser.IdentityFieldNameEmail:         ValueOrNullIfEmpty(standardClaims.Email),
 		parser.IdentityFieldNameEmailVerified: Value(standardClaims.EmailVerified),
 
 		// default 'profile' scope claims

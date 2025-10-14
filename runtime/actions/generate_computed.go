@@ -204,6 +204,11 @@ func (v *computedQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
 			return fmt.Errorf("enum value not found: %s", ident.Fragments[1])
 		}
 
+		// If we're inside a function and have a filter visitor, delegate to it
+		if v.functions.Size() > 0 && v.filter != nil {
+			return v.filter.VisitLiteral(value)
+		}
+
 		v.sql += fmt.Sprintf("'%v'", value)
 		return nil
 	}

@@ -104,6 +104,10 @@ flow ExpressionPermissionIsTrue {
     @permission(expression: true)
 }
 
+flow DataWrapperConsistency {
+    @permission(roles: [Admin])
+}
+
 model User {
     fields {
         team Text

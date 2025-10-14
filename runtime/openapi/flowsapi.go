@@ -69,6 +69,7 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 			"input":     {Type: []string{"object", "null"}, AdditionalProperties: BoolPointer(true)},
 			"startedBy": {Type: []string{"string", "null"}},
 			"data":      {Type: []string{"object", "null"}},
+			"error":     {Type: []string{"string", "null"}},
 		},
 		Required: []string{"id", "status", "name", "traceId", "createdAt", "updatedAt", "steps", "config", "input"},
 	}
@@ -133,6 +134,7 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 			"ui":        {Ref: "#/components/schemas/UiConfig"},
 			"error":     {Type: []string{"string", "null"}},
 			"stage":     {Type: []string{"string", "null"}},
+			"allowBack": {Type: []string{"boolean", "null"}},
 		},
 		Required: []string{"id", "runId", "status", "name", "type", "createdAt", "updatedAt", "value", "ui", "startTime", "endTime", "error"},
 	}
@@ -440,6 +442,27 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 		},
 		Post: &OperationObject{
 			OperationID: StringPointer("cancelFlowRun"),
+			Responses:   flowRunResponse,
+		},
+	}
+
+	spec.Paths["/flows/json/{flow}/{runId}/back"] = PathItemObject{
+		Parameters: []ParameterObject{
+			{
+				Name:     "flow",
+				In:       "path",
+				Required: true,
+				Schema:   jsonschema.JSONSchema{Type: "string"},
+			},
+			{
+				Name:     "runId",
+				In:       "path",
+				Required: true,
+				Schema:   jsonschema.JSONSchema{Type: "string"},
+			},
+		},
+		Post: &OperationObject{
+			OperationID: StringPointer("backFlowRun"),
 			Responses:   flowRunResponse,
 		},
 	}

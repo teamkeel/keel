@@ -1,6 +1,12 @@
 import { UI } from "./ui";
 import { Complete, CompleteOptions } from "./ui/complete";
 import { useDatabase } from "../database";
+import {
+  withSpan,
+  KEEL_INTERNAL_ATTR,
+  KEEL_INTERNAL_CHILDREN,
+} from "../tracing";
+import * as opentelemetry from "@opentelemetry/api";
 import { textInput } from "./ui/elements/input/text";
 import { numberInput } from "./ui/elements/input/number";
 import { divider } from "./ui/elements/display/divider";
@@ -29,6 +35,7 @@ import { print } from "./ui/elements/interactive/print";
 import { pickList } from "./ui/elements/interactive/pickList";
 import { NonRetriableError } from "./errors";
 import { scan } from "./ui/elements/input/scan";
+import { file } from "./ui/elements/display/file";
 
 export const enum STEP_STATUS {
   NEW = "NEW",
@@ -82,16 +89,32 @@ const defaultOpts = {
   timeout: 60000,
 };
 
-export interface FlowContext<C extends FlowConfig, E, S, Id, I> {
+export interface FlowContext<
+  C extends FlowConfig,
+  E,
+  S,
+  Id,
+  I,
+  H extends NullableHardware,
+> {
   // Defines a function step that will be run in the flow.
   step: Step<C>;
   // Defines a UI step that will be run in the flow.
-  ui: UI<C>;
+  ui: UI<C, H>;
   complete: Complete<C, I>;
   env: E;
   now: Date;
   secrets: S;
   identity: Id;
+}
+
+export type NullableHardware = Hardware | undefined;
+
+export type Hardware = {
+  printers: Printer[];
+};
+export interface Printer {
+  name: string;
 }
 
 // Steps can only return values that can be serialized to JSON and then
@@ -157,8 +180,15 @@ export interface FlowConfigAPI {
   description?: string;
 }
 
-export type FlowFunction<C extends FlowConfig, E, S, Id, I = undefined> = (
-  ctx: FlowContext<C, E, S, Id, I>,
+export type FlowFunction<
+  C extends FlowConfig,
+  E,
+  S,
+  Id,
+  I = undefined,
+  H extends NullableHardware = undefined,
+> = (
+  ctx: FlowContext<C, E, S, Id, I, H>,
   inputs: I
 ) => Promise<CompleteOptions<C, I> | any | void>;
 
@@ -188,7 +218,14 @@ type StageConfigObject = {
 
 type StageConfig = string | StageConfigObject;
 
-export function createFlowContext<C extends FlowConfig, E, S, Id, I>(
+export function createFlowContext<
+  C extends FlowConfig,
+  E,
+  S,
+  Id,
+  I,
+  H extends NullableHardware,
+>(
   runId: string,
   data: any,
   action: string | null,
@@ -201,7 +238,7 @@ export function createFlowContext<C extends FlowConfig, E, S, Id, I>(
     secrets: S;
     identity: Id;
   }
-): FlowContext<C, E, S, Id, I> {
+): FlowContext<C, E, S, Id, I, H> {
   // Track step and page names to prevent duplicates
   const usedNames = new Set<string>();
 
@@ -217,172 +254,17 @@ export function createFlowContext<C extends FlowConfig, E, S, Id, I>(
       };
     },
     step: async (name, optionsOrFn, fn?) => {
-      // We need to check the type of the arguments due to the step function being overloaded
-      const options = typeof optionsOrFn === "function" ? {} : optionsOrFn;
-      const actualFn = (
-        typeof optionsOrFn === "function" ? optionsOrFn : fn!
-      ) as StepFunction<C, any>;
+      return withSpan(`Step - ${name}`, async (span: opentelemetry.Span) => {
+        // We need to check the type of the arguments due to the step function being overloaded
+        const options = typeof optionsOrFn === "function" ? {} : optionsOrFn;
+        const actualFn = (
+          typeof optionsOrFn === "function" ? optionsOrFn : fn!
+        ) as StepFunction<C, any>;
 
-      options.retries = options.retries ?? defaultOpts.retries;
-      options.timeout = options.timeout ?? defaultOpts.timeout;
+        options.retries = options.retries ?? defaultOpts.retries;
+        options.timeout = options.timeout ?? defaultOpts.timeout;
 
-      const db = useDatabase();
-
-      // Check for duplicate step names
-      if (usedNames.has(name)) {
-        await db
-          .insertInto("keel.flow_step")
-          .values({
-            run_id: runId,
-            name: name,
-            stage: options.stage,
-            status: STEP_STATUS.FAILED,
-            type: STEP_TYPE.FUNCTION,
-            error: `Duplicate step name: ${name}`,
-            startTime: new Date(),
-            endTime: new Date(),
-          })
-          .returningAll()
-          .executeTakeFirst();
-
-        throw new Error(`Duplicate step name: ${name}`);
-      }
-      usedNames.add(name);
-
-      // First check if we already have a result for this step
-      const past = await db
-        .selectFrom("keel.flow_step")
-        .where("run_id", "=", runId)
-        .where("name", "=", name)
-        .selectAll()
-        .execute();
-
-      const newSteps = past.filter((step) => step.status === STEP_STATUS.NEW);
-      const completedSteps = past.filter(
-        (step) => step.status === STEP_STATUS.COMPLETED
-      );
-      const failedSteps = past.filter(
-        (step) => step.status === STEP_STATUS.FAILED
-      );
-
-      if (newSteps.length > 1) {
-        throw new Error("Multiple NEW steps found for the same step");
-      }
-
-      if (completedSteps.length > 1) {
-        throw new Error("Multiple completed steps found for the same step");
-      }
-
-      if (completedSteps.length > 1 && newSteps.length > 1) {
-        throw new Error(
-          "Multiple completed and new steps found for the same step"
-        );
-      }
-
-      if (completedSteps.length === 1) {
-        return completedSteps[0].value;
-      }
-
-      // Do we have a NEW step waiting to be run?
-      if (newSteps.length === 1) {
-        let result = null;
-        await db
-          .updateTable("keel.flow_step")
-          .set({
-            startTime: new Date(),
-          })
-          .where("id", "=", newSteps[0].id)
-          .returningAll()
-          .executeTakeFirst();
-
-        try {
-          const stepArgs: StepArgs<C> = {
-            attempt: failedSteps.length + 1,
-            stepOptions: options,
-          };
-
-          result = await withTimeout(actualFn(stepArgs), options.timeout);
-        } catch (e) {
-          await db
-            .updateTable("keel.flow_step")
-            .set({
-              status: STEP_STATUS.FAILED,
-              spanId: spanId,
-              endTime: new Date(),
-              error: e instanceof Error ? e.message : "An error occurred",
-            })
-            .where("id", "=", newSteps[0].id)
-            .returningAll()
-            .executeTakeFirst();
-
-          if (
-            failedSteps.length >= options.retries ||
-            e instanceof NonRetriableError
-          ) {
-            if (options.onFailure) {
-              await options.onFailure!();
-            }
-            throw new ExhuastedRetriesDisrupt();
-          }
-
-          // If we have retries left, create a new step
-          await db
-            .insertInto("keel.flow_step")
-            .values({
-              run_id: runId,
-              name: name,
-              stage: options.stage,
-              status: STEP_STATUS.NEW,
-              type: STEP_TYPE.FUNCTION,
-            })
-            .returningAll()
-            .executeTakeFirst();
-
-          throw new StepCreatedDisrupt(
-            options.retryPolicy
-              ? new Date(
-                  Date.now() + options.retryPolicy(failedSteps.length + 1)
-                )
-              : undefined
-          );
-        }
-
-        // Store the result in the database
-        await db
-          .updateTable("keel.flow_step")
-          .set({
-            status: STEP_STATUS.COMPLETED,
-            value: JSON.stringify(result),
-            spanId: spanId,
-            endTime: new Date(),
-          })
-          .where("id", "=", newSteps[0].id)
-          .returningAll()
-          .executeTakeFirst();
-
-        return result;
-      }
-
-      // The step hasn't yet run successfully, so we need to create a NEW run
-      await db
-        .insertInto("keel.flow_step")
-        .values({
-          run_id: runId,
-          name: name,
-          stage: options.stage,
-          status: STEP_STATUS.NEW,
-          type: STEP_TYPE.FUNCTION,
-        })
-        .returningAll()
-        .executeTakeFirst();
-
-      throw new StepCreatedDisrupt();
-    },
-    ui: {
-      page: (async (name, options) => {
         const db = useDatabase();
-
-        const isCallback = element && callback;
 
         // Check for duplicate step names
         if (usedNames.has(name)) {
@@ -393,7 +275,7 @@ export function createFlowContext<C extends FlowConfig, E, S, Id, I>(
               name: name,
               stage: options.stage,
               status: STEP_STATUS.FAILED,
-              type: STEP_TYPE.UI,
+              type: STEP_TYPE.FUNCTION,
               error: `Duplicate step name: ${name}`,
               startTime: new Date(),
               endTime: new Date(),
@@ -405,118 +287,293 @@ export function createFlowContext<C extends FlowConfig, E, S, Id, I>(
         }
         usedNames.add(name);
 
-        // First check if this step exists
-        let step = await db
+        // First check if we already have a result for this step
+        const past = await db
           .selectFrom("keel.flow_step")
           .where("run_id", "=", runId)
           .where("name", "=", name)
           .selectAll()
-          .executeTakeFirst();
+          .execute();
 
-        // If this step has already been completed, return the values. Steps are only ever run to completion once.
-        if (step && step.status === STEP_STATUS.COMPLETED) {
-          if (step.action) {
-            return { data: step.value, action: step.action };
-          }
-          return step.value;
+        const newSteps = past.filter((step) => step.status === STEP_STATUS.NEW);
+        const completedSteps = past.filter(
+          (step) => step.status === STEP_STATUS.COMPLETED
+        );
+        const failedSteps = past.filter(
+          (step) => step.status === STEP_STATUS.FAILED
+        );
+
+        if (newSteps.length > 1) {
+          throw new Error("Multiple NEW steps found for the same step");
         }
 
-        if (!step) {
-          // The step hasn't yet run so we create a new the step with state PENDING.
-          step = await db
-            .insertInto("keel.flow_step")
-            .values({
-              run_id: runId,
-              name: name,
-              stage: options.stage,
-              status: STEP_STATUS.PENDING,
-              type: STEP_TYPE.UI,
-              startTime: new Date(),
-            })
-            .returningAll()
-            .executeTakeFirst();
+        if (completedSteps.length > 1) {
+          throw new Error("Multiple completed steps found for the same step");
+        }
 
-          // We now render the UI by disrupting the step with UIRenderDisrupt.
-          throw new UIRenderDisrupt(
-            step?.id,
-            (await page(options, null, null)).page
+        if (completedSteps.length > 1 && newSteps.length > 1) {
+          throw new Error(
+            "Multiple completed and new steps found for the same step"
           );
         }
 
-        if (isCallback) {
-          // we now need to resolve a UI callback.
-          try {
-            const response = await callbackFn(
-              options.content,
-              element,
-              callback,
-              data
-            );
-            throw new CallbackDisrupt(response, false);
-          } catch (e) {
-            if (e instanceof CallbackDisrupt) {
-              throw e;
-            }
-
-            throw new CallbackDisrupt(
-              e instanceof Error ? e.message : `An error occurred`,
-              true
-            );
-          }
+        if (completedSteps.length === 1) {
+          // step already executed, so this tracing span is internal
+          span.setAttribute(KEEL_INTERNAL_ATTR, KEEL_INTERNAL_CHILDREN);
+          return completedSteps[0].value;
         }
 
-        if (!data) {
-          // If no data has been passed in, render the UI by disrupting the step with UIRenderDisrupt.
-          throw new UIRenderDisrupt(
-            step?.id,
-            (await page(options, null, null)).page
-          );
-        }
-
-        try {
-          const p = await page(options, data, action);
-
-          if (p.hasValidationErrors) {
-            throw new UIRenderDisrupt(step?.id, p.page);
-          }
-        } catch (e) {
-          if (e instanceof UIRenderDisrupt) {
-            throw e;
-          }
-
+        // Do we have a NEW step waiting to be run?
+        if (newSteps.length === 1) {
+          let result = null;
           await db
             .updateTable("keel.flow_step")
             .set({
-              status: STEP_STATUS.FAILED,
-              spanId: spanId,
-              endTime: new Date(),
-              error: e instanceof Error ? e.message : "An error occurred",
+              startTime: new Date(),
             })
-            .where("id", "=", step?.id)
+            .where("id", "=", newSteps[0].id)
             .returningAll()
             .executeTakeFirst();
 
-          throw e;
+          try {
+            const stepArgs: StepArgs<C> = {
+              attempt: failedSteps.length + 1,
+              stepOptions: options,
+            };
+
+            result = await withTimeout(actualFn(stepArgs), options.timeout);
+          } catch (e) {
+            await db
+              .updateTable("keel.flow_step")
+              .set({
+                status: STEP_STATUS.FAILED,
+                spanId: spanId,
+                endTime: new Date(),
+                error: e instanceof Error ? e.message : "An error occurred",
+              })
+              .where("id", "=", newSteps[0].id)
+              .returningAll()
+              .executeTakeFirst();
+
+            if (
+              failedSteps.length >= options.retries ||
+              e instanceof NonRetriableError
+            ) {
+              if (options.onFailure) {
+                await options.onFailure!();
+              }
+
+              throw new ExhuastedRetriesDisrupt();
+            }
+
+            // If we have retries left, create a new step
+            await db
+              .insertInto("keel.flow_step")
+              .values({
+                run_id: runId,
+                name: name,
+                stage: options.stage,
+                status: STEP_STATUS.NEW,
+                type: STEP_TYPE.FUNCTION,
+              })
+              .returningAll()
+              .executeTakeFirst();
+
+            throw new StepCreatedDisrupt(
+              options.retryPolicy
+                ? new Date(
+                    Date.now() + options.retryPolicy(failedSteps.length + 1)
+                  )
+                : undefined
+            );
+          }
+
+          // Store the result in the database
+          await db
+            .updateTable("keel.flow_step")
+            .set({
+              status: STEP_STATUS.COMPLETED,
+              value: JSON.stringify(result),
+              spanId: spanId,
+              endTime: new Date(),
+            })
+            .where("id", "=", newSteps[0].id)
+            .returningAll()
+            .executeTakeFirst();
+
+          return result;
         }
 
-        // If the data has been passed in and is valid, persist the data (and action if applicable) and mark the step as COMPLETED, and then return the data.
+        // The step hasn't yet run successfully, so we need to create a NEW run
         await db
-          .updateTable("keel.flow_step")
-          .set({
-            status: STEP_STATUS.COMPLETED,
-            value: JSON.stringify(data),
-            action: action,
-            spanId: spanId,
-            endTime: new Date(),
+          .insertInto("keel.flow_step")
+          .values({
+            run_id: runId,
+            name: name,
+            stage: options.stage,
+            status: STEP_STATUS.NEW,
+            type: STEP_TYPE.FUNCTION,
           })
-          .where("id", "=", step.id)
           .returningAll()
           .executeTakeFirst();
 
-        if (action) {
-          return { data, action };
-        }
-        return data;
+        // step was just created, so this tracing span should be internal
+        span.setAttribute(KEEL_INTERNAL_ATTR, KEEL_INTERNAL_CHILDREN);
+        throw new StepCreatedDisrupt();
+      });
+    },
+    ui: {
+      page: (async (name, options) => {
+        return withSpan(`Page - ${name}`, async (span: opentelemetry.Span) => {
+          const db = useDatabase();
+
+          const isCallback = element && callback;
+
+          // Check for duplicate step names
+          if (usedNames.has(name)) {
+            await db
+              .insertInto("keel.flow_step")
+              .values({
+                run_id: runId,
+                name: name,
+                stage: options.stage,
+                status: STEP_STATUS.FAILED,
+                type: STEP_TYPE.UI,
+                error: `Duplicate step name: ${name}`,
+                startTime: new Date(),
+                endTime: new Date(),
+              })
+              .returningAll()
+              .executeTakeFirst();
+
+            throw new Error(`Duplicate step name: ${name}`);
+          }
+          usedNames.add(name);
+
+          // First check if this step exists
+          let step = await db
+            .selectFrom("keel.flow_step")
+            .where("run_id", "=", runId)
+            .where("name", "=", name)
+            .selectAll()
+            .executeTakeFirst();
+
+          // If this step has already been completed, return the values. Steps are only ever run to completion once.
+          if (step && step.status === STEP_STATUS.COMPLETED) {
+            // page already completed, so we're marking this span as internal alongside it's children
+            span.setAttribute(KEEL_INTERNAL_ATTR, KEEL_INTERNAL_CHILDREN);
+
+            if (step.action) {
+              // When actions are present, the flow always returns { data, action }
+              // so we need to maintain that structure when returning from DB
+              return { data: step.value, action: step.action };
+            }
+            // Without actions, just return the data directly
+            return step.value;
+          }
+
+          if (!step) {
+            // The step hasn't yet run so we create a new the step with state PENDING.
+            step = await db
+              .insertInto("keel.flow_step")
+              .values({
+                run_id: runId,
+                name: name,
+                stage: options.stage,
+                status: STEP_STATUS.PENDING,
+                type: STEP_TYPE.UI,
+                startTime: new Date(),
+              })
+              .returningAll()
+              .executeTakeFirst();
+
+            span.setAttribute("rendered", true);
+
+            // We now render the UI by disrupting the step with UIRenderDisrupt.
+            throw new UIRenderDisrupt(
+              step?.id,
+              (await page(options, null, null)).page
+            );
+          }
+
+          if (isCallback) {
+            span.setAttribute("callback", callback);
+
+            // we now need to resolve a UI callback.
+            try {
+              const response = await callbackFn(
+                options.content,
+                element,
+                callback,
+                data
+              );
+              throw new CallbackDisrupt(response, false);
+            } catch (e) {
+              if (e instanceof CallbackDisrupt) {
+                throw e;
+              }
+
+              throw new CallbackDisrupt(
+                e instanceof Error ? e.message : `An error occurred`,
+                true
+              );
+            }
+          }
+
+          if (!data) {
+            // If no data has been passed in, render the UI by disrupting the step with UIRenderDisrupt.
+            throw new UIRenderDisrupt(
+              step?.id,
+              (await page(options, null, null)).page
+            );
+          }
+
+          try {
+            const p = await page(options, data, action);
+
+            if (p.hasValidationErrors) {
+              throw new UIRenderDisrupt(step?.id, p.page);
+            }
+          } catch (e) {
+            if (e instanceof UIRenderDisrupt) {
+              throw e;
+            }
+
+            await db
+              .updateTable("keel.flow_step")
+              .set({
+                status: STEP_STATUS.FAILED,
+                spanId: spanId,
+                endTime: new Date(),
+                error: e instanceof Error ? e.message : "An error occurred",
+              })
+              .where("id", "=", step?.id)
+              .returningAll()
+              .executeTakeFirst();
+
+            throw e;
+          }
+
+          // If the data has been passed in and is valid, persist the data (and action if applicable) and mark the step as COMPLETED, and then return the data.
+          await db
+            .updateTable("keel.flow_step")
+            .set({
+              status: STEP_STATUS.COMPLETED,
+              value: JSON.stringify(data),
+              action: action,
+              spanId: spanId,
+              endTime: new Date(),
+            })
+            .where("id", "=", step.id)
+            .returningAll()
+            .executeTakeFirst();
+
+          // Only return the { data, action } wrapper when actions are defined
+          if (action) {
+            return { data, action };
+          }
+          return data;
+        });
       }) as UiPage<C>,
       inputs: {
         text: textInput as any,
@@ -536,6 +593,7 @@ export function createFlowContext<C extends FlowConfig, E, S, Id, I>(
         grid: grid as any,
         list: list as any,
         keyValue: keyValue as any,
+        file: file as any,
       },
       select: {
         one: selectOne as any,

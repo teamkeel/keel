@@ -224,6 +224,9 @@ test("files - create file in hook", async () => {
 
   const contents = (await myfiles[0].file?.read())?.toString("utf-8");
   expect(contents).toEqual("created in hook!");
+
+  // the file created in the hook doesn't have a name in the dataurl, so the default "file" should be used
+  expect(myfiles[0].file?.filename).toEqual("file");
 });
 
 test("files - create and store file in hook", async () => {

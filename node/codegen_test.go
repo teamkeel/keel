@@ -1965,9 +1965,9 @@ task MyTask {}
 `
 
 	expected := `
-export declare const MyFlow: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C, Environment, Secrets, Identity, MyFlowMessage>) };
-export declare const MyFlowWithoutInputs: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C, Environment, Secrets, Identity, never>) };
-export declare const MyTask: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C, Environment, Secrets, Identity, TaskFlowInputMessage>) };`
+export declare const MyFlow: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C, Environment, Secrets, Identity, MyFlowMessage, Hardware>) };
+export declare const MyFlowWithoutInputs: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C, Environment, Secrets, Identity, never, Hardware>) };
+export declare const MyTask: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C, Environment, Secrets, Identity, TaskFlowInputMessage, Hardware>) };`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		for _, f := range s.GetAllFlows() {
@@ -2341,6 +2341,37 @@ export interface PeopleByHobbyResultInfo {
 	})
 }
 
+func TestWriteTestingTypesHardware(t *testing.T) {
+	t.Parallel()
+	schema := `
+
+	`
+
+	c := `
+hardware:
+  printers:
+    - name: "Printer 1"
+    - name: "Printer 2"
+`
+
+	expectedSdkTypes := `
+type Hardware = {
+	printers: [
+		{
+			name: "Printer 1",
+		},
+		{
+			name: "Printer 2",
+		},
+	]
+}
+`
+
+	runWriterTestWithConfig(t, schema, c, expectedSdkTypes, func(s *proto.Schema, w *codegen.Writer, cfg *config.ProjectConfig) {
+		writeHardwareTypes(w, cfg)
+	})
+}
+
 func TestTestingActionExecutor(t *testing.T) {
 	t.Parallel()
 	tmpDir := t.TempDir()
@@ -2591,6 +2622,23 @@ func runWriterTest(t *testing.T, schemaString string, expected string, fn func(s
 	require.NoError(t, err)
 	w := &codegen.Writer{}
 	fn(s, w)
+	diff := diffmatchpatch.New()
+	diffs := diff.DiffMain(normalise(expected), normalise(w.String()), true)
+	if !strings.Contains(normalise(w.String()), normalise(expected)) {
+		t.Errorf("generated code does not match expected:\n%s", diffPrettyText(diffs))
+		t.Errorf("\nExpected:\n---------\n%s", normalise(expected))
+		t.Errorf("\nActual:\n---------\n%s", normalise(w.String()))
+	}
+}
+
+func runWriterTestWithConfig(t *testing.T, schemaString string, configString string, expected string, fn func(s *proto.Schema, w *codegen.Writer, cfg *config.ProjectConfig)) {
+	b := schema.Builder{}
+	s, err := b.MakeFromString(schemaString, configString)
+	require.NoError(t, err)
+	w := &codegen.Writer{}
+	cfg, err := config.LoadFromBytes([]byte(configString), "")
+	require.NoError(t, err)
+	fn(s, w, cfg)
 	diff := diffmatchpatch.New()
 	diffs := diff.DiffMain(normalise(expected), normalise(w.String()), true)
 	if !strings.Contains(normalise(w.String()), normalise(expected)) {

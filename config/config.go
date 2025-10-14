@@ -36,6 +36,7 @@ type ProjectConfig struct {
 	Secrets       []Secret              `yaml:"secrets"`
 	Auth          AuthConfig            `yaml:"auth"`
 	Console       ConsoleConfig         `yaml:"console"`
+	Hardware      *HardwareConfig       `yaml:"hardware"`
 	Deploy        *DeployConfig         `yaml:"deploy,omitempty"`
 }
 
@@ -92,6 +93,14 @@ type EnvironmentVariable struct {
 }
 
 type Secret struct {
+	Name string `yaml:"name"`
+}
+
+type HardwareConfig struct {
+	Printers []Printer `yaml:"printers"`
+}
+
+type Printer struct {
 	Name string `yaml:"name"`
 }
 
@@ -333,6 +342,13 @@ func validateUniqueNames(c *ProjectConfig) []*ConfigError {
 		return v.Name
 	})
 	errors = append(errors, validateUnique(values, "secrets.%d.name")...)
+
+	if c.Hardware != nil {
+		values = lo.Map(c.Hardware.Printers, func(v Printer, _ int) string {
+			return v.Name
+		})
+		errors = append(errors, validateUnique(values, "hardware.printers.%d.name")...)
+	}
 
 	values = lo.Map(c.Auth.Providers, func(p Provider, _ int) string {
 		return p.Name

@@ -4,7 +4,7 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import { AuditContextPlugin } from "./auditing";
 import { KeelCamelCasePlugin } from "./camelCasePlugin";
 import { Pool, Client, types as pgTypes, PoolConfig, PoolClient } from "pg";
-import { withSpan } from "./tracing";
+import { withSpan, KEEL_INTERNAL_ATTR } from "./tracing";
 import WebSocket from "ws";
 import { readFileSync } from "node:fs";
 import { Duration } from "./Duration";
@@ -111,6 +111,7 @@ class InstrumentedPool extends Pool {
     const _super = super.connect.bind(this);
     return withSpan("Database Connect", function (span: any) {
       span.setAttribute("dialect", process.env["KEEL_DB_CONN_TYPE"]);
+      span.setAttribute(KEEL_INTERNAL_ATTR, true);
       return _super.apply(null, args);
     });
   }
@@ -121,6 +122,7 @@ class InstrumentedNeonServerlessPool extends neon.Pool {
     const _super = super.connect.bind(this);
     return withSpan("Database Connect", function (span: any) {
       span.setAttribute("dialect", process.env["KEEL_DB_CONN_TYPE"]);
+      span.setAttribute(KEEL_INTERNAL_ATTR, true);
       return _super.apply(null, args);
     });
   }

@@ -1,3 +1,4 @@
+import jwt from "jsonwebtoken";
 import { parseInputs, parseOutputs, reviver } from "./parsing.mjs";
 
 export class FlowExecutor {
@@ -76,6 +77,13 @@ export class FlowExecutor {
 
   async cancel(id) {
     return fetch(this._flowUrl + "/" + id + "/cancel", {
+      method: "POST",
+      headers: this.headers(),
+    }).then(handleResponse);
+  }
+
+  async back(id) {
+    return fetch(this._flowUrl + "/" + id + "/back", {
       method: "POST",
       headers: this.headers(),
     }).then(handleResponse);

@@ -5,6 +5,11 @@ describe("pick list element", () => {
   test("pick list types", () => {
     testFlow({}, async (ctx) => {
       const pick = ctx.ui.interactive.pickList("pickList", {
+        supportedInputs: {
+          scanner: true,
+          manual: true,
+        },
+        duplicateHandling: "increaseQuantity",
         data: [
           {
             id: "1",

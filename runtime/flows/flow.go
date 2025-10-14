@@ -57,6 +57,7 @@ type Run struct {
 	UpdatedAt   time.Time `json:"updatedAt"`
 	Config      JSON      `json:"config"    gorm:"type:jsonb;serializer:json"`
 	StartedBy   *string   `json:"startedBy"`
+	Error       *string   `json:"error"`
 }
 
 func (Run) TableName() string {
@@ -81,7 +82,23 @@ func (r *Run) SetUIComponents(c *FlowUIComponents) {
 	if r.HasPendingUIStep() && c.UI != nil {
 		for i, step := range r.Steps {
 			if step.Type == StepTypeUI && step.Status == StepStatusPending {
+				// attach UI config
 				r.Steps[i].UI = c.UI
+
+				// compute allowBack from the UI config if it's a ui.page with allowBack=true
+				// and only if there is a previously completed UI step to go back to
+				completedUIStep := r.LastCompletedUIStep()
+				if completedUIStep != nil {
+					if uiMap, ok := r.Steps[i].UI.(map[string]any); ok {
+						// check __type and allowBack flag
+						if t, ok := uiMap["__type"].(string); ok && t == "ui.page" {
+							if ab, ok := uiMap["allowBack"].(bool); ok && ab {
+								tv := true
+								r.Steps[i].AllowBack = &tv
+							}
+						}
+					}
+				}
 			}
 		}
 	}
@@ -101,6 +118,29 @@ func (r *Run) PendingUIStep() *Step {
 	}
 
 	return nil
+}
+
+// LastCompletedUIStep returns the last completed step for this flow run.
+func (r *Run) LastCompletedUIStep() *Step {
+	if r == nil {
+		return nil
+	}
+
+	var lastStep *Step
+
+	for _, step := range r.Steps {
+		if step.Status == StepStatusCompleted && step.Type == StepTypeUI {
+			if lastStep == nil {
+				lastStep = &step
+			} else {
+				if step.CreatedAt.After(lastStep.CreatedAt) {
+					lastStep = &step
+				}
+			}
+		}
+	}
+
+	return lastStep
 }
 
 type FlowStats struct {
@@ -135,19 +175,20 @@ const (
 )
 
 type Step struct {
-	ID        string     `json:"id"        gorm:"primaryKey;not null;default:null"`
+	ID        string     `json:"id"                  gorm:"primaryKey;not null;default:null"`
 	Name      string     `json:"name"`
 	RunID     string     `json:"runId"`
 	Status    StepStatus `json:"status"`
 	Type      StepType   `json:"type"`
-	Value     JSON       `json:"value"     gorm:"type:jsonb;serializer:json"`
+	Value     JSON       `json:"value"               gorm:"type:jsonb;serializer:json"`
 	Stage     *string    `json:"stage"`
 	Error     *string    `json:"error"`
 	StartTime *time.Time `json:"startTime"`
 	EndTime   *time.Time `json:"endTime"`
 	CreatedAt time.Time  `json:"createdAt"`
 	UpdatedAt time.Time  `json:"updatedAt"`
-	UI        JSON       `json:"ui"        gorm:"type:jsonb;serializer:json"`
+	UI        JSON       `json:"ui"                  gorm:"type:jsonb;serializer:json"`
+	AllowBack *bool      `json:"allowBack,omitempty" gorm:"-"` // if the step can be reverted.
 }
 
 func (Step) TableName() string {
@@ -277,7 +318,7 @@ func GetTraceparent(ctx context.Context, runID string) (string, error) {
 
 // updateRun will update the status of a flow run.
 // If the flow's status is set to cancelled, any pending steps of that flow's run will be set to cancelled as well.
-func updateRun(ctx context.Context, runID string, status Status, config any) (*Run, error) {
+func updateRun(ctx context.Context, runID string, status Status, config any, errMessage *string) (*Run, error) {
 	database, err := db.GetDatabase(ctx)
 	if err != nil {
 		return nil, err
@@ -293,16 +334,19 @@ func updateRun(ctx context.Context, runID string, status Status, config any) (*R
 			Updates(Run{
 				Status: status,
 				Config: config,
+				Error:  errMessage,
 			}).Error; err != nil {
 			return err
 		}
 
 		// if we've cancelled the flow, we need to cancel any UI steps that are PENDING
 		if status == StatusCancelled {
+			now := time.Now()
 			if err := tx.Model(&Step{}).
 				Where("run_id = ? AND type = ? AND status = ?", runID, StepTypeUI, StepStatusPending).
 				Updates(Step{
-					Status: StepStatusCancelled,
+					Status:  StepStatusCancelled,
+					EndTime: &now,
 				}).Error; err != nil {
 				return err
 			}
@@ -312,6 +356,32 @@ func updateRun(ctx context.Context, runID string, status Status, config any) (*R
 	})
 
 	return &run, err
+}
+
+// resetSteps will delete the given stepsand reset the last step to pending.
+func resetSteps(ctx context.Context, runID string, deleteSteps []string, lastStepID string) error {
+	database, err := db.GetDatabase(ctx)
+	if err != nil {
+		return err
+	}
+
+	return database.GetDB().Transaction(func(tx *gorm.DB) error {
+		if err := tx.Model(&Step{}).
+			Where("id = ?", lastStepID).
+			Updates(map[string]any{
+				"value":    nil,
+				"end_time": nil,
+				"status":   StepStatusPending,
+			}).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Where("run_id = ? AND id IN ?", runID, deleteSteps).Delete(&Step{}).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
 }
 
 // completeRun will complete a flow run.

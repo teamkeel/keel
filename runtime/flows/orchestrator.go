@@ -131,7 +131,7 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, inputs 
 	case StatusNew, StatusRunning, StatusAwaitingInput:
 		if run.Status == StatusNew {
 			// this is a new run, set it to running and trigger the flows runtime
-			run, err = updateRun(ctx, run.ID, StatusRunning, run.Config)
+			run, err = updateRun(ctx, run.ID, StatusRunning, run.Config, nil)
 			if err != nil {
 				return err, nil
 			}
@@ -139,7 +139,7 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, inputs 
 
 		if run.Status == StatusAwaitingInput {
 			// we have been awaiting input, we're now going to continue running
-			run, err = updateRun(ctx, run.ID, StatusRunning, run.Config)
+			run, err = updateRun(ctx, run.ID, StatusRunning, run.Config, nil)
 			if err != nil {
 				return err, nil
 			}
@@ -153,14 +153,14 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, inputs 
 				cfg = resp.Config
 			}
 			// failed orchestrating, mark the run as failed and return the error
-			_, _ = updateRun(ctx, run.ID, StatusFailed, cfg)
+			_, _ = updateRun(ctx, run.ID, StatusFailed, cfg, nil)
 			return err, nil
 		}
 
 		if resp.RunCompleted {
 			if resp.Error != "" {
 				// run was orchestrated and completed successfully, but with an error (e.g. exhaused retries)
-				_, err = updateRun(ctx, run.ID, StatusFailed, resp.Config)
+				_, err = updateRun(ctx, run.ID, StatusFailed, resp.Config, &resp.Error)
 				return err, resp.getUIComponents()
 			}
 
@@ -176,12 +176,12 @@ func (o *Orchestrator) orchestrateRun(ctx context.Context, runID string, inputs 
 
 		// Check to see if we're in a Pending UI step, break orchestration
 		if run.HasPendingUIStep() {
-			_, err = updateRun(ctx, run.ID, StatusAwaitingInput, resp.Config)
+			_, err = updateRun(ctx, run.ID, StatusAwaitingInput, resp.Config, nil)
 			return err, resp.getUIComponents()
 		}
 
 		// Set the config
-		_, err = updateRun(ctx, run.ID, run.Status, resp.Config)
+		_, err = updateRun(ctx, run.ID, run.Status, resp.Config, nil)
 		if err != nil {
 			return err, nil
 		}
@@ -287,6 +287,8 @@ func (o *Orchestrator) CallFlow(ctx context.Context, run *Run, inputs map[string
 	ctx, span := tracer.Start(ctx, "CallFlow")
 	defer span.End()
 
+	span.SetAttributes(attribute.Bool(util.TracingAttrKeelInternal, true))
+
 	if run == nil {
 		return nil, fmt.Errorf("invalid run")
 	}
@@ -354,11 +356,16 @@ func (o *Orchestrator) CallFlow(ctx context.Context, run *Run, inputs map[string
 	// after successful invocation of the flow, we need to trigger the event subscribers for this schema
 	// Generate and send any events for this context.
 	// Failure to generate events fail silently.
+	ctx, spanEv := tracer.Start(ctx, "TriggerEventSubscribers")
+
+	spanEv.SetAttributes(attribute.String(util.TracingAttrKeelInternal, util.TracingAttrValIncludeChildren))
+
 	eventsErr := events.SendEvents(ctx, o.schema)
 	if eventsErr != nil {
 		span.RecordError(eventsErr)
 		span.SetStatus(codes.Error, eventsErr.Error())
 	}
+	spanEv.End()
 
 	return &respBody, nil
 }

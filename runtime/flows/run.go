@@ -238,7 +238,7 @@ func CancelFlowRun(ctx context.Context, runID string) (run *Run, err error) {
 		return
 	}
 
-	if _, err = updateRun(ctx, run.ID, StatusCancelled, nil); err != nil {
+	if _, err = updateRun(ctx, run.ID, StatusCancelled, nil, nil); err != nil {
 		err = fmt.Errorf("updating flow run: %w", err)
 		return
 	}
@@ -248,10 +248,88 @@ func CancelFlowRun(ctx context.Context, runID string) (run *Run, err error) {
 	return
 }
 
+// BackFlowRun undos the last step of the flow run with the given ID.
+func BackFlowRun(ctx context.Context, runID string) (run *Run, err error) {
+	ctx, span := tracer.Start(ctx, "BackFlowRun")
+	defer span.End()
+
+	defer func() {
+		if err != nil {
+			span.RecordError(err, trace.WithStackTrace(true))
+			span.SetStatus(codes.Error, err.Error())
+		}
+	}()
+
+	run, err = getRun(ctx, runID)
+	if err != nil {
+		err = fmt.Errorf("retrieving flow run: %w", err)
+		return
+	}
+
+	if run == nil {
+		// return nil run as it's not found
+		return
+	}
+
+	span.SetAttributes(
+		attribute.String("flowRun.id", run.ID),
+	)
+
+	// if the run cannot be undone, just return
+	if run.Status != StatusRunning && run.Status != StatusAwaitingInput {
+		return
+	}
+
+	stepsToReset := []string{}
+	lastStep := run.LastCompletedUIStep()
+	if lastStep == nil {
+		return
+	}
+
+	for _, step := range run.Steps {
+		if step.CreatedAt.After(lastStep.CreatedAt) {
+			stepsToReset = append(stepsToReset, step.ID)
+		}
+	}
+
+	if err = resetSteps(ctx, run.ID, stepsToReset, lastStep.ID); err != nil {
+		err = fmt.Errorf("resetting steps: %w", err)
+		return
+	}
+
+	// get a fresh state
+	run, err = getRun(ctx, runID)
+	if err != nil {
+		return
+	}
+
+	// and now invoke the flow runtime to retrieve UI components...
+	var o *Orchestrator
+	o, err = GetOrchestrator(ctx)
+	if err != nil {
+		err = fmt.Errorf("retrieving context flow orchestrator: %w", err)
+		return
+	}
+
+	// retrieving the step component from the flow runtime
+	resp, err := o.CallFlow(ctx, run, run.Input.(map[string]any), nil, "")
+	if err != nil {
+		err = fmt.Errorf("retrieving ui component: %w", err)
+		return
+	}
+
+	// setting the flow config and ui component on the pending UI step
+	run.SetUIComponents(resp.getUIComponents())
+
+	return
+}
+
 // UpdateStep sets the given input on the given pending UI step, updating it's status to COMPLETED. It then returs the
 // updated run state.
 func UpdateStep(ctx context.Context, runID string, stepID string, data map[string]any, action string) (run *Run, err error) {
 	ctx, span := tracer.Start(ctx, "UpdateStep")
+	span.SetAttributes(attribute.Bool(util.TracingAttrKeelInternal, true))
+
 	defer span.End()
 
 	defer func() {

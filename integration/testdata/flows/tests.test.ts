@@ -17,6 +17,7 @@ test("flows - scalar step", async () => {
     name: "ScalarStep",
     traceId: expect.any(String),
     input: {},
+    error: null,
     data: null,
     startedBy: expect.any(String),
     steps: [
@@ -62,6 +63,7 @@ test("flows - only functions with config", async () => {
       name: "My Thing",
       age: 25,
     },
+    error: null,
     data: null,
     steps: [
       {
@@ -114,6 +116,7 @@ test("flows - only functions with config", async () => {
       name: "My Thing",
       age: 25,
     },
+    error: null,
     data: null,
     steps: [
       {
@@ -183,6 +186,7 @@ test("flows - only pages", async () => {
     name: "OnlyPages",
     startedBy: expect.any(String),
     input: {},
+    error: null,
     data: null,
     steps: [
       {
@@ -227,6 +231,7 @@ test("flows - only pages", async () => {
     name: "OnlyPages",
     startedBy: expect.any(String),
     input: {},
+    error: null,
     data: null,
     steps: [
       {
@@ -257,8 +262,10 @@ test("flows - only pages", async () => {
         endTime: null,
         createdAt: expect.any(Date),
         updatedAt: expect.any(Date),
+        allowBack: true,
         ui: {
           __type: "ui.page",
+          allowBack: true,
           content: [
             {
               __type: "ui.input.boolean",
@@ -292,6 +299,287 @@ test("flows - only pages", async () => {
     name: "OnlyPages",
     startedBy: expect.any(String),
     input: {},
+    error: null,
+    data: null,
+    steps: [
+      {
+        id: expect.any(String),
+        name: "first page",
+        runId: expect.any(String),
+        stage: null,
+        status: "COMPLETED",
+        type: "UI",
+        value: {},
+        error: null,
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        ui: null,
+      },
+      {
+        id: expect.any(String),
+        name: "question",
+        runId: expect.any(String),
+        stage: null,
+        status: "COMPLETED",
+        type: "UI",
+        value: { yesno: true },
+        error: null,
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        ui: null,
+      },
+    ],
+    createdAt: expect.any(Date),
+    updatedAt: expect.any(Date),
+    config: {
+      title: "Only pages",
+    },
+  });
+});
+
+test("flows - back on pages", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  const f = await flows.onlyPages.withAuthToken(token).start({});
+
+  expect(f).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "AWAITING_INPUT",
+    name: "OnlyPages",
+    startedBy: expect.any(String),
+    input: {},
+    error: null,
+    data: null,
+    steps: [
+      {
+        id: expect.any(String),
+        name: "first page",
+        runId: expect.any(String),
+        stage: null,
+        status: "PENDING",
+        type: "UI",
+        value: null,
+        error: null,
+        startTime: expect.any(Date),
+        endTime: null,
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        ui: {
+          __type: "ui.page",
+          content: [
+            { __type: "ui.display.grid", data: [{ title: "A thing" }] },
+          ],
+          hasValidationErrors: false,
+          title: "Grid of things",
+        },
+      },
+    ],
+    createdAt: expect.any(Date),
+    updatedAt: expect.any(Date),
+    config: {
+      title: "Only pages",
+    },
+  });
+
+  // Provide the values for the pending UI step
+  const updatedFlow = await flows.onlyPages
+    .withAuthToken(token)
+    .putStepValues(f.id, f.steps[0].id, {});
+
+  expect(updatedFlow).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "AWAITING_INPUT",
+    name: "OnlyPages",
+    startedBy: expect.any(String),
+    input: {},
+    error: null,
+    data: null,
+    steps: [
+      {
+        id: expect.any(String),
+        name: "first page",
+        runId: expect.any(String),
+        stage: null,
+        status: "COMPLETED",
+        type: "UI",
+        value: {},
+        error: null,
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        ui: null,
+      },
+      {
+        id: expect.any(String),
+        name: "question",
+        runId: expect.any(String),
+        stage: null,
+        status: "PENDING",
+        type: "UI",
+        value: null,
+        error: null,
+        startTime: expect.any(Date),
+        endTime: null,
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        allowBack: true,
+        ui: {
+          __type: "ui.page",
+          allowBack: true,
+          content: [
+            {
+              __type: "ui.input.boolean",
+              label: "Did you like the things?",
+              disabled: false,
+              mode: "checkbox",
+              name: "yesno",
+              optional: false,
+            },
+          ],
+          hasValidationErrors: false,
+          title: "My flow",
+        },
+      },
+    ],
+    createdAt: expect.any(Date),
+    updatedAt: expect.any(Date),
+    config: {
+      title: "Only pages",
+    },
+  });
+
+  // go back one step
+  const backFlow = await flows.onlyPages
+    .withAuthToken(token)
+    .back(updatedFlow.id);
+  expect(backFlow).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "AWAITING_INPUT",
+    name: "OnlyPages",
+    startedBy: expect.any(String),
+    input: {},
+    error: null,
+    data: null,
+    steps: [
+      {
+        id: expect.any(String),
+        name: "first page",
+        runId: expect.any(String),
+        stage: null,
+        status: "PENDING",
+        type: "UI",
+        value: null,
+        error: null,
+        startTime: expect.any(Date),
+        endTime: null,
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        ui: {
+          __type: "ui.page",
+          content: [
+            { __type: "ui.display.grid", data: [{ title: "A thing" }] },
+          ],
+          hasValidationErrors: false,
+          title: "Grid of things",
+        },
+      },
+    ],
+    createdAt: expect.any(Date),
+    updatedAt: expect.any(Date),
+    config: {
+      title: "Only pages",
+    },
+  });
+
+  // Provide the values for the pending UI step
+  const updatedAgainFlow = await flows.onlyPages
+    .withAuthToken(token)
+    .putStepValues(f.id, f.steps[0].id, {});
+
+  expect(updatedAgainFlow).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "AWAITING_INPUT",
+    name: "OnlyPages",
+    startedBy: expect.any(String),
+    input: {},
+    error: null,
+    data: null,
+    steps: [
+      {
+        id: expect.any(String),
+        name: "first page",
+        runId: expect.any(String),
+        stage: null,
+        status: "COMPLETED",
+        type: "UI",
+        value: {},
+        error: null,
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        ui: null,
+      },
+      {
+        id: expect.any(String),
+        name: "question",
+        runId: expect.any(String),
+        stage: null,
+        status: "PENDING",
+        type: "UI",
+        value: null,
+        error: null,
+        startTime: expect.any(Date),
+        endTime: null,
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        allowBack: true,
+        ui: {
+          __type: "ui.page",
+          allowBack: true,
+          content: [
+            {
+              __type: "ui.input.boolean",
+              label: "Did you like the things?",
+              disabled: false,
+              mode: "checkbox",
+              name: "yesno",
+              optional: false,
+            },
+          ],
+          hasValidationErrors: false,
+          title: "My flow",
+        },
+      },
+    ],
+    createdAt: expect.any(Date),
+    updatedAt: expect.any(Date),
+    config: {
+      title: "Only pages",
+    },
+  });
+
+  const finalFlow = await flows.onlyPages
+    .withAuthToken(token)
+    .putStepValues(updatedFlow.id, updatedFlow.steps[1].id, { yesno: true });
+
+  expect(finalFlow).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "COMPLETED",
+    name: "OnlyPages",
+    startedBy: expect.any(String),
+    input: {},
+    error: null,
     data: null,
     steps: [
       {
@@ -344,6 +632,7 @@ test("flows - stepless flow", async () => {
   expect(flow).toEqual({
     id: f.id,
     input: {},
+    error: null,
     data: null,
     name: "Stepless",
     startedBy: expect.any(String),
@@ -374,6 +663,7 @@ test("flows - first step is a function", async () => {
     name: "SingleStep",
     startedBy: expect.any(String),
     status: "RUNNING",
+    error: null,
     data: null,
     steps: [
       {
@@ -410,6 +700,7 @@ test("flows - first step is a function", async () => {
     name: "SingleStep",
     startedBy: expect.any(String),
     status: "COMPLETED",
+    error: null,
     data: null,
     steps: [
       {
@@ -454,6 +745,7 @@ test("flows - alternating step types", async () => {
       name: "Keelson",
       age: 23,
     },
+    error: null,
     data: null,
     name: "MixedStepTypes",
     startedBy: expect.any(String),
@@ -500,6 +792,7 @@ test("flows - alternating step types", async () => {
       name: "Keelson",
       age: 23,
     },
+    error: null,
     data: null,
     config: {
       title: "Mixed step types",
@@ -598,6 +891,7 @@ test("flows - alternating step types", async () => {
       name: "Keelson",
       age: 23,
     },
+    error: null,
     data: null,
     steps: [
       step1, // Step 1 should not have changed
@@ -870,6 +1164,7 @@ test("flows - all inputs", async () => {
       myEnum: MyEnum.Value1,
       markdown: "**Hello**",
     },
+    error: "date is not 2021-01-01",
     data: null,
     steps: [],
     config: {
@@ -909,6 +1204,7 @@ test("flows - with completion", async () => {
     ],
     createdAt: res.createdAt,
     updatedAt: expect.any(Date),
+    error: null,
     data: null,
     config: {
       stages: [
@@ -937,6 +1233,7 @@ test("flows - with completion", async () => {
     status: "COMPLETED",
     name: "WithCompletion",
     startedBy: expect.any(String),
+    error: null,
     input: {},
     steps: [
       {
@@ -1034,6 +1331,7 @@ test("flows - with completion - no contents and no returns", async () => {
     ],
     createdAt: res.createdAt,
     updatedAt: expect.any(Date),
+    error: null,
     data: null,
     config: {
       title: "With completion minimal",
@@ -1051,6 +1349,7 @@ test("flows - with completion - no contents and no returns", async () => {
     name: "WithCompletionMinimal",
     startedBy: expect.any(String),
     input: {},
+    error: null,
     steps: [
       {
         id: expect.any(String),
@@ -1110,6 +1409,7 @@ test("flows - with returned data", async () => {
     ],
     createdAt: res.createdAt,
     updatedAt: expect.any(Date),
+    error: null,
     data: null,
     config: {
       title: "With returned data",
@@ -1146,6 +1446,7 @@ test("flows - with returned data", async () => {
     ],
     createdAt: res.createdAt,
     updatedAt: expect.any(Date),
+    error: null,
     data: "hello",
     config: {
       title: "With returned data",
@@ -1188,7 +1489,7 @@ test("flows - authorised listing flows", async () => {
   await models.user.create({ team: "myTeam", identityId: identity!.id });
 
   const resListAdmin = await listFlows({ token: adminToken });
-  expect(resListAdmin.body.flows.length).toBe(17);
+  expect(resListAdmin.body.flows.length).toBe(18);
   expect(resListAdmin.body.flows[0].name).toBe("ScalarStep");
   expect(resListAdmin.body.flows[1].name).toBe("MixedStepTypes");
   expect(resListAdmin.body.flows[2].name).toBe("Stepless");
@@ -1206,6 +1507,7 @@ test("flows - authorised listing flows", async () => {
   expect(resListAdmin.body.flows[14].name).toBe("WithCompletionMinimal");
   expect(resListAdmin.body.flows[15].name).toBe("WithReturnedData");
   expect(resListAdmin.body.flows[16].name).toBe("ExpressionPermissionIsTrue");
+  expect(resListAdmin.body.flows[17].name).toBe("DataWrapperConsistency");
 
   const resListUser = await listFlows({ token: userToken });
   expect(resListUser.status).toBe(200);
@@ -1357,6 +1659,7 @@ test("flows - env step", async () => {
     status: "COMPLETED",
     name: "EnvStep",
     input: {},
+    error: null,
     data: null,
     startedBy: expect.any(String),
     steps: [
@@ -1410,6 +1713,7 @@ test("flows - multiple actions - finish", async () => {
     name: "MultipleActions",
     startedBy: expect.any(String),
     input: {},
+    error: null,
     data: null,
     steps: [
       {
@@ -1471,6 +1775,7 @@ test("flows - multiple actions - finish", async () => {
     name: "MultipleActions",
     startedBy: expect.any(String),
     input: {},
+    error: null,
     data: null,
     steps: expect.any(Array),
     createdAt: expect.any(Date),
@@ -1492,6 +1797,7 @@ test("flows - multiple actions - continue", async () => {
     name: "MultipleActions",
     startedBy: expect.any(String),
     input: {},
+    error: null,
     data: null,
     steps: [
       {
@@ -1555,6 +1861,7 @@ test("flows - multiple actions - continue", async () => {
     name: "MultipleActions",
     startedBy: expect.any(String),
     input: {},
+    error: null,
     data: null,
     steps: [
       {
@@ -1619,6 +1926,7 @@ test("flows - multiple actions - continue", async () => {
     name: "MultipleActions",
     startedBy: expect.any(String),
     input: {},
+    error: null,
     data: null,
     steps: [
       {
@@ -1683,6 +1991,7 @@ test("flows - cancelling - with pending ui step", async () => {
       name: "Keelson",
       age: 23,
     },
+    error: null,
     data: null,
     config: {
       title: "Mixed step types",
@@ -1771,7 +2080,7 @@ test("flows - cancelling - with pending ui step", async () => {
     createdAt: expect.any(Date),
     updatedAt: expect.any(Date),
     startTime: expect.any(Date),
-    endTime: null,
+    endTime: expect.any(Date),
   });
 });
 
@@ -1786,6 +2095,7 @@ test("flows - multiple actions - invalid action", async () => {
     name: "MultipleActions",
     startedBy: expect.any(String),
     input: {},
+    error: null,
     data: null,
     steps: [
       {
@@ -1849,6 +2159,7 @@ test("flows - multiple actions - invalid action", async () => {
     name: "MultipleActions",
     startedBy: expect.any(String),
     input: {},
+    error: null,
     data: null,
     steps: [
       {
@@ -1949,6 +2260,91 @@ test("flows - stats", async () => {
       totalRuns: 1,
     },
   ]);
+});
+
+test("flows - data wrapper consistency", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  let f = await flows.dataWrapperConsistency.withAuthToken(token).start({});
+
+  // First page: no actions - should be awaiting input
+  expect(f).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "AWAITING_INPUT",
+    name: "DataWrapperConsistency",
+    startedBy: expect.any(String),
+    input: {},
+    error: null,
+    data: null,
+    steps: [
+      {
+        id: expect.any(String),
+        name: "no-actions-page",
+        runId: f.id,
+        stage: null,
+        status: "PENDING",
+        type: "UI",
+        value: null,
+        error: null,
+        startTime: expect.any(Date),
+        endTime: null,
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        ui: expect.any(Object),
+      },
+    ],
+    createdAt: expect.any(Date),
+    updatedAt: expect.any(Date),
+    config: {
+      title: "Data wrapper consistency",
+    },
+  });
+
+  // Submit first page (no actions) - data should NOT have wrapper
+  f = await flows.dataWrapperConsistency
+    .withAuthToken(token)
+    .putStepValues(f.id, f.steps[0].id, { name: "John", age: 30 });
+
+  expect(f.steps[0].status).toBe("COMPLETED");
+  expect(f.steps[0].value).toEqual({ name: "John", age: 30 }); // No wrapper!
+  expect(f.status).toBe("AWAITING_INPUT");
+
+  const step1Id = f.steps[0].id;
+
+  // Second page: with actions - should be awaiting input
+  expect(f.steps[1].status).toBe("PENDING");
+  expect(f.steps[1].ui).toHaveProperty("actions");
+
+  // Submit second page (with actions) - should have wrapper when action is provided
+  f = await flows.dataWrapperConsistency
+    .withAuthToken(token)
+    .putStepValues(f.id, f.steps[1].id, { city: "London" }, "next");
+
+  expect(f.steps[1].status).toBe("COMPLETED");
+  expect(f.steps[1].value).toEqual({ city: "London" }); // Just data, stored without wrapper
+
+  // Now let's verify consistency by fetching the flow again
+  const finalFlow = await flows.dataWrapperConsistency
+    .withAuthToken(token)
+    .untilFinished(f.id);
+
+  // Check that when retrieved from DB, the data maintains the same structure
+  expect(finalFlow.steps[0].value).toEqual({ name: "John", age: 30 }); // Still no wrapper
+  expect(finalFlow.steps[1].value).toEqual({ city: "London" }); // Still no wrapper
+
+  // Verify the final completion data has the expected structure
+  expect(finalFlow.data).toHaveProperty("noActionsResult");
+  expect(finalFlow.data).toHaveProperty("withActionsResult");
+
+  // No actions result should be plain data
+  expect(finalFlow.data.noActionsResult).toEqual({ name: "John", age: 30 });
+
+  // With actions result should have { data, action } structure
+  expect(finalFlow.data.withActionsResult).toHaveProperty("data");
+  expect(finalFlow.data.withActionsResult).toHaveProperty("action");
+  expect(finalFlow.data.withActionsResult.data).toEqual({ city: "London" });
+  expect(finalFlow.data.withActionsResult.action).toBe("next");
 });
 
 async function getToken({ email }) {
