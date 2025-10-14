@@ -92,10 +92,10 @@ export class InlineFile {
   static fromDataURL(dataURL: string): InlineFile {
     const info = dataURL.split(",")[0].split(":")[1];
     const data = dataURL.split(",")[1];
-    const mime = info.split(";")[0];
-    const name = info.split(";")[1].split("=")[1];
+    const mimeType = info.split(";")[0];
+    const name = info.split(";")[1].split("=")[1] || "file";
     const buffer = Buffer.from(data, "base64");
-    const file = new InlineFile({ filename: name, contentType: mime });
+    const file = new InlineFile({ filename: name, contentType: mimeType });
     file.write(buffer);
 
     return file;
