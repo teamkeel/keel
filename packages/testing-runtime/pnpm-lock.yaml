@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@teamkeel/functions-runtime':
-        specifier: ^0.414.7
-        version: 0.414.7(@aws-sdk/client-sso-oidc@3.721.0(@aws-sdk/client-sts@3.721.0))(@types/node@24.0.14)
+        specifier: ^0.422.1
+        version: 0.422.1(@aws-sdk/client-sso-oidc@3.721.0(@aws-sdk/client-sts@3.721.0))(@types/node@24.0.14)
       jsonwebtoken:
         specifier: ^9.0.2
         version: 9.0.2
@@ -796,8 +796,8 @@ packages:
     resolution: {integrity: sha512-PpjSboaDUE6yl+1qlg3Si57++e84oXdWGbuFUSAciXsVfEZJJJupR2Nb0QuXHiunt2vGR+1PTizOMvnUPaG2Qg==}
     engines: {node: '>=16.0.0'}
 
-  '@teamkeel/functions-runtime@0.414.7':
-    resolution: {integrity: sha512-OhA9LdPJ5W9NQHJqiQlYfKtP78auy2JIlZeAPK4SUhrgWxZyZct7TQZFOfKB4UbsmYXkp2MwCIiumd7X9A06wQ==}
+  '@teamkeel/functions-runtime@0.422.1':
+    resolution: {integrity: sha512-0XFY++BpJV8PJVuFtxzBJBR8bkFBgXHz/YFmR5zKOwJYFWH8Cy49/WCWhxwljRHWHmUIAfSAfXZZ6eujKdA32g==}
 
   '@types/estree@1.0.8':
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
@@ -2465,7 +2465,7 @@ snapshots:
       '@smithy/types': 3.7.2
       tslib: 2.8.1
 
-  '@teamkeel/functions-runtime@0.414.7(@aws-sdk/client-sso-oidc@3.721.0(@aws-sdk/client-sts@3.721.0))(@types/node@24.0.14)':
+  '@teamkeel/functions-runtime@0.422.1(@aws-sdk/client-sso-oidc@3.721.0(@aws-sdk/client-sts@3.721.0))(@types/node@24.0.14)':
     dependencies:
       '@aws-sdk/client-s3': 3.722.0
       '@aws-sdk/credential-providers': 3.721.0(@aws-sdk/client-sso-oidc@3.721.0(@aws-sdk/client-sts@3.721.0))
@@ -2515,7 +2515,7 @@ snapshots:
 
   '@types/pg@8.15.4':
     dependencies:
-      '@types/node': 22.16.4
+      '@types/node': 24.0.14
       pg-protocol: 1.10.3
       pg-types: 2.2.0
 
