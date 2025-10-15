@@ -59,7 +59,7 @@ type ScanOptions<M, D> = {
       duplicateHandling?: D | ScanDuplicateMode;
     }
   : {
-      /** Whether to automatically continue to the next step when the user scans an item
+      /** If true, the step will continue after a scan (pending validation).
        * @default false
        */
       autoContinue?: boolean;
@@ -75,10 +75,13 @@ export interface UiElementInputScanApiResponse
   max?: number;
   min?: number;
   duplicateHandling: ScanDuplicateMode;
+  autoContinue: boolean;
 }
 
 const isMultiMode = (opts: any): opts is ScanOptions<"multi", any> =>
   opts && opts.mode === "multi";
+const isSingleMode = (opts: any): opts is ScanOptions<"single", any> =>
+  opts && opts.mode === "single";
 
 export const scan: InputElementImplementation<
   any,
@@ -95,11 +98,17 @@ export const scan: InputElementImplementation<
       unit: options?.unit ?? undefined,
       mode: options?.mode ?? "single",
       duplicateHandling: "none",
+      autoContinue: false,
       ...(isMultiMode(options)
         ? {
             max: options.max ?? undefined,
             min: options.min ?? undefined,
             duplicateHandling: options.duplicateHandling ?? "none",
+          }
+        : {}),
+      ...(isSingleMode(options)
+        ? {
+            autoContinue: options.autoContinue,
           }
         : {}),
     } satisfies UiElementInputScanApiResponse,

@@ -762,6 +762,9 @@
         "duplicateHandling": {
           "$ref": "#/$defs/ScanDuplicateMode"
         },
+        "autoContinue": {
+          "type": "boolean"
+        },
         "__type": {
           "type": "string",
           "const": "ui.input.scan"
@@ -776,6 +779,7 @@
       "additionalProperties": false,
       "required": [
         "__type",
+        "autoContinue",
         "duplicateHandling",
         "mode",
         "name"
@@ -1068,6 +1072,9 @@
         "autoPrint": {
           "type": "boolean"
         },
+        "autoContinue": {
+          "type": "boolean"
+        },
         "__type": {
           "type": "string",
           "const": "ui.interactive.print"
@@ -1076,6 +1083,7 @@
       "additionalProperties": false,
       "required": [
         "__type",
+        "autoContinue",
         "autoPrint",
         "data"
       ]
@@ -1162,6 +1170,9 @@
           ],
           "type": "string"
         },
+        "autoContinue": {
+          "type": "boolean"
+        },
         "__type": {
           "type": "string",
           "const": "ui.interactive.pickList"
@@ -1176,6 +1187,7 @@
       "additionalProperties": false,
       "required": [
         "__type",
+        "autoContinue",
         "data",
         "name",
         "supportedInputs"

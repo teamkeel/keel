@@ -12,7 +12,7 @@ export type UiElementPrint<H extends NullableHardware> =
     description?: string;
     /** If true, the jobs will be automatically printed. */
     autoPrint?: boolean;
-    /** If true, the flow will continue after the jobs are complete. */
+    /** If true, the step will continue after the jobs are complete (pending validation). */
     autoContinue?: boolean;
   }>;
 
@@ -55,6 +55,7 @@ export interface UiElementPrintApiResponse<>extends BaseUiDisplayResponse<"ui.in
     printer?: string;
   }[];
   autoPrint: boolean;
+  autoContinue: boolean;
 }
 
 export const print: DisplayElementImplementation<
@@ -103,6 +104,7 @@ export const print: DisplayElementImplementation<
       description: options.description,
       data,
       autoPrint: options.autoPrint ?? false,
+      autoContinue: options.autoContinue ?? false,
     } satisfies UiElementPrintApiResponse,
   };
 };

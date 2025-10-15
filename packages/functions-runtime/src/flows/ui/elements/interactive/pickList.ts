@@ -64,6 +64,10 @@ type PickListOptions<M extends PickListInputModes, T> = {
   supportedInputs?: M;
   validate?: ValidateFn<PickListResponseItem>;
   duplicateHandling?: ScanDuplicateMode | undefined;
+  /** If true, the step will continue after all items reach the target quantity (pending validation)
+   * Only applied for scanner inputs.
+   */
+  autoContinue?: boolean;
 };
 
 // The shape of the response over the API
@@ -71,7 +75,8 @@ export interface UiElementPickListApiResponse
   extends BaseUiMinimalInputResponse<"ui.interactive.pickList"> {
   data: PickListItem[];
   supportedInputs: PickListInputModes;
-  duplicateHandling?: ScanDuplicateMode | undefined;
+  duplicateHandling: ScanDuplicateMode | undefined;
+  autoContinue: boolean;
 }
 
 export const pickList: InputElementImplementation<
@@ -89,6 +94,7 @@ export const pickList: InputElementImplementation<
         manual: true,
       },
       duplicateHandling: options.duplicateHandling,
+      autoContinue: options.autoContinue ?? false,
       data: options.data.map((item: any) => {
         const rendered = options.render(item);
         return {

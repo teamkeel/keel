@@ -1263,10 +1263,17 @@
               "name": { "type": "string" },
               "title": { "type": "string" },
               "unit": { "type": "string" },
+              "autoContinue": { "type": "boolean" },
               "validationError": { "type": "string" }
             },
             "additionalProperties": false,
-            "required": ["__type", "duplicateHandling", "mode", "name"]
+            "required": [
+              "__type",
+              "autoContinue",
+              "duplicateHandling",
+              "mode",
+              "name"
+            ]
           },
           "UiElementInputTextApiResponse": {
             "type": "object",
@@ -1391,6 +1398,7 @@
                 "type": "string",
                 "const": "ui.interactive.pickList"
               },
+              "autoContinue": { "type": "boolean" },
               "data": {
                 "type": "array",
                 "items": {
@@ -1439,13 +1447,20 @@
               "validationError": { "type": "string" }
             },
             "additionalProperties": false,
-            "required": ["__type", "data", "name", "supportedInputs"]
+            "required": [
+              "__type",
+              "autoContinue",
+              "data",
+              "name",
+              "supportedInputs"
+            ]
           },
           "UiElementPrintApiResponse": {
             "type": "object",
             "properties": {
               "__type": { "type": "string", "const": "ui.interactive.print" },
               "autoPrint": { "type": "boolean" },
+              "autoContinue": { "type": "boolean" },
               "data": {
                 "type": "array",
                 "items": {
@@ -1467,7 +1482,7 @@
               "title": { "type": "string" }
             },
             "additionalProperties": false,
-            "required": ["__type", "autoPrint", "data"]
+            "required": ["__type", "autoContinue", "autoPrint", "data"]
           },
           "UiElementSelectOneApiResponse": {
             "type": "object",

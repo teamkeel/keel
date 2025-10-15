@@ -130,6 +130,7 @@ test("flows - bulkScan element", async () => {
             {
               __type: "ui.input.scan",
               duplicateHandling: "rejectDuplicates",
+              autoContinue: false,
               mode: "multi",
               name: "bulkScan",
             },
