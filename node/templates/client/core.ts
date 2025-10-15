@@ -55,12 +55,20 @@ export class Core {
         );
 
         if (result.status >= 200 && result.status < 299) {
-          const rawJson = await result.text();
-          const data = JSON.parse(rawJson, reviver);
+          // Use text() to get the response body - this will automatically
+          // decompress gzip responses when Content-Encoding: gzip is set
+          try {
+            const rawJson = await result.text();
+            const data = JSON.parse(rawJson, reviver);
 
-          return {
-            data,
-          };
+            return {
+              data,
+            };
+          } catch (err) {
+            console.error("[CLIENT ERROR] Failed to parse response:", err);
+            console.error("[CLIENT ERROR] Error details:", err.message, err.cause);
+            throw err;
+          }
         }
 
         let errorMessage = "unknown error";

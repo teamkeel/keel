@@ -87,37 +87,37 @@ export class Executor {
         method: "POST",
         body: JSON.stringify(inputs),
         headers,
-      }).then((r) => {
+      }).then(async (r) => {
+        // Use text() to get the response body - this will automatically
+        // decompress gzip responses when Content-Encoding: gzip is set
+        const text = await r.text();
+
         if (r.status !== 200) {
-          // For non-200 first read the response as text
-          return r.text().then((t) => {
-            let d;
-            try {
-              d = JSON.parse(t);
-            } catch (e) {
-              if ("DEBUG" in process.env) {
-                console.log(e);
-              }
-              // If JSON parsing fails then throw an error with the
-              // response text as the message
-              throw new Error(t);
+          // For non-200 parse the JSON response
+          let d;
+          try {
+            d = JSON.parse(text);
+          } catch (e) {
+            if ("DEBUG" in process.env) {
+              console.log(e);
             }
-            // Otherwise throw the parsed JSON error response
-            // We override toString as otherwise you get expect errors like:
-            //   `expected to resolve but rejected with "[object Object]"`
-            Object.defineProperty(d, "toString", {
-              value: () => t,
-              enumerable: false,
-            });
-            throw d;
+            // If JSON parsing fails then throw an error with the
+            // response text as the message
+            throw new Error(text);
+          }
+          // Otherwise throw the parsed JSON error response
+          // We override toString as otherwise you get expect errors like:
+          //   `expected to resolve but rejected with "[object Object]"`
+          Object.defineProperty(d, "toString", {
+            value: () => text,
+            enumerable: false,
           });
+          throw d;
         }
 
         if (this._parseJsonResult) {
-          return r.text().then((t) => {
-            const response = JSON.parse(t, reviver);
-            return parseOutputs(response);
-          });
+          const response = JSON.parse(text, reviver);
+          return parseOutputs(response);
         }
       });
     });

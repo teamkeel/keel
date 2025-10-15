@@ -300,7 +300,18 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 					w.Header().Set(k, v)
 				}
 				w.WriteHeader(res.StatusCode)
-				_, _ = w.Write([]byte(res.Body))
+
+				// Decode base64-encoded responses (e.g., gzip-compressed data)
+				bodyBytes := []byte(res.Body)
+				if res.IsBase64Encoded {
+					decoded, err := base64.StdEncoding.DecodeString(res.Body)
+					if err != nil {
+						span.RecordError(err)
+						return
+					}
+					bodyBytes = decoded
+				}
+				_, _ = w.Write(bodyBytes)
 			}
 		}),
 	}

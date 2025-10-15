@@ -75,8 +75,12 @@ func Compress(body []byte) ([]byte, error) {
 }
 
 // SetCompressionHeaders sets the appropriate headers for a compressed response.
+// It does NOT set Content-Length - this is handled automatically by http.ResponseWriter.
 func SetCompressionHeaders(headers http.Header) {
 	headers.Set("Content-Encoding", "gzip")
+	// Note: We deliberately do NOT set Content-Length here.
+	// The http.ResponseWriter will automatically set it based on the actual
+	// bytes written in the Write() call.
 	// Indicate that the response varies based on Accept-Encoding
 	// This is important for caching proxies
 	vary := headers.Get("Vary")

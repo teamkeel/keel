@@ -181,6 +181,11 @@ func TestSetCompressionHeaders(t *testing.T) {
 			t.Errorf("Content-Encoding = %v, expected gzip", headers.Get("Content-Encoding"))
 		}
 
+		// Content-Length should NOT be set - it's handled by http.ResponseWriter
+		if headers.Get("Content-Length") != "" {
+			t.Errorf("Content-Length = %v, expected empty", headers.Get("Content-Length"))
+		}
+
 		if headers.Get("Vary") != "Accept-Encoding" {
 			t.Errorf("Vary = %v, expected Accept-Encoding", headers.Get("Vary"))
 		}
