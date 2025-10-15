@@ -362,7 +362,7 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 		opts.Pattern = "(.*)"
 	}
 
-	cmd = exec.Command("./node_modules/.bin/vitest", "run", "--color", "--reporter", "verbose", "--config", "./.build/vitest.config.mjs", "--silent", "false", "--testNamePattern", opts.Pattern)
+	cmd = exec.Command("./node_modules/.bin/vitest", "run", "--color", "--reporter", "verbose", "--config", "./.build/vitest.config.mjs", "--silent", "false", "--testNamePattern", opts.Pattern, "--pool=threads", "--poolOptions.threads.singleThread")
 	cmd.Dir = opts.Dir
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
