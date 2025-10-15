@@ -160,6 +160,18 @@ export class FlowExecutor {
         return flow;
       }
 
+      if(flow.status === "COMPLETED") {
+        throw new Error(
+          `flow run status reached a completed state and therefore cannot become AWAITING_INPUT`
+        );
+      }
+
+      if(flow.status === "FAILED") {
+        throw new Error(
+          `flow run status reached a failed state and therefore cannot become AWAITING_INPUT`
+        );
+      }
+
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
   }
