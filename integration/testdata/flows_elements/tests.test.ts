@@ -147,9 +147,7 @@ test("flows - bulkScan element", async () => {
 
   // Provide the values for the pending UI step
   flow = await flows.bulkScan.putStepValues(flow.id, flow.steps[0].id, {
-    bulkScan: {
-      scans: ["123", "456", "789"],
-    },
+    bulkScan: ["123", "456", "789"],
   });
   expect(flow).toEqual({
     id: expect.any(String),
@@ -169,9 +167,7 @@ test("flows - bulkScan element", async () => {
         status: "COMPLETED",
         type: "UI",
         value: {
-          bulkScan: {
-            scans: ["123", "456", "789"],
-          },
+          bulkScan: ["123", "456", "789"],
         },
         error: null,
         startTime: expect.any(Date),
@@ -226,7 +222,7 @@ test("flows - bulkScan element", async () => {
     flow.id,
     flow.steps[1].id,
     {
-      bulkScan: "abc",
+      singleScan: "abc",
     },
     "finish"
   );
@@ -248,9 +244,7 @@ test("flows - bulkScan element", async () => {
         status: "COMPLETED",
         type: "UI",
         value: {
-          bulkScan: {
-            scans: ["123", "456", "789"],
-          },
+          bulkScan: ["123", "456", "789"],
         },
         error: null,
         startTime: expect.any(Date),
@@ -267,7 +261,7 @@ test("flows - bulkScan element", async () => {
         status: "COMPLETED",
         type: "UI",
         value: {
-          bulkScan: "abc",
+          singleScan: "abc",
         },
         error: null,
         startTime: expect.any(Date),
