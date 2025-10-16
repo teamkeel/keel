@@ -27,7 +27,7 @@ export type UiElementInputDatePicker = InputElement<
 
 // The shape of the response over the API
 export interface UiElementInputDatePickerApiResponse
-  extends BaseUiInputResponse<"ui.input.datepicker", ElementDataType> {
+  extends BaseUiInputResponse<"ui.input.datePicker", ElementDataType> {
   mode?: DatepickerMode;
   pastOnly?: boolean;
 }
@@ -40,7 +40,7 @@ export const datePickerInput: InputElementImplementation<
   return {
     __type: "input",
     uiConfig: {
-      __type: "ui.input.datepicker",
+      __type: "ui.input.datePicker",
       name,
       label: options?.label || name,
       optional: options?.optional || false,

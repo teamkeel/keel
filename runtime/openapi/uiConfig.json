@@ -811,7 +811,7 @@
         },
         "__type": {
           "type": "string",
-          "const": "ui.input.datepicker"
+          "const": "ui.input.datePicker"
         },
         "name": {
           "type": "string"

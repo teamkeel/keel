@@ -1237,7 +1237,7 @@
           "UiElementInputDatePickerApiResponse": {
             "type": "object",
             "properties": {
-              "__type": { "type": "string", "const": "ui.input.datepicker" },
+              "__type": { "type": "string", "const": "ui.input.datePicker" },
               "defaultValue": { "type": "string" },
               "disabled": { "type": "boolean" },
               "helpText": { "type": "string" },
