@@ -280,6 +280,7 @@ export type UiElementApiResponse =
   | UiElementInputBooleanApiResponse
   | UiElementInputDataGridApiResponse
   | UiElementInputScanApiResponse
+  | UiElementInputDatePickerApiResponse
 
   // Select elements
   | UiElementSelectOneApiResponse

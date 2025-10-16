@@ -1037,6 +1037,9 @@
                 "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementInputScanApiResponse"
               },
               {
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementInputDatePickerApiResponse"
+              },
+              {
                 "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementSelectOneApiResponse"
               },
               {
@@ -1230,6 +1233,27 @@
               "data",
               "name"
             ]
+          },
+          "UiElementInputDatePickerApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": { "type": "string", "const": "ui.input.datepicker" },
+              "defaultValue": { "type": "string" },
+              "disabled": { "type": "boolean" },
+              "helpText": { "type": "string" },
+              "label": { "type": "string" },
+              "mode": {
+                "type": "string",
+                "enum": ["date", "dateTime"],
+                "default": "dateTime"
+              },
+              "name": { "type": "string" },
+              "optional": { "type": "boolean" },
+              "pastOnly": { "type": "boolean" },
+              "validationError": { "type": "string" }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "disabled", "label", "name", "optional"]
           },
           "UiElementInputNumberApiResponse": {
             "type": "object",
