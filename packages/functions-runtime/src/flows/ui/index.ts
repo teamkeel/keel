@@ -16,6 +16,11 @@ import {
   UiElementInputBooleanApiResponse,
 } from "./elements/input/boolean";
 import {
+  UiElementInputDatePicker,
+  UiElementInputDatePickerApiResponse,
+} from "./elements/input/datePicker";
+
+import {
   UiElementMarkdown,
   UiElementMarkdownApiResponse,
 } from "./elements/display/markdown";
@@ -101,6 +106,7 @@ type UiInputsElements = {
   number: UiElementInputNumber;
   boolean: UiElementInputBoolean;
   dataGrid: UiElementInputDataGrid;
+  datePicker: UiElementInputDatePicker;
   scan: UiElementScan;
 };
 
@@ -240,6 +246,7 @@ export type UIApiResponses = {
     number: UiElementInputNumberApiResponse;
     boolean: UiElementInputBooleanApiResponse;
     dataGrid: UiElementInputDataGridApiResponse;
+    datePicker: UiElementInputDatePickerApiResponse;
     scan: UiElementInputScanApiResponse;
   };
   select: {
