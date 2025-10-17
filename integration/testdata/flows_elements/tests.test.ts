@@ -562,6 +562,7 @@ test("flows - pickList element with validation", async () => {
           content: [
             {
               __type: "ui.interactive.pickList",
+              autoContinue: false,
               name: "items",
               data: [
                 {
@@ -622,6 +623,7 @@ test("flows - pickList element with validation", async () => {
     content: [
       {
         __type: "ui.interactive.pickList",
+        autoContinue: false,
         name: "items",
         validationError: "Total quantity cannot exceed 20 items",
       },
@@ -650,6 +652,7 @@ test("flows - pickList element with validation", async () => {
     content: [
       {
         __type: "ui.interactive.pickList",
+        autoContinue: false,
         name: "items",
         validationError: "At least one item must be picked",
       },
