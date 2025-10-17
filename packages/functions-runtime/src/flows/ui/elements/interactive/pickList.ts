@@ -62,7 +62,7 @@ type PickListOptions<M extends PickListInputModes, T> = {
   data: T[];
   render: (data: T) => PickListItem;
   supportedInputs?: M;
-  validate?: ValidateFn<PickListResponseItem>;
+  validate?: ValidateFn<{ items: PickListResponseItem[] }>;
   duplicateHandling?: ScanDuplicateMode | undefined;
   /** If true, the step will continue after all items reach the target quantity (pending validation)
    * Only applied for scanner inputs.
@@ -80,7 +80,7 @@ export interface UiElementPickListApiResponse
 }
 
 export const pickList: InputElementImplementation<
-  any,
+  { items: PickListResponseItem[] },
   UiElementPickList,
   UiElementPickListApiResponse
 > = (name, options) => {

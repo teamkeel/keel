@@ -531,3 +531,194 @@ test("flows - iterator element - iterator and element validation errors", async 
     },
   });
 });
+
+test("flows - pickList element with validation", async () => {
+  let flow = await flows.pickListValidation.start({});
+
+  expect(flow).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "AWAITING_INPUT",
+    name: "PickListValidation",
+    startedBy: null,
+    input: {},
+    error: null,
+    data: null,
+    steps: [
+      {
+        id: expect.any(String),
+        name: "pick list page",
+        runId: expect.any(String),
+        stage: null,
+        status: "PENDING",
+        type: "UI",
+        value: null,
+        error: null,
+        startTime: expect.any(Date),
+        endTime: null,
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        ui: {
+          __type: "ui.page",
+          content: [
+            {
+              __type: "ui.interactive.pickList",
+              autoContinue: false,
+              name: "items",
+              data: [
+                {
+                  id: "prod-1",
+                  targetQuantity: 10,
+                  title: "Widget A",
+                  barcodes: ["1234567890"],
+                },
+                {
+                  id: "prod-2",
+                  targetQuantity: 5,
+                  title: "Widget B",
+                  barcodes: ["0987654321"],
+                },
+                {
+                  id: "prod-3",
+                  targetQuantity: 3,
+                  title: "Widget C",
+                  barcodes: ["1111111111"],
+                },
+              ],
+              supportedInputs: {
+                scanner: true,
+                manual: true,
+              },
+            },
+          ],
+          hasValidationErrors: false,
+        },
+      },
+    ],
+    createdAt: expect.any(Date),
+    updatedAt: expect.any(Date),
+    config: {
+      title: "Pick list validation",
+    },
+  });
+
+  // Test validation error: total quantity exceeds limit
+  flow = await flows.pickListValidation.putStepValues(
+    flow.id,
+    flow.steps[0].id,
+    {
+      items: {
+        items: [
+          { id: "prod-1", quantity: 10, targetQuantity: 10 },
+          { id: "prod-2", quantity: 8, targetQuantity: 5 },
+          { id: "prod-3", quantity: 3, targetQuantity: 3 },
+        ],
+      },
+    }
+  );
+
+  expect(flow.steps[0].status).toBe("PENDING");
+  expect(flow.steps[0].ui).toMatchObject({
+    __type: "ui.page",
+    hasValidationErrors: true,
+    content: [
+      {
+        __type: "ui.interactive.pickList",
+        autoContinue: false,
+        name: "items",
+        validationError: "Total quantity cannot exceed 20 items",
+      },
+    ],
+  });
+
+  // Test validation error: no items picked
+  flow = await flows.pickListValidation.putStepValues(
+    flow.id,
+    flow.steps[0].id,
+    {
+      items: {
+        items: [
+          { id: "prod-1", quantity: 0, targetQuantity: 10 },
+          { id: "prod-2", quantity: 0, targetQuantity: 5 },
+          { id: "prod-3", quantity: 0, targetQuantity: 3 },
+        ],
+      },
+    }
+  );
+
+  expect(flow.steps[0].status).toBe("PENDING");
+  expect(flow.steps[0].ui).toMatchObject({
+    __type: "ui.page",
+    hasValidationErrors: true,
+    content: [
+      {
+        __type: "ui.interactive.pickList",
+        autoContinue: false,
+        name: "items",
+        validationError: "At least one item must be picked",
+      },
+    ],
+  });
+
+  // Test successful validation
+  flow = await flows.pickListValidation.putStepValues(
+    flow.id,
+    flow.steps[0].id,
+    {
+      items: {
+        items: [
+          { id: "prod-1", quantity: 8, targetQuantity: 10 },
+          { id: "prod-2", quantity: 5, targetQuantity: 5 },
+          { id: "prod-3", quantity: 2, targetQuantity: 3 },
+        ],
+      },
+    }
+  );
+
+  expect(flow).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "COMPLETED",
+    name: "PickListValidation",
+    startedBy: null,
+    input: {},
+    error: null,
+    data: {
+      items: [
+        { id: "prod-1", quantity: 8, targetQuantity: 10 },
+        { id: "prod-2", quantity: 5, targetQuantity: 5 },
+        { id: "prod-3", quantity: 2, targetQuantity: 3 },
+      ],
+    },
+    steps: [
+      {
+        id: expect.any(String),
+        name: "pick list page",
+        runId: expect.any(String),
+        stage: null,
+        status: "COMPLETED",
+        type: "UI",
+        value: {
+          items: {
+            items: [
+              { id: "prod-1", quantity: 8, targetQuantity: 10 },
+              { id: "prod-2", quantity: 5, targetQuantity: 5 },
+              { id: "prod-3", quantity: 2, targetQuantity: 3 },
+            ],
+          },
+        },
+        error: null,
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        ui: null,
+      },
+    ],
+    createdAt: expect.any(Date),
+    updatedAt: expect.any(Date),
+    config: {
+      title: "Pick list validation",
+    },
+  });
+});

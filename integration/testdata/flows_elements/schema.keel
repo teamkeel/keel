@@ -9,3 +9,7 @@ flow BulkScan {
 flow CallbackFlow {
     @permission(expression: true)
 }
+
+flow PickListValidation {
+    @permission(expression: true)
+}
