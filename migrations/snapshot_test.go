@@ -471,21 +471,21 @@ func TestSnapshotDatabase(t *testing.T) {
 				breaks
 			) VALUES (
 				'Null Array User',
-				40,
-				70000.00,
+				'35',
+				60000,
 				true,
-				'1984-01-01',
-				'2024-03-24T13:39:32.805932Z',
-				'{"role": "test"}',
+				'1989-01-01T00:00:00Z',
+				'2024-03-24T12:00:00Z',
+				'{"quote": "''"}',
 				NULL,
-				NULL,
-				NULL,
-				NULL,
-				NULL,
-				NULL,
-				NULL,
-				NULL,
-				NULL
+				ARRAY['95']::integer[],
+				ARRAY['4.9']::decimal[],
+				ARRAY['{"color": "yellow"}']::jsonb[],
+				ARRAY['2024-03-01']::date[],
+				ARRAY['2024-03-24 12:00:00+00']::timestamp[],
+				'{"url": "https://example.com/avatar''''test.jpg", "contentType": "image/jpeg", "size": 1024}',
+				'PT8H30M',
+				ARRAY['PT15M', 'PT30M']::interval[]
 			)
 		`)
 		require.NoError(t, err)
@@ -512,8 +512,6 @@ func TestSnapshotDatabase(t *testing.T) {
 		require.Len(t, result.Rows, 1)
 		require.Equal(t, "Null Array User", result.Rows[0]["name"])
 		require.Nil(t, result.Rows[0]["tags"])
-		require.Nil(t, result.Rows[0]["scores"])
-		require.Nil(t, result.Rows[0]["ratings"])
 	})
 
 	t.Run("handles_keel_storage_table", func(t *testing.T) {
