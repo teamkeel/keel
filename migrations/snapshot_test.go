@@ -23,7 +23,7 @@ model User {
 		birthDate Date
 		lastLogin Timestamp
 		metadata Text
-		tags Text[]
+		tags Text[]?
 		scores Number[]
 		ratings Decimal[]
 		preferences Text[]
