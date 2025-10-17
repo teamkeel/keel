@@ -105,6 +105,10 @@ func (h *FileTypeHandler) ToSQL(value interface{}, field *proto.Field) (string, 
 type ArrayTypeHandler struct{}
 
 func (h *ArrayTypeHandler) ToSQL(value interface{}, field *proto.Field) (string, error) {
+	if value == nil {
+		return "NULL", nil
+	}
+
 	switch v := value.(type) {
 	case string:
 		// If the string starts with '{' and ends with '}', it's a text array representation

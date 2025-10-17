@@ -23,7 +23,7 @@ model User {
 		birthDate Date
 		lastLogin Timestamp
 		metadata Text
-		tags Text[]
+		tags Text[]?
 		scores Number[]
 		ratings Decimal[]
 		preferences Text[]
@@ -445,6 +445,73 @@ func TestSnapshotDatabase(t *testing.T) {
 
 		// Compare the snapshots
 		require.Equal(t, initialSnapshot, finalSnapshot, "snapshots before and after reapplication should be identical")
+	})
+
+	t.Run("handles_null_array_values", func(t *testing.T) {
+		ctx := context.Background()
+
+		// Insert a user with NULL array fields
+		_, err := migrations.database.ExecuteStatement(ctx, `
+			INSERT INTO "user" (
+				name,
+				age,
+				salary,
+				is_active,
+				birth_date,
+				last_login,
+				metadata,
+				tags,
+				scores,
+				ratings,
+				preferences,
+				favourite_dates,
+				login_times,
+				avatar,
+				work_hours,
+				breaks
+			) VALUES (
+				'Null Array User',
+				'35',
+				60000,
+				true,
+				'1989-01-01T00:00:00Z',
+				'2024-03-24T12:00:00Z',
+				'{"quote": "''"}',
+				NULL,
+				ARRAY['95']::integer[],
+				ARRAY['4.9']::decimal[],
+				ARRAY['{"color": "yellow"}']::jsonb[],
+				ARRAY['2024-03-01']::date[],
+				ARRAY['2024-03-24 12:00:00+00']::timestamp[],
+				'{"url": "https://example.com/avatar''''test.jpg", "contentType": "image/jpeg", "size": 1024}',
+				'PT8H30M',
+				ARRAY['PT15M', 'PT30M']::interval[]
+			)
+		`)
+		require.NoError(t, err)
+
+		// Get snapshot
+		sql, err := migrations.SnapshotDatabase(ctx)
+		require.NoError(t, err)
+
+		// Verify NULL arrays are represented as NULL in the snapshot
+		require.Contains(t, sql, "Null Array User")
+		// The snapshot should have NULL values for the array fields, not error out
+
+		// Clear the database
+		_, err = migrations.database.ExecuteStatement(ctx, `TRUNCATE TABLE "comment", "post", "user" CASCADE;`)
+		require.NoError(t, err)
+
+		// Reapply the snapshot to ensure NULL arrays can be restored
+		_, err = migrations.database.ExecuteStatement(ctx, sql)
+		require.NoError(t, err)
+
+		// Verify the user with NULL arrays was restored
+		result, err := migrations.database.ExecuteQuery(ctx, `SELECT name, tags, scores, ratings FROM "user" WHERE name = 'Null Array User'`)
+		require.NoError(t, err)
+		require.Len(t, result.Rows, 1)
+		require.Equal(t, "Null Array User", result.Rows[0]["name"])
+		require.Nil(t, result.Rows[0]["tags"])
 	})
 
 	t.Run("handles_keel_storage_table", func(t *testing.T) {

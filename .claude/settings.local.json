@@ -3,7 +3,8 @@
     "allow": [
       "Bash(gh pr checks:*)",
       "Bash(cat:*)",
-      "Bash(go test:*)"
+      "Bash(go test:*)",
+      "Bash(git log:*)"
     ],
     "deny": [],
     "ask": []
