@@ -19,6 +19,7 @@ model User {
 		name Text
 		team CompanyTeam
 		identity Identity @unique
+		isAdmin Boolean
 	}
 }
 model CompanyTeam {
@@ -37,7 +38,7 @@ type ctxTestCase struct {
 
 var ctxTestCases = []ctxTestCase{
 	{
-		name:        "ctx identity backlink",
+		name:        "ctx identity backlink relationship lookup",
 		keelSchema:  ctxTestSchema,
 		expression:  `ctx.identity.user.team.name == "myTeam"`,
 		expectedSql: `SELECT COUNT(*) FROM "identity" LEFT JOIN "user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id" LEFT JOIN "company_team" AS "identity$user$team" ON "identity$user$team"."id" = "identity$user"."team_id" WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$user$team"."name" IS NOT DISTINCT FROM ?`,
@@ -47,6 +48,18 @@ var ctxTestCases = []ctxTestCase{
 		keelSchema:  ctxTestSchema,
 		expression:  `ctx.identity.user.team.name == "myTeam" && ctx.identity.user.name == "John"`,
 		expectedSql: `SELECT COUNT(*) FROM "identity" LEFT JOIN "user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id" LEFT JOIN "company_team" AS "identity$user$team" ON "identity$user$team"."id" = "identity$user"."team_id" WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$user$team"."name" IS NOT DISTINCT FROM ? AND "identity"."id" IS NOT DISTINCT FROM ? AND "identity$user"."name" IS NOT DISTINCT FROM ?`,
+	},
+	{
+		name:        "ctx identity backlink boolean implicit operator",
+		keelSchema:  ctxTestSchema,
+		expression:  `ctx.identity.user.isAdmin`,
+		expectedSql: `SELECT COUNT(*) FROM "identity" LEFT JOIN "user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id" WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$user"."is_admin" IS NOT DISTINCT FROM ?`,
+	},
+	{
+		name:        "ctx identity backlink boolean explicit operator",
+		keelSchema:  ctxTestSchema,
+		expression:  `ctx.identity.user.isAdmin == true`,
+		expectedSql: `SELECT COUNT(*) FROM "identity" LEFT JOIN "user" AS "identity$user" ON "identity$user"."identity_id" = "identity"."id" WHERE "identity"."id" IS NOT DISTINCT FROM ? AND "identity$user"."is_admin" IS NOT DISTINCT FROM ?`,
 	},
 }
 

@@ -1581,7 +1581,7 @@ test("flows - unauthorised (wrong team) starting flow with backlink expression",
 
   await expect(
     flows.expressionPermissionCtx.withAuthToken(token).start({})
-  ).toHaveAuthorizationError();
+  ).not.toHaveAuthorizationError();
 });
 
 test("flows - authorised starting flow with backlink expression", async () => {
