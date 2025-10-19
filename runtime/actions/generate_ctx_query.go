@@ -78,6 +78,7 @@ func (v *ctxQueryGen) EndTerm(nested bool) error {
 		l, hasOperand := v.operands.Pop()
 		if hasOperand {
 			lhs := l.(*QueryOperand)
+			v.query.And()
 			err := v.query.Where(lhs, Equals, Value(true))
 			if err != nil {
 				return err
