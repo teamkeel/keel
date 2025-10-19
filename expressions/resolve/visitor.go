@@ -210,7 +210,7 @@ func (w *CelVisitor[T]) functionCall(expr *exprpb.Expr) error {
 			return err
 		}
 
-		err = w.eval(arg, false, false)
+		err = w.eval(arg, isComplexOperatorWithRespectTo(operators.LogicalAnd, arg), false)
 		if err != nil {
 			return err
 		}
