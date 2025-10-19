@@ -364,6 +364,39 @@ var computedTestCases = []computedTestCase{
 		field:       "dispatches Number @computed(COUNTIF(invoice.dispatchInvoice.invoice, invoice.dispatchInvoice.isComplete))",
 		expectedSql: `(SELECT COALESCE(COUNT("dispatch_invoice"."invoice_id"), 0) FROM "dispatch_invoice" WHERE "dispatch_invoice"."invoice_id" IS NOT DISTINCT FROM r."id" AND "dispatch_invoice"."is_complete" IS NOT DISTINCT FROM true)`,
 	},
+	{
+		name: "parenthesis on multiple conditions in conditional aggregate",
+		keelSchema: `
+			model LotTransaction {
+				fields {
+					lot Lot
+					type LotTransactionType
+					quantity Number
+				}
+			}
+			enum LotTransactionType {
+				Receive
+				ConsumeToBatch
+				ReturnFromBatch
+				AdjustUp
+				AdjustDown
+				Scrap
+				TransferOut
+				TransferIn
+				CustomerReturn
+				Allocate
+				Deallocate
+			}
+			model Lot {
+				fields {
+					lotNumber Text @sequence("LOT-")
+					lotTransactions LotTransaction[]
+					#placeholder#
+				}
+			}`,
+		field:       "onHand Number @computed(SUMIF(lot.lotTransactions.quantity, lot.lotTransactions.type == LotTransactionType.Receive || lot.lotTransactions.type == LotTransactionType.ReturnFromBatch || lot.lotTransactions.type == LotTransactionType.AdjustUp || lot.lotTransactions.type == LotTransactionType.TransferIn || lot.lotTransactions.type == LotTransactionType.CustomerReturn) - SUMIF(lot.lotTransactions.quantity, lot.lotTransactions.type == LotTransactionType.ConsumeToBatch || lot.lotTransactions.type == LotTransactionType.AdjustDown || lot.lotTransactions.type == LotTransactionType.Scrap || lot.lotTransactions.type == LotTransactionType.TransferOut))",
+		expectedSql: `(SELECT COALESCE(SUM("lot_transaction"."quantity"), 0) FROM "lot_transaction" WHERE "lot_transaction"."lot_id" IS NOT DISTINCT FROM r."id" AND ("lot_transaction"."type" IS NOT DISTINCT FROM 'Receive' OR "lot_transaction"."type" IS NOT DISTINCT FROM 'ReturnFromBatch' OR "lot_transaction"."type" IS NOT DISTINCT FROM 'AdjustUp' OR "lot_transaction"."type" IS NOT DISTINCT FROM 'TransferIn' OR "lot_transaction"."type" IS NOT DISTINCT FROM 'CustomerReturn')) - (SELECT COALESCE(SUM("lot_transaction"."quantity"), 0) FROM "lot_transaction" WHERE "lot_transaction"."lot_id" IS NOT DISTINCT FROM r."id" AND ("lot_transaction"."type" IS NOT DISTINCT FROM 'ConsumeToBatch' OR "lot_transaction"."type" IS NOT DISTINCT FROM 'AdjustDown' OR "lot_transaction"."type" IS NOT DISTINCT FROM 'Scrap' OR "lot_transaction"."type" IS NOT DISTINCT FROM 'TransferOut'))`,
+	},
 }
 
 func TestGeneratedComputed(t *testing.T) {
@@ -371,6 +404,11 @@ func TestGeneratedComputed(t *testing.T) {
 	for _, testCase := range computedTestCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
+
+			if !strings.Contains(testCase.keelSchema, "#placeholder#") {
+				assert.FailNow(t, "#placeholder# not found in schema")
+			}
+
 			raw := strings.Replace(testCase.keelSchema, "#placeholder#", testCase.field, 1)
 
 			schemaFiles :=
