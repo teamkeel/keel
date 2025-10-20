@@ -2,7 +2,6 @@ package actions
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/textproto"
 	"os"
@@ -20,177 +19,51 @@ import (
 
 // GenerateCtxQuery visits the expression and adds filter conditions to the provided query builder.
 func GenerateCtxQuery(ctx context.Context, query *QueryBuilder, schema *proto.Schema) resolve.Visitor[*QueryBuilder] {
-	return &ctxQueryGen{
+	entity := proto.FindModel(schema.GetModels(), "Identity")
+
+	return &baseQueryGen{
 		ctx:       ctx,
 		query:     query,
 		schema:    schema,
+		entity:    entity,
+		action:    nil,
+		inputs:    nil,
 		operators: arraystack.New(),
 		operands:  arraystack.New(),
-	}
-}
-
-var _ resolve.Visitor[*QueryBuilder] = new(ctxQueryGen)
-
-type ctxQueryGen struct {
-	ctx       context.Context
-	query     *QueryBuilder
-	schema    *proto.Schema
-	operators *arraystack.Stack
-	operands  *arraystack.Stack
-}
-
-func (v *ctxQueryGen) StartTerm(nested bool) error {
-	if op, ok := v.operators.Peek(); ok && op == Not {
-		_, _ = v.operators.Pop()
-		v.query.Not()
-	}
-
-	// Only add parenthesis if we're in a nested condition
-	if nested {
-		v.query.OpenParenthesis()
-	}
-
-	return nil
-}
-
-func (v *ctxQueryGen) EndTerm(nested bool) error {
-	if _, ok := v.operators.Peek(); ok && v.operands.Size() == 2 {
-		operator, _ := v.operators.Pop()
-
-		r, ok := v.operands.Pop()
-		if !ok {
-			return errors.New("expected rhs operand")
-		}
-		l, ok := v.operands.Pop()
-		if !ok {
-			return errors.New("expected lhs operand")
-		}
-
-		lhs := l.(*QueryOperand)
-		rhs := r.(*QueryOperand)
-
-		v.query.And()
-		err := v.query.Where(lhs, operator.(ActionOperator), rhs)
-		if err != nil {
-			return err
-		}
-	} else if _, ok := v.operators.Peek(); !ok {
-		l, hasOperand := v.operands.Pop()
-		if hasOperand {
-			lhs := l.(*QueryOperand)
-			err := v.query.Where(lhs, Equals, Value(true))
+		identHandler: func(ctx context.Context, query *QueryBuilder, schema *proto.Schema, ident *parser.ExpressionIdent, operands *arraystack.Stack) error {
+			operand, err := generateOperandForCtxQuery(ctx, schema, ident.Fragments)
 			if err != nil {
 				return err
 			}
-		}
-	}
 
-	// Only close parenthesis if we're nested
-	if nested {
-		v.query.CloseParenthesis()
-	}
+			if ident.Fragments[0] == "ctx" && ident.Fragments[1] == "identity" {
+				idents := ident.Fragments[1:]
 
-	return nil
-}
+				err = query.AddJoinFromFragments(schema, idents)
+				if err != nil {
+					return err
+				}
 
-func (v *ctxQueryGen) StartFunction(name string) error {
-	return nil
-}
+				identityId := ""
+				if auth.IsAuthenticated(ctx) {
+					identity, err := auth.GetIdentity(ctx)
+					if err != nil {
+						return err
+					}
+					identityId = identity[parser.FieldNameId].(string)
+				}
 
-func (v *ctxQueryGen) EndFunction() error {
-	return nil
-}
-
-func (v *ctxQueryGen) StartArgument(num int) error {
-	return nil
-}
-
-func (v *ctxQueryGen) EndArgument() error {
-	return nil
-}
-
-func (v *ctxQueryGen) VisitAnd() error {
-	v.query.And()
-	return nil
-}
-
-func (v *ctxQueryGen) VisitOr() error {
-	v.query.Or()
-	return nil
-}
-
-func (v *ctxQueryGen) VisitNot() error {
-	v.operators.Push(Not)
-	return nil
-}
-
-func (v *ctxQueryGen) VisitOperator(op string) error {
-	operator, err := toActionOperator(op)
-	if err != nil {
-		return err
-	}
-
-	v.operators.Push(operator)
-
-	return nil
-}
-
-func (v *ctxQueryGen) VisitLiteral(value any) error {
-	if value == nil {
-		v.operands.Push(Null())
-	} else {
-		v.operands.Push(Value(value))
-	}
-	return nil
-}
-
-func (v *ctxQueryGen) VisitIdent(ident *parser.ExpressionIdent) error {
-	operand, err := generateOperandForCtxQuery(v.ctx, v.schema, ident.Fragments)
-	if err != nil {
-		return err
-	}
-
-	if ident.Fragments[0] == "ctx" && ident.Fragments[1] == "identity" {
-		idents := ident.Fragments[1:]
-
-		err = v.query.AddJoinFromFragments(v.schema, idents)
-		if err != nil {
-			return err
-		}
-
-		identityId := ""
-		if auth.IsAuthenticated(v.ctx) {
-			identity, err := auth.GetIdentity(v.ctx)
-			if err != nil {
-				return err
+				err = query.Where(IdField(), Equals, Value(identityId))
+				if err != nil {
+					return err
+				}
 			}
-			identityId = identity[parser.FieldNameId].(string)
-		}
 
-		err = v.query.Where(IdField(), Equals, Value(identityId))
-		if err != nil {
-			return err
-		}
+			operands.Push(operand)
+
+			return nil
+		},
 	}
-
-	v.operands.Push(operand)
-
-	return nil
-}
-
-func (v *ctxQueryGen) VisitIdentArray(idents []*parser.ExpressionIdent) error {
-	arr := []string{}
-	for _, e := range idents {
-		arr = append(arr, e.Fragments[1])
-	}
-
-	v.operands.Push(Value(arr))
-
-	return nil
-}
-
-func (v *ctxQueryGen) Result() (*QueryBuilder, error) {
-	return v.query, nil
 }
 
 func generateOperandForCtxQuery(ctx context.Context, schema *proto.Schema, fragments []string) (*QueryOperand, error) {

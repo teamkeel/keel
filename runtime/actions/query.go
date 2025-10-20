@@ -485,6 +485,13 @@ func (query *QueryBuilder) Where(left *QueryOperand, operator ActionOperator, ri
 	return nil
 }
 
+// WhereRawExpression adds a raw SQL expression directly to the WHERE clause.
+// This is useful for complex expressions like aggregate functions that can't be represented as operands.
+func (query *QueryBuilder) WhereRawExpression(sqlExpr string, args []any) {
+	query.filters = append(query.filters, sqlExpr)
+	query.args = append(query.args, args...)
+}
+
 // Appends the next condition with a logical AND.
 func (query *QueryBuilder) And() {
 	query.filters = trimRhsOperators(query.filters)
@@ -534,6 +541,60 @@ func (query *QueryBuilder) Join(joinModel string, joinField *QueryOperand, model
 	if !lo.Contains(query.joins, join) {
 		query.joins = append(query.joins, join)
 	}
+}
+
+// JoinRaw adds a raw JOIN clause from a SQL string
+// Expected format: "LEFT JOIN \"table\" AS \"alias\" ON \"left\".\"field\" = \"right\".\"field\""
+func (query *QueryBuilder) JoinRaw(rawJoin string) {
+	// Check if this join already exists
+	for _, existing := range query.joins {
+		existingStr := fmt.Sprintf("%s JOIN %s AS %s ON %s",
+			existing.joinType, existing.table, existing.alias, existing.condition)
+		if existingStr == rawJoin {
+			return // Already exists
+		}
+	}
+
+	// Parse the raw JOIN string to extract components
+	// This is a simple parser that handles our specific format
+	parts := strings.Fields(rawJoin)
+	if len(parts) < 6 {
+		return // Invalid format
+	}
+
+	joinType := JoinTypeLeft
+	if parts[0] == "INNER" {
+		joinType = JoinTypeInner
+	}
+
+	table := ""
+	alias := ""
+	condition := ""
+
+	// Find AS keyword
+	asIndex := -1
+	onIndex := -1
+	for i, part := range parts {
+		if part == "AS" {
+			asIndex = i
+		}
+		if part == "ON" {
+			onIndex = i
+		}
+	}
+
+	if asIndex > 0 && onIndex > 0 {
+		table = parts[asIndex-1]
+		alias = parts[asIndex+1]
+		condition = strings.Join(parts[onIndex+1:], " ")
+	}
+
+	query.joins = append(query.joins, joinClause{
+		table:     table,
+		alias:     alias,
+		condition: condition,
+		joinType:  joinType,
+	})
 }
 
 // Include a column in ORDER BY.
