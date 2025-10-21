@@ -9,7 +9,8 @@ describe("datepicker input element", () => {
           ctx.ui.inputs.datePicker("date", {
             mode: "dateTime",
             label: "Label",
-            pastOnly: false,
+            min: "1999-10-11",
+            max: "2025-10-11",
           }),
         ],
       });

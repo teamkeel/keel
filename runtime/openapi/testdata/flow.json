@@ -1242,6 +1242,8 @@
               "disabled": { "type": "boolean" },
               "helpText": { "type": "string" },
               "label": { "type": "string" },
+              "max": { "type": "string" },
+              "min": { "type": "string" },
               "mode": {
                 "type": "string",
                 "enum": ["date", "dateTime"],
@@ -1249,7 +1251,6 @@
               },
               "name": { "type": "string" },
               "optional": { "type": "boolean" },
-              "pastOnly": { "type": "boolean" },
               "validationError": { "type": "string" }
             },
             "additionalProperties": false,

@@ -806,8 +806,11 @@
           ],
           "type": "string"
         },
-        "pastOnly": {
-          "type": "boolean"
+        "min": {
+          "type": "string"
+        },
+        "max": {
+          "type": "string"
         },
         "__type": {
           "type": "string",

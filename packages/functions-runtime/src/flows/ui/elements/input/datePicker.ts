@@ -10,7 +10,7 @@ type ElementDataType = string;
  * Defines what type of datepicker should we use.
  * @default "dateTime"
  */
-type DatepickerMode =
+type DatePickerMode =
   /** Pick both a date and a time */
   | "dateTime"
   /** Pick only a date */
@@ -19,17 +19,20 @@ type DatepickerMode =
 export type UiElementInputDatePicker = InputElement<
   ElementDataType,
   {
-    mode?: DatepickerMode;
-    /** Allows selecting only past dates/datetimes. */
-    pastOnly?: boolean;
+    mode?: DatePickerMode;
+    /** Allows selecting only dates/datetimes past this given date. */
+    min?: string;
+    /** Allows selecting only dates/datetimes before this given date. */
+    max?: string;
   }
 >;
 
 // The shape of the response over the API
 export interface UiElementInputDatePickerApiResponse
   extends BaseUiInputResponse<"ui.input.datePicker", ElementDataType> {
-  mode?: DatepickerMode;
-  pastOnly?: boolean;
+  mode?: DatePickerMode;
+  min?: string;
+  max?: string;
 }
 
 export const datePickerInput: InputElementImplementation<
@@ -48,7 +51,8 @@ export const datePickerInput: InputElementImplementation<
       helpText: options?.helpText,
       defaultValue: options?.defaultValue,
       mode: options?.mode,
-      pastOnly: options?.pastOnly,
+      min: options?.min,
+      max: options?.max,
     } satisfies UiElementInputDatePickerApiResponse,
     validate: options?.validate,
     onLeave: options?.onLeave,
