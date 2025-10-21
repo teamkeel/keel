@@ -274,7 +274,6 @@
             "fieldType": "TYPE_ID",
             "displayName": "Id",
             "displayOrder": 13,
-            "visible": true,
             "modelName": "BlogPost",
             "fieldName": "id"
           },
@@ -464,7 +463,6 @@
             "fieldType": "TYPE_ID",
             "displayName": "Id",
             "displayOrder": 2,
-            "visible": true,
             "modelName": "Category",
             "fieldName": "id"
           },
@@ -690,7 +688,6 @@
             "fieldType": "TYPE_ID",
             "displayName": "Id",
             "displayOrder": 13,
-            "visible": true,
             "modelName": "BlogPost",
             "fieldName": "id"
           },
@@ -944,7 +941,6 @@
             "fieldType": "TYPE_ID",
             "displayName": "Id",
             "displayOrder": 2,
-            "visible": true,
             "modelName": "Category",
             "fieldName": "id"
           },
@@ -1285,7 +1281,6 @@
             "fieldType": "TYPE_ID",
             "displayName": "Id",
             "displayOrder": 6,
-            "visible": true,
             "modelName": "Comment",
             "fieldName": "id"
           },
@@ -1630,7 +1625,6 @@
             "fieldType": "TYPE_ID",
             "displayName": "Id",
             "displayOrder": 13,
-            "visible": true,
             "modelName": "BlogPost",
             "fieldName": "id"
           },
@@ -2107,7 +2101,6 @@
             "fieldType": "TYPE_ID",
             "displayName": "Id",
             "displayOrder": 17,
-            "visible": true,
             "modelName": "Identity",
             "fieldName": "id"
           },
@@ -2185,7 +2178,6 @@
             "fieldType": "TYPE_ID",
             "displayName": "Id",
             "displayOrder": 2,
-            "visible": true,
             "modelName": "Category",
             "fieldName": "id"
           },
@@ -2275,7 +2267,6 @@
             "fieldType": "TYPE_ID",
             "displayName": "Id",
             "displayOrder": 13,
-            "visible": true,
             "modelName": "BlogPost",
             "fieldName": "id"
           },
@@ -2750,7 +2741,6 @@
             "fieldType": "TYPE_ID",
             "displayName": "Id",
             "displayOrder": 13,
-            "visible": true,
             "modelName": "BlogPost",
             "fieldName": "id"
           },

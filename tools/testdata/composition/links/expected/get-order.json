@@ -59,7 +59,6 @@
         "fieldType": "TYPE_ID",
         "displayName": "Id",
         "displayOrder": 4,
-        "visible": true,
         "modelName": "Order",
         "fieldName": "id"
       },
@@ -95,11 +94,11 @@
       {
         "toolId": "process-order",
         "data": [{ "key": "$.orderId", "path": { "path": "$.id" } }],
+        "title": { "template": "FLOW - Process Order" },
         "displayOrder": 1,
         "asDialog": true,
         "visibleCondition": "true",
         "skipConfirmation": true,
-        "title": { "template": "FLOW - Process Order" },
         "emphasize": true
       },
       {

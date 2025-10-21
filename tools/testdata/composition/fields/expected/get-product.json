@@ -97,7 +97,6 @@
         "fieldType": "TYPE_ID",
         "displayName": "Id",
         "displayOrder": 6,
-        "visible": true,
         "modelName": "Product",
         "fieldName": "id"
       },

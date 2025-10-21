@@ -63,7 +63,6 @@
             "fieldType": "TYPE_ID",
             "displayName": "Id",
             "displayOrder": 1,
-            "visible": true,
             "modelName": "BlogPost",
             "fieldName": "id"
           },
@@ -153,7 +152,6 @@
             "fieldType": "TYPE_ID",
             "displayName": "Id",
             "displayOrder": 1,
-            "visible": true,
             "modelName": "BlogPost",
             "fieldName": "id"
           },
@@ -278,7 +276,6 @@
             "fieldType": "TYPE_ID",
             "displayName": "Id",
             "displayOrder": 1,
-            "visible": true,
             "modelName": "BlogPost",
             "fieldName": "id"
           },
@@ -526,7 +523,6 @@
             "fieldType": "TYPE_ID",
             "displayName": "Id",
             "displayOrder": 1,
-            "visible": true,
             "modelName": "BlogPost",
             "fieldName": "id"
           },
@@ -847,7 +843,6 @@
             "fieldType": "TYPE_ID",
             "displayName": "Id",
             "displayOrder": 1,
-            "visible": true,
             "modelName": "BlogPost",
             "fieldName": "id"
           },

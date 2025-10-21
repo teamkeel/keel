@@ -323,7 +323,6 @@
             "fieldType": "TYPE_ID",
             "displayName": "Id",
             "displayOrder": 5,
-            "visible": true,
             "modelName": "Order",
             "fieldName": "id"
           },

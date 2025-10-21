@@ -92,7 +92,6 @@
             "fieldType": "TYPE_ID",
             "displayName": "Id",
             "displayOrder": 2,
-            "visible": true,
             "modelName": "Customer",
             "fieldName": "id"
           },
