@@ -722,3 +722,444 @@ test("flows - pickList element with validation", async () => {
     },
   });
 });
+
+test("flows - dataGrid element - basic with inferred columns", async () => {
+  let flow = await flows.dataGridValidation.start({});
+
+  expect(flow).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "AWAITING_INPUT",
+    name: "DataGridValidation",
+    startedBy: null,
+    input: {},
+    error: null,
+    data: null,
+    steps: [
+      {
+        id: expect.any(String),
+        name: "basic data grid",
+        runId: expect.any(String),
+        stage: null,
+        status: "PENDING",
+        type: "UI",
+        value: null,
+        error: null,
+        startTime: expect.any(Date),
+        endTime: null,
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        ui: {
+          __type: "ui.page",
+          content: [
+            {
+              __type: "ui.input.dataGrid",
+              name: "products",
+              data: [
+                { id: "prod-1", name: "Widget A", quantity: 10, inStock: true },
+                { id: "prod-2", name: "Widget B", quantity: 5, inStock: false },
+                { id: "prod-3", name: "Widget C", quantity: 0, inStock: true },
+              ],
+              columns: [
+                {
+                  key: "id",
+                  label: "Id",
+                  index: 0,
+                  type: "text",
+                  editable: true,
+                },
+                {
+                  key: "name",
+                  label: "Name",
+                  index: 1,
+                  type: "text",
+                  editable: true,
+                },
+                {
+                  key: "quantity",
+                  label: "Quantity",
+                  index: 2,
+                  type: "number",
+                  editable: true,
+                },
+                {
+                  key: "inStock",
+                  label: "In stock",
+                  index: 3,
+                  type: "boolean",
+                  editable: true,
+                },
+              ],
+              allowAddRows: false,
+              allowDeleteRows: false,
+            },
+          ],
+          hasValidationErrors: false,
+        },
+      },
+    ],
+    createdAt: expect.any(Date),
+    updatedAt: expect.any(Date),
+    config: {
+      title: "Data grid validation",
+    },
+  });
+
+  // Submit valid data
+  flow = await flows.dataGridValidation.putStepValues(
+    flow.id,
+    flow.steps[0].id,
+    {
+      products: [
+        { id: "prod-1", name: "Widget A", quantity: 15, inStock: true },
+        { id: "prod-2", name: "Widget B", quantity: 8, inStock: true },
+      ],
+    }
+  );
+
+  expect(flow.steps[0].status).toBe("COMPLETED");
+  expect(flow.steps[1].status).toBe("PENDING");
+  expect(flow.steps[1].name).toBe("data grid with validation");
+});
+
+test("flows - dataGrid element - with explicit columns and validation", async () => {
+  let flow = await flows.dataGridValidation.start({});
+
+  // Skip first page
+  flow = await flows.dataGridValidation.putStepValues(
+    flow.id,
+    flow.steps[0].id,
+    {
+      products: [
+        { id: "prod-1", name: "Widget A", quantity: 10, inStock: true },
+      ],
+    }
+  );
+
+  expect(flow.steps[1].ui).toMatchObject({
+    __type: "ui.page",
+    content: [
+      {
+        __type: "ui.input.dataGrid",
+        name: "inventory",
+        data: [
+          { id: "item-1", sku: "SKU001", quantity: 10, price: 99.99 },
+          { id: "item-2", sku: "SKU002", quantity: 5, price: 149.99 },
+          { id: "item-3", sku: "SKU003", quantity: 0, price: 199.99 },
+        ],
+        columns: [
+          { key: "id", label: "ID", index: 0, type: "id", editable: false },
+          { key: "sku", label: "SKU", index: 1, type: "text", editable: true },
+          {
+            key: "quantity",
+            label: "Qty",
+            index: 2,
+            type: "number",
+            editable: true,
+          },
+          {
+            key: "price",
+            label: "Price",
+            index: 3,
+            type: "number",
+            editable: true,
+          },
+        ],
+        allowAddRows: true,
+        allowDeleteRows: true,
+      },
+    ],
+    hasValidationErrors: false,
+  });
+
+  // Test validation error: total quantity exceeds limit
+  flow = await flows.dataGridValidation.putStepValues(
+    flow.id,
+    flow.steps[1].id,
+    {
+      inventory: [
+        { id: "item-1", sku: "SKU001", quantity: 50, price: 99.99 },
+        { id: "item-2", sku: "SKU002", quantity: 55, price: 149.99 },
+      ],
+    }
+  );
+
+  expect(flow.steps[1].status).toBe("PENDING");
+  expect(flow.steps[1].ui).toMatchObject({
+    __type: "ui.page",
+    hasValidationErrors: true,
+    content: [
+      {
+        __type: "ui.input.dataGrid",
+        name: "inventory",
+        validationError: "Total quantity cannot exceed 100 items",
+      },
+    ],
+  });
+
+  // Test validation error: negative quantity
+  flow = await flows.dataGridValidation.putStepValues(
+    flow.id,
+    flow.steps[1].id,
+    {
+      inventory: [
+        { id: "item-1", sku: "SKU001", quantity: -5, price: 99.99 },
+        { id: "item-2", sku: "SKU002", quantity: 10, price: 149.99 },
+      ],
+    }
+  );
+
+  expect(flow.steps[1].status).toBe("PENDING");
+  expect(flow.steps[1].ui).toMatchObject({
+    __type: "ui.page",
+    hasValidationErrors: true,
+    content: [
+      {
+        __type: "ui.input.dataGrid",
+        name: "inventory",
+        validationError: "Quantities must be non-negative",
+      },
+    ],
+  });
+
+  // Test validation error: empty array
+  flow = await flows.dataGridValidation.putStepValues(
+    flow.id,
+    flow.steps[1].id,
+    {
+      inventory: [],
+    }
+  );
+
+  expect(flow.steps[1].status).toBe("PENDING");
+  expect(flow.steps[1].ui).toMatchObject({
+    __type: "ui.page",
+    hasValidationErrors: true,
+    content: [
+      {
+        __type: "ui.input.dataGrid",
+        name: "inventory",
+        validationError: "At least one item must be present",
+      },
+    ],
+  });
+
+  // Test validation error: invalid price
+  flow = await flows.dataGridValidation.putStepValues(
+    flow.id,
+    flow.steps[1].id,
+    {
+      inventory: [
+        { id: "item-1", sku: "SKU001", quantity: 10, price: 0 },
+        { id: "item-2", sku: "SKU002", quantity: 5, price: 149.99 },
+      ],
+    }
+  );
+
+  expect(flow.steps[1].status).toBe("PENDING");
+  expect(flow.steps[1].ui).toMatchObject({
+    __type: "ui.page",
+    hasValidationErrors: true,
+    content: [
+      {
+        __type: "ui.input.dataGrid",
+        name: "inventory",
+        validationError: "All prices must be greater than zero",
+      },
+    ],
+  });
+
+  // Test successful validation
+  flow = await flows.dataGridValidation.putStepValues(
+    flow.id,
+    flow.steps[1].id,
+    {
+      inventory: [
+        { id: "item-1", sku: "SKU001", quantity: 25, price: 99.99 },
+        { id: "item-2", sku: "SKU002", quantity: 30, price: 149.99 },
+        { id: "item-3", sku: "SKU003", quantity: 20, price: 199.99 },
+      ],
+    }
+  );
+
+  expect(flow.steps[1].status).toBe("COMPLETED");
+  expect(flow.steps[2].status).toBe("PENDING");
+  expect(flow.steps[2].name).toBe("data grid with types");
+});
+
+test("flows - dataGrid element - type coercion", async () => {
+  let flow = await flows.dataGridValidation.start({});
+
+  // Skip first two pages
+  flow = await flows.dataGridValidation.putStepValues(
+    flow.id,
+    flow.steps[0].id,
+    {
+      products: [
+        { id: "prod-1", name: "Widget A", quantity: 10, inStock: true },
+      ],
+    }
+  );
+
+  flow = await flows.dataGridValidation.putStepValues(
+    flow.id,
+    flow.steps[1].id,
+    {
+      inventory: [{ id: "item-1", sku: "SKU001", quantity: 10, price: 99.99 }],
+    }
+  );
+
+  // Check third page structure
+  expect(flow.steps[2].ui).toMatchObject({
+    __type: "ui.page",
+    content: [
+      {
+        __type: "ui.input.dataGrid",
+        name: "orders",
+        data: [
+          {
+            orderId: "ORD-001",
+            customerName: "John Doe",
+            orderTotal: 250.5,
+            isPaid: true,
+          },
+          {
+            orderId: "ORD-002",
+            customerName: "Jane Smith",
+            orderTotal: 125.75,
+            isPaid: false,
+          },
+        ],
+        columns: [
+          {
+            key: "orderId",
+            label: "Order ID",
+            index: 0,
+            type: "text",
+            editable: true,
+          },
+          {
+            key: "customerName",
+            label: "Customer",
+            index: 1,
+            type: "text",
+            editable: true,
+          },
+          {
+            key: "orderTotal",
+            label: "Total",
+            index: 2,
+            type: "number",
+            editable: true,
+          },
+          {
+            key: "isPaid",
+            label: "Paid",
+            index: 3,
+            type: "boolean",
+            editable: true,
+          },
+        ],
+        allowAddRows: false,
+        allowDeleteRows: false,
+      },
+    ],
+    hasValidationErrors: false,
+  });
+
+  // Submit valid data
+  flow = await flows.dataGridValidation.putStepValues(
+    flow.id,
+    flow.steps[2].id,
+    {
+      orders: [
+        {
+          orderId: "ORD-001",
+          customerName: "John Doe",
+          orderTotal: 300,
+          isPaid: true,
+        },
+      ],
+    }
+  );
+
+  expect(flow).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "COMPLETED",
+    name: "DataGridValidation",
+    startedBy: null,
+    input: {},
+    error: null,
+    data: null,
+    steps: [
+      {
+        id: expect.any(String),
+        name: "basic data grid",
+        runId: expect.any(String),
+        stage: null,
+        status: "COMPLETED",
+        type: "UI",
+        value: {
+          products: [
+            { id: "prod-1", name: "Widget A", quantity: 10, inStock: true },
+          ],
+        },
+        error: null,
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        ui: null,
+      },
+      {
+        id: expect.any(String),
+        name: "data grid with validation",
+        runId: expect.any(String),
+        stage: null,
+        status: "COMPLETED",
+        type: "UI",
+        value: {
+          inventory: [
+            { id: "item-1", sku: "SKU001", quantity: 10, price: 99.99 },
+          ],
+        },
+        error: null,
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        ui: null,
+      },
+      {
+        id: expect.any(String),
+        name: "data grid with types",
+        runId: expect.any(String),
+        stage: null,
+        status: "COMPLETED",
+        type: "UI",
+        value: {
+          orders: [
+            {
+              orderId: "ORD-001",
+              customerName: "John Doe",
+              orderTotal: 300,
+              isPaid: true,
+            },
+          ],
+        },
+        error: null,
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        ui: null,
+      },
+    ],
+    createdAt: expect.any(Date),
+    updatedAt: expect.any(Date),
+    config: {
+      title: "Data grid validation",
+    },
+  });
+});
