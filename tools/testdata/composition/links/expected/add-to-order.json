@@ -115,7 +115,6 @@
         "fieldType": "TYPE_ID",
         "displayName": "Id",
         "displayOrder": 8,
-        "visible": true,
         "modelName": "OrderLine",
         "fieldName": "id"
       },
