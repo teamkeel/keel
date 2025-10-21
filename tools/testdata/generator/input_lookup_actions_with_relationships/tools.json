@@ -70,7 +70,6 @@
             "fieldType": "TYPE_ID",
             "displayName": "Id",
             "displayOrder": 3,
-            "visible": true,
             "modelName": "Sale",
             "fieldName": "id"
           },
@@ -146,7 +145,6 @@
             "fieldType": "TYPE_ID",
             "displayName": "Id",
             "displayOrder": 2,
-            "visible": true,
             "modelName": "Product",
             "fieldName": "id"
           },
@@ -406,7 +404,6 @@
             "fieldType": "TYPE_ID",
             "displayName": "Id",
             "displayOrder": 3,
-            "visible": true,
             "modelName": "Sale",
             "fieldName": "id"
           },

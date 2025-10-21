@@ -55,7 +55,6 @@
             "fieldType": "TYPE_ID",
             "displayName": "Id",
             "displayOrder": 2,
-            "visible": true,
             "modelName": "Order",
             "fieldName": "id"
           },
@@ -361,7 +360,6 @@
             "fieldType": "TYPE_ID",
             "displayName": "Id",
             "displayOrder": 4,
-            "visible": true,
             "modelName": "LineItem",
             "fieldName": "id"
           },
@@ -642,7 +640,6 @@
             "fieldType": "TYPE_ID",
             "displayName": "Id",
             "displayOrder": 2,
-            "visible": true,
             "modelName": "Order",
             "fieldName": "id"
           },

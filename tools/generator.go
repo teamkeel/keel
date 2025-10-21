@@ -134,8 +134,6 @@ func (g *Generator) flowTools() map[string]*Tool {
 	return flowTools
 }
 
-const fieldNameID = "id"
-
 var ErrInvalidSchema = errors.New("invalid schema")
 
 // NewGenerator creates a new tool config generator for the given schema.
@@ -795,7 +793,7 @@ func (g *Generator) makeInputsForMessage(
 
 		if f.GetType().GetEntityName() != nil && f.GetType().GetFieldName() != nil && g.Schema.FindEntity(f.GetType().GetEntityName().GetValue()).FindField(f.GetType().GetFieldName().GetValue()).GetUnique() {
 			// generate lookup action only for ID inputs
-			if f.GetType().GetFieldName().GetValue() == fieldNameID {
+			if f.GetType().GetFieldName().GetValue() == parser.FieldNameId {
 				if lookupToolsIDs := g.findListTools(f.GetType().GetEntityName().GetValue()); len(lookupToolsIDs) > 0 {
 					config.LookupAction = &toolsproto.ToolLink{
 						ToolId: lookupToolsIDs[0],
@@ -961,18 +959,11 @@ func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string,
 				}
 				return casing.ToSentenceCase(f.GetName())
 			}(),
-			Visible:      true,
+			Visible:      f.GetName() != parser.FieldNameId, // ID fields are hidden by default
 			DisplayOrder: computeFieldOrder(&order, len(model.GetFields()), f.GetName()),
-			Sortable: func() bool {
-				for _, fn := range sortableFields {
-					if fn == f.GetName() {
-						return true
-					}
-				}
-				return false
-			}(),
-			ModelName: &f.EntityName,
-			FieldName: &f.Name,
+			Sortable:     slices.Contains(sortableFields, f.GetName()),
+			ModelName:    &f.EntityName,
+			FieldName:    &f.Name,
 			EnumName: func() *string {
 				if f.GetType().GetEnumName() != nil {
 					return &f.Type.EnumName.Value
@@ -987,7 +978,7 @@ func (g *Generator) makeResponsesForModel(model *proto.Model, pathPrefix string,
 
 		// if this field is a model, we add a link to the action used to retrieve the related model. Note that inputs are
 		// generated first, so we're safe to create a tool/action link now
-		if f.IsForeignKey() && f.GetForeignKeyInfo().GetRelatedEntityField() == fieldNameID {
+		if f.IsForeignKey() && f.GetForeignKeyInfo().GetRelatedEntityField() == parser.FieldNameId {
 			if getToolID := g.findGetByIDTool(f.GetForeignKeyInfo().GetRelatedEntityName()); getToolID != "" {
 				config.Link = &toolsproto.ToolLink{
 					ToolId: getToolID,
@@ -1436,7 +1427,7 @@ func (t *Tool) hasOnlyIDInput() bool {
 // getIDInputFieldPath returns the path of the first input field that's an ID.
 func (t *Tool) getIDInputFieldPath() string {
 	for _, input := range t.ActionConfig.GetInputs() {
-		if input.GetFieldType() == proto.Type_TYPE_ID && input.GetDisplayName() == casing.ToSentenceCase(fieldNameID) {
+		if input.GetFieldType() == proto.Type_TYPE_ID && input.GetDisplayName() == casing.ToSentenceCase(parser.FieldNameId) {
 			return input.GetFieldLocation().GetPath()
 		}
 	}

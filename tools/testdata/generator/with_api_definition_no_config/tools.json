@@ -88,7 +88,6 @@
             "fieldType": "TYPE_ID",
             "displayName": "Id",
             "displayOrder": 2,
-            "visible": true,
             "modelName": "Category",
             "fieldName": "id"
           },
@@ -291,7 +290,6 @@
             "fieldType": "TYPE_ID",
             "displayName": "Id",
             "displayOrder": 2,
-            "visible": true,
             "modelName": "Category",
             "fieldName": "id"
           },

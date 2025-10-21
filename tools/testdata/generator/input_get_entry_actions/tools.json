@@ -65,7 +65,6 @@
             "fieldType": "TYPE_ID",
             "displayName": "Id",
             "displayOrder": 5,
-            "visible": true,
             "modelName": "Product",
             "fieldName": "id"
           },
@@ -224,7 +223,6 @@
             "fieldType": "TYPE_ID",
             "displayName": "Id",
             "displayOrder": 5,
-            "visible": true,
             "modelName": "Product",
             "fieldName": "id"
           },
@@ -388,7 +386,6 @@
             "fieldType": "TYPE_ID",
             "displayName": "Id",
             "displayOrder": 1,
-            "visible": true,
             "modelName": "Supplier",
             "fieldName": "id"
           },
@@ -432,7 +429,6 @@
             "fieldType": "TYPE_ID",
             "displayName": "Id",
             "displayOrder": 5,
-            "visible": true,
             "modelName": "Product",
             "fieldName": "id"
           },
@@ -696,7 +692,6 @@
             "fieldType": "TYPE_ID",
             "displayName": "Id",
             "displayOrder": 5,
-            "visible": true,
             "modelName": "Product",
             "fieldName": "id"
           },
@@ -1033,7 +1028,6 @@
             "fieldType": "TYPE_ID",
             "displayName": "Id",
             "displayOrder": 5,
-            "visible": true,
             "modelName": "Product",
             "fieldName": "id"
           },
