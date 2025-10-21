@@ -49,7 +49,7 @@ type ColumnConfig<Cols extends string[]> = {
 };
 
 export type DataGridOptions<T extends Record<string, any>, C> = Omit<
-  BaseInputConfig<T>,
+  BaseInputConfig<T[]>,
   "defaultValue" | "label" | "optional" | "disabled"
 > & {
   data: T[];

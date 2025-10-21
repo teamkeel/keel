@@ -13,3 +13,7 @@ flow CallbackFlow {
 flow PickListValidation {
     @permission(expression: true)
 }
+
+flow DataGridValidation {
+    @permission(expression: true)
+}
