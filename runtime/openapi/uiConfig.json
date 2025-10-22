@@ -110,6 +110,9 @@
           "$ref": "#/$defs/UiElementInputScanApiResponse"
         },
         {
+          "$ref": "#/$defs/UiElementInputDatePickerApiResponse"
+        },
+        {
           "$ref": "#/$defs/UiElementSelectOneApiResponse"
         },
         {
@@ -794,6 +797,59 @@
         "trackQuantity"
       ],
       "type": "string"
+    },
+    "UiElementInputDatePickerApiResponse": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "description": "Defines what type of datepicker should we use.",
+          "default": "dateTime",
+          "enum": [
+            "date",
+            "dateTime"
+          ],
+          "type": "string"
+        },
+        "min": {
+          "type": "string"
+        },
+        "max": {
+          "type": "string"
+        },
+        "__type": {
+          "type": "string",
+          "const": "ui.input.datePicker"
+        },
+        "name": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "defaultValue": {
+          "type": "string"
+        },
+        "optional": {
+          "type": "boolean"
+        },
+        "disabled": {
+          "type": "boolean"
+        },
+        "helpText": {
+          "type": "string"
+        },
+        "validationError": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "__type",
+        "disabled",
+        "label",
+        "name",
+        "optional"
+      ]
     },
     "UiElementSelectOneApiResponse": {
       "type": "object",

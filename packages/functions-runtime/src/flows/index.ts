@@ -30,6 +30,7 @@ import { header } from "./ui/elements/display/header";
 import { keyValue } from "./ui/elements/display/keyValue";
 import { selectTable } from "./ui/elements/select/table";
 import { dataGridInput } from "./ui/elements/input/dataGrid";
+import { datePickerInput } from "./ui/elements/input/datePicker";
 import { iterator } from "./ui/elements/iterator";
 import { print } from "./ui/elements/interactive/print";
 import { pickList } from "./ui/elements/interactive/pickList";
@@ -580,6 +581,7 @@ export function createFlowContext<
         number: numberInput as any,
         boolean: booleanInput as any,
         dataGrid: dataGridInput as any,
+        datePicker: datePickerInput as any,
         scan: scan as any,
       },
       display: {
