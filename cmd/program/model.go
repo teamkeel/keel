@@ -53,6 +53,11 @@ const (
 )
 
 const (
+	// Maximum number of logs and requests to keep in memory
+	maxHistorySize = 100
+)
+
+const (
 	StatusCheckingDependencies = iota
 	StatusParsePrivateKey
 	StatusSetupDatabase
@@ -120,13 +125,29 @@ func Run(model *Model) {
 		}
 	}()
 
-	_, err = tea.NewProgram(model).Run()
+	// Use altscreen for proper screen isolation and clearing
+	p := tea.NewProgram(
+		model,
+		tea.WithAltScreen(),
+	)
+
+	finalModel, err := p.Run()
 	if err != nil {
 		panic(err)
 	}
 
-	if model.Err != nil {
-		os.Exit(1)
+	// After exiting altscreen, check final model state
+	if m, ok := finalModel.(*Model); ok {
+		// Print goodbye message if quitting normally (no error)
+		if m.Status == StatusQuitting && m.Err == nil {
+			fmt.Println("Goodbye 👋")
+			return // Exit cleanly without error
+		}
+
+		// If there was an error, exit with status 1
+		if m.Err != nil {
+			os.Exit(1)
+		}
 	}
 }
 
@@ -264,7 +285,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = msg.Width
 		m.height = msg.Height
 
-		return m, nil
+		// Clear screen and request full redraw on resize to prevent artifacts
+		return m, tea.ClearScreen
 
 	case FetchLatestVersionMsg:
 		m.LatestVersion = msg.LatestVersion
@@ -496,13 +518,16 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.FunctionsLog = append(m.FunctionsLog, log)
 
+		// Trim history to prevent unbounded growth
+		if len(m.FunctionsLog) > maxHistorySize {
+			m.FunctionsLog = m.FunctionsLog[len(m.FunctionsLog)-maxHistorySize:]
+		}
+
 		cmds := []tea.Cmd{
 			NextMsgCommand(m.functionsLogCh),
 		}
 
-		if m.Mode == ModeRun {
-			cmds = append(cmds, tea.Println(renderFunctionLog(log)))
-		}
+		// Removed tea.Println() - all output now goes through View()
 
 		return m, tea.Batch(cmds...)
 	case RuntimeRequestMsg:
@@ -521,10 +546,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		m.RuntimeRequests = append(m.RuntimeRequests, request)
 
-		// log runtime requests for the run cmd
-		if m.Mode == ModeRun && m.Err == nil && m.Status >= StatusLoadSchema {
-			cmds = append(cmds, tea.Println(renderRequestLog(request)))
+		// Trim history to prevent unbounded growth
+		if len(m.RuntimeRequests) > maxHistorySize {
+			m.RuntimeRequests = m.RuntimeRequests[len(m.RuntimeRequests)-maxHistorySize:]
 		}
+
+		// Removed tea.Println() - all output now goes through View()
 
 		if strings.HasSuffix(r.URL.Path, "/graphiql") {
 			handler := playground.Handler("GraphiQL", strings.TrimSuffix(r.URL.Path, "/graphiql")+"/graphql")
@@ -667,10 +694,16 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m *Model) View() string {
 	b := strings.Builder{}
 
-	// lipgloss will automatically wrap any text based on the current dimensions of the user's term.
+	// Use MaxWidth to constrain content without forcing padding
+	// This will wrap text that exceeds the terminal width
+	width := m.width
+	if width == 0 {
+		width = 80 // Default width if terminal size not yet detected
+	}
+
 	s := lipgloss.
 		NewStyle().
-		MaxWidth(m.width).
+		MaxWidth(width).
 		MaxHeight(m.height)
 
 	b.WriteString(renderRun(m))

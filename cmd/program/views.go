@@ -9,6 +9,7 @@ import (
 	"github.com/Masterminds/semver/v3"
 	"github.com/charmbracelet/bubbles/table"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/mitchellh/go-wordwrap"
 	"github.com/teamkeel/keel/colors"
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/db"
@@ -43,28 +44,30 @@ func renderRun(m *Model) string {
 	}
 
 	if m.Mode == ModeRun {
-		b.WriteString("Running Keel app in directory: ")
-		b.WriteString(colors.White(m.ProjectDir).String())
-		b.WriteString("\n")
+		w := NewViewWriter(m.width)
+
+		w.WriteWrapped("Running Keel app in directory: " + colors.White(m.ProjectDir).String())
+		w.Newline()
 
 		if m.DatabaseConnInfo != nil {
-			b.WriteString("Connect to your database using: ")
-			b.WriteString(colors.Cyan(fmt.Sprintf("psql -Atx \"%s\"", m.DatabaseConnInfo.String())).Highlight().String())
-			b.WriteString("\n")
+			connStr := fmt.Sprintf("psql -Atx \"%s\"", m.DatabaseConnInfo.String())
+			w.WriteWithPrefix("Connect to your database using: ", colors.Cyan(connStr).Highlight().String())
+			w.Newline()
 		}
 
 		if m.LatestVersion != nil {
 			currentVersion, _ := semver.NewVersion(runtime.GetVersion())
 			if currentVersion != nil && currentVersion.LessThan(m.LatestVersion) {
-				b.WriteString("\n")
-				b.WriteString(colors.Red(fmt.Sprintf("There is a new version of Keel available. Please update to v%s by running this command:", m.LatestVersion.String())).String())
-				b.WriteString("\n")
-				b.WriteString(colors.White("$ ").String())
-				b.WriteString(colors.Yellow("npm install -g keel").String())
-				b.WriteString("\n")
+				w.Newline()
+				w.WriteWrapped(colors.Red(fmt.Sprintf("There is a new version of Keel available. Please update to v%s by running this command:", m.LatestVersion.String())).String())
+				w.Newline()
+				w.Write(colors.White("$ ").String())
+				w.Write(colors.Yellow("npm install -g keel").String())
+				w.Newline()
 			}
 		}
 
+		b.WriteString(w.String())
 		b.WriteString("\n")
 	}
 
@@ -191,6 +194,31 @@ func renderRun(m *Model) string {
 		}
 	}
 
+	// Display recent function logs and runtime requests when running
+	if m.Status == StatusRunning && m.Mode == ModeRun {
+		const maxLogsToDisplay = 20
+
+		// Display recent function logs with wrapping
+		startIdx := 0
+		if len(m.FunctionsLog) > maxLogsToDisplay {
+			startIdx = len(m.FunctionsLog) - maxLogsToDisplay
+		}
+		for i := startIdx; i < len(m.FunctionsLog); i++ {
+			b.WriteString(renderFunctionLogWrapped(m.FunctionsLog[i], m.width))
+			b.WriteString("\n")
+		}
+
+		// Display recent runtime requests with wrapping
+		startIdx = 0
+		if len(m.RuntimeRequests) > maxLogsToDisplay {
+			startIdx = len(m.RuntimeRequests) - maxLogsToDisplay
+		}
+		for i := startIdx; i < len(m.RuntimeRequests); i++ {
+			b.WriteString(renderRequestLogWrapped(m.RuntimeRequests[i], m.width))
+			b.WriteString("\n")
+		}
+	}
+
 	if m.Mode == ModeRun {
 		b.WriteString("\n")
 		b.WriteString(colors.White("Press ").String())
@@ -203,34 +231,35 @@ func renderRun(m *Model) string {
 }
 
 func renderError(m *Model) string {
-	b := strings.Builder{}
+	w := NewViewWriter(m.width)
 
 	switch m.Status {
 	case StatusCheckingDependencies:
 		incorrectNodeVersionErr := &node.IncorrectNodeVersionError{}
 		if errors.As(m.Err, &incorrectNodeVersionErr) {
-			b.WriteString(fmt.Sprintf("❌ You have Node %s installed but the minimum required is %s", incorrectNodeVersionErr.Current, incorrectNodeVersionErr.Minimum))
+			w.WriteWrappedF("❌ You have Node %s installed but the minimum required is %s",
+				incorrectNodeVersionErr.Current, incorrectNodeVersionErr.Minimum)
 		} else if errors.Is(m.Err, &node.NodeNotFoundError{}) {
-			b.WriteString("❌ Node is not installed or the executable's location is not added to $PATH")
+			w.WriteWrapped("❌ Node is not installed or the executable's location is not added to $PATH")
 		} else {
-			b.WriteString("❌ There is an issue with your dependencies:\n\n")
-			b.WriteString(m.Err.Error())
+			w.Write("❌ There is an issue with your dependencies:\n\n")
+			w.WriteWrapped(m.Err.Error())
 		}
 	case StatusInitialized:
-		b.WriteString("❌ There was an error initialising the Keel project:\n\n")
-		b.WriteString(m.Err.Error())
+		w.Write("❌ There was an error initialising the Keel project:\n\n")
+		w.WriteWrapped(m.Err.Error())
 	case StatusSetupDatabase:
-		b.WriteString("❌ There was an error starting the database:\n\n")
-		b.WriteString(m.Err.Error())
+		w.Write("❌ There was an error starting the database:\n\n")
+		w.WriteWrapped(m.Err.Error())
 
 	case StatusSetupFunctions:
 		npmInstallErr := &node.NpmInstallError{}
 		if errors.As(m.Err, &npmInstallErr) {
-			b.WriteString("❌ There was an error installing function dependencies:\n\n")
-			b.WriteString(npmInstallErr.Output)
+			w.Write("❌ There was an error installing function dependencies:\n\n")
+			w.WriteWrapped(npmInstallErr.Output)
 		} else {
-			b.WriteString("❌ There was an error setting up your project:\n\n")
-			b.WriteString(m.Err.Error())
+			w.Write("❌ There was an error setting up your project:\n\n")
+			w.WriteWrapped(m.Err.Error())
 		}
 
 	case StatusLoadSchema:
@@ -239,84 +268,248 @@ func renderError(m *Model) string {
 
 		switch {
 		case errors.As(m.Err, &validationErrors):
-			b.WriteString("❌ The following errors were found in your schema files:\n\n")
+			w.Write("❌ The following errors were found in your schema files:\n\n")
 			s := validationErrors.ErrorsToAnnotatedSchema(m.SchemaFiles)
-			b.WriteString(s)
+			w.Write(s)
 		case errors.As(m.Err, &configErrors):
-			b.WriteString("❌ The following errors were found in your ")
-			b.WriteString(colors.Yellow("keelconfig.yaml").String())
-			b.WriteString(" file:\n\n")
+			w.Write("❌ The following errors were found in your ")
+			w.Write(colors.Yellow("keelconfig.yaml").String())
+			w.Write(" file:\n\n")
 			for _, v := range configErrors.Errors {
-				b.WriteString(" - ")
-				b.WriteString(colors.Red(v.Message).String())
-				b.WriteString("\n")
+				w.WriteWithPrefix(" - ", colors.Red(v.Message).String())
+				w.Newline()
 			}
 		case m.Err == schema.ErrNoSchemaFiles:
-			b.WriteString("❌ No Keel schema files found in: ")
-			b.WriteString(colors.White(m.ProjectDir).String())
+			w.WriteWrapped("❌ No Keel schema files found in: " + colors.White(m.ProjectDir).String())
 		default:
-			b.WriteString("❌ There was an error loading your schema:\n\n")
-			b.WriteString(m.Err.Error())
+			w.Write("❌ There was an error loading your schema:\n\n")
+			w.WriteWrapped(m.Err.Error())
 		}
 
 	case StatusRunMigrations:
-		b.WriteString("❌ There was an error updating your database schema:\n\n")
+		w.Write("❌ There was an error updating your database schema:\n\n")
 
 		dbErr := &db.DbError{}
 		if errors.As(m.Err, &dbErr) {
-			b.WriteString(colors.Red("Error: ").String())
-			b.WriteString(colors.Red(dbErr.Message).String())
-			b.WriteString(colors.Red(fmt.Sprintf(" (SQLSTATE Code: %s)", dbErr.PgErrCode)).String())
-			b.WriteString("\n")
+			w.WriteWrapped(colors.Red("Error: ").String() + colors.Red(dbErr.Message).String() +
+				colors.Red(fmt.Sprintf(" (SQLSTATE Code: %s)", dbErr.PgErrCode)).String())
+			w.Newline()
 
 			if dbErr.Table != "" {
-				b.WriteString(colors.Red("Table: ").String())
-				b.WriteString(colors.Red(dbErr.Table).String())
-				b.WriteString("\n")
+				w.WriteWrapped(colors.Red("Table: ").String() + colors.Red(dbErr.Table).String())
+				w.Newline()
 			}
 
 			if len(dbErr.Columns) > 0 {
-				b.WriteString(colors.Red("Column(s): ").String())
-				b.WriteString(colors.Red(strings.Join(dbErr.Columns, ", ")).String())
-				b.WriteString("\n")
+				w.WriteWrapped(colors.Red("Column(s): ").String() + colors.Red(strings.Join(dbErr.Columns, ", ")).String())
+				w.Newline()
 			}
 		} else {
-			b.WriteString(colors.Red(m.Err.Error()).String())
+			w.WriteWrapped(colors.Red(m.Err.Error()).String())
 		}
 
 	case StatusUpdateFunctions:
 		tscError := &TypeScriptError{}
 		if errors.As(m.Err, &tscError) && tscError.Output != "" {
 			if strings.Contains(tscError.Output, "No inputs were found in config file") {
-				b.WriteString(fmt.Sprintf("❌ Your functions/ folder is empty. Please run %s", colors.Cyan("keel generate").String()))
+				w.WriteWrappedF("❌ Your functions/ folder is empty. Please run %s", colors.Cyan("keel generate").String())
 			} else {
-				b.WriteString("❌ We found the following errors in your function code:\n\n")
-				b.WriteString(tscError.Output)
+				w.Write("❌ We found the following errors in your function code:\n\n")
+				w.WriteWrapped(tscError.Output)
 			}
 		} else {
-			b.WriteString("❌ There was an error running your functions:\n\n")
-			b.WriteString(m.Err.Error())
+			w.Write("❌ There was an error running your functions:\n\n")
+			w.WriteWrapped(m.Err.Error())
 		}
 
 	case StatusStartingFunctions:
 		startFunctionsError := &StartFunctionsError{}
-		b.WriteString("❌ There was an error running your functions:\n\n")
-		b.WriteString(m.Err.Error())
+		w.Write("❌ There was an error running your functions:\n\n")
+		w.WriteWrapped(m.Err.Error())
 		if errors.As(m.Err, &startFunctionsError) && startFunctionsError.Output != "" {
-			b.WriteString("\n\n")
-			b.WriteString(startFunctionsError.Output)
+			w.Write("\n\n")
+			w.WriteWrapped(startFunctionsError.Output)
 		}
 	case StatusErrorStartingServers:
-		b.WriteString("❌ There was an error starting the local servers:\n\n")
-		b.WriteString(m.Err.Error())
+		w.Write("❌ There was an error starting the local servers:\n\n")
+		w.WriteWrapped(m.Err.Error())
 
 	default:
-		b.WriteString("❌ Oh no, looks like something went wrong:\n\n")
-		b.WriteString(m.Err.Error())
+		w.Write("❌ Oh no, looks like something went wrong:\n\n")
+		w.WriteWrapped(m.Err.Error())
 	}
 
-	b.WriteString("\n")
-	return b.String()
+	w.Newline()
+	return w.String()
+}
+
+// ViewWriter is a helper for writing text with automatic wrapping
+// based on terminal width. This improves DX by not requiring width
+// to be passed on every call.
+type ViewWriter struct {
+	width   int
+	builder *strings.Builder
+}
+
+// NewViewWriter creates a new ViewWriter with the given terminal width
+func NewViewWriter(width int) *ViewWriter {
+	if width <= 0 {
+		width = 80
+	}
+	return &ViewWriter{
+		width:   width,
+		builder: &strings.Builder{},
+	}
+}
+
+// Write writes a string directly without wrapping
+func (w *ViewWriter) Write(s string) {
+	w.builder.WriteString(s)
+}
+
+// Writef writes a formatted string directly without wrapping
+func (w *ViewWriter) Writef(format string, args ...interface{}) {
+	w.builder.WriteString(fmt.Sprintf(format, args...))
+}
+
+// WriteWrapped writes text with smart wrapping (word wrap + hard wrap for long words)
+// This handles both normal text and long paths/URLs without spaces
+func (w *ViewWriter) WriteWrapped(text string) {
+	wrapped := smartWrapText(text, w.width)
+	w.builder.WriteString(wrapped)
+}
+
+// WriteWrappedF writes formatted text with smart wrapping
+func (w *ViewWriter) WriteWrappedF(format string, args ...interface{}) {
+	text := fmt.Sprintf(format, args...)
+	w.WriteWrapped(text)
+}
+
+// WriteWrappedHard writes text with hard wrapping (breaks anywhere, not just spaces)
+// Useful when you want to force break at exact width regardless of spaces
+func (w *ViewWriter) WriteWrappedHard(text string) {
+	wrapped := hardWrapText(text, w.width)
+	w.builder.WriteString(wrapped)
+}
+
+// WriteWithPrefix writes text with a prefix, wrapping and indenting continuation lines
+// Uses smart wrapping to handle both regular text and long paths/URLs
+func (w *ViewWriter) WriteWithPrefix(prefix, text string) {
+	prefixLen := len(prefix)
+	wrapped := smartWrapText(text, w.width-prefixLen)
+	lines := strings.Split(wrapped, "\n")
+
+	if len(lines) == 0 {
+		return
+	}
+
+	// First line with prefix
+	w.builder.WriteString(prefix)
+	w.builder.WriteString(lines[0])
+
+	// Subsequent lines with indentation
+	if len(lines) > 1 {
+		indent := strings.Repeat(" ", prefixLen)
+		for i := 1; i < len(lines); i++ {
+			w.builder.WriteString("\n")
+			w.builder.WriteString(indent)
+			w.builder.WriteString(lines[i])
+		}
+	}
+}
+
+// Newline writes a newline character
+func (w *ViewWriter) Newline() {
+	w.builder.WriteString("\n")
+}
+
+// String returns the accumulated string
+func (w *ViewWriter) String() string {
+	return w.builder.String()
+}
+
+// wrapText wraps text to fit within the given width
+func wrapText(text string, width int) string {
+	if width <= 0 {
+		width = 80
+	}
+	// Reserve some space for prefix/styling
+	wrapWidth := uint(width - 2)
+	if wrapWidth < 20 {
+		wrapWidth = 20
+	}
+	return wordwrap.WrapString(text, wrapWidth)
+}
+
+// hardWrapText wraps text by breaking at exact width, even within words
+// This is useful for long paths, URLs, or content without spaces
+func hardWrapText(text string, width int) string {
+	if width <= 0 {
+		width = 80
+	}
+	// For hard wrapping, allow any width (even small ones for paths)
+	// Just ensure it's at least 10 to avoid unreasonable wrapping
+	if width < 10 {
+		width = 10
+	}
+
+	if len(text) <= width {
+		return text
+	}
+
+	var result strings.Builder
+	remaining := text
+
+	for len(remaining) > 0 {
+		if len(remaining) <= width {
+			result.WriteString(remaining)
+			break
+		}
+
+		// Take width characters
+		chunk := remaining[:width]
+		remaining = remaining[width:]
+
+		result.WriteString(chunk)
+		if len(remaining) > 0 {
+			result.WriteString("\n")
+		}
+	}
+
+	return result.String()
+}
+
+// smartWrapText intelligently wraps text, using word wrapping when possible
+// but falling back to hard wrapping for long words without spaces
+func smartWrapText(text string, width int) string {
+	if width <= 0 {
+		width = 80
+	}
+	if width < 20 {
+		width = 20
+	}
+
+	// First try word wrapping
+	wrapped := wordwrap.WrapString(text, uint(width-2))
+
+	// Check if any line is still too long (no spaces to break on)
+	lines := strings.Split(wrapped, "\n")
+	var result strings.Builder
+
+	for i, line := range lines {
+		if len(line) <= width {
+			result.WriteString(line)
+		} else {
+			// Line is too long, apply hard wrapping to this line
+			result.WriteString(hardWrapText(line, width))
+		}
+
+		if i < len(lines)-1 {
+			result.WriteString("\n")
+		}
+	}
+
+	return result.String()
 }
 
 func renderFunctionLog(log *FunctionLog) string {
@@ -326,6 +519,13 @@ func renderFunctionLog(log *FunctionLog) string {
 	b.WriteString(log.Value)
 
 	return b.String()
+}
+
+func renderFunctionLogWrapped(log *FunctionLog, width int) string {
+	w := NewViewWriter(width)
+	prefix := colors.Yellow("[Functions]").String() + " "
+	w.WriteWithPrefix(prefix, log.Value)
+	return w.String()
 }
 
 func renderRequestLog(request *RuntimeRequest) string {
@@ -338,6 +538,13 @@ func renderRequestLog(request *RuntimeRequest) string {
 	b.WriteString(request.Path)
 
 	return b.String()
+}
+
+func renderRequestLogWrapped(request *RuntimeRequest, width int) string {
+	w := NewViewWriter(width)
+	prefix := colors.Cyan("[Request]").String() + " " + colors.White(request.Method).String() + " "
+	w.WriteWithPrefix(prefix, request.Path)
+	return w.String()
 }
 
 func RenderSecrets(secrets map[string]string) string {

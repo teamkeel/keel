@@ -53,7 +53,8 @@ func (m *InitModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = msg.Width
 		m.height = msg.Height
 
-		return m, nil
+		// Clear screen and request full redraw on resize to prevent artifacts
+		return m, tea.ClearScreen
 	case InitialisedMsg:
 		m.Status = StatusInitialized
 		m.GeneratedFiles = msg.GeneratedFiles

@@ -24,7 +24,11 @@ var clientCmd = &cobra.Command{
 			Watch:      flagClientWatch,
 		}
 
-		_, err := tea.NewProgram(model).Run()
+		// Use altscreen for proper screen isolation and clearing
+		_, err := tea.NewProgram(
+			model,
+			tea.WithAltScreen(),
+		).Run()
 		if err != nil {
 			return err
 		}
