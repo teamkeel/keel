@@ -1,7 +1,6 @@
 package openapi_test
 
 import (
-	"context"
 	"encoding/json"
 	"os"
 	"path/filepath"
@@ -83,13 +82,13 @@ func TestGeneration(t *testing.T) {
 			jsonSchema := openapi.OpenAPI{}
 			switch c.schemaType {
 			case apiType:
-				jsonSchema = openapi.Generate(context.Background(), schema, schema.GetApis()[0])
+				jsonSchema = openapi.Generate(t.Context(), schema, schema.GetApis()[0])
 			case jobType:
-				jsonSchema = openapi.GenerateJob(context.Background(), schema, schema.GetJobs()[0].GetName())
+				jsonSchema = openapi.GenerateJob(t.Context(), schema, schema.GetJobs()[0].GetName())
 			case flowType:
-				jsonSchema = openapi.GenerateFlows(context.Background(), schema)
+				jsonSchema = openapi.GenerateFlows(t.Context(), schema)
 			case taskType:
-				jsonSchema = openapi.GenerateTasks(context.Background(), schema)
+				jsonSchema = openapi.GenerateTasks(t.Context(), schema)
 			}
 
 			actual, err := json.Marshal(jsonSchema)

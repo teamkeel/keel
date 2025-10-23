@@ -1,7 +1,6 @@
 package tools
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -45,7 +44,7 @@ func TestService_GetTools(t *testing.T) {
 			// create tools service with test case schema and test case tools config (testcaseDir/tools)
 			toolsSvc := NewService(WithSchema(schema), WithFileStorage(testCaseDir))
 
-			tools, err := toolsSvc.GetTools(context.Background())
+			tools, err := toolsSvc.GetTools(t.Context())
 			require.NoError(t, err)
 
 			// check all expected configs

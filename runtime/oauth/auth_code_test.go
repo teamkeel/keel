@@ -1,7 +1,6 @@
 package oauth_test
 
 import (
-	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -10,7 +9,7 @@ import (
 )
 
 func TestNewAuthCode_NotEmpty(t *testing.T) {
-	ctx, database, _ := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
+	ctx, database, _ := keeltesting.MakeContext(t, t.Context(), authTestSchema, true)
 	defer database.Close()
 
 	code, err := oauth.NewAuthCode(ctx, "identity_id")
@@ -19,14 +18,14 @@ func TestNewAuthCode_NotEmpty(t *testing.T) {
 }
 
 func TestNewAuthCode_ErrorOnEmptyIdentityId(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	_, err := oauth.NewAuthCode(ctx, "")
 	require.Error(t, err)
 }
 
 func TestConsumeAuthCode_Success(t *testing.T) {
-	ctx, database, _ := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
+	ctx, database, _ := keeltesting.MakeContext(t, t.Context(), authTestSchema, true)
 	defer database.Close()
 
 	code, err := oauth.NewAuthCode(ctx, "identity_id")
@@ -39,7 +38,7 @@ func TestConsumeAuthCode_Success(t *testing.T) {
 }
 
 func TestConsumeAuthCode_DoesNotExist(t *testing.T) {
-	ctx, database, _ := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
+	ctx, database, _ := keeltesting.MakeContext(t, t.Context(), authTestSchema, true)
 	defer database.Close()
 
 	isValid, identityId, err := oauth.ConsumeAuthCode(ctx, "notexists")
@@ -49,7 +48,7 @@ func TestConsumeAuthCode_DoesNotExist(t *testing.T) {
 }
 
 func TestConsumeAuthCode_AlreadyConsumed(t *testing.T) {
-	ctx, database, _ := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
+	ctx, database, _ := keeltesting.MakeContext(t, t.Context(), authTestSchema, true)
 	defer database.Close()
 
 	code, err := oauth.NewAuthCode(ctx, "identity_id")

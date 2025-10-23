@@ -130,7 +130,7 @@ func Run(ctx context.Context, args *RunArgs) error {
 				urn := event.ResOutputsEvent.Metadata.URN
 				if t, ok := pending[urn]; ok {
 					urn := cleanURN(urn)
-					log(ctx, "%s %s - %s %s", IconPipe, gray(urn), green("done"), t.Since())
+					log(ctx, "%s %s - %s %s", IconPipe, gray("%s", urn), green("done"), t.Since())
 				}
 			default:
 				// for debugging other events...
@@ -183,7 +183,7 @@ func Run(ctx context.Context, args *RunArgs) error {
 		return err
 	}
 
-	log(ctx, "%s API URL: %s", IconTick, orange(url))
+	log(ctx, "%s API URL: %s", IconTick, orange("%s", url))
 	return nil
 }
 

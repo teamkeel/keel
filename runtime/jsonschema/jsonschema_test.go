@@ -1,7 +1,6 @@
 package jsonschema_test
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -61,7 +60,7 @@ func TestJSONSchemaGeneration(t *testing.T) {
 			action := schema.FindAction("testAction")
 			require.NotNil(t, action, "action with name testAction could not be found")
 
-			jsonSchema := jsonschema.JSONSchemaForActionInput(context.Background(), schema, action)
+			jsonSchema := jsonschema.JSONSchemaForActionInput(t.Context(), schema, action)
 			jsonSchemaBytes, err := json.Marshal(jsonSchema)
 			require.NoError(t, err)
 
@@ -914,7 +913,7 @@ func TestValidateRequest(t *testing.T) {
 
 				action := schema.FindAction(f.opName)
 
-				result, err := jsonschema.ValidateRequest(context.Background(), schema, action, req)
+				result, err := jsonschema.ValidateRequest(t.Context(), schema, action, req)
 				require.NoError(t, err)
 				require.NotNil(t, result)
 

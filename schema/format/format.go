@@ -586,9 +586,9 @@ func printRoute(writer *Writer, routes *parser.RoutesNode) {
 				writer.comments(route, func() {
 					writer.write("%s", strings.ToLower(route.Method.Value))
 					writer.write("(")
-					writer.write(route.Pattern.Value)
+					writer.write("%s", route.Pattern.Value)
 					writer.write(", ")
-					writer.write(route.Handler.Value)
+					writer.write("%s", route.Handler.Value)
 					writer.writeLine(")")
 				})
 			}

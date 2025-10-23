@@ -1,7 +1,6 @@
 package oauth_test
 
 import (
-	"context"
 	"testing"
 	"time"
 
@@ -15,7 +14,7 @@ import (
 var authTestSchema = `model Post{}`
 
 func TestNewRefreshToken_NotEmpty(t *testing.T) {
-	ctx, database, _ := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
+	ctx, database, _ := keeltesting.MakeContext(t, t.Context(), authTestSchema, true)
 	defer database.Close()
 
 	refreshToken, err := oauth.NewRefreshToken(ctx, "identity_id")
@@ -24,14 +23,14 @@ func TestNewRefreshToken_NotEmpty(t *testing.T) {
 }
 
 func TestNewRefreshToken_ErrorOnEmptyIdentityId(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	_, err := oauth.NewRefreshToken(ctx, "")
 	require.Error(t, err)
 }
 
 func TestRotateRefreshToken_Valid(t *testing.T) {
-	ctx, database, _ := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
+	ctx, database, _ := keeltesting.MakeContext(t, t.Context(), authTestSchema, true)
 	defer database.Close()
 
 	refreshToken, err := oauth.NewRefreshToken(ctx, "identity_id")
@@ -52,7 +51,7 @@ func TestRotateRefreshToken_Valid(t *testing.T) {
 }
 
 func TestRotateRefreshToken_Expired(t *testing.T) {
-	ctx, database, _ := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
+	ctx, database, _ := keeltesting.MakeContext(t, t.Context(), authTestSchema, true)
 	defer database.Close()
 
 	// Set up auth config
@@ -77,7 +76,7 @@ func TestRotateRefreshToken_Expired(t *testing.T) {
 }
 
 func TestRotateRefreshToken_ReuseRefreshTokenNotValid(t *testing.T) {
-	ctx, database, _ := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
+	ctx, database, _ := keeltesting.MakeContext(t, t.Context(), authTestSchema, true)
 	defer database.Close()
 
 	refreshToken, err := oauth.NewRefreshToken(ctx, "identity_id")
@@ -97,7 +96,7 @@ func TestRotateRefreshToken_ReuseRefreshTokenNotValid(t *testing.T) {
 }
 
 func TestValidateRefreshToken_Valid(t *testing.T) {
-	ctx, database, _ := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
+	ctx, database, _ := keeltesting.MakeContext(t, t.Context(), authTestSchema, true)
 	defer database.Close()
 
 	refreshToken, err := oauth.NewRefreshToken(ctx, "identity_id")
@@ -110,7 +109,7 @@ func TestValidateRefreshToken_Valid(t *testing.T) {
 }
 
 func TestValidateRefreshToken_Expired(t *testing.T) {
-	ctx, database, _ := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
+	ctx, database, _ := keeltesting.MakeContext(t, t.Context(), authTestSchema, true)
 	defer database.Close()
 
 	// Set up auth config
@@ -134,7 +133,7 @@ func TestValidateRefreshToken_Expired(t *testing.T) {
 }
 
 func TestRevokeRefreshToken_Unauthorised(t *testing.T) {
-	ctx, database, _ := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
+	ctx, database, _ := keeltesting.MakeContext(t, t.Context(), authTestSchema, true)
 	defer database.Close()
 
 	refreshToken, err := oauth.NewRefreshToken(ctx, "identity_id")
@@ -149,7 +148,7 @@ func TestRevokeRefreshToken_Unauthorised(t *testing.T) {
 }
 
 func TestRevokeRefreshToken_MultipleForIdentity(t *testing.T) {
-	ctx, database, _ := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
+	ctx, database, _ := keeltesting.MakeContext(t, t.Context(), authTestSchema, true)
 	defer database.Close()
 
 	refreshToken1, err := oauth.NewRefreshToken(ctx, "identity_id")

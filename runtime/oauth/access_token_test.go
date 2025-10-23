@@ -18,7 +18,7 @@ import (
 )
 
 func newContextWithPK() context.Context {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	pk, _ := testhelpers.GetEmbeddedPrivateKey()
 	ctx = runtimectx.WithPrivateKey(ctx, pk)
@@ -87,7 +87,7 @@ func TestAccessTokenValidationDifferentPrivateKey(t *testing.T) {
 }
 
 func TestAccessTokenIsRSAMethodWithPrivateKey(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	identityId := ksuid.New()
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -109,7 +109,7 @@ func TestAccessTokenIsRSAMethodWithPrivateKey(t *testing.T) {
 }
 
 func TestAccessTokenClaims(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	identityId := ksuid.New()
 
 	seconds := 360
