@@ -459,7 +459,7 @@ func printApi(writer *Writer, api *parser.APINode) {
 														writer.writeLine("")
 													}
 													writer.comments(action, func() {
-														writer.write(action.Name.Value)
+														writer.write("%s", action.Name.Value)
 													})
 												}
 												writer.writeLine("")
@@ -526,7 +526,7 @@ func printAttributes(writer *Writer, attributes []*parser.AttributeNode) {
 							writer.write("%s: ", lowerCamel(arg.Label.Value))
 						}
 						expr := arg.Expression.CleanString()
-						writer.write(expr)
+						writer.write("%s", expr)
 					})
 				}
 
@@ -584,7 +584,7 @@ func printRoute(writer *Writer, routes *parser.RoutesNode) {
 		writer.comments(routes, func() {
 			for _, route := range routes.Routes {
 				writer.comments(route, func() {
-					writer.write(strings.ToLower(route.Method.Value))
+					writer.write("%s", strings.ToLower(route.Method.Value))
 					writer.write("(")
 					writer.write(route.Pattern.Value)
 					writer.write(", ")

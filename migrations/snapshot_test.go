@@ -1,7 +1,6 @@
 package migrations
 
 import (
-	"context"
 	"database/sql"
 	"strings"
 	"testing"
@@ -323,7 +322,7 @@ func TestSnapshotDatabase(t *testing.T) {
 	})
 
 	t.Run("handles_special_characters_in_strings", func(t *testing.T) {
-		ctx := context.Background()
+		ctx := t.Context()
 
 		// Create a test user with special characters
 		_, err := migrations.database.ExecuteStatement(ctx, `
@@ -388,7 +387,7 @@ func TestSnapshotDatabase(t *testing.T) {
 	})
 
 	t.Run("can_be_reapplied_to_recreate_the_database_state", func(t *testing.T) {
-		ctx := context.Background()
+		ctx := t.Context()
 
 		// Get the initial snapshot
 		initialSnapshot, err := migrations.SnapshotDatabase(ctx)
@@ -448,7 +447,7 @@ func TestSnapshotDatabase(t *testing.T) {
 	})
 
 	t.Run("handles_null_array_values", func(t *testing.T) {
-		ctx := context.Background()
+		ctx := t.Context()
 
 		// Insert a user with NULL array fields
 		_, err := migrations.database.ExecuteStatement(ctx, `
@@ -515,7 +514,7 @@ func TestSnapshotDatabase(t *testing.T) {
 	})
 
 	t.Run("handles_keel_storage_table", func(t *testing.T) {
-		ctx := context.Background()
+		ctx := t.Context()
 
 		// Create keel_storage table if it doesn't exist
 		_, err := migrations.database.ExecuteStatement(ctx, `

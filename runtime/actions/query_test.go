@@ -4153,7 +4153,7 @@ func TestDeleteStatement(t *testing.T) {
 	require.NoError(t, err)
 	query.Select(actions.AllFields())
 	query.AppendReturning(actions.AllFields())
-	stmt := query.DeleteStatement(context.Background())
+	stmt := query.DeleteStatement(t.Context())
 
 	expected := `
 		DELETE FROM "person" WHERE "person"."id" IS NOT DISTINCT FROM ? RETURNING "person".*`
@@ -4162,7 +4162,7 @@ func TestDeleteStatement(t *testing.T) {
 }
 
 func TestInsertStatementWithAuditing(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	ctx = withIdentity(ctx)
 	ctx = withTracing(t, ctx)
 
@@ -4188,7 +4188,7 @@ func TestInsertStatementWithAuditing(t *testing.T) {
 }
 
 func TestUpdateStatementWithAuditing(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	ctx = withIdentity(ctx)
 	ctx = withTracing(t, ctx)
 
@@ -4215,7 +4215,7 @@ func TestUpdateStatementWithAuditing(t *testing.T) {
 }
 
 func TestUpdateStatementNoReturnsWithAuditing(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	ctx = withIdentity(ctx)
 	ctx = withTracing(t, ctx)
 
@@ -4240,7 +4240,7 @@ func TestUpdateStatementNoReturnsWithAuditing(t *testing.T) {
 }
 
 func TestDeleteStatementWithAuditing(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	ctx = withIdentity(ctx)
 	ctx = withTracing(t, ctx)
 
@@ -4265,7 +4265,7 @@ func TestDeleteStatementWithAuditing(t *testing.T) {
 }
 
 func TestDeleteStatementNoReturnWithAuditing(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	ctx = withIdentity(ctx)
 	ctx = withTracing(t, ctx)
 
