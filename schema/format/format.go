@@ -361,9 +361,9 @@ func printActionInputs(writer *Writer, inputs []*parser.ActionInputNode, isArbit
 
 					// if its an arbitrary function, then we dont want to automatically lowercase the input names
 					if isArbitraryFunction {
-						writer.write(fragment.Fragment)
+						writer.write("%s", fragment.Fragment)
 					} else {
-						writer.write(lowerCamel(fragment.Fragment))
+						writer.write("%s", lowerCamel(fragment.Fragment))
 					}
 				}
 			}
@@ -449,7 +449,7 @@ func printApi(writer *Writer, api *parser.APINode) {
 						writer.block(func() {
 							for _, model := range section.Models {
 								writer.comments(model, func() {
-									writer.write(camel(model.Name.Value))
+									writer.write("%s", camel(model.Name.Value))
 									if len(model.Sections) == 1 {
 										writer.block(func() {
 											writer.write("actions")

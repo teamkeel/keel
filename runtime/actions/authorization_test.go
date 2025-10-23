@@ -1,7 +1,6 @@
 package actions_test
 
 import (
-	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -1452,7 +1451,7 @@ func TestPermissionQueryBuilder(t *testing.T) {
 		testCase := tc
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
-			ctx := context.Background()
+			ctx := t.Context()
 
 			if testCase.identity != nil {
 				ctx = auth.WithIdentity(ctx, testCase.identity)

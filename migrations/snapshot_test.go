@@ -69,7 +69,7 @@ func setupTestDatabase(t *testing.T) (*Migrations, func()) {
 	}
 
 	// Create migrations instance
-	ctx := context.Background()
+	ctx := t.Context()
 
 	// Use the docker compose database
 	dbConnInfo := &db.ConnectionInfo{
@@ -280,7 +280,7 @@ func TestSnapshotDatabase(t *testing.T) {
 	defer cleanup()
 
 	t.Run("generates_correct_SQL_structure", func(t *testing.T) {
-		sql, err := migrations.SnapshotDatabase(context.Background())
+		sql, err := migrations.SnapshotDatabase(t.Context())
 		require.NoError(t, err)
 
 		// Check for transaction and constraint management
@@ -291,7 +291,7 @@ func TestSnapshotDatabase(t *testing.T) {
 	})
 
 	t.Run("excludes_computed_fields", func(t *testing.T) {
-		sql, err := migrations.SnapshotDatabase(context.Background())
+		sql, err := migrations.SnapshotDatabase(t.Context())
 		require.NoError(t, err)
 
 		// Post table should not include wordCount field
@@ -299,7 +299,7 @@ func TestSnapshotDatabase(t *testing.T) {
 	})
 
 	t.Run("excludes_sequence_fields", func(t *testing.T) {
-		sql, err := migrations.SnapshotDatabase(context.Background())
+		sql, err := migrations.SnapshotDatabase(t.Context())
 		require.NoError(t, err)
 
 		// Post table should not include permalink field
@@ -307,7 +307,7 @@ func TestSnapshotDatabase(t *testing.T) {
 	})
 
 	t.Run("handles_special_data_types", func(t *testing.T) {
-		sql, err := migrations.SnapshotDatabase(context.Background())
+		sql, err := migrations.SnapshotDatabase(t.Context())
 		require.NoError(t, err)
 
 		// Check for proper handling of JSON

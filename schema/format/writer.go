@@ -28,7 +28,7 @@ func (w *Writer) writeLine(s string) {
 	if w.isStartOfLine() && s != "" {
 		w.b.WriteString(strings.Repeat(" ", w.currIndent))
 	}
-	w.b.WriteString(fmt.Sprintf(s + "\n"))
+	w.b.WriteString(fmt.Sprintf("%s\n", s))
 }
 
 func (w *Writer) write(s string, args ...any) {
