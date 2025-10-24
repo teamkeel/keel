@@ -66,7 +66,7 @@ func selectStack(ctx context.Context, args *SelectStackArgs) (*auto.Stack, error
 		return nil, err
 	}
 
-	log(ctx, "%s AWS plugin %s installed %s", IconTick, orange(awsPluginVersion), t.Since())
+	log(ctx, "%s AWS plugin %s installed %s", IconTick, orange("%s", awsPluginVersion), t.Since())
 
 	_, err = s.Refresh(ctx)
 	if err != nil {

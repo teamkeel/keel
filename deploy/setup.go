@@ -208,7 +208,7 @@ func setupPulumi(ctx context.Context, args *SetupPulumiArgs) (*PulumiConfig, err
 		SkipVersionCheck: true,
 	})
 	if err != nil {
-		log(ctx, "%s error installing Pulumi: %s", IconCross, gray(err.Error()))
+		log(ctx, "%s error installing Pulumi: %s", IconCross, gray("%s", err.Error()))
 		return nil, err
 	}
 
@@ -252,7 +252,7 @@ func createPrivateKeySecret(ctx context.Context, args *CreatePrivateKeySecretArg
 	if err != nil {
 		var ae smithy.APIError
 		if !errors.As(err, &ae) || ae.ErrorCode() != "ParameterNotFound" {
-			log(ctx, "%s error fetching private key secret from SSM: %s", IconCross, gray(err.Error()))
+			log(ctx, "%s error fetching private key secret from SSM: %s", IconCross, gray("%s", err.Error()))
 			return err
 		}
 	}
@@ -265,7 +265,7 @@ func createPrivateKeySecret(ctx context.Context, args *CreatePrivateKeySecretArg
 	t := NewTiming()
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
-		log(ctx, "%s error generating private key: %s", IconCross, gray(err.Error()))
+		log(ctx, "%s error generating private key: %s", IconCross, gray("%s", err.Error()))
 		return err
 	}
 
