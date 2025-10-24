@@ -86,7 +86,7 @@ func GetSecret(ctx context.Context, args *GetSecretArgs) (*types.Parameter, erro
 			log(ctx, "%s Error fetching secret %s from SSM: %s", IconCross, orange("%s", args.Key), gray("%s", err.Error()))
 			return nil, err
 		}
-		log(ctx, "%s Secret %s not set", IconCross, orange(args.Key))
+		log(ctx, "%s Secret %s not set", IconCross, orange("%s", args.Key))
 		return nil, err
 	}
 
@@ -164,10 +164,10 @@ func DeleteSecret(ctx context.Context, args *DeleteSecretArgs) error {
 	})
 	if err != nil {
 		if !isSmithyAPIError(err, "ParameterNotFound") {
-			log(ctx, "%s Error deleting secret from SSM: %s", IconCross, gray(err.Error()))
+			log(ctx, "%s Error deleting secret from SSM: %s", IconCross, gray("%s", err.Error()))
 			return err
 		}
-		log(ctx, "%s Secret %s not set", IconPipe, orange(args.Key))
+		log(ctx, "%s Secret %s not set", IconPipe, orange("%s", args.Key))
 		return nil
 	}
 
@@ -196,7 +196,7 @@ func secretSetup(ctx context.Context, args *SecretSetupArgs) (*SecretSetupResult
 	}
 
 	if conf.Config.Deploy == nil {
-		log(ctx, "%s Missing 'deploy' section in Keel config file %s", IconCross, orange(conf.Filename))
+		log(ctx, "%s Missing 'deploy' section in Keel config file %s", IconCross, orange("%s", conf.Filename))
 		return nil, errors.New("missing 'deploy' section in config file")
 	}
 

@@ -148,7 +148,7 @@ func setupPulumi(ctx context.Context, args *SetupPulumiArgs) (*PulumiConfig, err
 		t := NewTiming()
 		v, err := randomString(hex.EncodeToString)
 		if err != nil {
-			log(ctx, "%s error generating Pulumi state bucket name: %s", IconCross, gray(err.Error()))
+			log(ctx, "%s error generating Pulumi state bucket name: %s", IconCross, gray("%s", err.Error()))
 			return nil, err
 		}
 
@@ -164,7 +164,7 @@ func setupPulumi(ctx context.Context, args *SetupPulumiArgs) (*PulumiConfig, err
 			CreateBucketConfiguration: bucketConfig,
 		})
 		if err != nil {
-			log(ctx, "%s error creating Pulumi state bucket: %s", IconCross, gray(err.Error()))
+			log(ctx, "%s error creating Pulumi state bucket: %s", IconCross, gray("%s", err.Error()))
 			return nil, err
 		}
 
