@@ -18,7 +18,7 @@ import (
 )
 
 func newContextWithPK() context.Context {
-	ctx := t.Context()
+	ctx := context.Background()
 
 	pk, _ := testhelpers.GetEmbeddedPrivateKey()
 	ctx = runtimectx.WithPrivateKey(ctx, pk)
