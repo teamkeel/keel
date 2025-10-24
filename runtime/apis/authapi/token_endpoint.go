@@ -224,9 +224,8 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 				return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "the authorization code in the 'code' field is required", nil)
 			}
 
-			// Consume the auth code
-			var isValid bool
-			isValid, identityId, err := oauth.ConsumeAuthCode(ctx, authCode)
+			// Consume the auth code with PKCE data
+			authCodeData, isValid, err := oauth.ConsumeAuthCodeWithPKCE(ctx, authCode)
 			if err != nil {
 				return common.InternalServerErrorResponse(ctx, err)
 			}
@@ -235,13 +234,38 @@ func TokenEndpointHandler(schema *proto.Schema) common.HandlerFunc {
 				return jsonErrResponse(ctx, http.StatusUnauthorized, TokenErrInvalidClient, "possible causes may be that the auth code has been consumed or has expired", nil)
 			}
 
+			// Validate PKCE if code_challenge was provided during authorization
+			if authCodeData.CodeChallenge != nil && *authCodeData.CodeChallenge != "" {
+				codeVerifier, hasVerifier := inputs["code_verifier"].(string)
+				if !hasVerifier || codeVerifier == "" {
+					return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "code_verifier is required when PKCE was used", nil)
+				}
+
+				method := "S256"
+				if authCodeData.CodeChallengeMethod != nil {
+					method = *authCodeData.CodeChallengeMethod
+				}
+
+				if !oauth.ValidatePKCE(codeVerifier, *authCodeData.CodeChallenge, method) {
+					return jsonErrResponse(ctx, http.StatusUnauthorized, TokenErrInvalidClient, "invalid code_verifier", nil)
+				}
+			}
+
+			// Validate resource parameter if provided (RFC 8707)
+			if resource, hasResource := inputs["resource"].(string); hasResource && resource != "" {
+				// If auth code had a resource, it must match
+				if authCodeData.Resource != nil && *authCodeData.Resource != "" && *authCodeData.Resource != resource {
+					return jsonErrResponse(ctx, http.StatusBadRequest, TokenErrInvalidRequest, "resource parameter does not match authorization request", nil)
+				}
+			}
+
 			// Generate a refresh token.
-			refreshToken, err = oauth.NewRefreshToken(ctx, identityId)
+			refreshToken, err = oauth.NewRefreshToken(ctx, authCodeData.IdentityID)
 			if err != nil {
 				return common.InternalServerErrorResponse(ctx, err)
 			}
 
-			identity, err = actions.FindIdentityById(ctx, schema, identityId)
+			identity, err = actions.FindIdentityById(ctx, schema, authCodeData.IdentityID)
 			if err != nil {
 				return common.InternalServerErrorResponse(ctx, err)
 			}

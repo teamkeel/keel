@@ -134,7 +134,13 @@ func (m *Migrations) Apply(ctx context.Context, dryRun bool) error {
 	sql.WriteString("CREATE TABLE IF NOT EXISTS keel_refresh_token (token TEXT NOT NULL PRIMARY KEY, identity_id TEXT NOT NULL, created_at TIMESTAMP, expires_at TIMESTAMP);\n")
 	sql.WriteString("\n")
 
-	sql.WriteString("CREATE TABLE IF NOT EXISTS keel_auth_code (code TEXT NOT NULL PRIMARY KEY, identity_id TEXT NOT NULL, created_at TIMESTAMP, expires_at TIMESTAMP);\n")
+	sql.WriteString("CREATE TABLE IF NOT EXISTS keel_auth_code (code TEXT NOT NULL PRIMARY KEY, identity_id TEXT NOT NULL, created_at TIMESTAMP, expires_at TIMESTAMP, code_challenge TEXT, code_challenge_method TEXT, resource TEXT);\n")
+	sql.WriteString("\n")
+
+	// Add PKCE columns to existing tables (for OAuth 2.1 / MCP support)
+	sql.WriteString("ALTER TABLE keel_auth_code ADD COLUMN IF NOT EXISTS code_challenge TEXT;\n")
+	sql.WriteString("ALTER TABLE keel_auth_code ADD COLUMN IF NOT EXISTS code_challenge_method TEXT;\n")
+	sql.WriteString("ALTER TABLE keel_auth_code ADD COLUMN IF NOT EXISTS resource TEXT;\n")
 	sql.WriteString("\n")
 
 	sql.WriteString(fmt.Sprintf("SELECT set_trace_id('%s');\n", span.SpanContext().TraceID().String()))

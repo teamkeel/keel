@@ -1,0 +1,53 @@
+model Post {
+  fields {
+    title Text
+    content Text
+    authorEmail Text?
+    views Number @default(0)
+    published Boolean @default(false)
+  }
+
+  actions {
+    get getPost(id)
+    list listPosts(title?, published?)
+    create createPost() with (title, content, authorEmail?, published?)
+    update updatePost(id) with (title?, content?, views?)
+    delete deletePost(id)
+    read customRead() {
+      @function
+    }
+    write customWrite() {
+      @function
+    }
+  }
+
+  @permission(
+    expression: true,
+    actions: [get, list, create, update, delete, customRead, customWrite]
+  )
+}
+
+model Author {
+  fields {
+    name Text
+    email Text @unique
+  }
+
+  actions {
+    get getAuthor(email)
+    list listAuthors()
+    create createAuthor() with (name, email)
+  }
+
+  @permission(
+    expression: true,
+    actions: [get, list, create]
+  )
+}
+
+api Web {
+  models {
+    Post
+    Author
+  }
+}

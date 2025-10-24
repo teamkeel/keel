@@ -20,6 +20,7 @@ import (
 	"github.com/teamkeel/keel/runtime/apis/graphql"
 	"github.com/teamkeel/keel/runtime/apis/httpjson"
 	"github.com/teamkeel/keel/runtime/apis/jsonrpc"
+	"github.com/teamkeel/keel/runtime/apis/mcpapi"
 	"github.com/teamkeel/keel/runtime/apis/tasksapi"
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/runtimectx"
@@ -56,6 +57,10 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 		router = NewRouter(currSchema)
 	}
 
+	// Create well-known handlers for OAuth discovery (at root level)
+	handleAuthServerMetadata := mcpapi.AuthorizationServerMetadataHandler()
+	handleProtectedResourceMetadata := mcpapi.ProtectedResourceMetadataHandler()
+
 	httpHandler := func(w http.ResponseWriter, r *http.Request) {
 		ctx, span := tracer.Start(r.Context(), "Runtime")
 		defer span.End()
@@ -75,6 +80,11 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 		var response common.Response
 		path := r.URL.Path
 		switch {
+		// Handle .well-known endpoints at root level (OAuth discovery)
+		case path == "/.well-known/oauth-authorization-server":
+			response = handleAuthServerMetadata(r)
+		case path == "/.well-known/oauth-protected-resource":
+			response = handleProtectedResourceMetadata(r)
 		case strings.HasPrefix(path, "/topics"):
 			response = tasksHandler(r)
 		case strings.HasPrefix(path, "/flows"):
@@ -120,8 +130,11 @@ func NewAuthHandler(schema *proto.Schema) func(http.ResponseWriter, *http.Reques
 	handleToken := authapi.TokenEndpointHandler(schema)
 	handleRevoke := authapi.RevokeHandler(schema)
 	handleAuthorize := authapi.AuthorizeHandler(schema)
+	handleKeelAuthorize := authapi.KeelAuthorizeHandler(schema)
 	handleCallback := authapi.CallbackHandler(schema)
 	handleOpenApiRequest := authapi.OAuthOpenApiSchema()
+	handleMCPRegister := mcpapi.ClientRegistrationHandler()
+	handleMCPRevoke := authapi.RevokeHandler(schema)
 
 	return func(w http.ResponseWriter, r *http.Request) common.Response {
 		// Collect request headers and add to runtime context
@@ -139,6 +152,12 @@ func NewAuthHandler(schema *proto.Schema) func(http.ResponseWriter, *http.Reques
 			return handleToken(r)
 		case r.URL.Path == "/auth/revoke":
 			return handleRevoke(r)
+		case r.URL.Path == "/auth/mcp/register":
+			return handleMCPRegister(r)
+		case r.URL.Path == "/auth/mcp/revoke":
+			return handleMCPRevoke(r)
+		case r.URL.Path == "/auth/authorize/keel":
+			return handleKeelAuthorize(r)
 		case strings.HasPrefix(r.URL.Path, "/auth/authorize"):
 			return handleAuthorize(r)
 		case strings.HasPrefix(r.URL.Path, "/auth/callback"):
@@ -162,6 +181,7 @@ func NewApiHandler(s *proto.Schema) common.HandlerFunc {
 
 		handlers[root+"/graphql"] = graphql.NewHandler(s, api)
 		handlers[root+"/rpc"] = jsonrpc.NewHandler(s, api)
+		handlers[root+"/mcp"] = mcpapi.NewHandler(s, api)
 
 		httpJson := httpjson.NewHandler(s, api)
 
