@@ -34,7 +34,7 @@ func TestDbTransactionConcurrency(t *testing.T) {
 	_, err := db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS testdbtransactionconcurrency")
 	assert.NoError(t, err)
 	t.Cleanup(func() {
-		_, err = db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS testdbtransactionconcurrency")
+		_, err = db.ExecuteStatement(context.Background(), "DROP TABLE IF EXISTS testdbtransactionconcurrency")
 		assert.NoError(t, err)
 	})
 
@@ -90,7 +90,7 @@ func TestDbTransactionCommit(t *testing.T) {
 	_, err := db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS test_local_transaction_commit_table")
 	assert.NoError(t, err)
 	t.Cleanup(func() {
-		_, _ = db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS test_local_transaction_commit_table")
+		_, _ = db.ExecuteStatement(context.Background(), "DROP TABLE IF EXISTS test_local_transaction_commit_table")
 	})
 
 	_, err = db.ExecuteStatement(ctx, "CREATE TABLE test_local_transaction_commit_table (id text, foo boolean)")
@@ -123,7 +123,7 @@ func TestDbTransactionRollback(t *testing.T) {
 	_, err := db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS test_local_transaction_rollback_table")
 	assert.NoError(t, err)
 	t.Cleanup(func() {
-		_, _ = db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS test_local_transaction_rollback_table")
+		_, _ = db.ExecuteStatement(context.Background(), "DROP TABLE IF EXISTS test_local_transaction_rollback_table")
 	})
 
 	_, err = db.ExecuteStatement(ctx, "CREATE TABLE test_local_transaction_rollback_table (id text, foo boolean)")
@@ -157,7 +157,7 @@ func TestDbStatements(t *testing.T) {
 	_, err := db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS person")
 	assert.NoError(t, err)
 	t.Cleanup(func() {
-		_, _ = db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS person")
+		_, _ = db.ExecuteStatement(context.Background(), "DROP TABLE IF EXISTS person")
 	})
 	_, err = db.ExecuteStatement(ctx, `CREATE TABLE person(
         id               text PRIMARY KEY,
@@ -209,7 +209,7 @@ func TestUniqueConstraintViolation(t *testing.T) {
 	_, err := db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS person")
 	assert.NoError(t, err)
 	t.Cleanup(func() {
-		_, _ = db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS person")
+		_, _ = db.ExecuteStatement(context.Background(), "DROP TABLE IF EXISTS person")
 	})
 
 	_, err = db.ExecuteStatement(ctx, `CREATE TABLE person(
@@ -259,7 +259,7 @@ func TestNotNullConstraintViolation(t *testing.T) {
 	_, err := db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS person")
 	assert.NoError(t, err)
 	t.Cleanup(func() {
-		_, _ = db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS person")
+		_, _ = db.ExecuteStatement(context.Background(), "DROP TABLE IF EXISTS person")
 	})
 
 	_, err = db.ExecuteStatement(ctx, `CREATE TABLE person(
@@ -306,13 +306,13 @@ func TestForeignKeyConstraintViolation(t *testing.T) {
 	_, err := db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS person")
 	assert.NoError(t, err)
 	t.Cleanup(func() {
-		_, _ = db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS person")
+		_, _ = db.ExecuteStatement(context.Background(), "DROP TABLE IF EXISTS person")
 	})
 
 	_, err = db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS company")
 	assert.NoError(t, err)
 	t.Cleanup(func() {
-		_, _ = db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS company")
+		_, _ = db.ExecuteStatement(context.Background(), "DROP TABLE IF EXISTS company")
 	})
 
 	_, err = db.ExecuteStatement(ctx, `CREATE TABLE person(
