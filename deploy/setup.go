@@ -89,7 +89,7 @@ func ResolveKeelConfig(ctx context.Context, args *ResolveKeelConfigArgs) (*confi
 		return nil, c.Errors
 	}
 
-	log(ctx, "%s Using %s %s", IconTick, orange(c.Filename), t.Since())
+	log(ctx, "%s Using %s %s", IconTick, orange("%s", c.Filename), t.Since())
 
 	return c, nil
 }
@@ -174,7 +174,7 @@ func setupPulumi(ctx context.Context, args *SetupPulumiArgs) (*PulumiConfig, err
 			Type:  ssmtypes.ParameterTypeString,
 		})
 		if err != nil {
-			log(ctx, "%s error setting Pulumi state bucket name in SSM: %s", IconCross, gray(err.Error()))
+			log(ctx, "%s error setting Pulumi state bucket name in SSM: %s", IconCross, gray("%s", err.Error()))
 			return nil, err
 		}
 
@@ -185,7 +185,7 @@ func setupPulumi(ctx context.Context, args *SetupPulumiArgs) (*PulumiConfig, err
 		t := NewTiming()
 		value, err := randomString(base64.StdEncoding.EncodeToString)
 		if err != nil {
-			log(ctx, "%s error generating Pulumi passphrase: %s", IconCross, gray(err.Error()))
+			log(ctx, "%s error generating Pulumi passphrase: %s", IconCross, gray("%s", err.Error()))
 			return nil, err
 		}
 
@@ -196,7 +196,7 @@ func setupPulumi(ctx context.Context, args *SetupPulumiArgs) (*PulumiConfig, err
 			Type:  ssmtypes.ParameterTypeSecureString,
 		})
 		if err != nil {
-			log(ctx, "%s error setting Pulumi passphrase in SSM: %s", IconCross, gray(err.Error()))
+			log(ctx, "%s error setting Pulumi passphrase in SSM: %s", IconCross, gray("%s", err.Error()))
 			return nil, err
 		}
 
@@ -212,7 +212,7 @@ func setupPulumi(ctx context.Context, args *SetupPulumiArgs) (*PulumiConfig, err
 		return nil, err
 	}
 
-	log(ctx, "%s Pulumi version %s installed %s", IconTick, orange(pulumiCmd.Version().String()), t.Since())
+	log(ctx, "%s Pulumi version %s installed %s", IconTick, orange("%s", pulumiCmd.Version().String()), t.Since())
 
 	result.WorkspaceOptions = []auto.LocalWorkspaceOption{
 		auto.Pulumi(pulumiCmd),

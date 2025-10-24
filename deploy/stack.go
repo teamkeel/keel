@@ -48,7 +48,7 @@ func selectStack(ctx context.Context, args *SelectStackArgs) (*auto.Stack, error
 		return nil, err
 	}
 
-	log(ctx, "%s Selected stack %s %s", IconTick, orange(args.PulumiConfig.StackName), t.Since())
+	log(ctx, "%s Selected stack %s %s", IconTick, orange("%s", args.PulumiConfig.StackName), t.Since())
 
 	// This may not be needed as we've already set the region on the workspace env vars but no harm in setting it here too
 	err = s.SetConfig(ctx, "aws:region", auto.ConfigValue{Value: args.Config.Deploy.Region})
