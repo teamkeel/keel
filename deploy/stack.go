@@ -108,7 +108,7 @@ type GetStackOutputsArgs struct {
 func getStackOutputs(ctx context.Context, args *GetStackOutputsArgs) (*StackOutputs, error) {
 	ws, err := auto.NewLocalWorkspace(ctx, args.PulumiConfig.WorkspaceOptions...)
 	if err != nil {
-		log(ctx, "%s error creating Pulumi workspace: %s", IconCross, gray(err.Error()))
+		log(ctx, "%s error creating Pulumi workspace: %s", IconCross, gray("%s", err.Error()))
 		return nil, err
 	}
 
@@ -117,13 +117,13 @@ func getStackOutputs(ctx context.Context, args *GetStackOutputsArgs) (*StackOutp
 		return nil, nil
 	}
 	if err != nil {
-		log(ctx, "%s error selecting stack: %s", IconCross, gray(err.Error()))
+		log(ctx, "%s error selecting stack: %s", IconCross, gray("%s", err.Error()))
 		return nil, err
 	}
 
 	outputs, err := stack.Outputs(ctx)
 	if err != nil {
-		log(ctx, "%s error getting stack outputs: %s", IconCross, gray(err.Error()))
+		log(ctx, "%s error getting stack outputs: %s", IconCross, gray("%s", err.Error()))
 		return nil, err
 	}
 

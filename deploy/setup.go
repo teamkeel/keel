@@ -280,7 +280,7 @@ func createPrivateKeySecret(ctx context.Context, args *CreatePrivateKeySecretArg
 		Type:  ssmtypes.ParameterTypeSecureString,
 	})
 	if err != nil {
-		log(ctx, "%s error setting private key secret in SSM: %s", IconCross, gray(err.Error()))
+		log(ctx, "%s error setting private key secret in SSM: %s", IconCross, gray("%s", err.Error()))
 		return err
 	}
 
