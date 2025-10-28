@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"net/url"
 	"path"
 	"time"
@@ -97,6 +98,36 @@ func (s S3BucketStore) GetFileInfo(key string) (storage.FileInfo, error) {
 	}
 
 	return storage.FileInfo{
+		Key:         key,
+		Filename:    object.Metadata["filename"],
+		ContentType: *object.ContentType,
+		Size:        int(*object.ContentLength),
+	}, nil
+}
+
+func (s S3BucketStore) GetFileData(key string) ([]byte, storage.FileInfo, error) {
+	if s.bucketName == "" {
+		return nil, storage.FileInfo{}, errors.New("S3 bucket name cannot be empty")
+	}
+
+	pathedKey := path.Join(FileObjectPrefix, key)
+
+	object, err := s.client.GetObject(s.context, &s3.GetObjectInput{
+		Bucket: &s.bucketName,
+		Key:    &pathedKey})
+	if err != nil {
+		return nil, storage.FileInfo{}, err
+	}
+
+	defer object.Body.Close()
+
+	// Read contents into memory
+	data, err := io.ReadAll(object.Body)
+	if err != nil {
+		return nil, storage.FileInfo{}, err
+	}
+
+	return data, storage.FileInfo{
 		Key:         key,
 		Filename:    object.Metadata["filename"],
 		ContentType: *object.ContentType,
