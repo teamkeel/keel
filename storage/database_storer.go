@@ -120,29 +120,24 @@ func (s *DbStore) GetFileInfo(key string) (FileInfo, error) {
 }
 
 func (s *DbStore) GetFileData(key string) ([]byte, FileInfo, error) {
-	var fileInfoWithData struct {
-		FileInfo
-		Data []byte
-	}
+	var fd fileData
 
 	sql := `SELECT
-			id AS KEY,
 			filename,
 			content_type,
-			data,
-			octet_length(data) AS size
+			data
 		FROM ` + dbTable + ` WHERE id = ?`
 
-	db := s.db.GetDB().Raw(sql, key).Scan(&fileInfoWithData)
+	db := s.db.GetDB().Raw(sql, key).Scan(&fd)
 	if db.Error != nil {
 		return nil, FileInfo{}, fmt.Errorf("retrieving file data: %w", db.Error)
 	}
 
-	return fileInfoWithData.Data, FileInfo{
-		Key:         fileInfoWithData.Key,
-		Filename:    fileInfoWithData.Filename,
-		ContentType: fileInfoWithData.ContentType,
-		Size:        fileInfoWithData.Size,
+	return fd.Data, FileInfo{
+		Key:         key,
+		Filename:    fd.Filename,
+		ContentType: fd.ContentType,
+		Size:        len(fd.Data),
 	}, nil
 }
 

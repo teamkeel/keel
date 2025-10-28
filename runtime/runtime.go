@@ -48,15 +48,15 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 	var flowsHandler common.HandlerFunc
 	var tasksHandler common.HandlerFunc
 	var authHandler func(http.ResponseWriter, *http.Request) common.Response
-	var filesHandler func(http.ResponseWriter, *http.Request) common.Response
+	var filesHandler func(http.ResponseWriter, *http.Request)
 	var router *httprouter.Router
 	if currSchema != nil {
 		apiHandler = NewApiHandler(currSchema)
 		flowsHandler = NewFlowsHandler(currSchema)
 		authHandler = NewAuthHandler(currSchema)
 		tasksHandler = NewTasksHandler(currSchema)
+		filesHandler = filesapi.NewFilesHandler(currSchema)
 		router = NewRouter(currSchema)
-		filesHandler = NewFilesHandler(currSchema)
 	}
 
 	httpHandler := func(w http.ResponseWriter, r *http.Request) {
@@ -79,8 +79,8 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 		path := r.URL.Path
 		switch {
 		case strings.HasPrefix(path, "/files") && runtimectx.HasStorageServer(r.Context()):
-			// handle file requests only when the storage server has been enabled (i.e. when using the db file storage)
-			response = filesHandler(w, r)
+			filesHandler(w, r)
+			return
 		case strings.HasPrefix(path, "/topics"):
 			response = tasksHandler(r)
 		case strings.HasPrefix(path, "/flows"):
@@ -262,18 +262,6 @@ func NewTasksHandler(s *proto.Schema) common.HandlerFunc {
 
 		return handler(r)
 	})
-}
-
-// NewFilesHandler handles requests to the files api.
-func NewFilesHandler(schema *proto.Schema) func(http.ResponseWriter, *http.Request) common.Response {
-	if !schema.HasFiles() {
-		return func(http.ResponseWriter, *http.Request) common.Response {
-			return common.Response{
-				Status: http.StatusNotFound,
-			}
-		}
-	}
-	return filesapi.NewFilesHandler(schema)
 }
 
 type JobHandler struct {
