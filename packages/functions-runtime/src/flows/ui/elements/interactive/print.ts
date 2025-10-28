@@ -18,10 +18,18 @@ export type UiElementPrint<H extends NullableHardware> =
 
 type PrintData<H extends NullableHardware> = {
   type: "zpl";
-  printer?: H extends Hardware ? H["printers"][number]["name"] : never;
   name?: string;
-  data: string | string[];
-};
+  printer?: H extends Hardware ? H["printers"][number]["name"] : never;
+} & (
+  | {
+      data: string | string[];
+      url?: never;
+    }
+  | {
+      data?: never;
+      url: string;
+    }
+);
 
 // Future format support
 // type PrintData =
@@ -74,19 +82,13 @@ export const print: DisplayElementImplementation<
     //   };
     // }
 
-    // if ("url" in d && d.url) {
-    //   return {
-    //     type: "url" as const,
-    //     url: d.url,
-    //   };
-    // }
-
     if ("type" in d && d.type) {
       return {
         type: d.type,
         name: d.name,
-        data: Array.isArray(d.data) ? d.data : [d.data],
+        data: d.data ? (Array.isArray(d.data) ? d.data : [d.data]) : undefined,
         printer: d.printer,
+        url: d.url,
       };
     }
 

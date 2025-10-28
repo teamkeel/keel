@@ -13,9 +13,9 @@ const testPrintAPI = async <T extends NullableHardware = undefined>(
   return (await print(options as PrintOptions<T>)).uiConfig;
 };
 
-describe("table element", () => {
+describe("print element", () => {
   describe("ui config", () => {
-    test("all columns", async () => {
+    test("printer routing", async () => {
       const res = await testPrintAPI<{ printers: [{ name: "myPrinter" }] }>({
         jobs: [
           {
