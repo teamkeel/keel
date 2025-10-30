@@ -1,0 +1,28 @@
+model Order {
+    fields {
+        item Text
+        customer Customer
+    }
+    actions {
+        //expect-error:16:28:ActionInputError:required field 'customer.country' must be set by providing 'customer.country.id' as an input or by using a @set expression
+        create createOrder1() with (item, customer.name)
+        //expect-error:16:28:E034:required field 'customer.name' must be set by a non-optional input, a @set expression or with @default
+        //expect-error:16:28:ActionInputError:required field 'customer.country' must be set by providing 'customer.country.id' as an input or by using a @set expression
+        create createOrder2() with (item, customer.name?)
+        //expect-error:16:35:E034:required field 'customer.name' must be set by a non-optional input, a @set expression or with @default
+        create createOrderOnlyItem() with (item)
+    }
+  
+}
+
+model Customer {
+    fields {
+        name Text
+        country Country
+        company Company?
+    }
+}
+
+model Country { }
+
+model Company { }
