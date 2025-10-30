@@ -156,6 +156,48 @@ func checkHasOneRelationField(
 		return
 	}
 
+	// Check if any nested fields are being set on this relation
+	hasNestedInputs := hasNestedFieldInputs(pathToReferencedModel, action)
+
+	// Check if we're in a context where nested inputs are being created (parent has nested inputs)
+	parentHasNestedInputs := dotDelimPath != "" && hasNestedFieldInputs(dotDelimPath, action)
+
+	// If parent is being created with nested inputs, but this required relation has no inputs,
+	// and the nested model has no required fields (empty model or all optional),
+	// then this is an error - the relation must be satisfied with .id or @set
+	if parentHasNestedInputs && !hasNestedInputs {
+		// Check if nested model has any required fields that would be validated in recursion
+		hasRequiredFields := false
+		for _, nestedModelField := range query.ModelFields(nestedModel) {
+			if nestedModelField.Name.Value == rootModelName && !nestedModelField.Repeated {
+				continue
+			}
+			if !isNotNeeded(asts, nestedModel, nestedModelField) {
+				hasRequiredFields = true
+				break
+			}
+		}
+
+		// Only error if there are no required fields to recurse into
+		if !hasRequiredFields {
+			fullFieldPath := pathToReferencedModel
+
+			message := fmt.Sprintf("required field '%s' must be set by providing '%s.id' as an input or by using a @set expression", fullFieldPath, fullFieldPath)
+			hint := "To learn more about create action inputs, visit https://docs.keel.so/actions#create"
+
+			errs.AppendError(
+				errorhandling.NewValidationErrorWithDetails(
+					errorhandling.ActionInputError,
+					errorhandling.ErrorDetails{
+						Message: message,
+						Hint:    hint,
+					},
+					action.Name),
+			)
+			return
+		}
+	}
+
 	// We have established that the operation does intend to create this nested model instance.
 	// Therefore we must recurse to make sure the creation required fields for the nested model are
 	// supplied.
@@ -209,6 +251,22 @@ func requiredFieldInWithInputs(requiredField string, action *parser.ActionNode) 
 	for _, input := range action.With {
 		if input.Label == nil && input.Type.ToString() == requiredField && !input.Optional {
 			return true
+		}
+	}
+	return false
+}
+
+// hasNestedFieldInputs returns true if any of the action's inputs start with the given prefix
+// followed by a dot. For example, if prefix is "customer", it will match "customer.name",
+// "customer.country.id", etc.
+func hasNestedFieldInputs(prefix string, action *parser.ActionNode) bool {
+	for _, input := range action.With {
+		if input.Label == nil {
+			inputPath := input.Type.ToString()
+			// Check if input starts with "prefix."
+			if strings.HasPrefix(inputPath, prefix+".") {
+				return true
+			}
 		}
 	}
 	return false
