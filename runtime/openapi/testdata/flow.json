@@ -1495,7 +1495,10 @@
                     "printer": { "type": "string" },
                     "type": {
                       "type": "string",
-                      "enum": ["html", "text", "url", "zpl"]
+                      "enum": ["rawPdf", "zpl"]
+                    },
+                    "name": {
+                      "type": "string"
                     },
                     "url": { "type": "string" }
                   },

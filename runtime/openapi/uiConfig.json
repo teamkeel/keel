@@ -1099,11 +1099,12 @@
             "properties": {
               "type": {
                 "enum": [
-                  "html",
-                  "text",
-                  "url",
+                  "rawPdf",
                   "zpl"
                 ],
+                "type": "string"
+              },
+              "name": {
                 "type": "string"
               },
               "data": {
