@@ -1099,11 +1099,12 @@
             "properties": {
               "type": {
                 "enum": [
-                  "html",
-                  "text",
-                  "url",
+                  "rawPdf",
                   "zpl"
                 ],
+                "type": "string"
+              },
+              "name": {
                 "type": "string"
               },
               "data": {
@@ -1117,6 +1118,15 @@
               },
               "printer": {
                 "type": "string"
+              },
+              "dpi": {
+                "type": "number"
+              },
+              "pageWidth": {
+                "type": "number"
+              },
+              "pageHeight": {
+                "type": "number"
               }
             },
             "additionalProperties": false,
