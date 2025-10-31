@@ -1118,6 +1118,15 @@
               },
               "printer": {
                 "type": "string"
+              },
+              "dpi": {
+                "type": "number"
+              },
+              "pageWidth": {
+                "type": "number"
+              },
+              "pageHeight": {
+                "type": "number"
               }
             },
             "additionalProperties": false,

@@ -40,6 +40,20 @@ type PrintDataRawPdf = {
   type: "rawPdf";
   url: string;
   data?: never;
+  /** The DPI of the PDF
+   * @default 300
+   */
+  dpi?: number;
+  /** The width of the page in dots.
+   * e.g. 4" at 300 dpi is 1200 dots.
+   * @default 1200
+   */
+  pageWidth?: number;
+  /** The height of the page in dots.
+   * e.g. 6" at 300 dpi is 1800 dots.
+   * @default 1800
+   */
+  pageHeight?: number;
 };
 
 // The shape of the response over the API
@@ -52,6 +66,9 @@ export interface UiElementPrintApiResponse<>extends BaseUiDisplayResponse<"ui.in
     data?: string[];
     url?: string;
     printer?: string;
+    dpi?: number;
+    pageWidth?: number;
+    pageHeight?: number;
   }[];
   autoPrint: boolean;
   autoContinue: boolean;
@@ -84,6 +101,13 @@ export const print: DisplayElementImplementation<
           : undefined,
       printer: d.printer,
       url: "url" in d && d.url ? d.url : undefined,
+      ...(d.type === "rawPdf"
+        ? {
+            dpi: d.dpi,
+            pageWidth: d.pageWidth,
+            pageHeight: d.pageHeight,
+          }
+        : {}),
     } satisfies UiElementPrintApiResponse["data"][number];
   });
 

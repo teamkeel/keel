@@ -58,6 +58,18 @@ describe("print element", () => {
 
       ctx.ui.interactive.print({
         jobs: [
+          {
+            type: "rawPdf",
+            url: "http://example.com",
+            dpi: 300,
+            pageWidth: 1200,
+            pageHeight: 1800,
+          },
+        ],
+      });
+
+      ctx.ui.interactive.print({
+        jobs: [
           // @ts-expect-error - can't have both data and url
           {
             type: "zpl",
