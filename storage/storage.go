@@ -19,6 +19,9 @@ type Storer interface {
 	// GetFileInfo will return the file information for the given unique file key as stored in the database.
 	GetFileInfo(key string) (FileInfo, error)
 
+	// GetFileData will return the contents and FileInfo of the given file.
+	GetFileData(key string) (contents []byte, fi FileInfo, err error)
+
 	// GenerateFileResponse will take the given file info and generate a response to be returned from an API.
 	//
 	// The use of this function is to generate any signed URLs for file downloads.
