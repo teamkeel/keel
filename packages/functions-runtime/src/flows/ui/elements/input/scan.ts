@@ -19,9 +19,9 @@ export type UiElementScan = <
 
 type ScanResponseItem<D> = D extends "trackQuantity"
   ? {
-      value: string;
-      quantity: number;
-    }
+    value: string;
+    quantity: number;
+  }
   : string;
 
 /**
@@ -54,16 +54,16 @@ type ScanOptions<M, D> = {
   validate?: ValidateFn<ScanResponseItem<D>>;
 } & (M extends "multi"
   ? {
-      max?: number;
-      min?: number;
-      duplicateHandling?: D | ScanDuplicateMode;
-    }
+    max?: number;
+    min?: number;
+    duplicateHandling?: D | ScanDuplicateMode;
+  }
   : {
-      /** If true, the step will continue after a scan (pending validation).
-       * @default false
-       */
-      autoContinue?: boolean;
-    });
+    /** If true, the step will continue after a scan (pending validation).
+     * @default false
+     */
+    autoContinue?: boolean;
+  });
 
 // The shape of the response over the API
 export interface UiElementInputScanApiResponse
@@ -101,18 +101,18 @@ export const scan: InputElementImplementation<
       autoContinue: false,
       ...(isMultiMode(options)
         ? {
-            max: options.max ?? undefined,
-            min: options.min ?? undefined,
-            duplicateHandling: options.duplicateHandling ?? "none",
-          }
+          max: options.max ?? undefined,
+          min: options.min ?? undefined,
+          duplicateHandling: options.duplicateHandling ?? "none",
+        }
         : {}),
       ...(isSingleMode(options)
         ? {
-            autoContinue: options.autoContinue,
-          }
+          autoContinue: options.autoContinue,
+        }
         : {}),
     } satisfies UiElementInputScanApiResponse,
-    validate: async (data: any, action?: string) => {
+    validate: async (data, action) => {
       if (options?.validate) {
         return (options.validate as any)(data, action);
       }
