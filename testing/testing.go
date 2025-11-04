@@ -144,6 +144,7 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 			"KEEL_DB_CONN_TYPE":      "pg",
 			"KEEL_TRACING_ENABLED":   os.Getenv("TRACING_ENABLED"),
 			"KEEL_FILES_BUCKET_NAME": bucketName,
+			"KEEL_S3_ENDPOINT":       fmt.Sprintf("%s/aws", serverURL),
 
 			// Send all AWS API calls to our test server and set some test credentials
 			"TEST_AWS_ENDPOINT":     fmt.Sprintf("%s/aws", serverURL),
@@ -382,6 +383,7 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 
 		// Need to set these so the sdk uses the test endpoint in tests
 		fmt.Sprintf("TEST_AWS_ENDPOINT=%s/aws", serverURL),
+		fmt.Sprintf("KEEL_S3_ENDPOINT=%s/aws", serverURL),
 		fmt.Sprintf("KEEL_FILES_BUCKET_NAME=%s", bucketName),
 	}...)
 

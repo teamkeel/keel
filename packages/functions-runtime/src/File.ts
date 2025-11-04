@@ -55,7 +55,7 @@ const s3Client: S3Client | null = (() => {
     return null;
   }
 
-  const endpoint = process.env.TEST_AWS_ENDPOINT;
+  const endpoint = process.env.KEEL_S3_ENDPOINT;
 
   if (!endpoint) {
     return new S3Client({
@@ -67,14 +67,10 @@ const s3Client: S3Client | null = (() => {
   return new S3Client({
     region: process.env.KEEL_REGION,
     credentials: {
-      accessKeyId: "test",
-      secretAccessKey: "test",
+      accessKeyId: "keelstorage",
+      secretAccessKey: "keelstorage",
     },
-    endpointProvider: () => {
-      return {
-        url: new URL(endpoint),
-      };
-    },
+    endpoint: endpoint,
   });
 })();
 

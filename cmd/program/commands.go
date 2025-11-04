@@ -443,6 +443,11 @@ func StartFunctions(m *Model) tea.Cmd {
 		envVars["KEEL_TRACING_ENABLED"] = "true"
 		envVars["OTEL_RESOURCE_ATTRIBUTES"] = "service.name=functions"
 
+		if m.StorageConnInfo != nil {
+			envVars["KEEL_FILES_BUCKET_NAME"] = m.StorageConnInfo.Bucket
+			envVars["KEEL_S3_ENDPOINT"] = fmt.Sprintf("http://%s:%s", m.StorageConnInfo.Host, m.StorageConnInfo.Port)
+		}
+
 		output := &FunctionsOutputWriter{
 			// Initially buffer output inside the writer in case there's an error
 			Buffer: true,
