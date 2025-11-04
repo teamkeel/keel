@@ -345,11 +345,11 @@ export type DisplayElementImplementation<
 
 export type DisplayElementImplementationResponse<TApiResponse> =
   | {
-    uiConfig: TApiResponse;
-  }
+      uiConfig: TApiResponse;
+    }
   | Promise<{
-    uiConfig: TApiResponse;
-  }>;
+      uiConfig: TApiResponse;
+    }>;
 
 export type ImplementationResponse<TApiResponse, TData> =
   | InputElementImplementationResponse<TApiResponse, TData>
