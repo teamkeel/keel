@@ -1,0 +1,21 @@
+model Thing {
+    fields {
+        name Text
+    }
+
+    actions {
+        create createThing() with (name)
+        list listThings()
+    }
+}
+
+flow MyFlow {
+}
+
+//expect-error:6:17:NamingError:There already exists an action with the name 'createThing'
+flow CreateThing {
+}
+
+//expect-error:6:16:NamingError:There already exists an action with the name 'listThings'
+flow ListThings {
+}
