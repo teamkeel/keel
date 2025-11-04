@@ -200,7 +200,7 @@ export type ValidateFn<
   HasActions extends boolean = false,
 > = HasActions extends true
   ? (data: T, action: string) => Promise<boolean | string> | boolean | string
-  : (data: T, action?: never) => Promise<boolean | string> | boolean | string;
+  : (data: T) => Promise<boolean | string> | boolean | string;
 
 export type CallbackFn<InputT, OutputT> = (
   data: InputT
@@ -316,7 +316,7 @@ export type InputElementImplementationResponse<TApiResponse, TData> = {
   __type: "input";
   uiConfig: TApiResponse;
   getData: (data: TData) => TData;
-  validate?: ValidateFn<TData>;
+  validate?: ValidateFn<TData, true>;
   onLeave?: CallbackFn<TData, TData>;
 };
 
@@ -345,11 +345,11 @@ export type DisplayElementImplementation<
 
 export type DisplayElementImplementationResponse<TApiResponse> =
   | {
-      uiConfig: TApiResponse;
-    }
+    uiConfig: TApiResponse;
+  }
   | Promise<{
-      uiConfig: TApiResponse;
-    }>;
+    uiConfig: TApiResponse;
+  }>;
 
 export type ImplementationResponse<TApiResponse, TData> =
   | InputElementImplementationResponse<TApiResponse, TData>
