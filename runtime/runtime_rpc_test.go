@@ -70,7 +70,6 @@ func TestRuntimeRPC(t *testing.T) {
 			storer, err := storage.NewDbStore(ctx, database)
 			require.NoError(t, err)
 			ctx = runtimectx.WithStorage(ctx, storer)
-			ctx = runtimectx.WithStorageServer(ctx)
 
 			request = request.WithContext(ctx)
 

@@ -583,7 +583,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		ctx = runtimectx.WithOAuthConfig(ctx, &m.Config.Auth)
 		if m.Storage != nil {
 			ctx = runtimectx.WithStorage(ctx, m.Storage)
-			ctx = runtimectx.WithStorageServer(ctx)
 		}
 
 		mailClient := mail.NewSMTPClientFromEnv()

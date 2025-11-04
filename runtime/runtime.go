@@ -16,7 +16,6 @@ import (
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/apis/authapi"
-	"github.com/teamkeel/keel/runtime/apis/filesapi"
 	"github.com/teamkeel/keel/runtime/apis/flowsapi"
 	"github.com/teamkeel/keel/runtime/apis/graphql"
 	"github.com/teamkeel/keel/runtime/apis/httpjson"
@@ -48,14 +47,12 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 	var flowsHandler common.HandlerFunc
 	var tasksHandler common.HandlerFunc
 	var authHandler func(http.ResponseWriter, *http.Request) common.Response
-	var filesHandler func(http.ResponseWriter, *http.Request)
 	var router *httprouter.Router
 	if currSchema != nil {
 		apiHandler = NewApiHandler(currSchema)
 		flowsHandler = NewFlowsHandler(currSchema)
 		authHandler = NewAuthHandler(currSchema)
 		tasksHandler = NewTasksHandler(currSchema)
-		filesHandler = filesapi.NewFilesHandler(currSchema)
 		router = NewRouter(currSchema)
 	}
 
@@ -78,9 +75,6 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 		var response common.Response
 		path := r.URL.Path
 		switch {
-		case strings.HasPrefix(path, "/files") && runtimectx.HasStorageServer(r.Context()):
-			filesHandler(w, r)
-			return
 		case strings.HasPrefix(path, "/topics"):
 			response = tasksHandler(r)
 		case strings.HasPrefix(path, "/flows"):

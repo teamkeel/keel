@@ -63,7 +63,6 @@ func MakeContext(t *testing.T, ctx context.Context, keelSchema string, resetData
 	require.NoError(t, err)
 
 	ctx = runtimectx.WithStorage(ctx, storer)
-	ctx = runtimectx.WithStorageServer(ctx)
 
 	return ctx, database, schema
 }

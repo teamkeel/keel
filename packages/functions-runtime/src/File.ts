@@ -252,7 +252,11 @@ export class File extends InlineFile {
 
       return new URL(url);
     } else {
-      return new URL(`${process.env.KEEL_API_URL}/files/${this.key}`);
+      const contents = await this.read();
+      const dataurl = `data:${this.contentType};name=${
+        this.filename
+      };base64,${contents.toString("base64")}`;
+      return new URL(dataurl);
     }
   }
 

@@ -119,28 +119,6 @@ func (s *DbStore) GetFileInfo(key string) (FileInfo, error) {
 	return fi, nil
 }
 
-func (s *DbStore) GetFileData(key string) ([]byte, FileInfo, error) {
-	var fd fileData
-
-	sql := `SELECT
-			filename,
-			content_type,
-			data
-		FROM ` + dbTable + ` WHERE id = ?`
-
-	db := s.db.GetDB().Raw(sql, key).Scan(&fd)
-	if db.Error != nil {
-		return nil, FileInfo{}, fmt.Errorf("retrieving file data: %w", db.Error)
-	}
-
-	return fd.Data, FileInfo{
-		Key:         key,
-		Filename:    fd.Filename,
-		ContentType: fd.ContentType,
-		Size:        len(fd.Data),
-	}, nil
-}
-
 func (s *DbStore) GenerateFileResponse(fi *FileInfo) (FileResponse, error) {
 	sql := `SELECT
 			filename,
