@@ -26,15 +26,21 @@ import (
 )
 
 type ConnectionInfo struct {
-	Host   string
-	Port   string
-	UIPort string
-	Bucket string
+	Host      string
+	Port      string
+	UIPort    string
+	Bucket    string
+	AccessKey string
+	SecretKey string
+	Region    string
 }
 
 const minioImageName string = "minio/minio"
 const minioImageTag string = "latest"
+const minioAccessKey string = "keelstorage"
+const minioSecretKey string = "keelstorage"
 const minioRegion string = "us-east-1"
+
 const keelStorageContainerName string = "keel-run-storage"
 const keelStorageVolumeName string = "keel-storage-volume"
 
@@ -66,9 +72,12 @@ func Start(projectDirectory string) (*ConnectionInfo, error) {
 		return nil, err
 	}
 	conn := ConnectionInfo{
-		Host:   "127.0.0.1",
-		Port:   *port,
-		UIPort: *uiPort,
+		Host:      "127.0.0.1",
+		Port:      *port,
+		UIPort:    *uiPort,
+		AccessKey: minioAccessKey,
+		SecretKey: minioSecretKey,
+		Region:    minioRegion,
 	}
 
 	bucketName, err := createProjectBucket(context.Background(), projectDirectory, &conn)
@@ -177,8 +186,8 @@ func createContainer(dockerClient *client.Client) (
 	containerConfig := &container.Config{
 		Image: minioImageName + ":" + minioImageTag,
 		Env: []string{
-			"MINIO_ROOT_USER=keelstorage",
-			"MINIO_ROOT_PASSWORD=keelstorage",
+			"MINIO_ROOT_USER=" + minioAccessKey,
+			"MINIO_ROOT_PASSWORD=" + minioSecretKey,
 		},
 		Cmd: []string{"server", "/data", "--console-address", ":9001"},
 		ExposedPorts: nat.PortSet{
@@ -187,11 +196,11 @@ func createContainer(dockerClient *client.Client) (
 		},
 	}
 
-	hostPort, err := util.GetFreePort("6000")
+	hostPort, err := util.GetFreePort("8010")
 	if err != nil {
 		return "", nil, nil, err
 	}
-	hostUIPort, err := util.GetFreePort("6001")
+	hostUIPort, err := util.GetFreePort("8011")
 	if err != nil {
 		return "", nil, nil, err
 	}
@@ -328,7 +337,7 @@ func createProjectBucket(ctx context.Context, projectDirectory string, conn *Con
 	endpoint := fmt.Sprintf("http://%s:%s", conn.Host, conn.Port)
 	s3Client := s3.NewFromConfig(aws.Config{
 		BaseEndpoint: &endpoint,
-		Credentials:  credentials.NewStaticCredentialsProvider("keelstorage", "keelstorage", ""),
+		Credentials:  credentials.NewStaticCredentialsProvider(minioAccessKey, minioSecretKey, ""),
 		Region:       minioRegion,
 	})
 

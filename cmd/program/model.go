@@ -13,11 +13,15 @@ import (
 
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/Masterminds/semver/v3"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/robfig/cron/v3"
 	"github.com/rs/cors"
 	"github.com/sirupsen/logrus"
+
 	"github.com/teamkeel/keel/cmd/database"
 	"github.com/teamkeel/keel/cmd/localTraceExporter"
 	storagecmd "github.com/teamkeel/keel/cmd/storage"
@@ -291,6 +295,16 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 
+		// We now create a new S3 storer that's connected to the local minio server (running as a docker container)
+		endpoint := fmt.Sprintf("http://%s:%s", m.StorageConnInfo.Host, m.StorageConnInfo.Port)
+		s3Client := s3.NewFromConfig(aws.Config{
+			BaseEndpoint: &endpoint,
+			Credentials:  credentials.NewStaticCredentialsProvider(m.StorageConnInfo.AccessKey, m.StorageConnInfo.SecretKey, ""),
+			Region:       m.StorageConnInfo.Region,
+		})
+
+		m.Storage = storage.NewS3BucketStore(context.Background(), m.StorageConnInfo.Bucket, s3Client, tracer)
+
 		m.Status = StatusSetupDatabase
 		return m, StartDatabase(m.ResetDatabase, m.Mode, m.ProjectDir)
 	case StartServerError:
@@ -399,14 +413,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case RunMigrationsMsg:
 		m.Err = msg.Err
 		m.MigrationChanges = msg.Changes
-
-		// we now set the file Storage using a dbstore
-		storer, err := storage.NewDbStore(context.Background(), m.Database)
-		if err != nil {
-			m.Err = err
-			return m, tea.Quit
-		}
-		m.Storage = storer
 
 		if m.Err != nil {
 			return m, nil
