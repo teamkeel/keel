@@ -100,8 +100,8 @@ func (h *Handler) JobHandler(ctx context.Context, event *RunJobPayload) error {
 			return h.sendJobStatusWebhook(ctx, event, err, JobStatusFailed)
 		}
 
-		object, err := h.filesStorage.client.GetObject(ctx, &s3.GetObjectInput{
-			Bucket: aws.String(h.filesStorage.bucketName),
+		object, err := h.filesStorage.Client.GetObject(ctx, &s3.GetObjectInput{
+			Bucket: aws.String(h.filesStorage.BucketName),
 			// Note: this prefix is important and must be used when uploading the job input data to S3
 			Key: aws.String(fmt.Sprintf("jobs/%s", event.ID)),
 		})
