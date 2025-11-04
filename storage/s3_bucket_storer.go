@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	FileObjectExpiryDuration = time.Duration(60 * time.Minute)
+	FileObjectExpiryDuration = 60 * time.Minute
 	FileObjectPrefix         = "files/"
 )
 
