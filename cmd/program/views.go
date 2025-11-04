@@ -69,6 +69,9 @@ func renderRun(m *Model) string {
 	}
 
 	switch m.Status {
+	case StatusSetupStorage:
+		b.WriteString("⏳ Setting up file storage\n")
+
 	case StatusSetupDatabase:
 		b.WriteString("⏳ Setting up database\n")
 

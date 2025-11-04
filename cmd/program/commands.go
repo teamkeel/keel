@@ -25,6 +25,7 @@ import (
 	"github.com/teamkeel/keel/cmd/cliconfig"
 	"github.com/teamkeel/keel/cmd/database"
 	"github.com/teamkeel/keel/cmd/localTraceExporter"
+	"github.com/teamkeel/keel/cmd/storage"
 	"github.com/teamkeel/keel/codegen"
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/db"
@@ -278,6 +279,26 @@ func StartDatabase(reset bool, mode int, projectDirectory string) tea.Cmd {
 
 		return StartDatabaseMsg{
 			ConnInfo: connInfo,
+		}
+	}
+}
+
+type StartStorageMsg struct {
+	ConnInfo *storage.ConnectionInfo
+	Err      error
+}
+
+func StartStorage(projectDirectory string) tea.Cmd {
+	return func() tea.Msg {
+		conn, err := storage.Start(projectDirectory)
+		if err != nil {
+			return StartDatabaseMsg{
+				Err: err,
+			}
+		}
+
+		return StartStorageMsg{
+			ConnInfo: conn,
 		}
 	}
 }

@@ -20,6 +20,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/teamkeel/keel/cmd/database"
 	"github.com/teamkeel/keel/cmd/localTraceExporter"
+	storagecmd "github.com/teamkeel/keel/cmd/storage"
 	"github.com/teamkeel/keel/codegen"
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/db"
@@ -55,6 +56,7 @@ const (
 const (
 	StatusCheckingDependencies = iota
 	StatusParsePrivateKey
+	StatusSetupStorage
 	StatusSetupDatabase
 	StatusSetupFunctions
 	StatusLoadSchema
@@ -115,6 +117,7 @@ func Run(model *Model) {
 
 	defer func() {
 		_ = database.Stop()
+		_ = storagecmd.Stop()
 		if model.FunctionsServer != nil {
 			_ = model.FunctionsServer.Kill()
 		}
@@ -191,6 +194,7 @@ type Model struct {
 	RpcHandler        http.Handler
 	RuntimeRequests   []*RuntimeRequest
 	FunctionsLog      []*FunctionLog
+	StorageConnInfo   *storagecmd.ConnectionInfo
 	Storage           storage.Storer
 	CronRunner        *cron.Cron
 	TestOutput        string
@@ -273,6 +277,16 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case CheckDependenciesMsg:
 		m.Err = msg.Err
 
+		if m.Err != nil {
+			return m, tea.Quit
+		}
+
+		m.Status = StatusSetupStorage
+		return m, StartStorage(m.ProjectDir)
+	case StartStorageMsg:
+		m.StorageConnInfo = msg.ConnInfo
+		m.Err = msg.Err
+		// If the storage can't be started we exit
 		if m.Err != nil {
 			return m, tea.Quit
 		}
