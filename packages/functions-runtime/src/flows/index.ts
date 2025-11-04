@@ -44,6 +44,7 @@ export const enum STEP_STATUS {
   PENDING = "PENDING",
   COMPLETED = "COMPLETED",
   FAILED = "FAILED",
+  CANCELLED = "CANCELLED",
 }
 
 export const enum STEP_TYPE {

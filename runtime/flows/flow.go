@@ -317,7 +317,7 @@ func GetTraceparent(ctx context.Context, runID string) (string, error) {
 }
 
 // updateRun will update the status of a flow run.
-// If the flow's status is set to cancelled, any pending steps of that flow's run will be set to cancelled as well.
+// If the flow's status is set to cancelled or failed, any pending or running steps of that flow's run will be cancelled as well.
 func updateRun(ctx context.Context, runID string, status Status, config any, errMessage *string) (*Run, error) {
 	database, err := db.GetDatabase(ctx)
 	if err != nil {
@@ -339,11 +339,24 @@ func updateRun(ctx context.Context, runID string, status Status, config any, err
 			return err
 		}
 
-		// if we've cancelled the flow, we need to cancel any UI steps that are PENDING
-		if status == StatusCancelled {
+		// if we've cancelled or failed the flow, we need to cancel any steps that are PENDING or in-progress
+		if status == StatusCancelled || status == StatusFailed {
 			now := time.Now()
+			// Cancel PENDING UI steps
 			if err := tx.Model(&Step{}).
 				Where("run_id = ? AND type = ? AND status = ?", runID, StepTypeUI, StepStatusPending).
+				Updates(Step{
+					Status:  StepStatusCancelled,
+					EndTime: &now,
+				}).Error; err != nil {
+				return err
+			}
+
+			// Cancel all NEW function steps (both in-progress and not yet started)
+			// In-progress steps have start_time set but no end_time
+			// Not-yet-started steps have neither start_time nor end_time
+			if err := tx.Model(&Step{}).
+				Where("run_id = ? AND type = ? AND status = ? AND end_time IS NULL", runID, StepTypeFunction, "NEW").
 				Updates(Step{
 					Status:  StepStatusCancelled,
 					EndTime: &now,

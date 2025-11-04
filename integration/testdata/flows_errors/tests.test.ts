@@ -1104,6 +1104,130 @@ test("flows - duplicate step name and UI name", async () => {
   });
 });
 
+test("flows - cancel in-progress steps when flow fails", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+  let flow = await flows.cancelInProgressSteps.withAuthToken(token).start({});
+
+  expect(flow).toEqual({
+    id: expect.any(String),
+    traceId: expect.any(String),
+    status: "RUNNING",
+    startedBy: expect.any(String),
+    name: "CancelInProgressSteps",
+    input: {},
+    error: null,
+    data: null,
+    steps: [
+      {
+        id: expect.any(String),
+        name: "step 1",
+        runId: expect.any(String),
+        stage: null,
+        status: "NEW",
+        type: "FUNCTION",
+        value: null,
+        error: null,
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        startTime: null,
+        endTime: null,
+        ui: null,
+      },
+    ],
+    createdAt: expect.any(Date),
+    updatedAt: expect.any(Date),
+    config: {
+      title: "Cancel in progress steps",
+    },
+  });
+
+  const updatedFlow = await flows.cancelInProgressSteps
+    .withAuthToken(token)
+    .untilFinished(flow.id, 20000);
+
+  // We expect:
+  // - step 1: COMPLETED
+  // - step 2: FAILED (3 attempts: initial + 2 retries)
+  // Note: step 3 is never created because the flow terminates after step 2 exhausts retries
+  expect(updatedFlow).toEqual({
+    id: flow.id,
+    traceId: flow.traceId,
+    status: "FAILED",
+    name: "CancelInProgressSteps",
+    startedBy: expect.any(String),
+    input: {},
+    error: "flow failed due to exhausted step retries",
+    data: null,
+    steps: [
+      {
+        id: flow.steps[0].id,
+        name: "step 1",
+        runId: flow.id,
+        stage: null,
+        status: "COMPLETED",
+        type: "FUNCTION",
+        value: "step1 complete",
+        error: null,
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
+        ui: null,
+      },
+      {
+        id: expect.any(String),
+        name: "step 2",
+        runId: flow.id,
+        stage: null,
+        status: "FAILED",
+        type: "FUNCTION",
+        value: null,
+        error: "step 2 failed",
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
+        ui: null,
+      },
+      {
+        id: expect.any(String),
+        name: "step 2",
+        runId: flow.id,
+        stage: null,
+        status: "FAILED",
+        type: "FUNCTION",
+        value: null,
+        error: "step 2 failed",
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
+        ui: null,
+      },
+      {
+        id: expect.any(String),
+        name: "step 2",
+        runId: flow.id,
+        stage: null,
+        status: "FAILED",
+        type: "FUNCTION",
+        value: null,
+        error: "step 2 failed",
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
+        ui: null,
+      },
+    ],
+    createdAt: flow.createdAt,
+    updatedAt: expect.any(Date),
+    config: {
+      title: "Cancel in progress steps",
+    },
+  });
+});
+
 async function getToken({ email }) {
   const response = await fetch(
     process.env.KEEL_TESTING_AUTH_API_URL + "/token",

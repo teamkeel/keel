@@ -42,6 +42,10 @@ flow ErrorInValidation {
     @permission(roles: [Admin])
 }
 
+flow CancelInProgressSteps {
+    @permission(roles: [Admin])
+}
+
 
 model Thing {
     fields {
