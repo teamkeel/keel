@@ -52,6 +52,13 @@ func renderRun(m *Model) string {
 			b.WriteString(colors.Cyan(fmt.Sprintf("psql -Atx \"%s\"", m.DatabaseConnInfo.String())).Highlight().String())
 			b.WriteString("\n")
 		}
+		if m.StorageConnInfo != nil {
+			b.WriteString("View your file storage at: ")
+			b.WriteString(colors.Cyan(fmt.Sprintf("http://%s:%s", m.StorageConnInfo.Host, m.StorageConnInfo.UIPort)).Highlight().String())
+			b.WriteString(" using credentials ")
+			b.WriteString(colors.White(fmt.Sprintf("%s:%s", m.StorageConnInfo.AccessKey, m.StorageConnInfo.SecretKey)).String())
+			b.WriteString("\n")
+		}
 
 		if m.LatestVersion != nil {
 			currentVersion, _ := semver.NewVersion(runtime.GetVersion())
