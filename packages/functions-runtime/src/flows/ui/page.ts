@@ -23,7 +23,10 @@ type PageOptions<
   title?: string;
   description?: string;
   content: T;
-  validate?: ValidateFn<ExtractFormData<T>>;
+  validate?: ValidateFn<
+    ExtractFormData<T>,
+    A["length"] extends 0 ? false : true
+  >;
   actions?: A;
   // When true, let the use go back a step if there is a previous step
   allowBack?: boolean;
@@ -129,7 +132,8 @@ export async function page<
 
       const { uiConfig, validationErrors } = await recursivelyProcessElement(
         c,
-        elementData
+        elementData,
+        options.actions && options.actions.length > 0 ? action : null
       );
 
       if (validationErrors) hasValidationErrors = true;
@@ -140,7 +144,10 @@ export async function page<
 
   // If there is page level validation, validate the data
   if (data && options.validate) {
-    const validationResult = await options.validate(data);
+    const validationResult =
+      options.actions && action !== null
+        ? await (options.validate as any)(data, action)
+        : await (options.validate as any)(data);
     if (typeof validationResult === "string") {
       hasValidationErrors = true;
       validationError = validationResult;
@@ -173,7 +180,8 @@ export async function page<
 
 const recursivelyProcessElement = async (
   c: ImplementationResponse<any, any>,
-  data: any
+  data: any,
+  action: string | null
 ): Promise<{ uiConfig: UiElementApiResponse; validationErrors: boolean }> => {
   const resolvedC = await c;
   const elementType = "__type" in resolvedC ? resolvedC.__type : null;
@@ -182,12 +190,14 @@ const recursivelyProcessElement = async (
     case "input":
       return processInputElement(
         resolvedC as InputElementImplementationResponse<any, any>,
-        data
+        data,
+        action
       );
     case "iterator":
       return processIteratorElement(
         resolvedC as IteratorElementImplementationResponse<any, any>,
-        data
+        data,
+        action
       );
     default:
       return {
@@ -199,7 +209,8 @@ const recursivelyProcessElement = async (
 
 const processInputElement = async (
   element: InputElementImplementationResponse<any, any>,
-  data: any
+  data: any,
+  action: string | null
 ): Promise<{ uiConfig: UiElementApiResponse; validationErrors: boolean }> => {
   const hasData = data !== undefined && data !== null;
 
@@ -210,7 +221,10 @@ const processInputElement = async (
     };
   }
 
-  const validationError = await element.validate(data);
+  const validationError =
+    action !== null
+      ? await (element.validate as any)(data, action)
+      : await (element.validate as any)(data);
   const hasValidationErrors = typeof validationError === "string";
 
   return {
@@ -224,7 +238,8 @@ const processInputElement = async (
 
 const processIteratorElement = async (
   element: any,
-  data: any
+  data: any,
+  action: string | null
 ): Promise<{ uiConfig: UiElementApiResponse; validationErrors: boolean }> => {
   const elements = element.uiConfig.content as ImplementationResponse<
     any,
@@ -235,17 +250,24 @@ const processIteratorElement = async (
   // Process the UI config content
   const ui: UiElementApiResponse[] = [];
   for (const el of elements) {
-    const result = await recursivelyProcessElement(el, undefined);
+    const result = await recursivelyProcessElement(el, undefined, action);
     ui.push(result.uiConfig);
   }
 
   // Check for validation errors if we have data
-  const validationErrors = await validateIteratorData(elements, dataArr);
+  const validationErrors = await validateIteratorData(
+    elements,
+    dataArr,
+    action
+  );
   let hasValidationErrors = validationErrors.length > 0;
 
   let validationError: string | undefined = undefined;
   if (dataArr && element.validate) {
-    const v = await element.validate(dataArr);
+    const v =
+      action !== null
+        ? await (element.validate as any)(dataArr, action)
+        : await (element.validate as any)(dataArr);
     if (typeof v === "string") {
       hasValidationErrors = true;
       validationError = v;
@@ -267,7 +289,8 @@ const processIteratorElement = async (
 
 const validateIteratorData = async (
   elements: ImplementationResponse<any, any>[],
-  dataArr: any[] | undefined
+  dataArr: any[] | undefined,
+  action: string | null
 ): Promise<Array<{ index: number; name: string; validationError: string }>> => {
   const validationErrors: Array<{
     index: number;
@@ -295,9 +318,10 @@ const validateIteratorData = async (
         const fieldName = resolvedEl.uiConfig.name;
 
         if (rowData && typeof rowData === "object" && fieldName in rowData) {
-          const validationError = await (resolvedEl as any).validate(
-            rowData[fieldName]
-          );
+          const validationError =
+            action !== null
+              ? await (resolvedEl as any).validate(rowData[fieldName], action)
+              : await (resolvedEl as any).validate(rowData[fieldName]);
 
           if (typeof validationError === "string") {
             validationErrors.push({

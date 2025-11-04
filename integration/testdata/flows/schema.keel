@@ -50,6 +50,10 @@ flow ValidationPage {
     @permission(roles: [Admin])
 }
 
+flow ValidationPageWithAction {
+    @permission(roles: [Admin])
+}
+
 enum MyEnum {
     Value1
     Value2
@@ -125,11 +129,11 @@ model Thing {
 role Admin {
     domains {
         "keel.xyz"
-    }   
+    }
 }
 
 role User {
     domains {
         "gmail.com"
-    }   
+    }
 }

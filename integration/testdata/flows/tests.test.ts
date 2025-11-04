@@ -1131,6 +1131,111 @@ test("flows - page validation", async () => {
   });
 });
 
+test("flows - page validation with actions", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+  let f = await flows.validationPageWithAction.withAuthToken(token).start({});
+
+  expect(f.steps[0].status).toBe("PENDING");
+
+  const runId = f.id;
+  let stepId = f.steps[0].id;
+
+  f = await flows.validationPageWithAction
+    .withAuthToken(token)
+    .putStepValues(runId, stepId, {}, "next");
+
+  expect(f.steps[0].ui).toEqual({
+    __type: "ui.page",
+    content: [
+      {
+        __type: "ui.input.text",
+        disabled: false,
+        label: "Email",
+        name: "email",
+        optional: true,
+      },
+      {
+        __type: "ui.input.text",
+        disabled: false,
+        label: "Phone",
+        name: "phone",
+        optional: true,
+      },
+    ],
+    actions: [
+      {
+        label: "Cancel",
+        mode: "primary",
+        value: "cancel",
+      },
+      {
+        label: "Next",
+        mode: "primary",
+        value: "next",
+      },
+    ],
+    hasValidationErrors: true,
+    validationError: "Email or phone is required",
+  });
+
+  f = await flows.validationPageWithAction.withAuthToken(token).putStepValues(
+    runId,
+    stepId,
+    {
+      email: "keelson.keel.xyz",
+    },
+    "next"
+  );
+
+  expect(f.steps[0].ui).toEqual({
+    __type: "ui.page",
+    content: [
+      {
+        __type: "ui.input.text",
+        disabled: false,
+        label: "Email",
+        name: "email",
+        optional: true,
+        validationError: "Not a valid email",
+      },
+      {
+        __type: "ui.input.text",
+        disabled: false,
+        label: "Phone",
+        name: "phone",
+        optional: true,
+      },
+    ],
+    actions: [
+      {
+        label: "Cancel",
+        mode: "primary",
+        value: "cancel",
+      },
+      {
+        label: "Next",
+        mode: "primary",
+        value: "next",
+      },
+    ],
+    hasValidationErrors: true,
+  });
+
+  f = await flows.validationPageWithAction.withAuthToken(token).putStepValues(
+    runId,
+    stepId,
+    {
+      email: "keelson.keel.xyz",
+    },
+    "cancel"
+  );
+
+  expect(f.steps[0].status).toBe("COMPLETED");
+  expect(f.steps[0].value).toEqual({
+    email: "keelson.keel.xyz",
+  });
+});
+
 test("flows - all inputs", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
   const res = await flows.allInputs.withAuthToken(token).start({
@@ -1489,7 +1594,7 @@ test("flows - authorised listing flows", async () => {
   await models.user.create({ team: "myTeam", identityId: identity!.id });
 
   const resListAdmin = await listFlows({ token: adminToken });
-  expect(resListAdmin.body.flows.length).toBe(18);
+  expect(resListAdmin.body.flows.length).toBe(19);
   expect(resListAdmin.body.flows[0].name).toBe("ScalarStep");
   expect(resListAdmin.body.flows[1].name).toBe("MixedStepTypes");
   expect(resListAdmin.body.flows[2].name).toBe("Stepless");
@@ -1500,14 +1605,15 @@ test("flows - authorised listing flows", async () => {
   expect(resListAdmin.body.flows[7].name).toBe("ValidationText");
   expect(resListAdmin.body.flows[8].name).toBe("ValidationBoolean");
   expect(resListAdmin.body.flows[9].name).toBe("ValidationPage");
-  expect(resListAdmin.body.flows[10].name).toBe("AllInputs");
-  expect(resListAdmin.body.flows[11].name).toBe("EnvStep");
-  expect(resListAdmin.body.flows[12].name).toBe("MultipleActions");
-  expect(resListAdmin.body.flows[13].name).toBe("WithCompletion");
-  expect(resListAdmin.body.flows[14].name).toBe("WithCompletionMinimal");
-  expect(resListAdmin.body.flows[15].name).toBe("WithReturnedData");
-  expect(resListAdmin.body.flows[16].name).toBe("ExpressionPermissionIsTrue");
-  expect(resListAdmin.body.flows[17].name).toBe("DataWrapperConsistency");
+  expect(resListAdmin.body.flows[10].name).toBe("ValidationPageWithAction");
+  expect(resListAdmin.body.flows[11].name).toBe("AllInputs");
+  expect(resListAdmin.body.flows[12].name).toBe("EnvStep");
+  expect(resListAdmin.body.flows[13].name).toBe("MultipleActions");
+  expect(resListAdmin.body.flows[14].name).toBe("WithCompletion");
+  expect(resListAdmin.body.flows[15].name).toBe("WithCompletionMinimal");
+  expect(resListAdmin.body.flows[16].name).toBe("WithReturnedData");
+  expect(resListAdmin.body.flows[17].name).toBe("ExpressionPermissionIsTrue");
+  expect(resListAdmin.body.flows[18].name).toBe("DataWrapperConsistency");
 
   const resListUser = await listFlows({ token: userToken });
   expect(resListUser.status).toBe(200);
