@@ -50,9 +50,9 @@ export type FileDbRecord = {
 };
 
 // Implementation
-const s3Client: S3Client = (() => {
+const s3Client: S3Client | null = (() => {
   if (!process.env.KEEL_FILES_BUCKET_NAME) {
-    throw new Error("S3 storage bucket is required");
+    return null;
   }
 
   const endpoint = process.env.KEEL_S3_ENDPOINT;
@@ -209,6 +209,10 @@ export class File extends InlineFile {
       return Buffer.from(arrayBuffer);
     }
 
+    if (!s3Client) {
+      throw new Error("S3 client is required");
+    }
+
     const params = {
       Bucket: process.env.KEEL_FILES_BUCKET_NAME,
       Key: "files/" + this.key,
@@ -236,6 +240,10 @@ export class File extends InlineFile {
 
   // Generates a presigned download URL
   async getPresignedUrl(): Promise<URL> {
+    if (!s3Client) {
+      throw new Error("S3 client is required");
+    }
+
     const command = new GetObjectCommand({
       Bucket: process.env.KEEL_FILES_BUCKET_NAME,
       Key: "files/" + this.key,
@@ -270,6 +278,10 @@ async function storeFile(
   size: number,
   expires: Date | null
 ): Promise<void> {
+  if (!s3Client) {
+      throw new Error("S3 client is required");
+    }
+
   const params: PutObjectCommandInput = {
     Bucket: process.env.KEEL_FILES_BUCKET_NAME,
     Key: "files/" + key,
