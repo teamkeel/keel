@@ -113,10 +113,7 @@ export const scan: InputElementImplementation<
         : {}),
     } satisfies UiElementInputScanApiResponse,
     validate: async (data, action) => {
-      if (options?.validate) {
-        return (options.validate as any)(data, action);
-      }
-      return true;
+      return options?.validate?.(data, action) ?? true;
     },
     getData: (x: any) => x,
   };

@@ -130,10 +130,7 @@ export const pickList: InputElementImplementation<
         return "Invalid data";
       }
 
-      if (options?.validate) {
-        return (options.validate as any)(data, action);
-      }
-      return true;
+      return options?.validate?.(data, action) ?? true;
     },
     getData: (x: any) => x,
   };
