@@ -11,6 +11,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"maps"
 	"net/http"
 	"os"
 	"os/exec"
@@ -155,9 +156,7 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 			"OTEL_RESOURCE_ATTRIBUTES": "service.name=functions",
 		}
 
-		for key, value := range envVars {
-			functionEnvVars[key] = value
-		}
+		maps.Copy(functionEnvVars, envVars)
 
 		functionsServer, err = node.StartDevelopmentServer(ctx, opts.Dir, &node.ServerOpts{
 			EnvVars: functionEnvVars,
