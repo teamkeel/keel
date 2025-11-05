@@ -279,8 +279,8 @@ async function storeFile(
   expires: Date | null
 ): Promise<void> {
   if (!s3Client) {
-      throw new Error("S3 client is required");
-    }
+    throw new Error("S3 client is required");
+  }
 
   const params: PutObjectCommandInput = {
     Bucket: process.env.KEEL_FILES_BUCKET_NAME,
