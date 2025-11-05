@@ -1493,9 +1493,15 @@
                   "properties": {
                     "data": { "type": "array", "items": { "type": "string" } },
                     "printer": { "type": "string" },
+                    "dpi": { "type": "number" },
+                    "pageWidth": { "type": "number" },
+                    "pageHeight": { "type": "number" },
                     "type": {
                       "type": "string",
-                      "enum": ["html", "text", "url", "zpl"]
+                      "enum": ["rawPdf", "zpl"]
+                    },
+                    "name": {
+                      "type": "string"
                     },
                     "url": { "type": "string" }
                   },

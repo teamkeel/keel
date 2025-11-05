@@ -17,9 +17,14 @@ export type UiElementPrint<H extends NullableHardware> =
   }>;
 
 type PrintData<H extends NullableHardware> = {
-  type: "zpl";
+  /** The name of the print job. */
   name?: string;
+  /** The printer to use for the print job. Printers are defined in keelconfig.yaml. */
   printer?: H extends Hardware ? H["printers"][number]["name"] : never;
+} & (PrintDataZpl | PrintDataRawPdf);
+
+type PrintDataZpl = {
+  type: "zpl";
 } & (
   | {
       data: string | string[];
@@ -31,36 +36,39 @@ type PrintData<H extends NullableHardware> = {
     }
 );
 
-// Future format support
-// type PrintData =
-//   | {
-//       type: "zpl" | "text" | "html";
-//       data: string | string[];
-//       file: never;
-//       url: never;
-//     }
-//   | {
-//       file: File;
-//       data: never;
-//       url: never;
-//       type: never;
-//     }
-//   | {
-//       url: string;
-//       data: never;
-//       file: never;
-//       type: never;
-//     };
+type PrintDataRawPdf = {
+  type: "rawPdf";
+  url: string;
+  data?: never;
+  /** The DPI of the PDF
+   * @default 300
+   */
+  dpi?: number;
+  /** The width of the page in dots.
+   * e.g. 4" at 300 dpi is 1200 dots.
+   * @default 1200
+   */
+  pageWidth?: number;
+  /** The height of the page in dots.
+   * e.g. 6" at 300 dpi is 1800 dots.
+   * @default 1800
+   */
+  pageHeight?: number;
+};
 
 // The shape of the response over the API
 export interface UiElementPrintApiResponse<>extends BaseUiDisplayResponse<"ui.interactive.print"> {
   title?: string;
   description?: string;
   data: {
-    type: "url" | "text" | "html" | "zpl";
+    type: "zpl" | "rawPdf";
+    name?: string;
     data?: string[];
     url?: string;
     printer?: string;
+    dpi?: number;
+    pageWidth?: number;
+    pageHeight?: number;
   }[];
   autoPrint: boolean;
   autoContinue: boolean;
@@ -82,22 +90,30 @@ export const print: DisplayElementImplementation<
     //   };
     // }
 
-    if ("type" in d && d.type) {
-      return {
-        type: d.type,
-        name: d.name,
-        data: d.data ? (Array.isArray(d.data) ? d.data : [d.data]) : undefined,
-        printer: d.printer,
-        url: d.url,
-      };
-    }
-
-    return null;
+    return {
+      type: d.type,
+      name: d.name,
+      data:
+        "data" in d && d.data
+          ? Array.isArray(d.data)
+            ? d.data
+            : [d.data]
+          : undefined,
+      printer: d.printer,
+      url: "url" in d && d.url ? d.url : undefined,
+      ...(d.type === "rawPdf"
+        ? {
+            dpi: d.dpi,
+            pageWidth: d.pageWidth,
+            pageHeight: d.pageHeight,
+          }
+        : {}),
+    } satisfies UiElementPrintApiResponse["data"][number];
   });
 
-  const data: UiElementPrintApiResponse["data"] = (
-    await Promise.all(dataPromises)
-  ).filter((x): x is NonNullable<typeof x> => x !== null);
+  const data = (await Promise.all(dataPromises)).filter(
+    (x): x is NonNullable<typeof x> => x !== null
+  );
 
   return {
     uiConfig: {
