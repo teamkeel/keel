@@ -107,7 +107,7 @@ export const pickList: InputElementImplementation<
         } satisfies PickListItem;
       }),
     } satisfies UiElementPickListApiResponse,
-    validate: async (data) => {
+    validate: async (data, action) => {
       // Ensure the response is an object with an items array
       if (!("items" in data)) {
         return "Missing items in response";
@@ -130,7 +130,7 @@ export const pickList: InputElementImplementation<
         return "Invalid data";
       }
 
-      return options?.validate?.(data) ?? true;
+      return options?.validate?.(data, action) ?? true;
     },
     getData: (x: any) => x,
   };

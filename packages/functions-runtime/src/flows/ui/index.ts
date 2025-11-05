@@ -196,7 +196,8 @@ export interface BaseInputConfig<T, O extends boolean = boolean> {
 }
 
 export type ValidateFn<T> = (
-  data: T
+  data: T,
+  action?: string
 ) => Promise<boolean | string> | boolean | string;
 
 export type CallbackFn<InputT, OutputT> = (
