@@ -6,6 +6,10 @@ flow BulkScan {
     @permission(expression: true)
 }
 
+flow SingleScan {
+    @permission(expression: true)
+}
+
 flow CallbackFlow {
     @permission(expression: true)
 }
@@ -15,5 +19,57 @@ flow PickListValidation {
 }
 
 flow DataGridValidation {
+    @permission(expression: true)
+}
+
+flow TextInput {
+    @permission(expression: true)
+}
+
+flow NumberInput {
+    @permission(expression: true)
+}
+
+flow BooleanInput {
+    @permission(expression: true)
+}
+
+flow DatePickerInput {
+    @permission(expression: true)
+}
+
+flow PageValidationWithActions {
+    @permission(expression: true)
+}
+
+flow TextInputWithActions {
+    @permission(expression: true)
+}
+
+flow NumberInputWithActions {
+    @permission(expression: true)
+}
+
+flow BooleanInputWithActions {
+    @permission(expression: true)
+}
+
+flow DatePickerWithActions {
+    @permission(expression: true)
+}
+
+flow IteratorWithActions {
+    @permission(expression: true)
+}
+
+flow DataGridWithActions {
+    @permission(expression: true)
+}
+
+flow PickListWithActions {
+    @permission(expression: true)
+}
+
+flow ScanWithActions {
     @permission(expression: true)
 }
