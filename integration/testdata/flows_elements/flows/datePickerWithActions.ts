@@ -11,7 +11,11 @@ export default DatePickerWithActions(config, async (ctx) => {
         label: "Start Date",
         validate: (data, action) => {
           // Verify action parameter is passed correctly when an action is provided
-          if (action !== undefined && action !== "schedule" && action !== "draft") {
+          if (
+            action !== undefined &&
+            action !== "schedule" &&
+            action !== "draft"
+          ) {
             throw new Error(
               `Expected action to be 'schedule' or 'draft', got: ${action}`
             );

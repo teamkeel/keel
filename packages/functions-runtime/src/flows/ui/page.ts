@@ -23,10 +23,7 @@ type PageOptions<
   title?: string;
   description?: string;
   content: T;
-  validate?: ValidateFn<
-    ExtractFormData<T>,
-    A["length"] extends 0 ? false : true
-  >;
+  validate?: ValidateFn<ExtractFormData<T>>;
   actions?: A;
   // When true, let the use go back a step if there is a previous step
   allowBack?: boolean;

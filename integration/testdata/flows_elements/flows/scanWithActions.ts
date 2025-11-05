@@ -12,7 +12,12 @@ export default ScanWithActions(config, async (ctx) => {
         mode: "single",
         validate: (data, action) => {
           // Verify action parameter is passed correctly when an action is provided
-          if (action !== undefined && action !== "verify" && action !== "lookup" && action !== "skip") {
+          if (
+            action !== undefined &&
+            action !== "verify" &&
+            action !== "lookup" &&
+            action !== "skip"
+          ) {
             throw new Error(
               `Expected action to be 'verify', 'lookup', or 'skip', got: ${action}`
             );
@@ -53,7 +58,11 @@ export default ScanWithActions(config, async (ctx) => {
         max: 10,
         validate: (data, action) => {
           // Verify action parameter is passed correctly when an action is provided
-          if (action !== undefined && action !== "process" && action !== "save") {
+          if (
+            action !== undefined &&
+            action !== "process" &&
+            action !== "save"
+          ) {
             throw new Error(
               `Expected action to be 'process' or 'save', got: ${action}`
             );
@@ -96,17 +105,27 @@ export default ScanWithActions(config, async (ctx) => {
         duplicateHandling: "trackQuantity",
         validate: (data, action) => {
           // Verify action parameter is passed correctly when an action is provided
-          if (action !== undefined && action !== "checkout" && action !== "continue") {
+          if (
+            action !== undefined &&
+            action !== "checkout" &&
+            action !== "continue"
+          ) {
             throw new Error(
               `Expected action to be 'checkout' or 'continue', got: ${action}`
             );
           }
 
-          const items = data as unknown as { value: string; quantity: number }[];
+          const items = data as unknown as {
+            value: string;
+            quantity: number;
+          }[];
 
           if (action === "checkout") {
             // Checkout requires total quantity >= 5
-            const totalQty = items.reduce((sum, item) => sum + item.quantity, 0);
+            const totalQty = items.reduce(
+              (sum, item) => sum + item.quantity,
+              0
+            );
             if (totalQty < 5) {
               return "Total quantity must be at least 5 for checkout";
             }

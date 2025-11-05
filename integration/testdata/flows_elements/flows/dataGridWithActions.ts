@@ -23,7 +23,11 @@ export default DataGridWithActions(config, async (ctx) => {
         allowDeleteRows: true,
         validate: (data, action) => {
           // Verify action parameter is passed correctly when an action is provided
-          if (action !== undefined && action !== "approve" && action !== "draft") {
+          if (
+            action !== undefined &&
+            action !== "approve" &&
+            action !== "draft"
+          ) {
             throw new Error(
               `Expected action to be 'approve' or 'draft', got: ${action}`
             );

@@ -195,12 +195,10 @@ export interface BaseInputConfig<T, O extends boolean = boolean> {
   onLeave?: CallbackFn<T, T>;
 }
 
-export type ValidateFn<
-  T,
-  HasActions extends boolean = false,
-> = HasActions extends true
-  ? (data: T, action: string) => Promise<boolean | string> | boolean | string
-  : (data: T) => Promise<boolean | string> | boolean | string;
+export type ValidateFn<T> = (
+  data: T,
+  action?: string
+) => Promise<boolean | string> | boolean | string;
 
 export type CallbackFn<InputT, OutputT> = (
   data: InputT
@@ -316,7 +314,7 @@ export type InputElementImplementationResponse<TApiResponse, TData> = {
   __type: "input";
   uiConfig: TApiResponse;
   getData: (data: TData) => TData;
-  validate?: ValidateFn<TData, true>;
+  validate?: ValidateFn<TData>;
   onLeave?: CallbackFn<TData, TData>;
 };
 

@@ -11,7 +11,11 @@ export default NumberInputWithActions(config, async (ctx) => {
         label: "Quantity",
         validate: (data, action) => {
           // Verify action parameter is passed correctly when an action is provided
-          if (action !== undefined && action !== "buy" && action !== "reserve") {
+          if (
+            action !== undefined &&
+            action !== "buy" &&
+            action !== "reserve"
+          ) {
             throw new Error(
               `Expected action to be 'buy' or 'reserve', got: ${action}`
             );

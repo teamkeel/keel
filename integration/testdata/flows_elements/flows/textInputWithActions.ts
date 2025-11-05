@@ -11,7 +11,11 @@ export default TextInputWithActions(config, async (ctx) => {
         label: "Email",
         validate: (data, action) => {
           // Verify action parameter is passed correctly when an action is provided
-          if (action !== undefined && action !== "submit" && action !== "draft") {
+          if (
+            action !== undefined &&
+            action !== "submit" &&
+            action !== "draft"
+          ) {
             throw new Error(
               `Expected action to be 'submit' or 'draft', got: ${action}`
             );

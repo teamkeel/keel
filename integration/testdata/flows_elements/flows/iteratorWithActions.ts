@@ -14,7 +14,11 @@ export default IteratorWithActions(config, async (ctx) => {
             label: "Price",
             validate: (data, action) => {
               // Verify action parameter is passed correctly when an action is provided
-              if (action !== undefined && action !== "finalize" && action !== "save") {
+              if (
+                action !== undefined &&
+                action !== "finalize" &&
+                action !== "save"
+              ) {
                 throw new Error(
                   `Expected action to be 'finalize' or 'save', got: ${action}`
                 );
@@ -30,7 +34,11 @@ export default IteratorWithActions(config, async (ctx) => {
         ],
         validate: (data, action) => {
           // Verify action parameter is passed correctly when an action is provided
-          if (action !== undefined && action !== "finalize" && action !== "save") {
+          if (
+            action !== undefined &&
+            action !== "finalize" &&
+            action !== "save"
+          ) {
             throw new Error(
               `Expected action to be 'finalize' or 'save', got: ${action}`
             );
