@@ -513,49 +513,4 @@ func TestSnapshotDatabase(t *testing.T) {
 		require.Equal(t, "Null Array User", result.Rows[0]["name"])
 		require.Nil(t, result.Rows[0]["tags"])
 	})
-
-	t.Run("handles_keel_storage_table", func(t *testing.T) {
-		ctx := context.Background()
-
-		// Create keel_storage table if it doesn't exist
-		_, err := migrations.database.ExecuteStatement(ctx, `
-			CREATE TABLE IF NOT EXISTS keel_storage (
-				id text NOT NULL DEFAULT ksuid(),
-				filename text NOT NULL,
-				content_type text NOT NULL,
-				data bytea NOT NULL,
-				created_at timestamptz NOT NULL DEFAULT now(),
-				PRIMARY KEY (id)
-			);
-		`)
-		require.NoError(t, err)
-
-		// Insert test data with binary content
-		testData := []byte("Hello, World!")
-		_, err = migrations.database.ExecuteStatement(ctx, `
-			INSERT INTO keel_storage (id, filename, content_type, data)
-			VALUES ('test1', 'test.txt', 'text/plain', $1)
-		`, testData)
-		require.NoError(t, err)
-
-		// Get snapshot
-		sql, err := migrations.SnapshotDatabase(ctx)
-		require.NoError(t, err)
-
-		// Clear all tables
-		_, err = migrations.database.ExecuteStatement(ctx, `
-			TRUNCATE TABLE keel_storage, "user", "post", "comment" CASCADE;
-		`)
-		require.NoError(t, err)
-
-		// Apply the snapshot
-		_, err = migrations.database.ExecuteStatement(ctx, sql)
-		require.NoError(t, err)
-
-		// Verify data was restored correctly by comparing the actual bytes
-		result, err := migrations.database.ExecuteQuery(ctx, `SELECT data FROM keel_storage WHERE id = 'test1'`)
-		require.NoError(t, err)
-		require.Len(t, result.Rows, 1)
-		require.Equal(t, testData, result.Rows[0]["data"].([]byte))
-	})
 }

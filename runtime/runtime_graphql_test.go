@@ -21,7 +21,6 @@ import (
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	rtt "github.com/teamkeel/keel/runtime/runtimetest"
 	"github.com/teamkeel/keel/schema"
-	"github.com/teamkeel/keel/storage"
 	"github.com/teamkeel/keel/testhelpers"
 	"gorm.io/gorm"
 )
@@ -79,10 +78,7 @@ func TestRuntimeGraphQL(t *testing.T) {
 
 			ctx = db.WithDatabase(ctx, database)
 
-			storer, err := storage.NewDbStore(ctx, database)
 			require.NoError(t, err)
-			ctx = runtimectx.WithStorage(ctx, storer)
-
 			request = request.WithContext(ctx)
 
 			// Apply the database prior-set up mandated by this test case.

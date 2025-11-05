@@ -303,7 +303,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			Region:       m.StorageConnInfo.Region,
 		})
 
-		m.Storage = storage.NewS3BucketStore(context.Background(), m.StorageConnInfo.Bucket, s3Client, tracer)
+		m.Storage = storage.NewS3BucketStore(m.StorageConnInfo.Bucket, s3Client, tracer)
 
 		m.Status = StatusSetupDatabase
 		return m, StartDatabase(m.ResetDatabase, m.Mode, m.ProjectDir)

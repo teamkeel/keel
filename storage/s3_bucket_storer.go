@@ -25,29 +25,27 @@ const (
 var _ Storer = &S3BucketStore{}
 
 type S3BucketStore struct {
-	context    context.Context
 	tracer     trace.Tracer
 	Client     *s3.Client
 	BucketName string
 }
 
-func NewS3BucketStore(ctx context.Context, bucketName string, client *s3.Client, tracer trace.Tracer) *S3BucketStore {
+func NewS3BucketStore(bucketName string, client *s3.Client, tracer trace.Tracer) *S3BucketStore {
 	return &S3BucketStore{
-		context:    ctx,
 		Client:     client,
 		BucketName: bucketName,
 		tracer:     tracer,
 	}
 }
 
-func (s S3BucketStore) GetFileInfo(key string) (FileInfo, error) {
+func (s S3BucketStore) GetFileInfo(ctx context.Context, key string) (FileInfo, error) {
 	if s.BucketName == "" {
 		return FileInfo{}, errors.New("S3 bucket name cannot be empty")
 	}
 
 	pathedKey := path.Join(FileObjectPrefix, key)
 
-	object, err := s.Client.GetObject(s.context, &s3.GetObjectInput{
+	object, err := s.Client.GetObject(ctx, &s3.GetObjectInput{
 		Bucket: &s.BucketName,
 		Key:    &pathedKey})
 	if err != nil {
@@ -62,9 +60,9 @@ func (s S3BucketStore) GetFileInfo(key string) (FileInfo, error) {
 	}, nil
 }
 
-func (s S3BucketStore) Store(dataURL string) (FileInfo, error) {
+func (s S3BucketStore) Store(ctx context.Context, dataURL string) (FileInfo, error) {
 	var span trace.Span
-	s.context, span = s.tracer.Start(s.context, "Store File")
+	ctx, span = s.tracer.Start(ctx, "Store File")
 	defer span.End()
 
 	if s.BucketName == "" {
@@ -80,7 +78,7 @@ func (s S3BucketStore) Store(dataURL string) (FileInfo, error) {
 	pathedKey := path.Join(FileObjectPrefix, key)
 	ct := durl.ContentType()
 
-	_, err = s.Client.PutObject(s.context, &s3.PutObjectInput{
+	_, err = s.Client.PutObject(ctx, &s3.PutObjectInput{
 		Bucket:      &s.BucketName,
 		Key:         &pathedKey,
 		Body:        bytes.NewReader(durl.Data),
@@ -90,19 +88,19 @@ func (s S3BucketStore) Store(dataURL string) (FileInfo, error) {
 		return FileInfo{}, fmt.Errorf("storing file: %w", err)
 	}
 
-	return s.GetFileInfo(key)
+	return s.GetFileInfo(ctx, key)
 }
 
-func (s S3BucketStore) GenerateFileResponse(fi *FileInfo) (FileResponse, error) {
+func (s S3BucketStore) GenerateFileResponse(ctx context.Context, fi *FileInfo) (FileResponse, error) {
 	var span trace.Span
-	s.context, span = s.tracer.Start(s.context, "Hydrate File")
+	ctx, span = s.tracer.Start(ctx, "Hydrate File")
 	defer span.End()
 
 	if s.BucketName == "" {
 		return FileResponse{}, errors.New("S3 bucket name cannot be empty")
 	}
 
-	hydrated, err := s.getPresignedURL(fi)
+	hydrated, err := s.getPresignedURL(ctx, fi)
 	if err != nil {
 		return FileResponse{}, fmt.Errorf("hydrating file info: %w", err)
 	}
@@ -110,14 +108,14 @@ func (s S3BucketStore) GenerateFileResponse(fi *FileInfo) (FileResponse, error) 
 	return hydrated, nil
 }
 
-func (s S3BucketStore) GetFileData(key string) ([]byte, FileInfo, error) {
+func (s S3BucketStore) GetFileData(ctx context.Context, key string) ([]byte, FileInfo, error) {
 	if s.BucketName == "" {
 		return nil, FileInfo{}, errors.New("S3 bucket name cannot be empty")
 	}
 
 	pathedKey := path.Join(FileObjectPrefix, key)
 
-	object, err := s.Client.GetObject(s.context, &s3.GetObjectInput{
+	object, err := s.Client.GetObject(ctx, &s3.GetObjectInput{
 		Bucket: &s.BucketName,
 		Key:    &pathedKey})
 	if err != nil {
@@ -140,7 +138,7 @@ func (s S3BucketStore) GetFileData(key string) ([]byte, FileInfo, error) {
 	}, nil
 }
 
-func (s S3BucketStore) getPresignedURL(fi *FileInfo) (FileResponse, error) {
+func (s S3BucketStore) getPresignedURL(ctx context.Context, fi *FileInfo) (FileResponse, error) {
 	if s.BucketName == "" {
 		return FileResponse{}, errors.New("S3 bucket name cannot be empty")
 	}
@@ -149,7 +147,7 @@ func (s S3BucketStore) getPresignedURL(fi *FileInfo) (FileResponse, error) {
 
 	presignClient := s3.NewPresignClient(s.Client)
 
-	request, err := presignClient.PresignGetObject(s.context, &s3.GetObjectInput{
+	request, err := presignClient.PresignGetObject(ctx, &s3.GetObjectInput{
 		Bucket:                     &s.BucketName,
 		Key:                        &pathedKey,
 		ResponseContentDisposition: aws.String("inline"),

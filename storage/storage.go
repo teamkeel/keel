@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
@@ -14,15 +15,15 @@ type Storer interface {
 	// The input should be a well formed dataURL https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URLs
 	// The name of the file can also be passed as a parameter of the mediaType segment; e.g.
 	// data:application/pdf;name=MyUploadedFile.pdf;base64,xxxxxx[...]
-	Store(dataURL string) (FileInfo, error)
+	Store(ctx context.Context, dataURL string) (FileInfo, error)
 
 	// GetFileInfo will return the file information for the given unique file key as stored in the database.
-	GetFileInfo(key string) (FileInfo, error)
+	GetFileInfo(ctx context.Context, key string) (FileInfo, error)
 
 	// GenerateFileResponse will take the given file info and generate a response to be returned from an API.
 	//
 	// The use of this function is to generate any signed URLs for file downloads.
-	GenerateFileResponse(fi *FileInfo) (FileResponse, error)
+	GenerateFileResponse(ctx context.Context, fi *FileInfo) (FileResponse, error)
 }
 
 // FileInfo contains important data for the File type as stored in the database.

@@ -33,7 +33,7 @@ func (e *CustomS3EndpointResolverV2) ResolveEndpoint(ctx context.Context, params
 }
 
 func initFiles(ctx context.Context, tracer trace.Tracer, bucketName, awsEndpoint string) (*storage.S3BucketStore, error) {
-	cfg, err := config.LoadDefaultConfig(context.Background())
+	cfg, err := config.LoadDefaultConfig(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -47,5 +47,5 @@ func initFiles(ctx context.Context, tracer trace.Tracer, bucketName, awsEndpoint
 
 	client := s3.NewFromConfig(cfg, opts...)
 
-	return storage.NewS3BucketStore(ctx, bucketName, client, tracer), nil
+	return storage.NewS3BucketStore(bucketName, client, tracer), nil
 }
