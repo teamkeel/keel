@@ -38,8 +38,8 @@ export type UiPage<C extends FlowConfig> = <
   options: PageOptions<C, A, T>
 ) => Promise<
   A["length"] extends 0
-    ? ExtractFormData<T>
-    : { data: ExtractFormData<T>; action: ActionValue<A[number]> }
+  ? ExtractFormData<T>
+  : { data: ExtractFormData<T>; action: ActionValue<A[number]> }
 >;
 
 type PageActions = string | PageActionConfig;
@@ -209,9 +209,7 @@ const processInputElement = async (
   data: any,
   action: string | null
 ): Promise<{ uiConfig: UiElementApiResponse; validationErrors: boolean }> => {
-  const hasData = data !== undefined && data !== null;
-
-  if (!hasData || !element.validate) {
+  if (!element.validate) {
     return {
       uiConfig: { ...element.uiConfig },
       validationErrors: false,
