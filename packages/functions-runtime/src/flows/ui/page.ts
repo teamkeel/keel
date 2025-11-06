@@ -38,8 +38,8 @@ export type UiPage<C extends FlowConfig> = <
   options: PageOptions<C, A, T>
 ) => Promise<
   A["length"] extends 0
-  ? ExtractFormData<T>
-  : { data: ExtractFormData<T>; action: ActionValue<A[number]> }
+    ? ExtractFormData<T>
+    : { data: ExtractFormData<T>; action: ActionValue<A[number]> }
 >;
 
 type PageActions = string | PageActionConfig;

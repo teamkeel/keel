@@ -1255,6 +1255,28 @@ test("flows - text input element - validation", async () => {
   });
 });
 
+test("flows - text input element - validation with empty object", async () => {
+  let flow = await flows.textInput.start({});
+
+  expect(flow.status).toBe("AWAITING_INPUT");
+  expect(flow.steps[0].status).toBe("PENDING");
+
+  // Test that validation fires when empty object is provided
+  flow = await flows.textInput.putStepValues(flow.id, flow.steps[0].id, {});
+
+  expect(flow.steps[0].status).toBe("PENDING");
+  expect((flow.steps[0].ui as any)?.hasValidationErrors).toBe(true);
+
+  // Username should have validation error (required field)
+  expect((flow.steps[0].ui as any)?.content[0].validationError).toBeDefined();
+
+  // Email should have validation error (required field)
+  expect((flow.steps[0].ui as any)?.content[1].validationError).toBeDefined();
+
+  // Description should have validation error (required field)
+  expect((flow.steps[0].ui as any)?.content[2].validationError).toBeDefined();
+});
+
 test("flows - number input element - validation", async () => {
   let flow = await flows.numberInput.start({});
 
