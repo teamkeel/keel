@@ -55,26 +55,37 @@ const s3Client: S3Client | null = (() => {
     return null;
   }
 
-  const endpoint = process.env.TEST_AWS_ENDPOINT;
-
-  if (!endpoint) {
+  const endpoint = process.env.KEEL_S3_ENDPOINT;
+  if (endpoint) {
     return new S3Client({
       region: process.env.KEEL_REGION,
-      credentials: fromEnv(),
+      credentials: {
+        accessKeyId: "keelstorage",
+        secretAccessKey: "keelstorage",
+      },
+      endpoint: endpoint,
+    });
+  }
+
+  const testEndpoint = process.env.TEST_AWS_ENDPOINT;
+  if (testEndpoint) {
+    return new S3Client({
+      region: process.env.KEEL_REGION,
+      credentials: {
+        accessKeyId: "test",
+        secretAccessKey: "test",
+      },
+      endpointProvider: () => {
+        return {
+          url: new URL(testEndpoint),
+        };
+      },
     });
   }
 
   return new S3Client({
     region: process.env.KEEL_REGION,
-    credentials: {
-      accessKeyId: "test",
-      secretAccessKey: "test",
-    },
-    endpointProvider: () => {
-      return {
-        url: new URL(endpoint),
-      };
-    },
+    credentials: fromEnv(),
   });
 })();
 
@@ -198,30 +209,18 @@ export class File extends InlineFile {
       return Buffer.from(arrayBuffer);
     }
 
-    if (s3Client) {
-      const params = {
-        Bucket: process.env.KEEL_FILES_BUCKET_NAME,
-        Key: "files/" + this.key,
-      };
-      const command = new GetObjectCommand(params);
-      const response = await s3Client.send(command);
-      const blob = await response.Body!.transformToByteArray();
-      return Buffer.from(blob);
+    if (!s3Client) {
+      throw new Error("S3 client is required");
     }
 
-    const db = useDatabase();
-
-    try {
-      const query = db
-        .selectFrom("keel_storage")
-        .select("data")
-        .where("id", "=", this.key);
-
-      const row = await query.executeTakeFirstOrThrow();
-      return row.data;
-    } catch (e) {
-      throw new DatabaseError(e);
-    }
+    const params = {
+      Bucket: process.env.KEEL_FILES_BUCKET_NAME,
+      Key: "files/" + this.key,
+    };
+    const command = new GetObjectCommand(params);
+    const response = await s3Client.send(command);
+    const blob = await response.Body!.transformToByteArray();
+    return Buffer.from(blob);
   }
 
   async store(expires: Date | null = null): Promise<File> {
@@ -241,19 +240,19 @@ export class File extends InlineFile {
 
   // Generates a presigned download URL
   async getPresignedUrl(): Promise<URL> {
-    if (s3Client) {
-      const command = new GetObjectCommand({
-        Bucket: process.env.KEEL_FILES_BUCKET_NAME,
-        Key: "files/" + this.key,
-        ResponseContentDisposition: "inline",
-      });
-
-      const url = await getSignedUrl(s3Client, command, { expiresIn: 60 * 60 });
-
-      return new URL(url);
-    } else {
-      return new URL(`${process.env.KEEL_API_URL}/files/${this.key}`);
+    if (!s3Client) {
+      throw new Error("S3 client is required");
     }
+
+    const command = new GetObjectCommand({
+      Bucket: process.env.KEEL_FILES_BUCKET_NAME,
+      Key: "files/" + this.key,
+      ResponseContentDisposition: "inline",
+    });
+
+    const url = await getSignedUrl(s3Client, command, { expiresIn: 60 * 60 });
+
+    return new URL(url);
   }
 
   // Persists the file
@@ -279,64 +278,38 @@ async function storeFile(
   size: number,
   expires: Date | null
 ): Promise<void> {
-  if (s3Client) {
-    const params: PutObjectCommandInput = {
-      Bucket: process.env.KEEL_FILES_BUCKET_NAME,
-      Key: "files/" + key,
-      Body: contents,
-      ContentType: contentType,
-      ContentDisposition: `attachment; filename="${encodeURIComponent(
-        filename
-      )}"`,
-      Metadata: {
-        filename: filename,
-      },
-      ACL: "private",
-    };
+  if (!s3Client) {
+    throw new Error("S3 client is required");
+  }
 
-    if (expires) {
-      if (expires instanceof Date) {
-        params.Expires = expires;
-      } else {
-        console.warn("Invalid expires value. Skipping Expires parameter.");
-      }
+  const params: PutObjectCommandInput = {
+    Bucket: process.env.KEEL_FILES_BUCKET_NAME,
+    Key: "files/" + key,
+    Body: contents,
+    ContentType: contentType,
+    ContentDisposition: `attachment; filename="${encodeURIComponent(
+      filename
+    )}"`,
+    Metadata: {
+      filename: filename,
+    },
+    ACL: "private",
+  };
+
+  if (expires) {
+    if (expires instanceof Date) {
+      params.Expires = expires;
+    } else {
+      console.warn("Invalid expires value. Skipping Expires parameter.");
     }
+  }
 
-    const command = new PutObjectCommand(params);
-    try {
-      await s3Client.send(command);
-    } catch (error) {
-      console.error("Error uploading file:", error);
-      throw error;
-    }
-  } else {
-    const db = useDatabase();
-
-    try {
-      const query = db
-        .insertInto("keel_storage")
-        .values({
-          id: key,
-          filename: filename,
-          content_type: contentType,
-          data: contents,
-        })
-        .onConflict((oc) =>
-          oc
-            .column("id")
-            .doUpdateSet(() => ({
-              filename: filename,
-              content_type: contentType,
-              data: contents,
-            }))
-            .where("keel_storage.id", "=", key)
-        )
-        .returningAll();
-
-      await query.execute();
-    } catch (e) {
-      throw new DatabaseError(e);
-    }
+  const command = new PutObjectCommand(params);
+  try {
+    await s3Client.send(command);
+  } catch (error) {
+    console.error("Error uploading file:", error);
+    throw error;
   }
 }
 

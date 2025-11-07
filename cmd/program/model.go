@@ -13,13 +13,18 @@ import (
 
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/Masterminds/semver/v3"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/robfig/cron/v3"
 	"github.com/rs/cors"
 	"github.com/sirupsen/logrus"
+
 	"github.com/teamkeel/keel/cmd/database"
 	"github.com/teamkeel/keel/cmd/localTraceExporter"
+	storagecmd "github.com/teamkeel/keel/cmd/storage"
 	"github.com/teamkeel/keel/codegen"
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/db"
@@ -55,6 +60,7 @@ const (
 const (
 	StatusCheckingDependencies = iota
 	StatusParsePrivateKey
+	StatusSetupStorage
 	StatusSetupDatabase
 	StatusSetupFunctions
 	StatusLoadSchema
@@ -115,6 +121,7 @@ func Run(model *Model) {
 
 	defer func() {
 		_ = database.Stop()
+		_ = storagecmd.Stop()
 		if model.FunctionsServer != nil {
 			_ = model.FunctionsServer.Kill()
 		}
@@ -191,6 +198,7 @@ type Model struct {
 	RpcHandler        http.Handler
 	RuntimeRequests   []*RuntimeRequest
 	FunctionsLog      []*FunctionLog
+	StorageConnInfo   *storagecmd.ConnectionInfo
 	Storage           storage.Storer
 	CronRunner        *cron.Cron
 	TestOutput        string
@@ -276,6 +284,26 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.Err != nil {
 			return m, tea.Quit
 		}
+
+		m.Status = StatusSetupStorage
+		return m, StartStorage(m.ProjectDir)
+	case StartStorageMsg:
+		m.StorageConnInfo = msg.ConnInfo
+		m.Err = msg.Err
+		// If the storage can't be started we exit
+		if m.Err != nil {
+			return m, tea.Quit
+		}
+
+		// We now create a new S3 storer that's connected to the local minio server (running as a docker container)
+		endpoint := fmt.Sprintf("http://%s:%s", m.StorageConnInfo.Host, m.StorageConnInfo.Port)
+		s3Client := s3.NewFromConfig(aws.Config{
+			BaseEndpoint: &endpoint,
+			Credentials:  credentials.NewStaticCredentialsProvider(m.StorageConnInfo.AccessKey, m.StorageConnInfo.SecretKey, ""),
+			Region:       m.StorageConnInfo.Region,
+		})
+
+		m.Storage = storage.NewS3BucketStore(m.StorageConnInfo.Bucket, s3Client, tracer)
 
 		m.Status = StatusSetupDatabase
 		return m, StartDatabase(m.ResetDatabase, m.Mode, m.ProjectDir)
@@ -385,14 +413,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case RunMigrationsMsg:
 		m.Err = msg.Err
 		m.MigrationChanges = msg.Changes
-
-		// we now set the file Storage using a dbstore
-		storer, err := storage.NewDbStore(context.Background(), m.Database)
-		if err != nil {
-			m.Err = err
-			return m, tea.Quit
-		}
-		m.Storage = storer
 
 		if m.Err != nil {
 			return m, nil
@@ -563,7 +583,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		ctx = runtimectx.WithOAuthConfig(ctx, &m.Config.Auth)
 		if m.Storage != nil {
 			ctx = runtimectx.WithStorage(ctx, m.Storage)
-			ctx = runtimectx.WithStorageServer(ctx)
 		}
 
 		mailClient := mail.NewSMTPClientFromEnv()

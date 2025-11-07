@@ -12,6 +12,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"github.com/teamkeel/keel/config"
+	"github.com/teamkeel/keel/storage"
 
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/events"
@@ -48,7 +49,7 @@ type Handler struct {
 	db                 db.Database
 	functionsTransport functions.Transport
 	sqsEventHandler    events.EventHandler
-	filesStorage       *S3BucketStore
+	filesStorage       *storage.S3BucketStore
 	tracer             trace.Tracer
 	tracerProvider     *sdktrace.TracerProvider
 	flowOrchestrator   *flows.Orchestrator

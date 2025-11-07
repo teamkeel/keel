@@ -174,9 +174,6 @@ func (m *Migrations) SnapshotDatabase(ctx context.Context) (string, error) {
 	output.WriteString("BEGIN;\n\n")
 	output.WriteString("SET CONSTRAINTS ALL DEFERRED;\n\n")
 
-	// Add keel_storage table
-	models = append(models, "keel_storage")
-
 	// Register type handlers
 	typeHandlers := map[proto.Type]TypeHandler{
 		proto.Type_TYPE_DURATION:  &DurationTypeHandler{},
@@ -186,17 +183,6 @@ func (m *Migrations) SnapshotDatabase(ctx context.Context) (string, error) {
 
 	for i, entityName := range models {
 		table := Identifier(entityName)
-
-		// Check if keel_storage table exists before querying
-		if entityName == "keel_storage" {
-			exists, err := m.database.ExecuteQuery(ctx, "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'keel_storage')")
-			if err != nil {
-				return "", fmt.Errorf("error checking if keel_storage table exists: %w", err)
-			}
-			if !exists.Rows[0]["exists"].(bool) {
-				continue
-			}
-		}
 
 		// First get all columns to determine which ones to exclude
 		result, err := m.database.ExecuteQuery(ctx, fmt.Sprintf("SELECT * FROM %s", table))
@@ -211,12 +197,6 @@ func (m *Migrations) SnapshotDatabase(ctx context.Context) (string, error) {
 		// Get column names, excluding computed fields and sequence fields
 		columns := make([]string, 0)
 		for _, col := range result.Columns {
-			// For keel_storage table, include all columns without schema lookup
-			if entityName == "keel_storage" {
-				columns = append(columns, col)
-				continue
-			}
-
 			entity := m.Schema.FindEntity(entityName)
 			field := entity.FindField(casing.ToLowerCamel(col))
 			if field != nil && field.GetComputedExpression() == nil && field.GetSequence() == nil {
@@ -241,31 +221,6 @@ func (m *Migrations) SnapshotDatabase(ctx context.Context) (string, error) {
 
 			for j, col := range columns {
 				val := row[col]
-
-				// For keel_storage table, use DefaultTypeHandler for all columns
-				// But the data column is binary, so we need to handle it differently
-				if entityName == "keel_storage" {
-					if col == "data" {
-						if val == nil {
-							values[j] = "NULL"
-						} else {
-							// Convert the binary data to a hex string
-							if bytes, ok := val.([]byte); ok {
-								values[j] = fmt.Sprintf("'\\x%x'", bytes)
-							} else {
-								return "", fmt.Errorf("expected []byte for data column, got %T", val)
-							}
-						}
-					} else {
-						// For other keel_storage columns, use DefaultTypeHandler
-						sql, err := (&DefaultTypeHandler{}).ToSQL(val, nil)
-						if err != nil {
-							return "", fmt.Errorf("error converting value for column %s: %w", col, err)
-						}
-						values[j] = sql
-					}
-					continue
-				}
 
 				entity := m.Schema.FindEntity(entityName)
 				field := entity.FindField(casing.ToLowerCamel(col))

@@ -16,7 +16,6 @@ import (
 	"github.com/teamkeel/keel/runtime/jsonschema"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	rtt "github.com/teamkeel/keel/runtime/runtimetest"
-	"github.com/teamkeel/keel/storage"
 	"github.com/teamkeel/keel/testhelpers"
 	"gorm.io/gorm"
 )
@@ -67,10 +66,7 @@ func TestRuntimeRPC(t *testing.T) {
 
 			ctx = db.WithDatabase(ctx, database)
 
-			storer, err := storage.NewDbStore(ctx, database)
 			require.NoError(t, err)
-			ctx = runtimectx.WithStorage(ctx, storer)
-			ctx = runtimectx.WithStorageServer(ctx)
 
 			request = request.WithContext(ctx)
 

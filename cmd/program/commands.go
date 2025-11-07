@@ -25,6 +25,7 @@ import (
 	"github.com/teamkeel/keel/cmd/cliconfig"
 	"github.com/teamkeel/keel/cmd/database"
 	"github.com/teamkeel/keel/cmd/localTraceExporter"
+	"github.com/teamkeel/keel/cmd/storage"
 	"github.com/teamkeel/keel/codegen"
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/db"
@@ -282,6 +283,26 @@ func StartDatabase(reset bool, mode int, projectDirectory string) tea.Cmd {
 	}
 }
 
+type StartStorageMsg struct {
+	ConnInfo *storage.ConnectionInfo
+	Err      error
+}
+
+func StartStorage(projectDirectory string) tea.Cmd {
+	return func() tea.Msg {
+		conn, err := storage.Start(projectDirectory)
+		if err != nil {
+			return StartDatabaseMsg{
+				Err: err,
+			}
+		}
+
+		return StartStorageMsg{
+			ConnInfo: conn,
+		}
+	}
+}
+
 type SetupFunctionsMsg struct {
 	Err error
 }
@@ -421,6 +442,11 @@ func StartFunctions(m *Model) tea.Cmd {
 		envVars["KEEL_DB_CONN"] = m.DatabaseConnInfo.String()
 		envVars["KEEL_TRACING_ENABLED"] = "true"
 		envVars["OTEL_RESOURCE_ATTRIBUTES"] = "service.name=functions"
+
+		if m.StorageConnInfo != nil {
+			envVars["KEEL_FILES_BUCKET_NAME"] = m.StorageConnInfo.Bucket
+			envVars["KEEL_S3_ENDPOINT"] = fmt.Sprintf("http://%s:%s", m.StorageConnInfo.Host, m.StorageConnInfo.Port)
+		}
 
 		output := &FunctionsOutputWriter{
 			// Initially buffer output inside the writer in case there's an error

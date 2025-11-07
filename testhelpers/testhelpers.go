@@ -19,7 +19,6 @@ import (
 	cp "github.com/otiai10/copy"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/migrations"
-	"github.com/teamkeel/keel/storage"
 	"go.opentelemetry.io/otel/trace"
 
 	"github.com/teamkeel/keel/proto"
@@ -104,11 +103,6 @@ func SetupDatabaseForTestCase(ctx context.Context, dbConnInfo *db.ConnectionInfo
 		return nil, err
 	}
 
-	// we now set the file Storage using a dbstore; this will apply the needed migrations for the db based file storage
-	_, err = storage.NewDbStore(ctx, database)
-	if err != nil {
-		return nil, err
-	}
 	return database, nil
 }
 
