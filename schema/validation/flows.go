@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
@@ -20,6 +21,19 @@ func Flows(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 			currentFlow = flow
 			flowHasSchedule = false
 			flowInputs = []string{}
+
+			if action := query.Action(asts, casing.ToLowerCamel(flow.Name.Value)); action != nil {
+				errs.AppendError(
+					errorhandling.NewValidationErrorWithDetails(
+						errorhandling.NamingError,
+						errorhandling.ErrorDetails{
+							Message: fmt.Sprintf("There already exists an action with the name '%s'", casing.ToLowerCamel(flow.Name.Value)),
+							Hint:    "Use unique names between flows and actions",
+						},
+						flow.Name,
+					),
+				)
+			}
 		},
 		EnterFlowInput: func(input *parser.FlowInputNode) {
 			if !parser.IsBuiltInFieldType(input.Type.Value) && !query.IsEnum(asts, input.Type.Value) {
