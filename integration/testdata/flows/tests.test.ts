@@ -1236,6 +1236,101 @@ test("flows - page validation with actions", async () => {
   });
 });
 
+test("flows - page validation with actions - invalid action", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+  let f = await flows.validationPageWithAction.withAuthToken(token).start({});
+
+  const runId = f.id;
+  let stepId = f.steps[0].id;
+
+  // Provide an invalid action that doesn't exist
+  f = await flows.validationPageWithAction
+    .withAuthToken(token)
+    .putStepValues(runId, stepId, { email: "test@example.com" }, "invalid");
+
+  expect(f.steps[0].ui).toEqual({
+    __type: "ui.page",
+    content: [
+      {
+        __type: "ui.input.text",
+        disabled: false,
+        label: "Email",
+        name: "email",
+        optional: true,
+      },
+      {
+        __type: "ui.input.text",
+        disabled: false,
+        label: "Phone",
+        name: "phone",
+        optional: true,
+      },
+    ],
+    actions: [
+      {
+        label: "Cancel",
+        mode: "primary",
+        value: "cancel",
+      },
+      {
+        label: "Next",
+        mode: "primary",
+        value: "next",
+      },
+    ],
+    hasValidationErrors: true,
+    validationError:
+      'invalid action "invalid". Valid actions are: cancel, next',
+  });
+});
+
+test("flows - page validation with actions - label instead of value", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+  let f = await flows.validationPageWithAction.withAuthToken(token).start({});
+
+  const runId = f.id;
+  let stepId = f.steps[0].id;
+
+  // Provide a label instead of a value (common mistake)
+  f = await flows.validationPageWithAction
+    .withAuthToken(token)
+    .putStepValues(runId, stepId, { email: "test@example.com" }, "Cancel");
+
+  expect(f.steps[0].ui).toEqual({
+    __type: "ui.page",
+    content: [
+      {
+        __type: "ui.input.text",
+        disabled: false,
+        label: "Email",
+        name: "email",
+        optional: true,
+      },
+      {
+        __type: "ui.input.text",
+        disabled: false,
+        label: "Phone",
+        name: "phone",
+        optional: true,
+      },
+    ],
+    actions: [
+      {
+        label: "Cancel",
+        mode: "primary",
+        value: "cancel",
+      },
+      {
+        label: "Next",
+        mode: "primary",
+        value: "next",
+      },
+    ],
+    hasValidationErrors: true,
+    validationError: 'invalid action "Cancel". Valid actions are: cancel, next',
+  });
+});
+
 test("flows - all inputs", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
   const res = await flows.allInputs.withAuthToken(token).start({
