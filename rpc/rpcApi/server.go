@@ -318,7 +318,7 @@ func (s *Server) ListPrinters(ctx context.Context, req *rpc.ListPrintersRequest)
 	}
 
 	resp := rpc.ListPrintersResponse{}
-	if config.Hardware != nil {
+	if config != nil && config.Hardware != nil {
 		for _, p := range config.Hardware.Printers {
 			resp.Printers = append(resp.Printers, &rpc.Printer{
 				Name: p.Name,

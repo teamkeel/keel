@@ -31,12 +31,12 @@ func WithSchema(ctx context.Context, schema *proto.Schema) context.Context {
 
 func GetConfig(ctx context.Context) (*config.ProjectConfig, error) {
 	v := ctx.Value(configKey)
-	schema, ok := v.(*config.ProjectConfig)
+	cfg, ok := v.(*config.ProjectConfig)
 
 	if !ok {
 		return nil, errors.New("config in the context has wrong value type")
 	}
-	return schema, nil
+	return cfg, nil
 }
 
 func WithConfig(ctx context.Context, schema *config.ProjectConfig) context.Context {
