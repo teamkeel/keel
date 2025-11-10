@@ -105,27 +105,28 @@ export async function page<
   let hasValidationErrors = false;
   let validationError: string | undefined;
 
-  // Validate actions
+  // Validate actions - all action validation errors are thrown as bad requests
   if (options.actions && options.actions.length > 0) {
     // Actions are defined on the page
     // Normalize action - convert "undefined" string or undefined value to null
     const normalizedAction =
       action === "undefined" || action === undefined ? null : action;
 
-    // Only validate action requirement when data is being submitted (data is not null)
-    if (normalizedAction === null && data !== null) {
-      // No action provided when actions are required during submission
-      hasValidationErrors = true;
-      const validValues = options.actions
-        .map((a) => {
-          if (typeof a === "string") return a;
-          return a && typeof a === "object" && "value" in a ? a.value : "";
-        })
-        .filter(Boolean);
-      validationError = `action is required. Valid actions are: ${validValues.join(
-        ", "
-      )}`;
-    } else if (normalizedAction !== null) {
+    // Only validate action when data is being submitted (data is not null)
+    if (data !== null) {
+      if (normalizedAction === null) {
+        // No action provided when actions are required during submission
+        const validValues = options.actions
+          .map((a) => {
+            if (typeof a === "string") return a;
+            return a && typeof a === "object" && "value" in a ? a.value : "";
+          })
+          .filter(Boolean);
+        throw new Error(
+          `action is required. Valid actions are: ${validValues.join(", ")}`
+        );
+      }
+
       // Action provided, check if it's valid
       const isValidAction = options.actions.some((a) => {
         if (typeof a === "string") return a === normalizedAction;
@@ -138,8 +139,6 @@ export async function page<
       });
 
       if (!isValidAction) {
-        hasValidationErrors = true;
-
         // Build list of valid action values
         const validValues = options.actions
           .map((a) => {
@@ -148,9 +147,11 @@ export async function page<
           })
           .filter(Boolean);
 
-        validationError = `invalid action "${normalizedAction}". Valid actions are: ${validValues.join(
-          ", "
-        )}`;
+        throw new Error(
+          `invalid action "${normalizedAction}". Valid actions are: ${validValues.join(
+            ", "
+          )}`
+        );
       }
     }
   } else if (
