@@ -105,28 +105,63 @@ export async function page<
   let hasValidationErrors = false;
   let validationError: string | undefined;
 
-  // if we have actions defined, validate that the given action exists
-  if (options.actions && action !== null) {
-    const isValidAction = options.actions.some((a) => {
-      if (typeof a === "string") return a === action;
-      return a && typeof a === "object" && "value" in a && a.value === action;
-    });
+  // Validate actions
+  if (options.actions && options.actions.length > 0) {
+    // Actions are defined on the page
+    // Normalize action - convert "undefined" string or undefined value to null
+    const normalizedAction =
+      action === "undefined" || action === undefined ? null : action;
 
-    if (!isValidAction) {
+    // Only validate action requirement when data is being submitted (data is not null)
+    if (normalizedAction === null && data !== null) {
+      // No action provided when actions are required during submission
       hasValidationErrors = true;
-
-      // Build list of valid action values
       const validValues = options.actions
         .map((a) => {
           if (typeof a === "string") return a;
           return a && typeof a === "object" && "value" in a ? a.value : "";
         })
         .filter(Boolean);
-
-      validationError = `invalid action "${action}". Valid actions are: ${validValues.join(
+      validationError = `action is required. Valid actions are: ${validValues.join(
         ", "
       )}`;
+    } else if (normalizedAction !== null) {
+      // Action provided, check if it's valid
+      const isValidAction = options.actions.some((a) => {
+        if (typeof a === "string") return a === normalizedAction;
+        return (
+          a &&
+          typeof a === "object" &&
+          "value" in a &&
+          a.value === normalizedAction
+        );
+      });
+
+      if (!isValidAction) {
+        hasValidationErrors = true;
+
+        // Build list of valid action values
+        const validValues = options.actions
+          .map((a) => {
+            if (typeof a === "string") return a;
+            return a && typeof a === "object" && "value" in a ? a.value : "";
+          })
+          .filter(Boolean);
+
+        validationError = `invalid action "${normalizedAction}". Valid actions are: ${validValues.join(
+          ", "
+        )}`;
+      }
     }
+  } else if (
+    action !== null &&
+    action !== undefined &&
+    action !== "undefined"
+  ) {
+    // No actions defined but a real action value was provided - this is a bad request
+    throw new Error(
+      `invalid action "${action}". No actions are defined for this page`
+    );
   }
 
   const contentUiConfig = await Promise.all(

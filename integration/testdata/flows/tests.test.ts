@@ -1331,6 +1331,72 @@ test("flows - page validation with actions - label instead of value", async () =
   });
 });
 
+test("flows - page validation with actions - missing action", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+  let f = await flows.validationPageWithAction.withAuthToken(token).start({});
+
+  const runId = f.id;
+  let stepId = f.steps[0].id;
+
+  // Don't provide an action when actions are defined (action is required)
+  f = await flows.validationPageWithAction
+    .withAuthToken(token)
+    .putStepValues(runId, stepId, { email: "test@example.com" });
+
+  expect(f.steps[0].ui).toEqual({
+    __type: "ui.page",
+    content: [
+      {
+        __type: "ui.input.text",
+        disabled: false,
+        label: "Email",
+        name: "email",
+        optional: true,
+      },
+      {
+        __type: "ui.input.text",
+        disabled: false,
+        label: "Phone",
+        name: "phone",
+        optional: true,
+      },
+    ],
+    actions: [
+      {
+        label: "Cancel",
+        mode: "primary",
+        value: "cancel",
+      },
+      {
+        label: "Next",
+        mode: "primary",
+        value: "next",
+      },
+    ],
+    hasValidationErrors: true,
+    validationError: "action is required. Valid actions are: cancel, next",
+  });
+});
+
+test("flows - page validation - action provided when none defined", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+  let f = await flows.validationPage.withAuthToken(token).start({});
+
+  const runId = f.id;
+  let stepId = f.steps[0].id;
+
+  // Provide an action when no actions are defined on the page - this should fail the step
+  f = await flows.validationPage
+    .withAuthToken(token)
+    .putStepValues(runId, stepId, { email: "test@example.com" }, "submit");
+
+  // The step should have failed with an error
+  expect(f.steps[0].status).toBe("FAILED");
+  expect(f.steps[0].error).toContain(
+    'invalid action "submit". No actions are defined for this page'
+  );
+});
+
 test("flows - all inputs", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
   const res = await flows.allInputs.withAuthToken(token).start({
@@ -2404,7 +2470,7 @@ test("flows - multiple actions - invalid action", async () => {
           hasValidationErrors: true,
           title: "Continue flow?",
           validationError:
-            'invalid action "undefined". Valid actions are: finish, continue',
+            "action is required. Valid actions are: finish, continue",
         },
       },
     ],
