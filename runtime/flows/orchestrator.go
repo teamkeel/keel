@@ -225,6 +225,9 @@ func (o *Orchestrator) HandleEvent(ctx context.Context, event *EventWrapper) err
 		if err != nil {
 			return err
 		}
+		if run == nil {
+			return fmt.Errorf("invalid run ID: %s", ev.RunID)
+		}
 
 		err, _ = o.orchestrateRun(ctx, run.ID, run.Input.(map[string]any), ev.Data, ev.Action)
 

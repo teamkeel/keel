@@ -114,7 +114,31 @@ export async function page<
 
     if (!isValidAction) {
       hasValidationErrors = true;
-      validationError = "invalid action";
+
+      // Build list of valid action values
+      const validValues = options.actions
+        .map((a) => {
+          if (typeof a === "string") return a;
+          return a && typeof a === "object" && "value" in a ? a.value : "";
+        })
+        .filter(Boolean);
+
+      // Check if user provided a label instead of a value (common mistake)
+      const matchingLabel = options.actions.find((a) => {
+        return typeof a === "object" && "label" in a && a.label === action;
+      });
+
+      if (
+        matchingLabel &&
+        typeof matchingLabel === "object" &&
+        "value" in matchingLabel
+      ) {
+        validationError = `invalid action "${action}". Did you mean to use the value "${matchingLabel.value}" instead of the label "${action}"?`;
+      } else {
+        validationError = `invalid action "${action}". Valid actions are: ${validValues.join(
+          ", "
+        )}`;
+      }
     }
   }
 

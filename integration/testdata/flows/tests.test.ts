@@ -2308,7 +2308,8 @@ test("flows - multiple actions - invalid action", async () => {
           ],
           hasValidationErrors: true,
           title: "Continue flow?",
-          validationError: "invalid action",
+          validationError:
+            'invalid action "undefined". Valid actions are: finish, continue',
         },
       },
     ],
