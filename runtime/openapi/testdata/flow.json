@@ -951,6 +951,16 @@
             "type": "string",
             "enum": ["card", "grid", "list"]
           },
+          "Partial\u003cFileDbRecord\u003e": {
+            "type": "object",
+            "properties": {
+              "contentType": { "type": "string" },
+              "filename": { "type": "string" },
+              "key": { "type": "string" },
+              "size": { "type": "number" }
+            },
+            "additionalProperties": false
+          },
           "Record\u003cstring,any\u003e": {
             "type": "object",
             "additionalProperties": false
@@ -1038,6 +1048,9 @@
               },
               {
                 "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementInputDatePickerApiResponse"
+              },
+              {
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementInputFileApiResponse"
               },
               {
                 "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementSelectOneApiResponse"
@@ -1256,6 +1269,23 @@
             "additionalProperties": false,
             "required": ["__type", "disabled", "label", "name", "optional"]
           },
+          "UiElementInputFileApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": { "type": "string", "const": "ui.input.file" },
+              "defaultValue": {
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/Partial\u003cFileDbRecord\u003e"
+              },
+              "disabled": { "type": "boolean" },
+              "helpText": { "type": "string" },
+              "label": { "type": "string" },
+              "name": { "type": "string" },
+              "optional": { "type": "boolean" },
+              "validationError": { "type": "string" }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "disabled", "label", "name", "optional"]
+          },
           "UiElementInputNumberApiResponse": {
             "type": "object",
             "properties": {
@@ -1278,6 +1308,7 @@
             "type": "object",
             "properties": {
               "__type": { "type": "string", "const": "ui.input.scan" },
+              "autoContinue": { "type": "boolean" },
               "description": { "type": "string" },
               "duplicateHandling": {
                 "$ref": "#/components/schemas/__UiConfigSchemas/$defs/ScanDuplicateMode"
@@ -1288,7 +1319,6 @@
               "name": { "type": "string" },
               "title": { "type": "string" },
               "unit": { "type": "string" },
-              "autoContinue": { "type": "boolean" },
               "validationError": { "type": "string" }
             },
             "additionalProperties": false,
@@ -1484,25 +1514,20 @@
             "type": "object",
             "properties": {
               "__type": { "type": "string", "const": "ui.interactive.print" },
-              "autoPrint": { "type": "boolean" },
               "autoContinue": { "type": "boolean" },
+              "autoPrint": { "type": "boolean" },
               "data": {
                 "type": "array",
                 "items": {
                   "type": "object",
                   "properties": {
                     "data": { "type": "array", "items": { "type": "string" } },
-                    "printer": { "type": "string" },
                     "dpi": { "type": "number" },
-                    "pageWidth": { "type": "number" },
+                    "name": { "type": "string" },
                     "pageHeight": { "type": "number" },
-                    "type": {
-                      "type": "string",
-                      "enum": ["rawPdf", "zpl"]
-                    },
-                    "name": {
-                      "type": "string"
-                    },
+                    "pageWidth": { "type": "number" },
+                    "printer": { "type": "string" },
+                    "type": { "type": "string", "enum": ["rawPdf", "zpl"] },
                     "url": { "type": "string" }
                   },
                   "additionalProperties": false,
