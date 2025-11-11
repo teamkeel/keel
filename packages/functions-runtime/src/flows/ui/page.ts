@@ -105,17 +105,64 @@ export async function page<
   let hasValidationErrors = false;
   let validationError: string | undefined;
 
-  // if we have actions defined, validate that the given action exists
-  if (options.actions && action !== null) {
-    const isValidAction = options.actions.some((a) => {
-      if (typeof a === "string") return a === action;
-      return a && typeof a === "object" && "value" in a && a.value === action;
-    });
+  // Validate actions - all action validation errors are thrown as bad requests
+  if (options.actions && options.actions.length > 0) {
+    // Actions are defined on the page
+    // Normalize action - convert "undefined" string or undefined value to null
+    const normalizedAction =
+      action === "undefined" || action === undefined ? null : action;
 
-    if (!isValidAction) {
-      hasValidationErrors = true;
-      validationError = "invalid action";
+    // Only validate action when data is being submitted (data is not null)
+    if (data !== null) {
+      if (normalizedAction === null) {
+        // No action provided when actions are required during submission
+        const validValues = options.actions
+          .map((a) => {
+            if (typeof a === "string") return a;
+            return a && typeof a === "object" && "value" in a ? a.value : "";
+          })
+          .filter(Boolean);
+        throw new Error(
+          `action is required. Valid actions are: ${validValues.join(", ")}`
+        );
+      }
+
+      // Action provided, check if it's valid
+      const isValidAction = options.actions.some((a) => {
+        if (typeof a === "string") return a === normalizedAction;
+        return (
+          a &&
+          typeof a === "object" &&
+          "value" in a &&
+          a.value === normalizedAction
+        );
+      });
+
+      if (!isValidAction) {
+        // Build list of valid action values
+        const validValues = options.actions
+          .map((a) => {
+            if (typeof a === "string") return a;
+            return a && typeof a === "object" && "value" in a ? a.value : "";
+          })
+          .filter(Boolean);
+
+        throw new Error(
+          `invalid action "${normalizedAction}". Valid actions are: ${validValues.join(
+            ", "
+          )}`
+        );
+      }
     }
+  } else if (
+    action !== null &&
+    action !== undefined &&
+    action !== "undefined"
+  ) {
+    // No actions defined but a real action value was provided - this is a bad request
+    throw new Error(
+      `invalid action "${action}". No actions are defined for this page`
+    );
   }
 
   const contentUiConfig = await Promise.all(

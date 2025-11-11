@@ -1236,6 +1236,82 @@ test("flows - page validation with actions", async () => {
   });
 });
 
+test("flows - page validation with actions - invalid action", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+  let f = await flows.validationPageWithAction.withAuthToken(token).start({});
+
+  const runId = f.id;
+  let stepId = f.steps[0].id;
+
+  // Provide an invalid action that doesn't exist - this should fail the step
+  f = await flows.validationPageWithAction
+    .withAuthToken(token)
+    .putStepValues(runId, stepId, { email: "test@example.com" }, "invalid");
+
+  // The step should have failed with an error
+  expect(f.steps[0].status).toBe("FAILED");
+  expect(f.steps[0].error).toContain(
+    'invalid action "invalid". Valid actions are: cancel, next'
+  );
+});
+
+test("flows - page validation with actions - label instead of value", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+  let f = await flows.validationPageWithAction.withAuthToken(token).start({});
+
+  const runId = f.id;
+  let stepId = f.steps[0].id;
+
+  // Provide a label instead of a value (common mistake) - this should fail the step
+  f = await flows.validationPageWithAction
+    .withAuthToken(token)
+    .putStepValues(runId, stepId, { email: "test@example.com" }, "Cancel");
+
+  // The step should have failed with an error
+  expect(f.steps[0].status).toBe("FAILED");
+  expect(f.steps[0].error).toContain(
+    'invalid action "Cancel". Valid actions are: cancel, next'
+  );
+});
+
+test("flows - page validation with actions - missing action", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+  let f = await flows.validationPageWithAction.withAuthToken(token).start({});
+
+  const runId = f.id;
+  let stepId = f.steps[0].id;
+
+  // Don't provide an action when actions are defined (action is required) - this should fail the step
+  f = await flows.validationPageWithAction
+    .withAuthToken(token)
+    .putStepValues(runId, stepId, { email: "test@example.com" });
+
+  // The step should have failed with an error
+  expect(f.steps[0].status).toBe("FAILED");
+  expect(f.steps[0].error).toContain(
+    "action is required. Valid actions are: cancel, next"
+  );
+});
+
+test("flows - page validation - action provided when none defined", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+  let f = await flows.validationPage.withAuthToken(token).start({});
+
+  const runId = f.id;
+  let stepId = f.steps[0].id;
+
+  // Provide an action when no actions are defined on the page - this should fail the step
+  f = await flows.validationPage
+    .withAuthToken(token)
+    .putStepValues(runId, stepId, { email: "test@example.com" }, "submit");
+
+  // The step should have failed with an error
+  expect(f.steps[0].status).toBe("FAILED");
+  expect(f.steps[0].error).toContain(
+    'invalid action "submit". No actions are defined for this page'
+  );
+});
+
 test("flows - all inputs", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
   const res = await flows.allInputs.withAuthToken(token).start({
@@ -2254,70 +2330,17 @@ test("flows - multiple actions - invalid action", async () => {
     },
   });
 
-  // Provide the values for the pending UI step
+  // Provide the values for the pending UI step without an action - this should fail the step
   f = await flows.multipleActions
     .withAuthToken(token)
     .putStepValues(f.id, f.steps[0].id, {});
 
-  expect(f).toEqual({
-    id: expect.any(String),
-    traceId: expect.any(String),
-    status: "AWAITING_INPUT",
-    name: "MultipleActions",
-    startedBy: expect.any(String),
-    input: {},
-    error: null,
-    data: null,
-    steps: [
-      {
-        id: expect.any(String),
-        name: "question",
-        runId: f.id,
-        stage: null,
-        status: "PENDING",
-        type: "UI",
-        value: null,
-        error: null,
-        startTime: expect.any(Date),
-        endTime: null,
-        createdAt: expect.any(Date),
-        updatedAt: expect.any(Date),
-        ui: {
-          __type: "ui.page",
-          actions: [
-            {
-              label: "finish",
-              mode: "primary",
-              value: "finish",
-            },
-            {
-              label: "continue",
-              mode: "primary",
-              value: "continue",
-            },
-          ],
-          content: [
-            {
-              __type: "ui.input.boolean",
-              disabled: false,
-              label: "Did you like the things?",
-              mode: "checkbox",
-              name: "yesno",
-              optional: false,
-            },
-          ],
-          hasValidationErrors: true,
-          title: "Continue flow?",
-          validationError: "invalid action",
-        },
-      },
-    ],
-    createdAt: expect.any(Date),
-    updatedAt: expect.any(Date),
-    config: {
-      title: "Multiple actions",
-    },
-  });
+  // The step should have failed with an error
+  expect(f.status).toBe("FAILED");
+  expect(f.steps[0].status).toBe("FAILED");
+  expect(f.steps[0].error).toContain(
+    "action is required. Valid actions are: finish, continue"
+  );
 });
 
 test("flows - stats", async () => {
