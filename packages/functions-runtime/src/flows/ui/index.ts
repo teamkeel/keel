@@ -20,6 +20,10 @@ import {
   UiElementInputDatePickerApiResponse,
 } from "./elements/input/datePicker";
 import {
+  UiElementInputFile,
+  UiElementInputFileApiResponse,
+} from "./elements/input/file";
+import {
   UiElementMarkdown,
   UiElementMarkdownApiResponse,
 } from "./elements/display/markdown";
@@ -107,6 +111,7 @@ type UiInputsElements = {
   dataGrid: UiElementInputDataGrid;
   datePicker: UiElementInputDatePicker;
   scan: UiElementScan;
+  file: UiElementInputFile;
 };
 
 // Select elements that are named and return values
@@ -248,6 +253,7 @@ export type UIApiResponses = {
     dataGrid: UiElementInputDataGridApiResponse;
     datePicker: UiElementInputDatePickerApiResponse;
     scan: UiElementInputScanApiResponse;
+    file: UiElementInputFileApiResponse;
   };
   select: {
     one: UiElementSelectOneApiResponse;
@@ -281,6 +287,7 @@ export type UiElementApiResponse =
   | UiElementInputDataGridApiResponse
   | UiElementInputScanApiResponse
   | UiElementInputDatePickerApiResponse
+  | UiElementInputFileApiResponse
 
   // Select elements
   | UiElementSelectOneApiResponse

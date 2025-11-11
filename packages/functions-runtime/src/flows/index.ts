@@ -31,6 +31,7 @@ import { keyValue } from "./ui/elements/display/keyValue";
 import { selectTable } from "./ui/elements/select/table";
 import { dataGridInput } from "./ui/elements/input/dataGrid";
 import { datePickerInput } from "./ui/elements/input/datePicker";
+import { fileInput } from "./ui/elements/input/file";
 import { iterator } from "./ui/elements/iterator";
 import { print } from "./ui/elements/interactive/print";
 import { pickList } from "./ui/elements/interactive/pickList";
@@ -583,6 +584,7 @@ export function createFlowContext<
         dataGrid: dataGridInput as any,
         datePicker: datePickerInput as any,
         scan: scan as any,
+        file: fileInput as any,
       },
       display: {
         divider: divider as any,
