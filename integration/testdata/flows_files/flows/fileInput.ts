@@ -26,7 +26,18 @@ export default FileInput(config, async (ctx) => {
     return user.id;
   });
 
+  const imageUrl = await ctx.step("get image", async () => {
+    const user = await models.user.findOne({ id: userId });
+    if (!user) {
+      throw new Error("user not found");
+    }
+
+    const url = await user.avatar.getPresignedUrl();
+    return url.toString();
+  });
+
   return {
     id: userId,
+    avatarUrl: imageUrl,
   };
 });
