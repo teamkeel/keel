@@ -9,7 +9,7 @@ import { File, FileDbRecord } from "../../../../File";
 
 type ElementDataType = Partial<FileDbRecord>;
 
-export type UiElementInputFile = InputElement<ElementDataType, {}>;
+export type UiElementInputFile = InputElement<ElementDataType, {}, File>;
 
 /**
  * key: string;

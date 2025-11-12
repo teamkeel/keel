@@ -398,5 +398,5 @@ export type ExtractFormData<T extends UIElements> = {
   [K in Extract<T[number], InputElementResponse<string, any>>["name"]]: Extract<
     T[number],
     InputElementResponse<K, any>
-  >["valueType"];
+  >["returnType"];
 };

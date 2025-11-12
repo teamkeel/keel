@@ -38,6 +38,7 @@ import { pickList } from "./ui/elements/interactive/pickList";
 import { NonRetriableError } from "./errors";
 import { scan } from "./ui/elements/input/scan";
 import { file } from "./ui/elements/display/file";
+import { transformRichDataTypes } from "../parsing";
 
 export const enum STEP_STATUS {
   NEW = "NEW",
@@ -465,13 +466,15 @@ export function createFlowContext<
             // page already completed, so we're marking this span as internal alongside it's children
             span.setAttribute(KEEL_INTERNAL_ATTR, KEEL_INTERNAL_CHILDREN);
 
+            const parsedData = transformRichDataTypes(step.value);
+
             if (step.action) {
               // When actions are present, the flow always returns { data, action }
               // so we need to maintain that structure when returning from DB
-              return { data: step.value, action: step.action };
+              return { data: parsedData, action: step.action };
             }
             // Without actions, just return the data directly
-            return step.value;
+            return parsedData;
           }
 
           if (!step) {
@@ -570,11 +573,13 @@ export function createFlowContext<
             .returningAll()
             .executeTakeFirst();
 
+          const parsedData = transformRichDataTypes(data);
+
           // Only return the { data, action } wrapper when actions are defined
           if (action) {
-            return { data, action };
+            return { parsedData, action };
           }
-          return data;
+          return parsedData;
         });
       }) as UiPage<C>,
       inputs: {

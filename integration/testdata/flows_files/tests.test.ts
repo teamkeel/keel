@@ -111,23 +111,27 @@ test("flows - file inputs flow", async () => {
   expect(completedFlow.status).toBe("COMPLETED");
   expect(completedFlow.steps[0].status).toBe("COMPLETED");
 
-  // first ctx.step to create user and return its id
+  // first ctx.step to create user and return its id and avatarURL
   expect(completedFlow.steps[1].name).toBe("create user");
   expect(completedFlow.steps[1].status).toBe("COMPLETED");
-  expect(completedFlow.steps[1].value).toBeTruthy();
+  expect(completedFlow.steps[1].value).toEqual({
+    userId: expect.any(String),
+    avatarUrl: expect.any(String),
+  });
+  const userId = completedFlow.steps[1].value.userId;
 
   // second ctx.step to retrieve user from db, get the image and return a presigned url for the image
   expect(completedFlow.steps[2].name).toBe("get image");
   expect(completedFlow.steps[2].status).toBe("COMPLETED");
 
   // thw whole flow to return the id of the user and a presigned url for the uploaded avatar
-  expect(completedFlow.data.id).toBe(completedFlow.steps[1].value);
+  expect(completedFlow.data.id).toBe(userId);
   expect(completedFlow.data.avatarUrl).toContain(
     `/aws/files/${avatarCallbackResponse.key}?`
   );
 
   // retrieve model from db
-  const user = await models.user.findOne({ id: completedFlow.steps[1].value });
+  const user = await models.user.findOne({ id: userId });
   expect(user).toEqual({
     id: expect.any(String),
     avatar: expect.any(File),

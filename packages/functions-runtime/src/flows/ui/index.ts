@@ -141,13 +141,16 @@ type UiInteractiveElements<H extends NullableHardware> = {
   pickList: UiElementPickList;
 };
 
-// The base input element function. All inputs must be named and can optionally have a config
-export type InputElement<TValueType, TConfig extends any = never> = <
-  N extends string,
->(
+// The base input element function. All inputs must be named, should have a data type and can optionally have
+// a config and/or a different return data type
+export type InputElement<
+  TValueType,
+  TConfig extends any = never,
+  TReturnType = TValueType,
+> = <N extends string>(
   name: N,
   options?: BaseInputConfig<TValueType> & TConfig
-) => InputElementResponse<N, TValueType>;
+) => InputElementResponse<N, TValueType, TReturnType>;
 
 // The base display element function. Display elements do not have a name but optionally have a config
 export type DisplayElement<TConfig extends any = never> = (
@@ -160,7 +163,7 @@ export type DisplayElementWithRequiredConfig<TConfig extends any = never> = (
 
 // Union of all element function shapes
 export type UIElement =
-  | InputElementResponse<string, any>
+  | InputElementResponse<string, any, any>
   | DisplayElementResponse
   | IteratorElementResponse<string, any>;
 
@@ -171,11 +174,21 @@ interface UIElementBase {
   _type: string;
 }
 
-export interface InputElementResponse<N extends string, V>
+/**
+ * Type for the input element; name, data type, return data type
+ * InputElementResponse<"ui.input.text", string>
+ * InputElementResponse<"ui.input.file", Partial<FileDBRecord>, File>
+ */
+export interface InputElementResponse<N extends string, V, RV = V>
   extends UIElementBase {
   _type: "input";
   name: N;
   valueType: V;
+  /**
+   * The type of the value returned from the step (page). Rich field types will operate on a json serialisable object
+   * but will return a complex type to be used in subsequent steps
+   */
+  returnType: RV;
 }
 
 export interface DisplayElementResponse extends UIElementBase {

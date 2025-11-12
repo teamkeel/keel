@@ -18,12 +18,22 @@ export default FileInput(config, async (ctx) => {
     ],
   });
 
-  const userId = await ctx.step("create user", async () => {
+  const { userId } = await ctx.step("create user", async () => {
+    // checking that the returned data from the page step (avatar) is a file
+    if (!(page1.avatar instanceof File)) {
+      throw new Error("not a file");
+    }
+
+    const url = await page1.avatar.getPresignedUrl();
     const user = await models.user.create({
-      avatar: new File(page1.avatar),
-      passport: page1.passport ? new File(page1.passport) : null,
+      avatar: page1.avatar,
+      passport: page1.passport,
     });
-    return user.id;
+
+    return {
+      userId: user.id,
+      avatarUrl: url.toString(),
+    };
   });
 
   const imageUrl = await ctx.step("get image", async () => {
