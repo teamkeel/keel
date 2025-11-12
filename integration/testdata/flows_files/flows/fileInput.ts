@@ -5,7 +5,7 @@ const config = {
 } as const satisfies FlowConfig;
 
 export default FileInput(config, async (ctx) => {
-  const page1 = await ctx.ui.page("file input page", {
+  const { avatar, passport } = await ctx.ui.page("file input page", {
     content: [
       ctx.ui.inputs.file("avatar", {
         label: "Avatar",
@@ -20,14 +20,14 @@ export default FileInput(config, async (ctx) => {
 
   const { userId } = await ctx.step("create user", async () => {
     // checking that the returned data from the page step (avatar) is a file
-    if (!(page1.avatar instanceof File)) {
+    if (!(avatar instanceof File)) {
       throw new Error("not a file");
     }
 
-    const url = await page1.avatar.getPresignedUrl();
+    const url = await avatar.getPresignedUrl();
     const user = await models.user.create({
-      avatar: page1.avatar,
-      passport: page1.passport,
+      avatar: avatar,
+      passport: passport,
     });
 
     return {
