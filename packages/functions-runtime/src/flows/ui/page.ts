@@ -5,14 +5,11 @@ import {
   InputElementImplementationResponse,
   InputElementResponse,
   IteratorElementImplementationResponse,
-  IteratorElementResponse,
   UiElementApiResponse,
   UiElementApiResponses,
   UIElements,
-  UIElement,
   ValidateFn,
 } from ".";
-import { UiElementIteratorApiResponse } from "./elements/iterator";
 
 type PageOptions<
   C extends FlowConfig,
@@ -390,8 +387,8 @@ const validateIteratorData = async (
 type ActionValue<T> = T extends string
   ? T
   : T extends { value: infer V }
-  ? V
-  : never;
+    ? V
+    : never;
 
 // Extract the data from elements and return a key-value object based on the name of the element
 export type ExtractFormData<T extends UIElements> = {

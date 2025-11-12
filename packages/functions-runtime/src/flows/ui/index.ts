@@ -1,4 +1,4 @@
-import { FlowConfig, Hardware, NullableHardware } from "..";
+import { FlowConfig, NullableHardware } from "..";
 import {
   UiElementSelectOne,
   UiElementSelectOneApiResponse,
