@@ -577,7 +577,7 @@ export function createFlowContext<
 
           // Only return the { data, action } wrapper when actions are defined
           if (action) {
-            return { parsedData, action };
+            return { data: parsedData, action };
           }
           return parsedData;
         });
