@@ -76,6 +76,10 @@ test("enum literal comparisons - all expressions fail - is not authorized", asyn
   await expect(actions.enumFailedExpressions()).toHaveAuthorizationError();
 });
 
+test("permission with secret - no secret aset - is not authorized", async () => {
+  await expect(actions.secretFailedExpressions()).toHaveAuthorizationError();
+});
+
 test("permission role email is authorized", async () => {
   const identity = await models.identity.create({
     email: "verified@agency.org",
