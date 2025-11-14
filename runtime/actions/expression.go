@@ -176,7 +176,7 @@ func generateOperandForCtx(ctx context.Context, schema *proto.Schema, fragments 
 	case expressions.IsContextSecretField(ident):
 		secret, err := runtimectx.GetSecret(ctx, ident[2])
 		if err != nil {
-			return nil, err
+			return Null(), nil
 		}
 		return Value(secret), nil
 	case expressions.IsContextHeadersField(ident):

@@ -66,6 +66,9 @@ model ModelWithExpressions {
             // todo: https://linear.app/keel/issue/DEV-216/enum-as-explicit-input-action-inputs-must-be-one-of-the-fields-defined
             //@permission(expression: Options.One != explOption)
         }
+        create secretFailedExpressions() {
+            @permission(expression: ctx.secrets.SECRETKEY == "1234")
+        }
     }
 }
 
