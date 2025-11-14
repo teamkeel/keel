@@ -30,6 +30,10 @@ flow NumberInput {
     @permission(expression: true)
 }
 
+flow FileInput {
+    @permission(expression: true)
+}
+
 flow BooleanInput {
     @permission(expression: true)
 }

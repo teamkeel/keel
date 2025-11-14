@@ -1,0 +1,10 @@
+model User {
+    fields {
+        avatar File
+        passport File?
+    }
+}
+
+flow FileInput {
+    @permission(expression: true)
+}

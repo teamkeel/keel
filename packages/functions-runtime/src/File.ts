@@ -255,6 +255,26 @@ export class File extends InlineFile {
     return new URL(url);
   }
 
+  // Generates a presigned upload URL. If the file doesn't have a key, a new one will be generated
+  async getPresignedUploadUrl(): Promise<URL> {
+    if (!s3Client) {
+      throw new Error("S3 client is required");
+    }
+
+    if (!this.key) {
+      this._key = KSUID.randomSync().string;
+    }
+
+    const command = new PutObjectCommand({
+      Bucket: process.env.KEEL_FILES_BUCKET_NAME,
+      Key: "files/" + this.key,
+    });
+
+    const url = await getSignedUrl(s3Client, command, { expiresIn: 60 * 60 });
+
+    return new URL(url);
+  }
+
   // Persists the file
   toDbRecord(): FileDbRecord {
     return {
