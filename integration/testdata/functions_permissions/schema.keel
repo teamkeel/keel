@@ -3,12 +3,17 @@ model User {
         identity Identity @unique
         name Text
         orgs UserOrganisation[]
+        status Status @default(Status.Active)
     }
 
     actions {
         create createUser() with (name) @function
         get getUser(id) @function
         list listUsersByOrganisation(orgs.org.id) @function
+        delete deleteUser(id) {
+            @function
+            @permission(expression: user.status == Status.Active)
+        }
     }
 
     @permission(
@@ -20,6 +25,11 @@ model User {
         expression: ctx.identity.user in user.orgs.org.users.user,
         actions: [get, list]
     )
+}
+
+enum Status {
+    Active
+    Inactive
 }
 
 model Organisation {
