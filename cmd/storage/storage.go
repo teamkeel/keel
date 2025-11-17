@@ -80,6 +80,11 @@ func Start(projectDirectory string) (*ConnectionInfo, error) {
 		Region:    minioRegion,
 	}
 
+	// Wait for MinIO to be ready before creating bucket
+	if err := waitForMinioReady(context.Background(), &conn); err != nil {
+		return nil, err
+	}
+
 	bucketName, err := createProjectBucket(context.Background(), projectDirectory, &conn)
 	if err != nil {
 		return nil, err
@@ -325,6 +330,33 @@ func generateBucketName(projectDirectory string) (string, error) {
 	projectDirectory = strings.ToLower(projectDirectory)
 
 	return fmt.Sprintf("%x", md5.Sum([]byte(projectDirectory))), nil
+}
+
+// waitForMinioReady waits for MinIO to be ready to accept connections by retrying
+// ListBuckets calls until successful or timeout is reached.
+func waitForMinioReady(ctx context.Context, conn *ConnectionInfo) error {
+	endpoint := fmt.Sprintf("http://%s:%s", conn.Host, conn.Port)
+	s3Client := s3.NewFromConfig(aws.Config{
+		BaseEndpoint: &endpoint,
+		Credentials:  credentials.NewStaticCredentialsProvider(minioAccessKey, minioSecretKey, ""),
+		Region:       minioRegion,
+	})
+
+	maxRetries := 30
+	retryDelay := 200 * time.Millisecond
+
+	for i := 0; i < maxRetries; i++ {
+		_, err := s3Client.ListBuckets(ctx, &s3.ListBucketsInput{})
+		if err == nil {
+			// MinIO is ready
+			return nil
+		}
+
+		// Wait before retrying
+		time.Sleep(retryDelay)
+	}
+
+	return fmt.Errorf("timeout waiting for MinIO to be ready")
 }
 
 // createProjectBucket will create a new bucket for the given project. If the bucket already exists, it's name will be returned.
