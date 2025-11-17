@@ -62,7 +62,7 @@ export interface PersonTable {
 	bio: string
 	file: runtime.FileDbRecord
 	canHoldBreath: runtime.Duration
-	heightInMetres: number
+	heightInMetres: GeneratedAlways<number>
 	id: Generated<string>
 	createdAt: Generated<Date>
 	updatedAt: Generated<Date>
