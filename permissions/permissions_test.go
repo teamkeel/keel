@@ -258,7 +258,7 @@ func TestToSQL(t *testing.T) {
 			values: []permissions.Value{
 				{
 					Type:        permissions.ValueString,
-					StringValue: "Public",
+					StringValue: "\"Public\"",
 				},
 				{
 					Type: permissions.ValueRecordIDs,

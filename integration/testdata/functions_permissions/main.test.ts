@@ -184,7 +184,6 @@ test("boolean condition / multiple joins / >= condition", async () => {
   });
 });
 
-
 test("enum literal in expression - can only delete users that are active", async () => {
   const identityActiveUser = await models.identity.create({
     email: "active@keel.xyz",
@@ -194,7 +193,7 @@ test("enum literal in expression - can only delete users that are active", async
     name: "Active User",
     status: Status.Active,
     identityId: identityActiveUser.id,
-  })
+  });
 
   const identityInactiveUser = await models.identity.create({
     email: "inactive@keel.xyz",
@@ -206,10 +205,15 @@ test("enum literal in expression - can only delete users that are active", async
     identityId: identityInactiveUser.id,
   });
 
-  await expect(actions.withIdentity(identityActiveUser).deleteUser({ id: activeUser.id })).resolves.toBeTruthy();
-  await expect(actions.withIdentity(identityInactiveUser).deleteUser({ id: inactiveUser.id })).rejects.toEqual({
+  await expect(
+    actions.withIdentity(identityActiveUser).deleteUser({ id: activeUser.id })
+  ).resolves.toBeTruthy();
+  await expect(
+    actions
+      .withIdentity(identityInactiveUser)
+      .deleteUser({ id: inactiveUser.id })
+  ).rejects.toEqual({
     code: "ERR_PERMISSION_DENIED",
     message: "not authorized to access",
   });
 });
-
