@@ -250,7 +250,7 @@ func writeTableInterface(w *codegen.Writer, model *proto.Model) {
 			t = fmt.Sprintf("%s[]", t)
 		}
 
-		if field.GetDefaultValue() != nil || field.GetSequence() != nil {
+		if field.GetDefaultValue() != nil || field.GetSequence() != nil || field.GetComputedExpression() != nil {
 			t = fmt.Sprintf("Generated<%s>", t)
 		}
 

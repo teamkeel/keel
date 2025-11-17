@@ -1,5 +1,6 @@
 import { test, expect } from "vitest";
 import { actions, models } from "@teamkeel/testing";
+import { useDatabase } from "@teamkeel/sdk";
 
 test("testing raw kysely", async () => {
   const postCreatedAfter2020 = await models.post.create({
@@ -14,11 +15,15 @@ test("testing raw kysely", async () => {
 
   expect(goodResult?.id).toEqual(postCreatedAfter2020.id);
 
-  const postCreatedBefore2020 = await models.post.create({
-    title: "a title",
-    createdAt: new Date(2019, 2, 1),
-    updatedAt: new Date(),
-  });
+  const postCreatedBefore2020 = await useDatabase()
+    .insertInto("post")
+    .values({
+      title: "a title",
+      createdAt: new Date(2019, 2, 1),
+      updatedAt: new Date(),
+    })
+    .returning("id")
+    .executeTakeFirstOrThrow();
 
   // because the post was created before 2020 and our custom function adds an additional
   // sql constraint to ensure any post found in the db by id was also created after 1/1/2020

@@ -1,6 +1,8 @@
 model Post {
     fields {
         title Text
+        // this should not be a required field in the model API nor Kysely
+        subtitle Text @computed(post.title)
     }
 
     actions {
