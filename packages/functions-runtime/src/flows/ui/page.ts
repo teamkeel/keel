@@ -5,14 +5,11 @@ import {
   InputElementImplementationResponse,
   InputElementResponse,
   IteratorElementImplementationResponse,
-  IteratorElementResponse,
   UiElementApiResponse,
   UiElementApiResponses,
   UIElements,
-  UIElement,
   ValidateFn,
 } from ".";
-import { UiElementIteratorApiResponse } from "./elements/iterator";
 
 type PageOptions<
   C extends FlowConfig,
@@ -398,5 +395,5 @@ export type ExtractFormData<T extends UIElements> = {
   [K in Extract<T[number], InputElementResponse<string, any>>["name"]]: Extract<
     T[number],
     InputElementResponse<K, any>
-  >["valueType"];
+  >["returnType"];
 };

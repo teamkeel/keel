@@ -113,6 +113,9 @@
           "$ref": "#/$defs/UiElementInputDatePickerApiResponse"
         },
         {
+          "$ref": "#/$defs/UiElementInputFileApiResponse"
+        },
+        {
           "$ref": "#/$defs/UiElementSelectOneApiResponse"
         },
         {
@@ -850,6 +853,62 @@
         "name",
         "optional"
       ]
+    },
+    "UiElementInputFileApiResponse": {
+      "type": "object",
+      "properties": {
+        "__type": {
+          "type": "string",
+          "const": "ui.input.file"
+        },
+        "name": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "defaultValue": {
+          "$ref": "#/$defs/Partial<FileDbRecord>"
+        },
+        "optional": {
+          "type": "boolean"
+        },
+        "disabled": {
+          "type": "boolean"
+        },
+        "helpText": {
+          "type": "string"
+        },
+        "validationError": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "__type",
+        "disabled",
+        "label",
+        "name",
+        "optional"
+      ]
+    },
+    "Partial<FileDbRecord>": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "filename": {
+          "type": "string"
+        },
+        "contentType": {
+          "type": "string"
+        },
+        "size": {
+          "type": "number"
+        }
+      },
+      "additionalProperties": false
     },
     "UiElementSelectOneApiResponse": {
       "type": "object",
