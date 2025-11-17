@@ -250,7 +250,11 @@ func writeTableInterface(w *codegen.Writer, model *proto.Model) {
 			t = fmt.Sprintf("%s[]", t)
 		}
 
-		if field.GetDefaultValue() != nil || field.GetSequence() != nil || field.GetComputedExpression() != nil {
+		if field.GetComputedExpression() != nil {
+			// Computed fields should never be settable
+			t = fmt.Sprintf("GeneratedAlways<%s>", t)
+		} else if field.GetDefaultValue() != nil || field.GetSequence() != nil {
+			// Default values and sequences are optional but can be overridden
 			t = fmt.Sprintf("Generated<%s>", t)
 		}
 
