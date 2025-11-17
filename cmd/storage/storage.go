@@ -48,7 +48,6 @@ const keelStorageVolumeName string = "keel-storage-volume"
 //
 // It is the client's responsibility to call db.Close() on the returned
 // connection when done with it.
-//
 func Start(projectDirectory string) (*ConnectionInfo, error) {
 	// We need a dockerClient (proxy) to "drive" Docker using the SDK.
 	dockerClient, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
@@ -345,7 +344,7 @@ func waitForMinioReady(ctx context.Context, conn *ConnectionInfo) error {
 	maxRetries := 30
 	retryDelay := 200 * time.Millisecond
 
-	for i := 0; i < maxRetries; i++ {
+	for range maxRetries {
 		_, err := s3Client.ListBuckets(ctx, &s3.ListBucketsInput{})
 		if err == nil {
 			// MinIO is ready
