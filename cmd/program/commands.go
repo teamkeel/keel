@@ -445,6 +445,7 @@ func StartFunctions(m *Model) tea.Cmd {
 
 		if m.StorageConnInfo != nil {
 			envVars["KEEL_FILES_BUCKET_NAME"] = m.StorageConnInfo.Bucket
+			envVars["KEEL_REGION"] = m.StorageConnInfo.Region
 			envVars["KEEL_S3_ENDPOINT"] = fmt.Sprintf("http://%s:%s", m.StorageConnInfo.Host, m.StorageConnInfo.Port)
 		}
 
