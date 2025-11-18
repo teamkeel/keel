@@ -1,4 +1,4 @@
-import { Admission, Film, Identity } from "@teamkeel/sdk";
+import { Admission, Film, Identity, Status } from "@teamkeel/sdk";
 import { models, actions, resetDatabase } from "@teamkeel/testing";
 import { test, expect, beforeEach } from "vitest";
 
@@ -179,6 +179,40 @@ test("boolean condition / multiple joins / >= condition", async () => {
 
   // Mike cannot watch Barbie because he is too young
   await expect(createAdmission(mike, barbie)).rejects.toEqual({
+    code: "ERR_PERMISSION_DENIED",
+    message: "not authorized to access",
+  });
+});
+
+test("enum literal in expression - can only delete users that are active", async () => {
+  const identityActiveUser = await models.identity.create({
+    email: "active@keel.xyz",
+    password: "foo",
+  });
+  const activeUser = await models.user.create({
+    name: "Active User",
+    status: Status.Active,
+    identityId: identityActiveUser.id,
+  });
+
+  const identityInactiveUser = await models.identity.create({
+    email: "inactive@keel.xyz",
+    password: "foo",
+  });
+  const inactiveUser = await models.user.create({
+    name: "Inactive User",
+    status: Status.Inactive,
+    identityId: identityInactiveUser.id,
+  });
+
+  await expect(
+    actions.withIdentity(identityActiveUser).deleteUser({ id: activeUser.id })
+  ).resolves.toBeTruthy();
+  await expect(
+    actions
+      .withIdentity(identityInactiveUser)
+      .deleteUser({ id: inactiveUser.id })
+  ).rejects.toEqual({
     code: "ERR_PERMISSION_DENIED",
     message: "not authorized to access",
   });

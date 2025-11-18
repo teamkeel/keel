@@ -208,7 +208,7 @@ func handleOperand(s *proto.Schema, model *proto.Model, ident *parser.Expression
 		}
 
 		stmt.expression += "?"
-		stmt.values = append(stmt.values, &Value{Type: ValueString, StringValue: ident.Fragments[len(ident.Fragments)-1]})
+		stmt.values = append(stmt.values, &Value{Type: ValueString, StringValue: fmt.Sprintf("\"%s\"", ident.Fragments[len(ident.Fragments)-1])})
 
 		return nil
 	}
