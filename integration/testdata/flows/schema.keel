@@ -112,6 +112,22 @@ flow DataWrapperConsistency {
     @permission(roles: [Admin])
 }
 
+flow MapStep {
+    @permission(roles: [Admin])
+}
+
+flow DateStep {
+    @permission(roles: [Admin])
+}
+
+flow ModelStep {
+    inputs {
+        name Text
+        age Number
+    }
+    @permission(roles: [Admin])
+}
+
 model User {
     fields {
         team Text

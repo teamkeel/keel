@@ -45,6 +45,211 @@ test("flows - scalar step", async () => {
   });
 });
 
+test("flows - map step", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  const f = await flows.mapStep.withAuthToken(token).start({});
+
+  const flow = await flows.mapStep.withAuthToken(token).untilFinished(f.id);
+
+  expect(flow).toEqual({
+    id: expect.any(String),
+    status: "COMPLETED",
+    name: "MapStep",
+    traceId: expect.any(String),
+    input: {},
+    error: null,
+    data: null,
+    startedBy: expect.any(String),
+    steps: [
+      {
+        id: expect.any(String),
+        name: "create map",
+        runId: expect.any(String),
+        stage: null,
+        status: "COMPLETED",
+        type: "FUNCTION",
+        value: {
+          name: "Keelson",
+          age: 25,
+          active: true,
+          nested: { city: "London", country: "UK" },
+        },
+        error: null,
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        ui: null,
+      },
+      {
+        id: expect.any(String),
+        name: "verify map object",
+        runId: expect.any(String),
+        stage: null,
+        status: "COMPLETED",
+        type: "FUNCTION",
+        value: {
+          hasName: true,
+          hasAge: true,
+          hasActive: true,
+          hasNested: true,
+          // Map is converted to a plain object during serialization
+          isMap: false,
+          isObject: true,
+        },
+        error: null,
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        ui: null,
+      },
+    ],
+    createdAt: expect.any(Date),
+    updatedAt: expect.any(Date),
+    config: {
+      title: "Map step",
+    },
+  });
+});
+
+test("flows - date step", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  const f = await flows.dateStep.withAuthToken(token).start({});
+
+  const flow = await flows.dateStep.withAuthToken(token).untilFinished(f.id);
+
+  expect(flow).toEqual({
+    id: expect.any(String),
+    status: "COMPLETED",
+    name: "DateStep",
+    traceId: expect.any(String),
+    input: {},
+    error: null,
+    data: null,
+    startedBy: expect.any(String),
+    steps: [
+      {
+        id: expect.any(String),
+        name: "create date",
+        runId: expect.any(String),
+        stage: null,
+        status: "COMPLETED",
+        type: "FUNCTION",
+        value: new Date("2024-01-15T10:30:00.000Z"),
+        error: null,
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        ui: null,
+      },
+      {
+        id: expect.any(String),
+        name: "verify date object",
+        runId: expect.any(String),
+        stage: null,
+        status: "COMPLETED",
+        type: "FUNCTION",
+        value: {
+          isDate: true,
+          // isoString gets deserialized back to a Date because it matches ISO pattern
+          isoString: new Date("2024-01-15T10:30:00.000Z"),
+          timestamp: expect.any(Number),
+        },
+        error: null,
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        ui: null,
+      },
+    ],
+    createdAt: expect.any(Date),
+    updatedAt: expect.any(Date),
+    config: {
+      title: "Date step",
+    },
+  });
+});
+
+test("flows - model step", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  const f = await flows.modelStep.withAuthToken(token).start({
+    name: "Test Thing",
+    age: 42,
+  });
+
+  const flow = await flows.modelStep.withAuthToken(token).untilFinished(f.id);
+
+  expect(flow).toEqual({
+    id: expect.any(String),
+    status: "COMPLETED",
+    name: "ModelStep",
+    traceId: expect.any(String),
+    input: {
+      name: "Test Thing",
+      age: 42,
+    },
+    error: null,
+    data: null,
+    startedBy: expect.any(String),
+    steps: [
+      {
+        id: expect.any(String),
+        name: "create and return model",
+        runId: expect.any(String),
+        stage: null,
+        status: "COMPLETED",
+        type: "FUNCTION",
+        value: {
+          id: expect.any(String),
+          name: "Test Thing",
+          age: 42,
+          createdAt: expect.any(Date),
+          updatedAt: expect.any(Date),
+        },
+        error: null,
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        ui: null,
+      },
+      {
+        id: expect.any(String),
+        name: "verify model",
+        runId: expect.any(String),
+        stage: null,
+        status: "COMPLETED",
+        type: "FUNCTION",
+        value: {
+          hasId: true,
+          hasName: true,
+          hasAge: true,
+          createdAtIsDate: true,
+          updatedAtIsDate: true,
+          canCallDateMethod: true,
+        },
+        error: null,
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        ui: null,
+      },
+    ],
+    createdAt: expect.any(Date),
+    updatedAt: expect.any(Date),
+    config: {
+      title: "Model step",
+    },
+  });
+});
+
 test("flows - only functions with config", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
@@ -1670,7 +1875,7 @@ test("flows - authorised listing flows", async () => {
   await models.user.create({ team: "myTeam", identityId: identity!.id });
 
   const resListAdmin = await listFlows({ token: adminToken });
-  expect(resListAdmin.body.flows.length).toBe(19);
+  expect(resListAdmin.body.flows.length).toBe(22);
   expect(resListAdmin.body.flows[0].name).toBe("ScalarStep");
   expect(resListAdmin.body.flows[1].name).toBe("MixedStepTypes");
   expect(resListAdmin.body.flows[2].name).toBe("Stepless");
@@ -1690,6 +1895,9 @@ test("flows - authorised listing flows", async () => {
   expect(resListAdmin.body.flows[16].name).toBe("WithReturnedData");
   expect(resListAdmin.body.flows[17].name).toBe("ExpressionPermissionIsTrue");
   expect(resListAdmin.body.flows[18].name).toBe("DataWrapperConsistency");
+  expect(resListAdmin.body.flows[19].name).toBe("MapStep");
+  expect(resListAdmin.body.flows[20].name).toBe("DateStep");
+  expect(resListAdmin.body.flows[21].name).toBe("ModelStep");
 
   const resListUser = await listFlows({ token: userToken });
   expect(resListUser.status).toBe(200);
