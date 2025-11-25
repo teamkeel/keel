@@ -1659,6 +1659,24 @@
                 "items": {
                   "type": "object",
                   "properties": {
+                    "hotkey": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "behaviour": {
+                              "type": "string",
+                              "enum": ["excludeForms", "includeForms"],
+                              "default": "excludeForms"
+                            },
+                            "key": { "type": "string" }
+                          },
+                          "additionalProperties": false,
+                          "required": ["key"]
+                        },
+                        { "type": "string" }
+                      ]
+                    },
                     "label": { "type": "string" },
                     "mode": {
                       "type": "string",
