@@ -33,6 +33,7 @@ describe("page element", () => {
             label: "Bingo!",
             value: "bingo",
             mode: "primary",
+            hotkey: "mod+s",
           },
         ],
         content: [

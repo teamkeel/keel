@@ -44,6 +44,39 @@ type PageActionConfig = {
   label: string;
   value: string;
   mode?: "primary" | "secondary" | "destructive";
+  /**
+   * Keyboard shortcut for this action.
+   *
+   * @example
+   * // Single key
+   * hotkey: "1"
+   * hotkey: "enter"
+   * hotkey: "space"
+   * hotkey: "F1"
+   *
+   *
+   * // With modifier:
+   * // shift, alt + mod (cmd on macOS, ctrl on Windows/Linux)
+   *
+   * hotkey: "mod+s"           // cmd+s on macOS, ctrl+s on Windows/Linux
+   * hotkey: "mod+shift+enter" // cmd+shift+enter on macOS, ctrl+shift+enter on Windows/Linux
+   *
+   * // With behavior control
+   * hotkey: {
+   *   key: "mod+enter",
+   *   behaviour: "includeForms"  // Trigger even when focused on form elements
+   * }
+   */
+  hotkey?: string | HotkeyConfig;
+};
+
+type HotkeyConfig = {
+  key: string;
+  /** If the hotkey should be triggered when the user is on a form element or not
+   *
+   * @default "excludeForms"
+   */
+  behaviour?: "includeForms" | "excludeForms";
 };
 
 export interface UiPageApiResponse extends BaseUiDisplayResponse<"ui.page"> {

@@ -1348,6 +1348,35 @@
                   "secondary"
                 ],
                 "type": "string"
+              },
+              "hotkey": {
+                "description": "Keyboard shortcut for this action.",
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "key": {
+                        "type": "string"
+                      },
+                      "behaviour": {
+                        "description": "If the hotkey should be triggered when the user is on a form element or not",
+                        "default": "excludeForms",
+                        "enum": [
+                          "excludeForms",
+                          "includeForms"
+                        ],
+                        "type": "string"
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                      "key"
+                    ]
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
               }
             },
             "additionalProperties": false,
