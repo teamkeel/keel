@@ -250,6 +250,75 @@ test("flows - model step", async () => {
   });
 });
 
+test("flows - file step", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  const f = await flows.fileStep.withAuthToken(token).start({});
+
+  const flow = await flows.fileStep.withAuthToken(token).untilFinished(f.id);
+
+  expect(flow).toEqual({
+    id: expect.any(String),
+    status: "COMPLETED",
+    name: "FileStep",
+    traceId: expect.any(String),
+    input: {},
+    error: null,
+    data: null,
+    startedBy: expect.any(String),
+    steps: [
+      {
+        id: expect.any(String),
+        name: "create and store file",
+        runId: expect.any(String),
+        stage: null,
+        status: "COMPLETED",
+        type: "FUNCTION",
+        value: {
+          __keel_type: "file",
+          key: expect.any(String),
+          filename: "test-file.txt",
+          contentType: "text/plain",
+          size: expect.any(Number),
+        },
+        error: null,
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        ui: null,
+      },
+      {
+        id: expect.any(String),
+        name: "verify file object",
+        runId: expect.any(String),
+        stage: null,
+        status: "COMPLETED",
+        type: "FUNCTION",
+        value: {
+          hasFilename: true,
+          hasContentType: true,
+          hasKey: true,
+          hasSize: true,
+          canRead: true,
+          isFileInstance: true,
+        },
+        error: null,
+        startTime: expect.any(Date),
+        endTime: expect.any(Date),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        ui: null,
+      },
+    ],
+    createdAt: expect.any(Date),
+    updatedAt: expect.any(Date),
+    config: {
+      title: "File step",
+    },
+  });
+});
+
 test("flows - only functions with config", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
@@ -1875,7 +1944,7 @@ test("flows - authorised listing flows", async () => {
   await models.user.create({ team: "myTeam", identityId: identity!.id });
 
   const resListAdmin = await listFlows({ token: adminToken });
-  expect(resListAdmin.body.flows.length).toBe(22);
+  expect(resListAdmin.body.flows.length).toBe(23);
   expect(resListAdmin.body.flows[0].name).toBe("ScalarStep");
   expect(resListAdmin.body.flows[1].name).toBe("MixedStepTypes");
   expect(resListAdmin.body.flows[2].name).toBe("Stepless");
@@ -1898,6 +1967,7 @@ test("flows - authorised listing flows", async () => {
   expect(resListAdmin.body.flows[19].name).toBe("MapStep");
   expect(resListAdmin.body.flows[20].name).toBe("DateStep");
   expect(resListAdmin.body.flows[21].name).toBe("ModelStep");
+  expect(resListAdmin.body.flows[22].name).toBe("FileStep");
 
   const resListUser = await listFlows({ token: userToken });
   expect(resListUser.status).toBe(200);

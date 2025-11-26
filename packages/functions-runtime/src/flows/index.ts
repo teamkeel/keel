@@ -7,6 +7,7 @@ import {
   KEEL_INTERNAL_CHILDREN,
 } from "../tracing";
 import * as opentelemetry from "@opentelemetry/api";
+import { File, FileDbRecord } from "../File";
 import { textInput } from "./ui/elements/input/text";
 import { numberInput } from "./ui/elements/input/number";
 import { divider } from "./ui/elements/display/divider";
@@ -632,10 +633,20 @@ function withTimeout<T>(promiseFn: Promise<T>, timeout: number): Promise<T> {
   ]);
 }
 
-// Custom JSON replacer to handle Map and Date serialization
+// Custom JSON replacer to handle Map, Date, and File serialization
 function jsonReplacer(key: string, value: any): any {
   if (value instanceof Map) {
     return Object.fromEntries(value);
+  }
+  // File objects need to be converted to their database record representation
+  if (value instanceof File) {
+    return {
+      __keel_type: "file",
+      key: (value as any)._key,
+      filename: value.filename,
+      contentType: value.contentType,
+      size: value.size,
+    };
   }
   // Date objects are automatically serialized to ISO strings by JSON.stringify
   // so we don't need special handling here
@@ -648,12 +659,22 @@ function serializeValue(value: any): string {
   if (value instanceof Map) {
     return JSON.stringify(Object.fromEntries(value), jsonReplacer);
   }
+  // Handle the case where the root value is a File
+  if (value instanceof File) {
+    return JSON.stringify({
+      __keel_type: "file",
+      key: (value as any)._key,
+      filename: value.filename,
+      contentType: value.contentType,
+      size: value.size,
+    }, jsonReplacer);
+  }
   // Date objects are handled natively by JSON.stringify (converted to ISO strings)
   // Model objects from database queries are plain objects and serialize normally
   return JSON.stringify(value, jsonReplacer);
 }
 
-// Helper to deserialize values and convert ISO date strings back to Date objects
+// Helper to deserialize values and convert ISO date strings back to Date objects and File records to File instances
 function deserializeValue(value: any): any {
   // ISO 8601 date string pattern
   const isoDatePattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z$/;
@@ -672,8 +693,20 @@ function deserializeValue(value: any): any {
     return value.map(deserializeValue);
   }
 
-  // If it's an object, recursively deserialize each property
+  // If it's an object, check if it's a File record and convert accordingly
   if (typeof value === 'object') {
+    // Check if this is a serialized File object
+    // Note: JSONB stores __keel_type as _KeelType (case transformation)
+    if ((value.__keel_type === 'file' || value._KeelType === 'file') && value.key) {
+      return File.fromDbRecord({
+        key: value.key,
+        filename: value.filename,
+        contentType: value.contentType,
+        size: value.size,
+      });
+    }
+
+    // Otherwise, recursively deserialize each property
     const result: any = {};
     for (const key in value) {
       if (value.hasOwnProperty(key)) {
