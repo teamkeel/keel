@@ -118,6 +118,16 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.KEEL_CI_SEMANTIC_RELEASE }}
+      - name: Upload keel binaries to S3
+        run: |
+          aws s3 cp dist/ s3://keel-releases/${{ needs.semantic-release.outputs.new_version }}/ \
+            --recursive \
+            --exclude "*" \
+            --include "keel_*.tar.gz"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: eu-west-1
 
   npm-publish:
     needs:
