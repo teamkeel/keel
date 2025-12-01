@@ -172,16 +172,22 @@ test("computed fields - enums", async () => {
     paymentStatus: PaymentStatus.PAID,
   });
   expect(item.isComplete).toBeFalsy();
+  expect(item.paymentStatus).toEqual(PaymentStatus.PAID);
+  expect(item.paymentStatusCopied).toEqual(PaymentStatus.PAID);
 
   const updated = await models.computedEnums.update(
     { id: item.id },
     { orderStatus: OrderStatus.SHIPPED, paymentStatus: PaymentStatus.UNPAID }
   );
   expect(updated.isComplete).toBeFalsy();
+  expect(updated.paymentStatus).toEqual(PaymentStatus.UNPAID);
+  expect(updated.paymentStatusCopied).toEqual(PaymentStatus.UNPAID);
 
   const updateComplete = await models.computedEnums.update(
     { id: item.id },
     { orderStatus: OrderStatus.DELIVERED, paymentStatus: PaymentStatus.PAID }
   );
   expect(updateComplete.isComplete).toBeTruthy();
+  expect(updateComplete.paymentStatus).toEqual(PaymentStatus.PAID);
+  expect(updateComplete.paymentStatusCopied).toEqual(PaymentStatus.PAID);
 });

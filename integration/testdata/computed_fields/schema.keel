@@ -69,6 +69,7 @@ model ComputedEnums {
         orderStatus OrderStatus
         paymentStatus PaymentStatus
         isComplete Boolean @computed(computedEnums.orderStatus == OrderStatus.DELIVERED && computedEnums.paymentStatus == PaymentStatus.PAID)
+        paymentStatusCopied PaymentStatus @computed(computedEnums.paymentStatus)
     }
 }
 

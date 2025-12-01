@@ -11,6 +11,9 @@ model Invoice {
         wrongArgType2 Number @computed(SUMIF(invoice.items.price, invoice))
         //expect-error:39:90:AttributeExpressionError:expression expected to resolve to type Text but it is Decimal
         wrongFieldType Text @computed(SUMIF(invoice.items.price, invoice.items.price > 0))
+        //expect-error:49:50:AttributeExpressionError:cannot use operator '+' with types Status and Status
+        status2 Status @computed(invoice.status + invoice.status)
+        status Status @default(Status.Open)
     }
 }
 
@@ -43,4 +46,9 @@ model Item {
     actions {
         get getItem(id) 
     }
+}
+
+enum Status {
+    Open
+    Paid
 }
