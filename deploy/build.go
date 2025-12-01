@@ -112,7 +112,7 @@ func Build(ctx context.Context, args *BuildArgs) (*BuildResult, error) {
 	if err != nil {
 		return nil, err
 	}
-	log(ctx, "%s Built runtime into %s %s", IconTick, orange(relPath), t.Since())
+	log(ctx, "%s Built runtime into %s %s", IconTick, orange("%s", relPath), t.Since())
 
 	functionsResult, err := buildFunctions(ctx, &BuildFunctionsArgs{
 		ProjectRoot:     args.ProjectRoot,
@@ -208,7 +208,7 @@ func buildRuntime(ctx context.Context, args *BuildRuntimeArgs) (*BuildRuntimeRes
 				log(ctx, "%s Error extracting runtime binary from archive %s: %s", IconCross, args.RuntimeBinaryURL, err.Error())
 				return nil, err
 			}
-			log(ctx, "%s Fetched runtime binary from %s %s", IconTick, orange(args.RuntimeBinaryURL), t.Since())
+			log(ctx, "%s Fetched runtime binary from %s %s", IconTick, orange("%s", args.RuntimeBinaryURL), t.Since())
 		} else {
 			p := args.RuntimeBinaryURL
 			if !filepath.IsAbs(p) {
@@ -357,7 +357,7 @@ func buildFunctions(ctx context.Context, args *BuildFunctionsArgs) (*BuildFuncti
 		}
 
 		rel, _ := filepath.Rel(args.ProjectRoot, filepath.Join(buildDir, "functions"))
-		log(ctx, "%s Built functions into %s %s", IconTick, orange(rel), t.Since())
+		log(ctx, "%s Built functions into %s %s", IconTick, orange("%s", rel), t.Since())
 	}
 
 	return &BuildFunctionsResult{
@@ -408,7 +408,7 @@ func buildCollectorConfig(ctx context.Context, args *BuildCollectorConfigArgs) (
 		"secrets": secrets,
 	})
 	if err != nil {
-		log(ctx, "%s Error rendering secrets in OTEL collector config: %s", IconCross, gray(err.Error()))
+		log(ctx, "%s Error rendering secrets in OTEL collector config: %s", IconCross, gray("%s", err.Error()))
 		return nil, err
 	}
 

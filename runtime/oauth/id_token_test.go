@@ -1,7 +1,6 @@
 package oauth_test
 
 import (
-	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -14,7 +13,7 @@ import (
 )
 
 func TestIdTokenAuth_Valid(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	// OIDC test server
 	server, err := oauthtest.NewServer()
@@ -48,7 +47,7 @@ func TestIdTokenAuth_Valid(t *testing.T) {
 }
 
 func TestIdTokenAuthNoEmail_Valid(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	// OIDC test server
 	server, err := oauthtest.NewServer()
@@ -80,7 +79,7 @@ func TestIdTokenAuthNoEmail_Valid(t *testing.T) {
 }
 
 func TestIdTokenAuthMultipleIssuers_Valid(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	// OIDC test server
 	server, err := oauthtest.NewServer()
@@ -126,7 +125,7 @@ func TestIdTokenAuthMultipleIssuers_Valid(t *testing.T) {
 }
 
 func TestIdTokenAuth_IncorrectlySigned(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	// OIDC test server
 	server, err := oauthtest.NewServer()
@@ -165,7 +164,7 @@ func TestIdTokenAuth_IncorrectlySigned(t *testing.T) {
 }
 
 func TestIdTokenAuth_IssuerMismatch(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	// OIDC test server
 	server, err := oauthtest.NewServer()
@@ -204,7 +203,7 @@ func TestIdTokenAuth_IssuerMismatch(t *testing.T) {
 }
 
 func TestIdTokenAuth_ClientIdMismatch(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	// OIDC test server
 	server, err := oauthtest.NewServer()
@@ -260,7 +259,7 @@ func TestIdTokenAuth_ClientIdMismatch(t *testing.T) {
 }
 
 func TestIdTokenAuth_IssuerNotConfigured(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	// OIDC test server
 	server, err := oauthtest.NewServer()
@@ -286,7 +285,7 @@ func TestIdTokenAuth_IssuerNotConfigured(t *testing.T) {
 }
 
 func TestIdTokenAuth_ExpiredIdToken(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	// OIDC test server
 	server, err := oauthtest.NewServer()

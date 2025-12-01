@@ -39,7 +39,7 @@ func runMigrations(ctx context.Context, args *RunMigrationsArgs) error {
 			WithDecryption: aws.Bool(true),
 		})
 		if err != nil {
-			log(ctx, "%s Error fetching %s secret from SSM: %s", IconCross, orange("DATABASE_URL"), gray(err.Error()))
+			log(ctx, "%s Error fetching %s secret from SSM: %s", IconCross, orange("DATABASE_URL"), gray("%s", err.Error()))
 			return err
 		}
 
@@ -65,20 +65,20 @@ func runMigrations(ctx context.Context, args *RunMigrationsArgs) error {
 			SecretArn: outputs.DatabaseSecretArn,
 		})
 		if err != nil {
-			log(ctx, "%s Error getting RDS connection string: %s", IconCross, gray(err.Error()))
+			log(ctx, "%s Error getting RDS connection string: %s", IconCross, gray("%s", err.Error()))
 			return err
 		}
 	}
 
 	dbConn, err := db.New(ctx, databaseURL)
 	if err != nil {
-		log(ctx, "%s Error connecting to the database: %s", IconCross, gray(err.Error()))
+		log(ctx, "%s Error connecting to the database: %s", IconCross, gray("%s", err.Error()))
 		return err
 	}
 
 	m, err := migrations.New(ctx, args.Schema, dbConn)
 	if err != nil {
-		log(ctx, "%s Error generating database migrations: %s", IconCross, gray(err.Error()))
+		log(ctx, "%s Error generating database migrations: %s", IconCross, gray("%s", err.Error()))
 		return err
 	}
 
@@ -120,7 +120,7 @@ func runMigrations(ctx context.Context, args *RunMigrationsArgs) error {
 					action = gray("(modified)")
 				}
 
-				log(ctx, "    - %s %s", orange(message), action)
+				log(ctx, "    - %s %s", orange("%s", message), action)
 			}
 		}
 		return nil

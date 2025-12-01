@@ -361,9 +361,9 @@ func printActionInputs(writer *Writer, inputs []*parser.ActionInputNode, isArbit
 
 					// if its an arbitrary function, then we dont want to automatically lowercase the input names
 					if isArbitraryFunction {
-						writer.write(fragment.Fragment)
+						writer.write("%s", fragment.Fragment)
 					} else {
-						writer.write(lowerCamel(fragment.Fragment))
+						writer.write("%s", lowerCamel(fragment.Fragment))
 					}
 				}
 			}
@@ -449,7 +449,7 @@ func printApi(writer *Writer, api *parser.APINode) {
 						writer.block(func() {
 							for _, model := range section.Models {
 								writer.comments(model, func() {
-									writer.write(camel(model.Name.Value))
+									writer.write("%s", camel(model.Name.Value))
 									if len(model.Sections) == 1 {
 										writer.block(func() {
 											writer.write("actions")
@@ -459,7 +459,7 @@ func printApi(writer *Writer, api *parser.APINode) {
 														writer.writeLine("")
 													}
 													writer.comments(action, func() {
-														writer.write(action.Name.Value)
+														writer.write("%s", action.Name.Value)
 													})
 												}
 												writer.writeLine("")
@@ -526,7 +526,7 @@ func printAttributes(writer *Writer, attributes []*parser.AttributeNode) {
 							writer.write("%s: ", lowerCamel(arg.Label.Value))
 						}
 						expr := arg.Expression.CleanString()
-						writer.write(expr)
+						writer.write("%s", expr)
 					})
 				}
 
@@ -584,11 +584,11 @@ func printRoute(writer *Writer, routes *parser.RoutesNode) {
 		writer.comments(routes, func() {
 			for _, route := range routes.Routes {
 				writer.comments(route, func() {
-					writer.write(strings.ToLower(route.Method.Value))
+					writer.write("%s", strings.ToLower(route.Method.Value))
 					writer.write("(")
-					writer.write(route.Pattern.Value)
+					writer.write("%s", route.Pattern.Value)
 					writer.write(", ")
-					writer.write(route.Handler.Value)
+					writer.write("%s", route.Handler.Value)
 					writer.writeLine(")")
 				})
 			}

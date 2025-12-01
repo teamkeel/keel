@@ -1,7 +1,6 @@
 package migrations
 
 import (
-	"context"
 	"database/sql"
 	"strings"
 	"testing"
@@ -69,7 +68,7 @@ func setupTestDatabase(t *testing.T) (*Migrations, func()) {
 	}
 
 	// Create migrations instance
-	ctx := context.Background()
+	ctx := t.Context()
 
 	// Use the docker compose database
 	dbConnInfo := &db.ConnectionInfo{
@@ -280,7 +279,7 @@ func TestSnapshotDatabase(t *testing.T) {
 	defer cleanup()
 
 	t.Run("generates_correct_SQL_structure", func(t *testing.T) {
-		sql, err := migrations.SnapshotDatabase(context.Background())
+		sql, err := migrations.SnapshotDatabase(t.Context())
 		require.NoError(t, err)
 
 		// Check for transaction and constraint management
@@ -291,7 +290,7 @@ func TestSnapshotDatabase(t *testing.T) {
 	})
 
 	t.Run("excludes_computed_fields", func(t *testing.T) {
-		sql, err := migrations.SnapshotDatabase(context.Background())
+		sql, err := migrations.SnapshotDatabase(t.Context())
 		require.NoError(t, err)
 
 		// Post table should not include wordCount field
@@ -299,7 +298,7 @@ func TestSnapshotDatabase(t *testing.T) {
 	})
 
 	t.Run("excludes_sequence_fields", func(t *testing.T) {
-		sql, err := migrations.SnapshotDatabase(context.Background())
+		sql, err := migrations.SnapshotDatabase(t.Context())
 		require.NoError(t, err)
 
 		// Post table should not include permalink field
@@ -307,7 +306,7 @@ func TestSnapshotDatabase(t *testing.T) {
 	})
 
 	t.Run("handles_special_data_types", func(t *testing.T) {
-		sql, err := migrations.SnapshotDatabase(context.Background())
+		sql, err := migrations.SnapshotDatabase(t.Context())
 		require.NoError(t, err)
 
 		// Check for proper handling of JSON
@@ -323,7 +322,7 @@ func TestSnapshotDatabase(t *testing.T) {
 	})
 
 	t.Run("handles_special_characters_in_strings", func(t *testing.T) {
-		ctx := context.Background()
+		ctx := t.Context()
 
 		// Create a test user with special characters
 		_, err := migrations.database.ExecuteStatement(ctx, `
@@ -388,7 +387,7 @@ func TestSnapshotDatabase(t *testing.T) {
 	})
 
 	t.Run("can_be_reapplied_to_recreate_the_database_state", func(t *testing.T) {
-		ctx := context.Background()
+		ctx := t.Context()
 
 		// Get the initial snapshot
 		initialSnapshot, err := migrations.SnapshotDatabase(ctx)
@@ -448,7 +447,7 @@ func TestSnapshotDatabase(t *testing.T) {
 	})
 
 	t.Run("handles_null_array_values", func(t *testing.T) {
-		ctx := context.Background()
+		ctx := t.Context()
 
 		// Insert a user with NULL array fields
 		_, err := migrations.database.ExecuteStatement(ctx, `

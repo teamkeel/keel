@@ -89,7 +89,7 @@ func ResolveKeelConfig(ctx context.Context, args *ResolveKeelConfigArgs) (*confi
 		return nil, c.Errors
 	}
 
-	log(ctx, "%s Using %s %s", IconTick, orange(c.Filename), t.Since())
+	log(ctx, "%s Using %s %s", IconTick, orange("%s", c.Filename), t.Since())
 
 	return c, nil
 }
@@ -148,7 +148,7 @@ func setupPulumi(ctx context.Context, args *SetupPulumiArgs) (*PulumiConfig, err
 		t := NewTiming()
 		v, err := randomString(hex.EncodeToString)
 		if err != nil {
-			log(ctx, "%s error generating Pulumi state bucket name: %s", IconCross, gray(err.Error()))
+			log(ctx, "%s error generating Pulumi state bucket name: %s", IconCross, gray("%s", err.Error()))
 			return nil, err
 		}
 
@@ -164,7 +164,7 @@ func setupPulumi(ctx context.Context, args *SetupPulumiArgs) (*PulumiConfig, err
 			CreateBucketConfiguration: bucketConfig,
 		})
 		if err != nil {
-			log(ctx, "%s error creating Pulumi state bucket: %s", IconCross, gray(err.Error()))
+			log(ctx, "%s error creating Pulumi state bucket: %s", IconCross, gray("%s", err.Error()))
 			return nil, err
 		}
 
@@ -174,7 +174,7 @@ func setupPulumi(ctx context.Context, args *SetupPulumiArgs) (*PulumiConfig, err
 			Type:  ssmtypes.ParameterTypeString,
 		})
 		if err != nil {
-			log(ctx, "%s error setting Pulumi state bucket name in SSM: %s", IconCross, gray(err.Error()))
+			log(ctx, "%s error setting Pulumi state bucket name in SSM: %s", IconCross, gray("%s", err.Error()))
 			return nil, err
 		}
 
@@ -185,7 +185,7 @@ func setupPulumi(ctx context.Context, args *SetupPulumiArgs) (*PulumiConfig, err
 		t := NewTiming()
 		value, err := randomString(base64.StdEncoding.EncodeToString)
 		if err != nil {
-			log(ctx, "%s error generating Pulumi passphrase: %s", IconCross, gray(err.Error()))
+			log(ctx, "%s error generating Pulumi passphrase: %s", IconCross, gray("%s", err.Error()))
 			return nil, err
 		}
 
@@ -196,7 +196,7 @@ func setupPulumi(ctx context.Context, args *SetupPulumiArgs) (*PulumiConfig, err
 			Type:  ssmtypes.ParameterTypeSecureString,
 		})
 		if err != nil {
-			log(ctx, "%s error setting Pulumi passphrase in SSM: %s", IconCross, gray(err.Error()))
+			log(ctx, "%s error setting Pulumi passphrase in SSM: %s", IconCross, gray("%s", err.Error()))
 			return nil, err
 		}
 
@@ -208,11 +208,11 @@ func setupPulumi(ctx context.Context, args *SetupPulumiArgs) (*PulumiConfig, err
 		SkipVersionCheck: true,
 	})
 	if err != nil {
-		log(ctx, "%s error installing Pulumi: %s", IconCross, gray(err.Error()))
+		log(ctx, "%s error installing Pulumi: %s", IconCross, gray("%s", err.Error()))
 		return nil, err
 	}
 
-	log(ctx, "%s Pulumi version %s installed %s", IconTick, orange(pulumiCmd.Version().String()), t.Since())
+	log(ctx, "%s Pulumi version %s installed %s", IconTick, orange("%s", pulumiCmd.Version().String()), t.Since())
 
 	result.WorkspaceOptions = []auto.LocalWorkspaceOption{
 		auto.Pulumi(pulumiCmd),
@@ -252,7 +252,7 @@ func createPrivateKeySecret(ctx context.Context, args *CreatePrivateKeySecretArg
 	if err != nil {
 		var ae smithy.APIError
 		if !errors.As(err, &ae) || ae.ErrorCode() != "ParameterNotFound" {
-			log(ctx, "%s error fetching private key secret from SSM: %s", IconCross, gray(err.Error()))
+			log(ctx, "%s error fetching private key secret from SSM: %s", IconCross, gray("%s", err.Error()))
 			return err
 		}
 	}
@@ -265,7 +265,7 @@ func createPrivateKeySecret(ctx context.Context, args *CreatePrivateKeySecretArg
 	t := NewTiming()
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
-		log(ctx, "%s error generating private key: %s", IconCross, gray(err.Error()))
+		log(ctx, "%s error generating private key: %s", IconCross, gray("%s", err.Error()))
 		return err
 	}
 
@@ -280,7 +280,7 @@ func createPrivateKeySecret(ctx context.Context, args *CreatePrivateKeySecretArg
 		Type:  ssmtypes.ParameterTypeSecureString,
 	})
 	if err != nil {
-		log(ctx, "%s error setting private key secret in SSM: %s", IconCross, gray(err.Error()))
+		log(ctx, "%s error setting private key secret in SSM: %s", IconCross, gray("%s", err.Error()))
 		return err
 	}
 

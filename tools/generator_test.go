@@ -1,7 +1,6 @@
 package tools
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -44,7 +43,7 @@ func TestGenerateTools(t *testing.T) {
 			gen, err := NewGenerator(schema, builder.Config)
 			require.NoError(t, err)
 
-			err = gen.Generate(context.Background())
+			err = gen.Generate(t.Context())
 			require.NoError(t, err)
 
 			tools := gen.GetTools()

@@ -1,7 +1,6 @@
 package integration_test
 
 import (
-	"context"
 	"flag"
 	"os"
 	"path/filepath"
@@ -51,7 +50,7 @@ func TestIntegration(t *gotest.T) {
 	genericEntries, err := os.ReadDir(tmpDir)
 	require.NoError(t, err)
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	exporter, err := otlptracehttp.New(ctx, otlptracehttp.WithInsecure())
 	if err != nil {

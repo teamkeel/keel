@@ -1,7 +1,6 @@
 package permissions_test
 
 import (
-	"context"
 	"strings"
 	"testing"
 
@@ -1012,7 +1011,7 @@ secrets:
 				Password: "postgres",
 			}
 
-			ctx := context.Background()
+			ctx := t.Context()
 
 			ctx, err = testhelpers.WithTracing(ctx)
 			require.NoError(t, err)
@@ -1029,7 +1028,7 @@ secrets:
 			}
 
 			// Execute the query runs without error
-			_, err = database.ExecuteQuery(context.Background(), sql, vals...)
+			_, err = database.ExecuteQuery(t.Context(), sql, vals...)
 			require.NoError(t, err)
 		})
 	}

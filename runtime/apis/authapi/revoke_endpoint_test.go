@@ -20,7 +20,7 @@ import (
 )
 
 func TestRevokeTokenForm_Success(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, t.Context(), authTestSchema, true)
 	defer database.Close()
 
 	// OIDC test server
@@ -75,7 +75,7 @@ func TestRevokeTokenForm_Success(t *testing.T) {
 }
 
 func TestRevokeTokenJson_Success(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, t.Context(), authTestSchema, true)
 	defer database.Close()
 
 	// OIDC test server
@@ -130,7 +130,7 @@ func TestRevokeTokenJson_Success(t *testing.T) {
 }
 
 func TestRevokeEndpoint_HttpGet(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, t.Context(), authTestSchema, true)
 	defer database.Close()
 
 	// Make a token exchange grant request
@@ -149,7 +149,7 @@ func TestRevokeEndpoint_HttpGet(t *testing.T) {
 }
 
 func TestRevokeEndpoint_EmptyToken(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, t.Context(), authTestSchema, true)
 	defer database.Close()
 
 	// Make a revoke request
@@ -169,7 +169,7 @@ func TestRevokeEndpoint_EmptyToken(t *testing.T) {
 }
 
 func TestRevokeEndpoint_NoToken(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, t.Context(), authTestSchema, true)
 	defer database.Close()
 
 	// Make a revoke request
@@ -189,7 +189,7 @@ func TestRevokeEndpoint_NoToken(t *testing.T) {
 }
 
 func TestRevokeEndpoint_UnknownToken(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, t.Context(), authTestSchema, true)
 	defer database.Close()
 
 	// Make a revoke request

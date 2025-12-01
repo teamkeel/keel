@@ -1,7 +1,6 @@
 package actions_test
 
 import (
-	"context"
 	"strings"
 	"testing"
 
@@ -442,7 +441,7 @@ func TestGeneratedComputed(t *testing.T) {
 			expression, err := parser.ParseExpression(field.GetComputedExpression().GetSource())
 			assert.NoError(t, err)
 
-			sql, err := resolve.RunCelVisitor(expression, actions.GenerateComputedFunction(context.Background(), schema, entity, field))
+			sql, err := resolve.RunCelVisitor(expression, actions.GenerateComputedFunction(t.Context(), schema, entity, field))
 			assert.NoError(t, err)
 
 			assert.Equal(t, testCase.expectedSql, sql, "expected `%s` but got `%s`", testCase.expectedSql, sql)

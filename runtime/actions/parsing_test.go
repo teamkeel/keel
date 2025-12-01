@@ -1,7 +1,6 @@
 package actions_test
 
 import (
-	"context"
 	"encoding/json"
 	"testing"
 	"time"
@@ -35,7 +34,7 @@ model Post {
 	"created": "2024-04-08T12:14:59Z"
 }`
 
-	scope, _, action, err := generateQueryScope(context.Background(), schema, "createPost")
+	scope, _, action, err := generateQueryScope(t.Context(), schema, "createPost")
 	assert.NoError(t, err)
 
 	var data map[string]any
@@ -77,7 +76,7 @@ model Post {
 	"timestamps": ["2024-04-08T12:14:59Z", "2024-02-01T08:00:00Z"]
 }`
 
-	scope, _, action, err := generateQueryScope(context.Background(), schema, "createPost")
+	scope, _, action, err := generateQueryScope(t.Context(), schema, "createPost")
 	assert.NoError(t, err)
 
 	var data map[string]any
@@ -124,7 +123,7 @@ model Post {
 	}
 }`
 
-	scope, _, action, err := generateQueryScope(context.Background(), schema, "updatePost")
+	scope, _, action, err := generateQueryScope(t.Context(), schema, "updatePost")
 	assert.NoError(t, err)
 
 	var data map[string]any
@@ -192,7 +191,7 @@ model Post {
 
 }`
 
-	scope, _, action, err := generateQueryScope(context.Background(), schema, "createAuthor")
+	scope, _, action, err := generateQueryScope(t.Context(), schema, "createAuthor")
 	assert.NoError(t, err)
 
 	var data map[string]any
@@ -252,7 +251,7 @@ model Post {
 
 }`
 
-	scope, _, action, err := generateQueryScope(context.Background(), schema, "createPost")
+	scope, _, action, err := generateQueryScope(t.Context(), schema, "createPost")
 	assert.NoError(t, err)
 
 	var data map[string]any
@@ -298,7 +297,7 @@ message FileResponse {
 	"file": "` + dataUrl + `"
 }`
 
-	scope, _, action, err := generateQueryScope(context.Background(), schema, "setAvatar")
+	scope, _, action, err := generateQueryScope(t.Context(), schema, "setAvatar")
 	assert.NoError(t, err)
 
 	var data map[string]any

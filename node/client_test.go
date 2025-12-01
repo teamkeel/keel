@@ -1,7 +1,6 @@
 package node
 
 import (
-	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -657,7 +656,7 @@ model Person {
 	schema, err := b.MakeFromString(schemaString, config.Empty)
 	require.NoError(t, err)
 
-	files, err := GenerateClient(context.Background(), schema, false, "Api")
+	files, err := GenerateClient(t.Context(), schema, false, "Api")
 	require.NoError(t, err)
 
 	require.Len(t, files, 1)
@@ -677,7 +676,7 @@ model Person {
 	schema, err := b.MakeFromString(schemaString, config.Empty)
 	require.NoError(t, err)
 
-	files, err := GenerateClient(context.Background(), schema, true, "Api")
+	files, err := GenerateClient(t.Context(), schema, true, "Api")
 	require.NoError(t, err)
 
 	require.Len(t, files, 4)
