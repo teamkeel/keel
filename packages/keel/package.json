@@ -34,7 +34,7 @@
   "goBinary": {
     "name": "keel",
     "path": "./bin",
-    "url": "https://s3.eu-west-1.amazonaws.com/keel-releases/{{version}}/keel_{{version}}_{{platform}}_{{arch}}.tar.gz"
+    "url": "https://s3.eu-west-1.amazonaws.com/keel-releases/keel/{{version}}/keel_{{version}}_{{platform}}_{{arch}}.tar.gz"
   },
   "dependencies": {
     "follow-redirects": "^1.15.11",
