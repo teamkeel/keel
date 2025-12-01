@@ -87,7 +87,7 @@ func StreamLogs(ctx context.Context, args *StreamLogsArgs) error {
 			g.Go(func() error {
 				e, err := fetchLogs(ctx, logs, name, args)
 				if err != nil {
-					log(ctx, "%s Error reading logs for %s: %s", IconCross, orange(name), gray(err.Error()))
+					log(ctx, "%s Error reading logs for %s: %s", IconCross, orange("%s", name), gray("%s", err.Error()))
 					return err
 				}
 

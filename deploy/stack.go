@@ -48,7 +48,7 @@ func selectStack(ctx context.Context, args *SelectStackArgs) (*auto.Stack, error
 		return nil, err
 	}
 
-	log(ctx, "%s Selected stack %s %s", IconTick, orange(args.PulumiConfig.StackName), t.Since())
+	log(ctx, "%s Selected stack %s %s", IconTick, orange("%s", args.PulumiConfig.StackName), t.Since())
 
 	// This may not be needed as we've already set the region on the workspace env vars but no harm in setting it here too
 	err = s.SetConfig(ctx, "aws:region", auto.ConfigValue{Value: args.Config.Deploy.Region})
@@ -66,7 +66,7 @@ func selectStack(ctx context.Context, args *SelectStackArgs) (*auto.Stack, error
 		return nil, err
 	}
 
-	log(ctx, "%s AWS plugin %s installed %s", IconTick, orange(awsPluginVersion), t.Since())
+	log(ctx, "%s AWS plugin %s installed %s", IconTick, orange("%s", awsPluginVersion), t.Since())
 
 	_, err = s.Refresh(ctx)
 	if err != nil {
@@ -108,7 +108,7 @@ type GetStackOutputsArgs struct {
 func getStackOutputs(ctx context.Context, args *GetStackOutputsArgs) (*StackOutputs, error) {
 	ws, err := auto.NewLocalWorkspace(ctx, args.PulumiConfig.WorkspaceOptions...)
 	if err != nil {
-		log(ctx, "%s error creating Pulumi workspace: %s", IconCross, gray(err.Error()))
+		log(ctx, "%s error creating Pulumi workspace: %s", IconCross, gray("%s", err.Error()))
 		return nil, err
 	}
 
@@ -117,13 +117,13 @@ func getStackOutputs(ctx context.Context, args *GetStackOutputsArgs) (*StackOutp
 		return nil, nil
 	}
 	if err != nil {
-		log(ctx, "%s error selecting stack: %s", IconCross, gray(err.Error()))
+		log(ctx, "%s error selecting stack: %s", IconCross, gray("%s", err.Error()))
 		return nil, err
 	}
 
 	outputs, err := stack.Outputs(ctx)
 	if err != nil {
-		log(ctx, "%s error getting stack outputs: %s", IconCross, gray(err.Error()))
+		log(ctx, "%s error getting stack outputs: %s", IconCross, gray("%s", err.Error()))
 		return nil, err
 	}
 

@@ -63,7 +63,7 @@ func Run(ctx context.Context, args *RunArgs) error {
 		return err
 	}
 
-	log(ctx, "%s AWS account %s", IconTick, orange(awsIdentity.AccountID))
+	log(ctx, "%s AWS account %s", IconTick, orange("%s", awsIdentity.AccountID))
 
 	if args.Action == UpAction {
 		err = createPrivateKeySecret(ctx, &CreatePrivateKeySecretArgs{
@@ -124,13 +124,13 @@ func Run(ctx context.Context, args *RunArgs) error {
 				if event.ResourcePreEvent.Metadata.Op != apitype.OpSame {
 					pending[urn] = NewTiming()
 					urn := cleanURN(urn)
-					log(ctx, "%s %s - %s", IconPipe, gray(urn), orange("%s", event.ResourcePreEvent.Metadata.Op))
+					log(ctx, "%s %s - %s", IconPipe, gray("%s", urn), orange("%s", event.ResourcePreEvent.Metadata.Op))
 				}
 			case event.ResOutputsEvent != nil:
 				urn := event.ResOutputsEvent.Metadata.URN
 				if t, ok := pending[urn]; ok {
 					urn := cleanURN(urn)
-					log(ctx, "%s %s - %s %s", IconPipe, gray(urn), green("done"), t.Since())
+					log(ctx, "%s %s - %s %s", IconPipe, gray("%s", urn), green("done"), t.Since())
 				}
 			default:
 				// for debugging other events...
@@ -183,7 +183,7 @@ func Run(ctx context.Context, args *RunArgs) error {
 		return err
 	}
 
-	log(ctx, "%s API URL: %s", IconTick, orange(url))
+	log(ctx, "%s API URL: %s", IconTick, orange("%s", url))
 	return nil
 }
 

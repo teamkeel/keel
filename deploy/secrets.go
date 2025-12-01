@@ -40,7 +40,7 @@ func SetSecret(ctx context.Context, args *SetSecretArgs) error {
 	// then the secrets listed are valid too. This avoids us doing any validation here on the secret name, if it's in the
 	// config, then it's fine.
 	if !lo.Contains(c.Config.AllSecrets(), args.Key) {
-		log(ctx, "%s Secret %s not defined in %s", IconCross, orange(args.Key), orange(c.Filename))
+		log(ctx, "%s Secret %s not defined in %s", IconCross, orange("%s", args.Key), orange("%s", c.Filename))
 		return fmt.Errorf("secret %s not defined in %s", args.Key, "")
 	}
 
@@ -51,7 +51,7 @@ func SetSecret(ctx context.Context, args *SetSecretArgs) error {
 		Type:      types.ParameterTypeSecureString,
 	})
 	if err != nil {
-		log(ctx, "%s Error setting secret in AWS: %s", IconCross, gray(err.Error()))
+		log(ctx, "%s Error setting secret in AWS: %s", IconCross, gray("%s", err.Error()))
 		return err
 	}
 
@@ -83,10 +83,10 @@ func GetSecret(ctx context.Context, args *GetSecretArgs) (*types.Parameter, erro
 	})
 	if err != nil {
 		if !isSmithyAPIError(err, "ParameterNotFound") {
-			log(ctx, "%s Error fetching secret %s from SSM: %s", IconCross, orange(args.Key), gray(err.Error()))
+			log(ctx, "%s Error fetching secret %s from SSM: %s", IconCross, orange("%s", args.Key), gray("%s", err.Error()))
 			return nil, err
 		}
-		log(ctx, "%s Secret %s not set", IconCross, orange(args.Key))
+		log(ctx, "%s Secret %s not set", IconCross, orange("%s", args.Key))
 		return nil, err
 	}
 
@@ -124,7 +124,7 @@ func ListSecrets(ctx context.Context, args *ListSecretsArgs) ([]types.Parameter,
 			NextToken:      token,
 		})
 		if err != nil {
-			log(ctx, "%s Error listing secrets from AWS: %s", IconCross, gray(err.Error()))
+			log(ctx, "%s Error listing secrets from AWS: %s", IconCross, gray("%s", err.Error()))
 			return nil, err
 		}
 
@@ -164,10 +164,10 @@ func DeleteSecret(ctx context.Context, args *DeleteSecretArgs) error {
 	})
 	if err != nil {
 		if !isSmithyAPIError(err, "ParameterNotFound") {
-			log(ctx, "%s Error deleting secret from SSM: %s", IconCross, gray(err.Error()))
+			log(ctx, "%s Error deleting secret from SSM: %s", IconCross, gray("%s", err.Error()))
 			return err
 		}
-		log(ctx, "%s Secret %s not set", IconPipe, orange(args.Key))
+		log(ctx, "%s Secret %s not set", IconPipe, orange("%s", args.Key))
 		return nil
 	}
 
@@ -196,7 +196,7 @@ func secretSetup(ctx context.Context, args *SecretSetupArgs) (*SecretSetupResult
 	}
 
 	if conf.Config.Deploy == nil {
-		log(ctx, "%s Missing 'deploy' section in Keel config file %s", IconCross, orange(conf.Filename))
+		log(ctx, "%s Missing 'deploy' section in Keel config file %s", IconCross, orange("%s", conf.Filename))
 		return nil, errors.New("missing 'deploy' section in config file")
 	}
 
