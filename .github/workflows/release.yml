@@ -125,9 +125,9 @@ jobs:
             --exclude "*" \
             --include "keel_*.tar.gz"
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: eu-west-1
+          AWS_ACCESS_KEY_ID: ${{ secrets.KEEL_RELEASES_S3_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.KEEL_RELEASES_S3_SECRET_ACCESS_KEY }}
+          AWS_REGION: eu-west-2
 
   npm-publish:
     needs:
