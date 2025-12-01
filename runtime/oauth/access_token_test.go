@@ -17,9 +17,7 @@ import (
 	"github.com/teamkeel/keel/testhelpers"
 )
 
-func newContextWithPK() context.Context {
-	ctx := context.Background()
-
+func newContextWithPK(ctx context.Context) context.Context {
 	pk, _ := testhelpers.GetEmbeddedPrivateKey()
 	ctx = runtimectx.WithPrivateKey(ctx, pk)
 
@@ -27,7 +25,7 @@ func newContextWithPK() context.Context {
 }
 
 func TestAccessTokenGeneration(t *testing.T) {
-	ctx := newContextWithPK()
+	ctx := newContextWithPK(t.Context())
 	identityId := ksuid.New()
 
 	bearerJwt, _, err := oauth.GenerateAccessToken(ctx, identityId.String())
@@ -40,7 +38,7 @@ func TestAccessTokenGeneration(t *testing.T) {
 }
 
 func TestAccessTokenValidationNoPrivateKey(t *testing.T) {
-	ctx := newContextWithPK()
+	ctx := newContextWithPK(t.Context())
 	identityId := ksuid.New()
 
 	bearerJwt, _, err := oauth.GenerateAccessToken(ctx, identityId.String())
@@ -55,7 +53,7 @@ func TestAccessTokenValidationNoPrivateKey(t *testing.T) {
 }
 
 func TestAccessTokenGenerationAndParsingWithSamePrivateKey(t *testing.T) {
-	ctx := newContextWithPK()
+	ctx := newContextWithPK(t.Context())
 	identityId := ksuid.New()
 
 	bearerJwt, _, err := oauth.GenerateAccessToken(ctx, identityId.String())
@@ -68,7 +66,7 @@ func TestAccessTokenGenerationAndParsingWithSamePrivateKey(t *testing.T) {
 }
 
 func TestAccessTokenValidationDifferentPrivateKey(t *testing.T) {
-	ctx := newContextWithPK()
+	ctx := newContextWithPK(t.Context())
 	identityId := ksuid.New()
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -80,7 +78,7 @@ func TestAccessTokenValidationDifferentPrivateKey(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, bearerJwt)
 
-	ctx = newContextWithPK()
+	ctx = newContextWithPK(t.Context())
 	parsedId, err := oauth.ValidateAccessToken(ctx, bearerJwt)
 	require.ErrorIs(t, oauth.ErrInvalidToken, err)
 	require.Empty(t, parsedId)
@@ -149,7 +147,7 @@ func TestAccessTokenClaims(t *testing.T) {
 }
 
 func TestShortExpiredAccessTokenIsInvalid(t *testing.T) {
-	ctx := newContextWithPK()
+	ctx := newContextWithPK(t.Context())
 	identityId := ksuid.New()
 
 	seconds := 1
@@ -171,7 +169,7 @@ func TestShortExpiredAccessTokenIsInvalid(t *testing.T) {
 }
 
 func TestExpiredAccessTokenIsInvalid(t *testing.T) {
-	ctx := newContextWithPK()
+	ctx := newContextWithPK(t.Context())
 	identityId := ksuid.New()
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -199,7 +197,7 @@ func TestExpiredAccessTokenIsInvalid(t *testing.T) {
 }
 
 func TestResetTokenGenerationAndParsingWithoutPrivateKey(t *testing.T) {
-	ctx := newContextWithPK()
+	ctx := newContextWithPK(t.Context())
 	ctx = runtimectx.WithEnv(ctx, runtimectx.KeelEnvTest)
 	identityId := ksuid.New()
 
@@ -213,7 +211,7 @@ func TestResetTokenGenerationAndParsingWithoutPrivateKey(t *testing.T) {
 }
 
 func TestResetTokenGenerationAndParsingWithSamePrivateKey(t *testing.T) {
-	ctx := newContextWithPK()
+	ctx := newContextWithPK(t.Context())
 	identityId := ksuid.New()
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -231,7 +229,7 @@ func TestResetTokenGenerationAndParsingWithSamePrivateKey(t *testing.T) {
 }
 
 func TestResetTokenGenerationAndParsingWithDifferentPrivateKeys(t *testing.T) {
-	ctx := newContextWithPK()
+	ctx := newContextWithPK(t.Context())
 	identityId := ksuid.New()
 
 	privateKey1, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -254,7 +252,7 @@ func TestResetTokenGenerationAndParsingWithDifferentPrivateKeys(t *testing.T) {
 }
 
 func TestResetTokenIsRSAMethodWithPrivateKey(t *testing.T) {
-	ctx := newContextWithPK()
+	ctx := newContextWithPK(t.Context())
 	identityId := ksuid.New()
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -276,7 +274,7 @@ func TestResetTokenIsRSAMethodWithPrivateKey(t *testing.T) {
 }
 
 func TestResetTokenHasExpiryClaims(t *testing.T) {
-	ctx := newContextWithPK()
+	ctx := newContextWithPK(t.Context())
 	identityId := ksuid.New()
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -302,7 +300,7 @@ func TestResetTokenHasExpiryClaims(t *testing.T) {
 }
 
 func TestExpiredResetTokenIsInvalid(t *testing.T) {
-	ctx := newContextWithPK()
+	ctx := newContextWithPK(t.Context())
 	identityId := ksuid.New()
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -331,7 +329,7 @@ func TestExpiredResetTokenIsInvalid(t *testing.T) {
 }
 
 func TestResetTokenMissingAudIsInvalid(t *testing.T) {
-	ctx := newContextWithPK()
+	ctx := newContextWithPK(t.Context())
 	identityId := ksuid.New()
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
