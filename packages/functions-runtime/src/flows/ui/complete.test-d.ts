@@ -50,7 +50,7 @@ describe("complete", () => {
   test("autoRestart types", () => {
     type TestInput = { testInput?: string };
 
-    testFlow<{}, TestInput>({}, async (ctx) => {
+    testFlow<{}, TestInput, undefined>({}, async (ctx) => {
       ctx.complete({
         allowRestart: false,
       });
@@ -85,7 +85,7 @@ describe("complete", () => {
     });
 
     // Test that inputs are required if there are inputs
-    testFlow<{}, { id: string }>({}, async (ctx) => {
+    testFlow<{}, { id: string }, undefined>({}, async (ctx) => {
       ctx.complete({
         allowRestart: {
           inputs: {
@@ -108,7 +108,7 @@ describe("complete", () => {
     });
 
     // Flows without inputs
-    testFlow<{}, never>({}, async (ctx) => {
+    testFlow<{}, never, undefined>({}, async (ctx) => {
       ctx.complete({
         allowRestart: false,
       });

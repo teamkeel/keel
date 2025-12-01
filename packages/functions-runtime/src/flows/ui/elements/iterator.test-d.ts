@@ -3,7 +3,7 @@ import { testFlow, testFlowContext } from "../../testingUtils";
 
 test("iterator element", () => {
   test("all columns", () => {
-    testFlow({}, async (ctx) => {
+    testFlow<{}, {}, undefined>({}, async (ctx) => {
       const select = ctx.ui.select.one("selectOne", {
         options: ["1", "2"],
       });
