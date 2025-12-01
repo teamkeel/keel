@@ -109,7 +109,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v4
         with:
-          go-version: "1.23"
+          go-version: "1.24"
       - name: Run goreleaser
         uses: goreleaser/goreleaser-action@v5
         with:
@@ -161,7 +161,7 @@ jobs:
             core.setFailed('new_version or channel not set')
       - uses: actions/setup-go@v3
         with:
-          go-version: "1.23"
+          go-version: "1.24"
       - uses: actions/setup-node@v3
         with:
           node-version: 22.13
