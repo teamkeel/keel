@@ -1200,6 +1200,9 @@
         "autoContinue": {
           "type": "boolean"
         },
+        "allowReprint": {
+          "type": "boolean"
+        },
         "__type": {
           "type": "string",
           "const": "ui.interactive.print"
@@ -1208,6 +1211,7 @@
       "additionalProperties": false,
       "required": [
         "__type",
+        "allowReprint",
         "autoContinue",
         "autoPrint",
         "data"
