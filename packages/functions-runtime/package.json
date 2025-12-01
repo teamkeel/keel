@@ -42,7 +42,7 @@
     "tsup": "^8.5.0",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
-    "typescript-json-schema": "^0.65.1",
+    "typescript-json-schema": "^0.67.0",
     "vitest": "3.0.8"
   },
   "dependencies": {
