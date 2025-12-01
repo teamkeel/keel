@@ -7,6 +7,7 @@ import {
   KEEL_INTERNAL_CHILDREN,
 } from "../tracing";
 import * as opentelemetry from "@opentelemetry/api";
+import { File, FileDbRecord } from "../File";
 import { textInput } from "./ui/elements/input/text";
 import { numberInput } from "./ui/elements/input/number";
 import { divider } from "./ui/elements/display/divider";
@@ -128,8 +129,10 @@ type JsonSerializable =
   | number
   | boolean
   | null
+  | Date
   | JsonSerializable[]
-  | { [key: string]: JsonSerializable };
+  | { [key: string]: JsonSerializable }
+  | Map<string, JsonSerializable>;
 
 type StepOptions<C extends FlowConfig> = {
   stage?: ExtractStageKeys<C>;
@@ -200,12 +203,12 @@ export type ExtractStageKeys<T extends FlowConfig> = T extends {
   stages: infer S;
 }
   ? S extends ReadonlyArray<infer U>
-    ? U extends string
-      ? U
-      : U extends { key: infer K extends string }
-      ? K
-      : never
-    : never
+  ? U extends string
+  ? U
+  : U extends { key: infer K extends string }
+  ? K
+  : never
+  : never
   : never;
 
 type StageConfigObject = {
@@ -323,12 +326,12 @@ export function createFlowContext<
         if (completedSteps.length === 1) {
           // step already executed, so this tracing span is internal
           span.setAttribute(KEEL_INTERNAL_ATTR, KEEL_INTERNAL_CHILDREN);
-          return completedSteps[0].value;
+          return deserializeValue(completedSteps[0].value);
         }
 
         // Do we have a NEW step waiting to be run?
         if (newSteps.length === 1) {
-          let result = null;
+          let result: any = null;
           await db
             .updateTable("keel.flow_step")
             .set({
@@ -385,8 +388,8 @@ export function createFlowContext<
             throw new StepCreatedDisrupt(
               options.retryPolicy
                 ? new Date(
-                    Date.now() + options.retryPolicy(failedSteps.length + 1)
-                  )
+                  Date.now() + options.retryPolicy(failedSteps.length + 1)
+                )
                 : undefined
             );
           }
@@ -396,7 +399,7 @@ export function createFlowContext<
             .updateTable("keel.flow_step")
             .set({
               status: STEP_STATUS.COMPLETED,
-              value: JSON.stringify(result),
+              value: serializeValue(result),
               spanId: spanId,
               endTime: new Date(),
             })
@@ -564,7 +567,7 @@ export function createFlowContext<
             .updateTable("keel.flow_step")
             .set({
               status: STEP_STATUS.COMPLETED,
-              value: JSON.stringify(data),
+              value: serializeValue(data),
               action: action,
               spanId: spanId,
               endTime: new Date(),
@@ -628,6 +631,93 @@ function withTimeout<T>(promiseFn: Promise<T>, timeout: number): Promise<T> {
       throw new Error(`Step function timed out after ${timeout}ms`);
     }),
   ]);
+}
+
+// Custom JSON replacer to handle Map, Date, and File serialization
+function jsonReplacer(key: string, value: any): any {
+  if (value instanceof Map) {
+    return Object.fromEntries(value);
+  }
+  // File objects need to be converted to their database record representation
+  if (value instanceof File) {
+    return {
+      __keel_type: "file",
+      key: (value as any)._key,
+      filename: value.filename,
+      contentType: value.contentType,
+      size: value.size,
+    };
+  }
+  // Date objects are automatically serialized to ISO strings by JSON.stringify
+  // so we don't need special handling here
+  return value;
+}
+
+// Helper to convert Maps to plain objects before stringification
+function serializeValue(value: any): string {
+  // Handle the case where the root value is a Map
+  if (value instanceof Map) {
+    return JSON.stringify(Object.fromEntries(value), jsonReplacer);
+  }
+  // Handle the case where the root value is a File
+  if (value instanceof File) {
+    return JSON.stringify({
+      __keel_type: "file",
+      key: (value as any)._key,
+      filename: value.filename,
+      contentType: value.contentType,
+      size: value.size,
+    }, jsonReplacer);
+  }
+  // Date objects are handled natively by JSON.stringify (converted to ISO strings)
+  // Model objects from database queries are plain objects and serialize normally
+  return JSON.stringify(value, jsonReplacer);
+}
+
+// Helper to deserialize values and convert ISO date strings back to Date objects and File records to File instances
+function deserializeValue(value: any): any {
+  // ISO 8601 date string pattern
+  const isoDatePattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z$/;
+
+  if (value === null || value === undefined) {
+    return value;
+  }
+
+  // If it's a string that looks like an ISO date, convert to Date
+  if (typeof value === 'string' && isoDatePattern.test(value)) {
+    return new Date(value);
+  }
+
+  // If it's an array, recursively deserialize each element
+  if (Array.isArray(value)) {
+    return value.map(deserializeValue);
+  }
+
+  // If it's an object, check if it's a File record and convert accordingly
+  if (typeof value === 'object') {
+    // Check if this is a serialized File object
+    // Note: JSONB stores __keel_type as _KeelType (case transformation)
+    if ((value.__keel_type === 'file' || value._KeelType === 'file') && value.key) {
+      return File.fromDbRecord({
+        key: value.key,
+        filename: value.filename,
+        contentType: value.contentType,
+        size: value.size,
+      });
+    }
+
+    // Otherwise, recursively deserialize each property
+    const result: any = {};
+    for (const key in value) {
+      if (value.hasOwnProperty(key)) {
+        result[key] = deserializeValue(value[key]);
+      }
+    }
+    return result;
+  }
+
+  // For primitives, return as-is
+  return value;
 }
 
 export { UI, NonRetriableError };
