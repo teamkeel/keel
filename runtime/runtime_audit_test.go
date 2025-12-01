@@ -95,7 +95,7 @@ func TestAuditCreateAction(t *testing.T) {
 }
 
 func TestAuditNestedCreateAction(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), auditSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, t.Context(), auditSchema, true)
 	defer database.Close()
 	db := database.GetDB()
 
