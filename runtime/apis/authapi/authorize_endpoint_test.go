@@ -1,7 +1,6 @@
 package authapi_test
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -35,7 +34,7 @@ func TestSsoLogin_Success(t *testing.T) {
 
 	// Set up auth config
 	redirectUrl := redirectHandler.URL + "/signedup"
-	ctx := runtimectx.WithOAuthConfig(context.TODO(), &config.AuthConfig{
+	ctx := runtimectx.WithOAuthConfig(t.Context(), &config.AuthConfig{
 		RedirectUrl: &redirectUrl,
 		Providers: []config.Provider{
 			{
@@ -198,7 +197,7 @@ func TestSsoLoginNoEmail_Success(t *testing.T) {
 
 	// Set up auth config
 	redirectUrl := redirectHandler.URL + "/signedup"
-	ctx := runtimectx.WithOAuthConfig(context.TODO(), &config.AuthConfig{
+	ctx := runtimectx.WithOAuthConfig(t.Context(), &config.AuthConfig{
 		RedirectUrl: &redirectUrl,
 		Providers: []config.Provider{
 			{
@@ -321,7 +320,7 @@ func TestSsoLoginNoEmail_Success(t *testing.T) {
 }
 
 func TestSsoLogin_WrongSecret(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, t.Context(), authTestSchema, true)
 	defer database.Close()
 
 	// OIDC test server
@@ -393,7 +392,7 @@ func TestSsoLogin_WrongSecret(t *testing.T) {
 }
 
 func TestSsoLogin_InvalidLoginUrl(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, t.Context(), authTestSchema, true)
 	defer database.Close()
 
 	// OIDC test server
@@ -500,7 +499,7 @@ func TestSsoLogin_InvalidLoginUrl(t *testing.T) {
 }
 
 func TestSsoLogin_MissingSecret(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, t.Context(), authTestSchema, true)
 	defer database.Close()
 
 	// OIDC test server
@@ -568,7 +567,7 @@ func TestSsoLogin_MissingSecret(t *testing.T) {
 }
 
 func TestSsoLogin_ClientIdNotRegistered(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, t.Context(), authTestSchema, true)
 	defer database.Close()
 
 	// OIDC test server
@@ -634,7 +633,7 @@ func TestSsoLogin_ClientIdNotRegistered(t *testing.T) {
 }
 
 func TestSsoLogin_RedirectUrlMismatch(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, t.Context(), authTestSchema, true)
 	defer database.Close()
 
 	// OIDC test server
@@ -707,7 +706,7 @@ func TestSsoLogin_RedirectUrlMismatch(t *testing.T) {
 }
 
 func TestSsoLogin_NoRedirectUrlInConfig(t *testing.T) {
-	ctx, database, schema := keeltesting.MakeContext(t, context.TODO(), authTestSchema, true)
+	ctx, database, schema := keeltesting.MakeContext(t, t.Context(), authTestSchema, true)
 	defer database.Close()
 
 	// OIDC test server
@@ -778,7 +777,7 @@ func TestGetClientSecret(t *testing.T) {
 		Name: "google",
 	}
 
-	ctx := context.Background()
+	ctx := t.Context()
 	ctx = runtimectx.WithSecrets(ctx, map[string]string{
 		"AUTH_PROVIDER_SECRET_GOOGLE": "secret",
 	})
@@ -793,7 +792,7 @@ func TestGetClientSecret_WithUnderscore(t *testing.T) {
 		Name: "google_client",
 	}
 
-	ctx := context.Background()
+	ctx := t.Context()
 	ctx = runtimectx.WithSecrets(ctx, map[string]string{
 		"AUTH_PROVIDER_SECRET_GOOGLE_CLIENT": "secret",
 	})
@@ -808,7 +807,7 @@ func TestGetClientSecret_WithCapitals(t *testing.T) {
 		Name: "GOOGLE_Client",
 	}
 
-	ctx := context.Background()
+	ctx := t.Context()
 	ctx = runtimectx.WithSecrets(ctx, map[string]string{
 		"AUTH_PROVIDER_SECRET_GOOGLE_CLIENT": "secret",
 	})
@@ -823,7 +822,7 @@ func TestGetClientSecret_WithNumbers(t *testing.T) {
 		Name: "client_2",
 	}
 
-	ctx := context.Background()
+	ctx := t.Context()
 	ctx = runtimectx.WithSecrets(ctx, map[string]string{
 		"AUTH_PROVIDER_SECRET_CLIENT_2": "secret",
 	})
@@ -838,7 +837,7 @@ func TestGetClientSecret_NotExists(t *testing.T) {
 		Name: "google",
 	}
 
-	secret, hasSecret := authapi.GetClientSecret(context.Background(), provider)
+	secret, hasSecret := authapi.GetClientSecret(t.Context(), provider)
 	assert.False(t, hasSecret)
 	assert.Empty(t, secret)
 }

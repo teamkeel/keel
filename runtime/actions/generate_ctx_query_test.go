@@ -1,7 +1,6 @@
 package actions_test
 
 import (
-	"context"
 	"testing"
 
 	"github.com/teamkeel/keel/expressions/resolve"
@@ -85,7 +84,7 @@ func TestGeneratedCtxQuery(t *testing.T) {
 		query := actions.NewQuery(proto.FindModel(schema.GetModels(), "Identity"))
 		query.SelectClause("COUNT(*)")
 
-		query, err = resolve.RunCelVisitor(expression, actions.GenerateCtxQuery(context.Background(), query, schema))
+		query, err = resolve.RunCelVisitor(expression, actions.GenerateCtxQuery(t.Context(), query, schema))
 		assert.NoError(t, err)
 
 		stmt := query.SelectStatement()

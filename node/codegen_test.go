@@ -1,7 +1,6 @@
 package node
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -2422,7 +2421,7 @@ func TestTestingActionExecutor(t *testing.T) {
 	schema, err := builder.MakeFromDirectory(tmpDir)
 	require.NoError(t, err)
 
-	files, err := Generate(context.Background(), schema, &config.ProjectConfig{})
+	files, err := Generate(t.Context(), schema, &config.ProjectConfig{})
 	require.NoError(t, err)
 
 	err = files.Write(tmpDir)
@@ -2598,7 +2597,7 @@ func TestSDKTypings(t *testing.T) {
 			schema, err := builder.MakeFromDirectory(tmpDir)
 			require.NoError(t, err)
 
-			files, err := Generate(context.Background(), schema, &config.ProjectConfig{})
+			files, err := Generate(t.Context(), schema, &config.ProjectConfig{})
 			require.NoError(t, err)
 
 			err = files.Write(tmpDir)

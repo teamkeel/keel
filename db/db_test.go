@@ -101,7 +101,7 @@ func TestDbTransactionCommit(t *testing.T) {
 		assert.NoError(t, err)
 
 		// Querying table outside of the transaction should return no rows
-		result, err := db.ExecuteQuery(context.Background(), "SELECT * FROM test_local_transaction_commit_table")
+		result, err := db.ExecuteQuery(t.Context(), "SELECT * FROM test_local_transaction_commit_table")
 		assert.NoError(t, err)
 		assert.Equal(t, []map[string]any{}, result.Rows)
 
@@ -134,7 +134,7 @@ func TestDbTransactionRollback(t *testing.T) {
 		assert.NoError(t, err)
 
 		// Querying table outside of the transaction should return no rows
-		result, err := db.ExecuteQuery(context.Background(), "SELECT * FROM test_local_transaction_rollback_table")
+		result, err := db.ExecuteQuery(t.Context(), "SELECT * FROM test_local_transaction_rollback_table")
 		assert.NoError(t, err)
 		assert.Equal(t, []map[string]any{}, result.Rows)
 		assert.Equal(t, []string{"id", "foo"}, result.Columns)

@@ -4036,7 +4036,7 @@ func TestQueryBuilder(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
-			ctx := context.Background()
+			ctx := t.Context()
 
 			if testCase.identity != nil {
 				ctx = auth.WithIdentity(ctx, testCase.identity)
@@ -4121,7 +4121,7 @@ func TestInsertStatement(t *testing.T) {
 	query.AddWriteValues(map[string]*actions.QueryOperand{"name": actions.Value("Fred")})
 	query.Select(actions.AllFields())
 	query.AppendReturning(actions.AllFields())
-	stmt := query.InsertStatement(context.Background())
+	stmt := query.InsertStatement(t.Context())
 
 	expected := `
 		WITH "new_1_person" AS (INSERT INTO "person" ("name") VALUES (?) RETURNING *)
@@ -4138,7 +4138,7 @@ func TestUpdateStatement(t *testing.T) {
 	require.NoError(t, err)
 	query.Select(actions.AllFields())
 	query.AppendReturning(actions.AllFields())
-	stmt := query.UpdateStatement(context.Background())
+	stmt := query.UpdateStatement(t.Context())
 
 	expected := `
 		UPDATE "person" SET "name" = ? WHERE "person"."id" IS NOT DISTINCT FROM ? RETURNING "person".*`
@@ -4153,7 +4153,7 @@ func TestDeleteStatement(t *testing.T) {
 	require.NoError(t, err)
 	query.Select(actions.AllFields())
 	query.AppendReturning(actions.AllFields())
-	stmt := query.DeleteStatement(context.Background())
+	stmt := query.DeleteStatement(t.Context())
 
 	expected := `
 		DELETE FROM "person" WHERE "person"."id" IS NOT DISTINCT FROM ? RETURNING "person".*`
@@ -4162,7 +4162,7 @@ func TestDeleteStatement(t *testing.T) {
 }
 
 func TestInsertStatementWithAuditing(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	ctx = withIdentity(ctx)
 	ctx = withTracing(t, ctx)
 
@@ -4188,7 +4188,7 @@ func TestInsertStatementWithAuditing(t *testing.T) {
 }
 
 func TestUpdateStatementWithAuditing(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	ctx = withIdentity(ctx)
 	ctx = withTracing(t, ctx)
 
@@ -4215,7 +4215,7 @@ func TestUpdateStatementWithAuditing(t *testing.T) {
 }
 
 func TestUpdateStatementNoReturnsWithAuditing(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	ctx = withIdentity(ctx)
 	ctx = withTracing(t, ctx)
 
@@ -4240,7 +4240,7 @@ func TestUpdateStatementNoReturnsWithAuditing(t *testing.T) {
 }
 
 func TestDeleteStatementWithAuditing(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	ctx = withIdentity(ctx)
 	ctx = withTracing(t, ctx)
 
@@ -4265,7 +4265,7 @@ func TestDeleteStatementWithAuditing(t *testing.T) {
 }
 
 func TestDeleteStatementNoReturnWithAuditing(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	ctx = withIdentity(ctx)
 	ctx = withTracing(t, ctx)
 

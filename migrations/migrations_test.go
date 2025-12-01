@@ -1,7 +1,6 @@
 package migrations_test
 
 import (
-	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -60,7 +59,7 @@ func TestMigrations(t *testing.T) {
 			_, err = mainDB.Exec("CREATE DATABASE " + dbName)
 			require.NoError(t, err)
 
-			ctx := context.Background()
+			ctx := t.Context()
 
 			database, err := db.New(ctx, dbConnInfo.WithDatabase(dbName).String())
 			require.NoError(t, err)
