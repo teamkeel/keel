@@ -5,10 +5,10 @@ import { table, TableData } from "./table";
 const testTableAPI = <T extends Record<string, any>>(options: TableData<T>) => {
   const result = table(options as TableData<any>);
   // The table function returns a synchronous response with uiConfig
-  if ('uiConfig' in result) {
+  if ("uiConfig" in result) {
     return result.uiConfig;
   }
-  throw new Error('Expected synchronous response from table');
+  throw new Error("Expected synchronous response from table");
 };
 
 describe("table element", () => {
