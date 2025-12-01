@@ -34,6 +34,7 @@ func TestDbTransactionConcurrency(t *testing.T) {
 	_, err := db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS testdbtransactionconcurrency")
 	assert.NoError(t, err)
 	t.Cleanup(func() {
+		//nolint:usetesting use background ctx for clearing db
 		_, err = db.ExecuteStatement(context.Background(), "DROP TABLE IF EXISTS testdbtransactionconcurrency")
 		assert.NoError(t, err)
 	})
