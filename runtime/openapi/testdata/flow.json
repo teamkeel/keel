@@ -1274,7 +1274,7 @@
             "properties": {
               "__type": { "type": "string", "const": "ui.input.file" },
               "defaultValue": {
-                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/Partial<FileDbRecord>"
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/Partial%3CFileDbRecord%3E"
               },
               "disabled": { "type": "boolean" },
               "helpText": { "type": "string" },
@@ -1607,7 +1607,7 @@
               "data": {
                 "type": "array",
                 "items": {
-                  "$ref": "#/components/schemas/__UiConfigSchemas/$defs/Record<string,any>"
+                  "$ref": "#/components/schemas/__UiConfigSchemas/$defs/Record%3Cstring%2Cany%3E"
                 }
               },
               "disabled": { "type": "boolean" },
