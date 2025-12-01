@@ -31,6 +31,9 @@ jobs:
       - name: Install deps
         working-directory: ./packages/functions-runtime
         run: pnpm install --frozen-lockfile
+      - name: Type-check
+        working-directory: ./packages/functions-runtime
+        run: pnpm run type-check
       - name: Run tests
         working-directory: ./packages/functions-runtime
         run: pnpm run test

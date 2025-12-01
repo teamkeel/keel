@@ -5,6 +5,7 @@ import {
   InputElementImplementationResponse,
   InputElementResponse,
   IteratorElementImplementationResponse,
+  IteratorElementResponse,
   UiElementApiResponse,
   UiElementApiResponses,
   UIElements,
@@ -429,4 +430,12 @@ export type ExtractFormData<T extends UIElements> = {
     T[number],
     InputElementResponse<K, any>
   >["returnType"];
+} & {
+  [K in Extract<
+    T[number],
+    IteratorElementResponse<string, any>
+  >["name"]]: Extract<
+    T[number],
+    IteratorElementResponse<K, any>
+  >["contentData"];
 };

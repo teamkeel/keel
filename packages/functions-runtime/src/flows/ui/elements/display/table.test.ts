@@ -3,7 +3,12 @@ import { table, TableData } from "./table";
 
 // Use the usage input and return the ui config response
 const testTableAPI = <T extends Record<string, any>>(options: TableData<T>) => {
-  return table(options as TableData<any>).uiConfig;
+  const result = table(options as TableData<any>);
+  // The table function returns a synchronous response with uiConfig
+  if ("uiConfig" in result) {
+    return result.uiConfig;
+  }
+  throw new Error("Expected synchronous response from table");
 };
 
 describe("table element", () => {

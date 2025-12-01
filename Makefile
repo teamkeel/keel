@@ -35,6 +35,7 @@ test:
 	TZ=UTC go test $(PACKAGES) -count=1 $(RUNARG)
 
 test-js:
+	cd ./packages/functions-runtime && pnpm run type-check
 	cd ./packages/functions-runtime && pnpm run test
 	cd ./packages/testing-runtime && pnpm run test
 	cd ./packages/wasm && pnpm run test
