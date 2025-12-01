@@ -1274,7 +1274,7 @@
             "properties": {
               "__type": { "type": "string", "const": "ui.input.file" },
               "defaultValue": {
-                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/Partial%3CFileDbRecord%3E"
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/Partial<FileDbRecord>"
               },
               "disabled": { "type": "boolean" },
               "helpText": { "type": "string" },
@@ -1514,6 +1514,7 @@
             "type": "object",
             "properties": {
               "__type": { "type": "string", "const": "ui.interactive.print" },
+              "allowReprint": { "type": "boolean" },
               "autoContinue": { "type": "boolean" },
               "autoPrint": { "type": "boolean" },
               "data": {
@@ -1538,7 +1539,7 @@
               "title": { "type": "string" }
             },
             "additionalProperties": false,
-            "required": ["__type", "autoContinue", "autoPrint", "data"]
+            "required": ["__type", "allowReprint", "autoContinue", "autoPrint", "data"]
           },
           "UiElementSelectOneApiResponse": {
             "type": "object",
@@ -1606,7 +1607,7 @@
               "data": {
                 "type": "array",
                 "items": {
-                  "$ref": "#/components/schemas/__UiConfigSchemas/$defs/Record%3Cstring%2Cany%3E"
+                  "$ref": "#/components/schemas/__UiConfigSchemas/$defs/Record<string,any>"
                 }
               },
               "disabled": { "type": "boolean" },

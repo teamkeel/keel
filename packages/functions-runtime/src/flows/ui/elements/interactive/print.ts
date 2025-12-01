@@ -14,6 +14,10 @@ export type UiElementPrint<H extends NullableHardware> =
     autoPrint?: boolean;
     /** If true, the step will continue after the jobs are complete (pending validation). */
     autoContinue?: boolean;
+    /** Control whether users can reprint jobs
+     * @default true
+     */
+    allowReprint?: boolean;
   }>;
 
 type PrintData<H extends NullableHardware> = {
@@ -72,6 +76,7 @@ export interface UiElementPrintApiResponse<>extends BaseUiDisplayResponse<"ui.in
   }[];
   autoPrint: boolean;
   autoContinue: boolean;
+  allowReprint: boolean;
 }
 
 export const print: DisplayElementImplementation<
@@ -123,6 +128,7 @@ export const print: DisplayElementImplementation<
       data,
       autoPrint: options.autoPrint ?? false,
       autoContinue: options.autoContinue ?? false,
+      allowReprint: options.allowReprint ?? true,
     } satisfies UiElementPrintApiResponse,
   };
 };
