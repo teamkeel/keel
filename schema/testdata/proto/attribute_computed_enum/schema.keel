@@ -1,0 +1,14 @@
+model InventoryItem {
+    fields {
+        storageUnit Unit
+        productionUnit Unit @computed(inventoryItem.storageUnit)
+    }
+    actions {
+        create createItem() with (storageUnit) 
+    }
+}
+
+enum Unit {
+    Grams
+    Kilograms
+}

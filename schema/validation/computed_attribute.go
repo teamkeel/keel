@@ -55,6 +55,11 @@ func ComputedAttributeRules(asts []*parser.AST, errs *errorhandling.ValidationEr
 				supportedTypes = append(supportedTypes, t.Name.Value)
 			}
 
+			// Enum fields are also supported
+			for _, t := range query.Enums(asts) {
+				supportedTypes = append(supportedTypes, t.Name.Value)
+			}
+
 			if !slices.Contains(supportedTypes, field.Type.Value) {
 				errs.AppendError(
 					errorhandling.NewValidationErrorWithDetails(

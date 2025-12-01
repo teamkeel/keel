@@ -310,6 +310,8 @@ func addComputedFieldFuncStmt(ctx context.Context, schema *proto.Schema, entity 
 		sqlType = PostgresFieldTypes[field.GetType().GetType()]
 	case proto.Type_TYPE_ENTITY:
 		sqlType = "TEXT"
+	case proto.Type_TYPE_ENUM:
+		sqlType = "TEXT"
 	default:
 		return "", "", fmt.Errorf("type not supported for computed fields: %s", field.GetType().GetType())
 	}
