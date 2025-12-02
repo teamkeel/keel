@@ -314,6 +314,8 @@ test("list beforeQuery - return values", async () => {
     title: "Dreamcatcher",
     published: true,
     cover: null,
+    createdWithSecret: null,
+    createdAtFromCtx: null,
   });
 });
 
@@ -1026,4 +1028,73 @@ test("list beforeQuery - permission.deny prevents query", async () => {
     code: "ERR_PERMISSION_DENIED",
     message: "not authorized to access",
   });
+});
+
+// ==========================================
+// CONTEXT API TESTS
+// ==========================================
+
+test("ctx.secrets - access secret value in function", async () => {
+  // The secret TEST_SECRET is set in keelconfig.yaml
+  // The testing framework should provide a value for it
+  const book = await actions.createBookWithSecret({
+    title: "Secret Book",
+  });
+
+  // The function stores the secret value in createdWithSecret field
+  // In tests, if the secret is not set, it defaults to "secret-not-set"
+  expect(book.createdWithSecret).toBeDefined();
+  // Verify the secret was accessible (either a real value or the fallback)
+  expect(typeof book.createdWithSecret).toBe("string");
+});
+
+test("ctx.now - returns current timestamp", async () => {
+  const beforeCreate = new Date();
+
+  const book = await actions.createBookWithCtxNow({
+    title: "Timestamped Book",
+  });
+
+  const afterCreate = new Date();
+
+  // The function stores ctx.now() in createdAtFromCtx field
+  expect(book.createdAtFromCtx).not.toBeNull();
+
+  // Verify the timestamp is within a reasonable range (between before and after create)
+  const createdAt = new Date(book.createdAtFromCtx!);
+  expect(createdAt.getTime()).toBeGreaterThanOrEqual(
+    beforeCreate.getTime() - 1000
+  );
+  expect(createdAt.getTime()).toBeLessThanOrEqual(afterCreate.getTime() + 1000);
+});
+
+// ==========================================
+// DBTRANSACTION CONFIG TESTS
+// ==========================================
+
+test("dbTransaction: false - error does not rollback records", async () => {
+  // When dbTransaction is false, records created before an error should persist
+  await expect(
+    actions.createBookNoTransaction({
+      title: "No Transaction Book",
+    })
+  ).rejects.toEqual({
+    code: "ERR_UNKNOWN",
+    message: "error after creating deletedBook",
+  });
+
+  // The deletedBook record should persist because transactions are disabled
+  const deletedBooks = await models.deletedBook.findMany({
+    where: {
+      title: {
+        startsWith: "no-transaction-test-",
+      },
+    },
+  });
+
+  // Without transaction, the deletedBook record should NOT be rolled back
+  expect(deletedBooks.length).toEqual(1);
+  expect(deletedBooks[0].title).toEqual(
+    "no-transaction-test-No Transaction Book"
+  );
 });

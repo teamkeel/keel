@@ -11,12 +11,16 @@ async function expectNoHookExecutions() {
 }
 
 // Helper to verify specific hooks were executed
-async function expectHookExecutions(expectedHooks: { actionName: string; hookName: string }[]) {
+async function expectHookExecutions(
+  expectedHooks: { actionName: string; hookName: string }[]
+) {
   const logs = await models.hookLog.findMany();
   expect(logs.length).toEqual(expectedHooks.length);
   for (const expected of expectedHooks) {
     const found = logs.find(
-      (log) => log.actionName === expected.actionName && log.hookName === expected.hookName
+      (log) =>
+        log.actionName === expected.actionName &&
+        log.hookName === expected.hookName
     );
     expect(found).toBeTruthy();
   }
@@ -277,9 +281,7 @@ test("get @function - schema permission failure prevents hook execution", async 
   });
 
   // Call without authentication - should fail schema permission check
-  await expect(
-    actions.getPostWithHook({ id: post.id })
-  ).rejects.toEqual({
+  await expect(actions.getPostWithHook({ id: post.id })).rejects.toEqual({
     code: "ERR_PERMISSION_DENIED",
     message: "not authorized to access",
   });
@@ -303,7 +305,9 @@ test("get @function - schema permission success executes hooks", async () => {
   });
 
   // Call with authentication - should pass schema permission check
-  const result = await actions.withIdentity(identity).getPostWithHook({ id: post.id });
+  const result = await actions
+    .withIdentity(identity)
+    .getPostWithHook({ id: post.id });
 
   expect(result!.title).toEqual("Existing Post");
 
@@ -453,9 +457,7 @@ test("delete @function - schema permission failure prevents hook execution", asy
   });
 
   // Call without authentication - should fail schema permission check
-  await expect(
-    actions.deletePostWithHook({ id: post.id })
-  ).rejects.toEqual({
+  await expect(actions.deletePostWithHook({ id: post.id })).rejects.toEqual({
     code: "ERR_PERMISSION_DENIED",
     message: "not authorized to access",
   });
@@ -483,7 +485,9 @@ test("delete @function - schema permission success executes hooks", async () => 
   });
 
   // Call with authentication - should pass schema permission check
-  const deletedId = await actions.withIdentity(identity).deletePostWithHook({ id: post.id });
+  const deletedId = await actions
+    .withIdentity(identity)
+    .deletePostWithHook({ id: post.id });
 
   expect(deletedId).toEqual(post.id);
 

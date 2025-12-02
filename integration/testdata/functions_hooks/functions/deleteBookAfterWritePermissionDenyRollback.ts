@@ -1,4 +1,8 @@
-import { DeleteBookAfterWritePermissionDenyRollback, models, permissions } from "@teamkeel/sdk";
+import {
+  DeleteBookAfterWritePermissionDenyRollback,
+  models,
+  permissions,
+} from "@teamkeel/sdk";
 
 export default DeleteBookAfterWritePermissionDenyRollback({
   async beforeWrite(ctx, inputs, data) {

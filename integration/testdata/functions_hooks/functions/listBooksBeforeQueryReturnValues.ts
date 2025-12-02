@@ -14,6 +14,8 @@ export default ListBooksBeforeQueryReturnValues({
         coAuthorId: null,
         published: true,
         cover: null,
+        createdWithSecret: null,
+        createdAtFromCtx: null,
       },
     ];
   },

@@ -1,4 +1,8 @@
-import { UpdateBookAfterWritePermissionDenyRollback, models, permissions } from "@teamkeel/sdk";
+import {
+  UpdateBookAfterWritePermissionDenyRollback,
+  models,
+  permissions,
+} from "@teamkeel/sdk";
 
 export default UpdateBookAfterWritePermissionDenyRollback({
   async beforeWrite(ctx, inputs, values, record) {

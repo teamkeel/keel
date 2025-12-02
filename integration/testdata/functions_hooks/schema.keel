@@ -5,6 +5,8 @@ model Book {
         title Text
         published Boolean @default(false)
         cover File?
+        createdWithSecret Text?
+        createdAtFromCtx Timestamp?
     }
 
     actions {
@@ -49,6 +51,13 @@ model Book {
         get getBookBeforeQueryPermissionDeny(id) @function
         list listBooksBeforeQueryException() @function
         list listBooksBeforeQueryPermissionDeny() @function
+
+        // Context API tests
+        create createBookWithSecret() with (title) @function
+        create createBookWithCtxNow() with (title) @function
+
+        // dbTransaction config tests
+        create createBookNoTransaction() with (title) @function
     }
 
     @permission(
