@@ -34,6 +34,21 @@ model Book {
         update updateBookNoInputs() @function
         get getBookNoInputs() @function
         delete deleteBookNoInputs() @function
+
+        // Rollback tests
+        create createBookBeforeWriteExceptionRollback() with (title) @function
+        create createBookBeforeWritePermissionDenyRollback() with (title) @function
+        create createBookAfterWritePermissionDenyRollback() with (title) @function
+        update updateBookBeforeWriteExceptionRollback(id) with (title) @function
+        update updateBookAfterWriteExceptionRollback(id) with (title) @function
+        update updateBookAfterWritePermissionDenyRollback(id) with (title) @function
+        delete deleteBookBeforeWriteExceptionRollback(id) @function
+        delete deleteBookAfterWriteExceptionRollback(id) @function
+        delete deleteBookAfterWritePermissionDenyRollback(id) @function
+        get getBookBeforeQueryException(id) @function
+        get getBookBeforeQueryPermissionDeny(id) @function
+        list listBooksBeforeQueryException() @function
+        list listBooksBeforeQueryPermissionDeny() @function
     }
 
     @permission(
