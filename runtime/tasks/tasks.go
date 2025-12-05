@@ -29,6 +29,7 @@ const (
 	StatusAssigned  Status = "ASSIGNED"
 	StatusDeferred  Status = "DEFERRED"
 	StatusCompleted Status = "COMPLETED"
+	StatusCancelled Status = "CANCELLED"
 )
 
 // EntityFieldNameTaskID is the field name used in the entity table to link to a keel task.
@@ -201,6 +202,7 @@ func getTaskQueue(ctx context.Context, pbTask *proto.Task, filters *filterFields
 	if filters != nil {
 		if len(filters.Statuses) > 0 {
 			q = q.Where("status IN ?", filters.Statuses)
+			q = q.Where("(deferred_until IS NULL OR deferred_until <= ?)", time.Now())
 		}
 	}
 
@@ -344,7 +346,7 @@ func StartTask(ctx context.Context, pbTask *proto.Task, id string) (task *Task, 
 		}
 	}
 
-	// retrieve the task entity' id
+	// retrieve the task entity's id
 	entityID, err := getTaskEntityID(ctx, pbTask, id)
 	if err != nil {
 		return nil, err
@@ -500,6 +502,64 @@ func DeferTask(ctx context.Context, pbTask *proto.Task, id string, deferUntil ti
 	return
 }
 
+// CancelTask marks the given task as cancelled and returns it.
+func CancelTask(ctx context.Context, pbTask *proto.Task, id string, identityID string) (task *Task, err error) {
+	ctx, span := tracer.Start(ctx, "CancelTask")
+	defer span.End()
+
+	defer func() {
+		if err != nil {
+			span.RecordError(err, trace.WithStackTrace(true))
+			span.SetStatus(codes.Error, err.Error())
+		}
+	}()
+
+	task, err = getTask(ctx, pbTask, id)
+	if err != nil {
+		return nil, err
+	}
+
+	// if task already completed, return error
+	if task.isCompleted() {
+		return nil, errors.New("task already completed")
+	}
+
+	// mark task as cancelled
+	dbase, err := db.GetDatabase(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	err = dbase.GetDB().Transaction(func(tx *gorm.DB) error {
+		now := time.Now()
+		errTx := tx.
+			Model(&task).
+			Clauses(clause.Returning{}).
+			Where("name = ? AND id = ?", pbTask.GetName(), id).
+			Updates(Task{Status: StatusCancelled, ResolvedAt: &now}).
+			Error
+		if errTx != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return ErrTaskNotFound
+			} else {
+				return errTx
+			}
+		}
+
+		// we now save the status in the log
+		return tx.Save(TaskStatus{
+			TaskID: task.ID,
+			Status: StatusCancelled,
+			SetBy:  identityID,
+		}).Error
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return
+}
+
 // AssignTask marks the given task as assigned to the given identity and returns it.
 func AssignTask(ctx context.Context, pbTask *proto.Task, id string, assignedTo, identityID string) (task *Task, err error) {
 	ctx, span := tracer.Start(ctx, "AssignTask")
@@ -595,7 +655,8 @@ func NextTask(ctx context.Context, pbTask *proto.Task, identityID string) (task 
 		}
 
 		// 2) Find a candidate task to assign using row-level locking with SKIP LOCKED
-		tasks, errTx := getTaskQueue(ctx, pbTask, &filterFields{Statuses: []Status{StatusNew}}, &paginationFields{Limit: 1})
+		// Include both NEW and DEFERRED tasks (DEFERRED tasks with future defer_until are automatically excluded)
+		tasks, errTx := getTaskQueue(ctx, pbTask, &filterFields{Statuses: []Status{StatusNew, StatusDeferred}}, &paginationFields{Limit: 1})
 		if errTx != nil {
 			return errTx
 		}
