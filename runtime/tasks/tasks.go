@@ -202,8 +202,7 @@ func getTaskQueue(ctx context.Context, pbTask *proto.Task, filters *filterFields
 	if filters != nil {
 		if len(filters.Statuses) > 0 {
 			q = q.Where("status IN ?", filters.Statuses)
-			// Exclude DEFERRED tasks where deferred_until is in the future
-			q = q.Where("(status != ? OR deferred_until IS NULL OR deferred_until <= ?)", StatusDeferred, time.Now())
+			q = q.Where("(deferred_until IS NULL OR deferred_until <= ?)", time.Now())
 		}
 	}
 

@@ -1539,7 +1539,13 @@
               "title": { "type": "string" }
             },
             "additionalProperties": false,
-            "required": ["__type", "allowReprint", "autoContinue", "autoPrint", "data"]
+            "required": [
+              "__type",
+              "allowReprint",
+              "autoContinue",
+              "autoPrint",
+              "data"
+            ]
           },
           "UiElementSelectOneApiResponse": {
             "type": "object",
