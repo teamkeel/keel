@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "esModuleInterop": true,
+    "lib": [
+      "ES2016",
+      "DOM"
+    ],
+    "moduleResolution": "node",
+    "paths": {
+      "@teamkeel/sdk": [
+        "./.build/sdk"
+      ],
+      "@teamkeel/testing": [
+        "./.build/testing"
+      ]
+    },
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strictNullChecks": true,
+    "target": "ES2016",
+    "types": [
+      "node"
+    ]
+  },
+  "exclude": [
+    "node_modules"
+  ],
+  "include": [
+    "**/*.ts"
+  ]
+}
