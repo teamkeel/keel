@@ -29,6 +29,7 @@ const (
 	StatusAssigned  Status = "ASSIGNED"
 	StatusDeferred  Status = "DEFERRED"
 	StatusCompleted Status = "COMPLETED"
+	StatusCancelled Status = "CANCELLED"
 )
 
 // EntityFieldNameTaskID is the field name used in the entity table to link to a keel task.
@@ -492,6 +493,64 @@ func DeferTask(ctx context.Context, pbTask *proto.Task, id string, deferUntil ti
 		return tx.Save(TaskStatus{
 			TaskID: task.ID,
 			Status: StatusDeferred,
+			SetBy:  identityID,
+		}).Error
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return
+}
+
+// CancelTask marks the given task as cancelled and returns it.
+func CancelTask(ctx context.Context, pbTask *proto.Task, id string, identityID string) (task *Task, err error) {
+	ctx, span := tracer.Start(ctx, "CancelTask")
+	defer span.End()
+
+	defer func() {
+		if err != nil {
+			span.RecordError(err, trace.WithStackTrace(true))
+			span.SetStatus(codes.Error, err.Error())
+		}
+	}()
+
+	task, err = getTask(ctx, pbTask, id)
+	if err != nil {
+		return nil, err
+	}
+
+	// if task already completed, return error
+	if task.isCompleted() {
+		return nil, errors.New("task already completed")
+	}
+
+	// mark task as cancelled
+	dbase, err := db.GetDatabase(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	err = dbase.GetDB().Transaction(func(tx *gorm.DB) error {
+		now := time.Now()
+		errTx := tx.
+			Model(&task).
+			Clauses(clause.Returning{}).
+			Where("name = ? AND id = ?", pbTask.GetName(), id).
+			Updates(Task{Status: StatusCancelled, ResolvedAt: &now}).
+			Error
+		if errTx != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return ErrTaskNotFound
+			} else {
+				return errTx
+			}
+		}
+
+		// we now save the status in the log
+		return tx.Save(TaskStatus{
+			TaskID: task.ID,
+			Status: StatusCancelled,
 			SetBy:  identityID,
 		}).Error
 	})

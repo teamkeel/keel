@@ -778,6 +778,129 @@ test("tasks - defer - deferred task assigned after defer_until passes", async ()
   expect(resNext.body.status).toBe("ASSIGNED");
 });
 
+test("tasks - cancel - successfully cancelled", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  // Create a task
+  const resCreate = await createTask({
+    topic: "DispatchOrder",
+    body: {
+      data: {
+        orderDate: new Date(2025, 6, 9),
+        shipByDate: new Date(2025, 6, 20),
+      },
+    },
+    token: token,
+  });
+  expect(resCreate.status).toBe(200);
+
+  // Cancel the task
+  const res = await cancelTask({
+    topic: "DispatchOrder",
+    token: token,
+    id: resCreate.body.id,
+  });
+
+  expect(res.status).toBe(200);
+  expect(res.body).toEqual({
+    createdAt: expect.any(String),
+    id: resCreate.body.id,
+    name: "DispatchOrder",
+    status: "CANCELLED",
+    updatedAt: expect.any(String),
+    resolvedAt: expect.any(String),
+  });
+});
+
+test("tasks - cancel - task not found", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  const res = await cancelTask({
+    topic: "DispatchOrder",
+    token: token,
+    id: "non-existent-id",
+  });
+
+  expect(res.status).toBe(404);
+  expect(res.body).toEqual({
+    code: "ERR_RECORD_NOT_FOUND",
+    message: "Not found",
+  });
+});
+
+test("tasks - cancel - completed task cannot be cancelled", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  // Create a task
+  const resCreate = await createTask({
+    topic: "DispatchOrder",
+    body: {
+      data: {
+        orderDate: new Date(2025, 6, 9),
+        shipByDate: new Date(2025, 6, 20),
+      },
+    },
+    token: token,
+  });
+  expect(resCreate.status).toBe(200);
+
+  // Complete the task
+  const resComplete = await completeTask({
+    topic: "DispatchOrder",
+    token: token,
+    id: resCreate.body.id,
+  });
+  expect(resComplete.status).toBe(200);
+  expect(resComplete.body.status).toBe("COMPLETED");
+
+  // Try to cancel the completed task
+  const res = await cancelTask({
+    topic: "DispatchOrder",
+    token: token,
+    id: resCreate.body.id,
+  });
+
+  expect(res.status).toBe(500);
+  expect(res.body).toEqual({
+    code: "ERR_INTERNAL",
+    message: "error executing request (task already completed)",
+  });
+});
+
+test("tasks - cancel - cancelled task not assigned via next", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  // Create a task
+  const resCreate = await createTask({
+    topic: "DispatchOrder",
+    body: {
+      data: {
+        orderDate: new Date(2025, 6, 9),
+        shipByDate: new Date(2025, 6, 20),
+      },
+    },
+    token: token,
+  });
+  expect(resCreate.status).toBe(200);
+
+  // Cancel the task
+  const resCancel = await cancelTask({
+    topic: "DispatchOrder",
+    token: token,
+    id: resCreate.body.id,
+  });
+  expect(resCancel.status).toBe(200);
+  expect(resCancel.body.status).toBe("CANCELLED");
+
+  // Try to get next task - should return 404 since the only task is cancelled
+  const resNext = await nextTask({ topic: "DispatchOrder", token: token });
+  expect(resNext.status).toBe(404);
+  expect(resNext.body).toEqual({
+    code: "ERR_RECORD_NOT_FOUND",
+    message: "Not found",
+  });
+});
+
 async function getToken({ email }) {
   const response = await fetch(
     process.env.KEEL_TESTING_AUTH_API_URL + "/token",
@@ -917,6 +1040,22 @@ async function deferTask({ topic, token, id, body }) {
       Authorization: "Bearer " + token,
     },
     body: JSON.stringify(body),
+  });
+
+  return {
+    status: res.status,
+    body: await res.json(),
+  };
+}
+
+async function cancelTask({ topic, token, id }) {
+  const url = `${process.env.KEEL_TESTING_API_URL}/topics/json/${topic}/tasks/${id}/cancel`;
+  const res = await fetch(url, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
   });
 
   return {

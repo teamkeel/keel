@@ -252,6 +252,17 @@ func Handler(s *proto.Schema) common.HandlerFunc {
 				}
 
 				return common.NewJsonResponse(http.StatusOK, task, nil)
+			case "cancel":
+				task, err := tasks.CancelTask(ctx, topic, pathParts[2], identityID)
+				if err != nil {
+					if errors.Is(err, tasks.ErrTaskNotFound) {
+						return httpjson.NewErrorResponse(ctx, common.NewNotFoundError("Not found"), nil)
+					}
+
+					return httpjson.NewErrorResponse(ctx, err, nil)
+				}
+
+				return common.NewJsonResponse(http.StatusOK, task, nil)
 			}
 		}
 
