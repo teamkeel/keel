@@ -201,6 +201,8 @@ func getTaskQueue(ctx context.Context, pbTask *proto.Task, filters *filterFields
 	if filters != nil {
 		if len(filters.Statuses) > 0 {
 			q = q.Where("status IN ?", filters.Statuses)
+			// Exclude DEFERRED tasks where deferred_until is in the future
+			q = q.Where("(status != ? OR deferred_until IS NULL OR deferred_until <= ?)", StatusDeferred, time.Now())
 		}
 	}
 
@@ -344,7 +346,7 @@ func StartTask(ctx context.Context, pbTask *proto.Task, id string) (task *Task, 
 		}
 	}
 
-	// retrieve the task entity' id
+	// retrieve the task entity's id
 	entityID, err := getTaskEntityID(ctx, pbTask, id)
 	if err != nil {
 		return nil, err
@@ -595,7 +597,8 @@ func NextTask(ctx context.Context, pbTask *proto.Task, identityID string) (task 
 		}
 
 		// 2) Find a candidate task to assign using row-level locking with SKIP LOCKED
-		tasks, errTx := getTaskQueue(ctx, pbTask, &filterFields{Statuses: []Status{StatusNew}}, &paginationFields{Limit: 1})
+		// Include both NEW and DEFERRED tasks (DEFERRED tasks with future defer_until are automatically excluded)
+		tasks, errTx := getTaskQueue(ctx, pbTask, &filterFields{Statuses: []Status{StatusNew, StatusDeferred}}, &paginationFields{Limit: 1})
 		if errTx != nil {
 			return errTx
 		}

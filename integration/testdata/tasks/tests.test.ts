@@ -503,6 +503,281 @@ test("tasks - assign - missing assigned_to in body", async () => {
   });
 });
 
+test("tasks - defer - successfully deferred", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  // Create a task
+  const resCreate = await createTask({
+    topic: "DispatchOrder",
+    body: {
+      data: {
+        orderDate: new Date(2025, 6, 9),
+        shipByDate: new Date(2025, 6, 20),
+      },
+    },
+    token: token,
+  });
+  expect(resCreate.status).toBe(200);
+
+  // Defer the task
+  const deferUntil = new Date(2025, 7, 15).toISOString();
+  const res = await deferTask({
+    topic: "DispatchOrder",
+    token: token,
+    id: resCreate.body.id,
+    body: { defer_until: deferUntil },
+  });
+
+  expect(res.status).toBe(200);
+  expect(res.body).toEqual({
+    createdAt: expect.any(String),
+    id: resCreate.body.id,
+    name: "DispatchOrder",
+    status: "DEFERRED",
+    updatedAt: expect.any(String),
+    deferredUntil: expect.any(String),
+  });
+});
+
+test("tasks - defer - task not found", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  const deferUntil = new Date(2025, 7, 15).toISOString();
+  const res = await deferTask({
+    topic: "DispatchOrder",
+    token: token,
+    id: "non-existent-id",
+    body: { defer_until: deferUntil },
+  });
+
+  expect(res.status).toBe(404);
+  expect(res.body).toEqual({
+    code: "ERR_RECORD_NOT_FOUND",
+    message: "Not found",
+  });
+});
+
+test("tasks - defer - completed task cannot be deferred", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  // Create a task
+  const resCreate = await createTask({
+    topic: "DispatchOrder",
+    body: {
+      data: {
+        orderDate: new Date(2025, 6, 9),
+        shipByDate: new Date(2025, 6, 20),
+      },
+    },
+    token: token,
+  });
+  expect(resCreate.status).toBe(200);
+
+  // Complete the task
+  const resComplete = await completeTask({
+    topic: "DispatchOrder",
+    token: token,
+    id: resCreate.body.id,
+  });
+  expect(resComplete.status).toBe(200);
+  expect(resComplete.body.status).toBe("COMPLETED");
+
+  // Try to defer the completed task
+  const deferUntil = new Date(2025, 7, 15).toISOString();
+  const res = await deferTask({
+    topic: "DispatchOrder",
+    token: token,
+    id: resCreate.body.id,
+    body: { defer_until: deferUntil },
+  });
+
+  expect(res.status).toBe(500);
+  expect(res.body).toEqual({
+    code: "ERR_INTERNAL",
+    message: "error executing request (task already completed)",
+  });
+});
+
+test("tasks - defer - missing defer_until in body", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  // Create a task
+  const resCreate = await createTask({
+    topic: "DispatchOrder",
+    body: {
+      data: {
+        orderDate: new Date(2025, 6, 9),
+        shipByDate: new Date(2025, 6, 20),
+      },
+    },
+    token: token,
+  });
+  expect(resCreate.status).toBe(200);
+
+  // Try to defer without defer_until
+  const res = await deferTask({
+    topic: "DispatchOrder",
+    token: token,
+    id: resCreate.body.id,
+    body: {},
+  });
+
+  expect(res.status).toBe(400);
+  expect(res.body).toEqual({
+    code: "ERR_INPUT_MALFORMED",
+    message: "data not correctly formatted",
+  });
+});
+
+test("tasks - defer - invalid defer_until format", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  // Create a task
+  const resCreate = await createTask({
+    topic: "DispatchOrder",
+    body: {
+      data: {
+        orderDate: new Date(2025, 6, 9),
+        shipByDate: new Date(2025, 6, 20),
+      },
+    },
+    token: token,
+  });
+  expect(resCreate.status).toBe(200);
+
+  // Try to defer with invalid date format
+  const res = await deferTask({
+    topic: "DispatchOrder",
+    token: token,
+    id: resCreate.body.id,
+    body: { defer_until: "not-a-valid-date" },
+  });
+
+  expect(res.status).toBe(400);
+  expect(res.body).toEqual({
+    code: "ERR_INPUT_MALFORMED",
+    message: "date not correctly formatted",
+  });
+});
+
+test("tasks - defer - deferred task not assigned via next", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  // Create a task
+  const resCreate = await createTask({
+    topic: "DispatchOrder",
+    body: {
+      data: {
+        orderDate: new Date(2025, 6, 9),
+        shipByDate: new Date(2025, 6, 20),
+      },
+    },
+    token: token,
+  });
+  expect(resCreate.status).toBe(200);
+
+  // Defer the task to a future date
+  const futureDate = new Date();
+  futureDate.setDate(futureDate.getDate() + 7); // 7 days in the future
+  const res = await deferTask({
+    topic: "DispatchOrder",
+    token: token,
+    id: resCreate.body.id,
+    body: { defer_until: futureDate.toISOString() },
+  });
+  expect(res.status).toBe(200);
+  expect(res.body.status).toBe("DEFERRED");
+
+  // Try to get next task - should return 404 since the only task is deferred
+  const resNext = await nextTask({ topic: "DispatchOrder", token: token });
+  expect(resNext.status).toBe(404);
+  expect(resNext.body).toEqual({
+    code: "ERR_RECORD_NOT_FOUND",
+    message: "Not found",
+  });
+});
+
+test("tasks - defer - non-deferred task picked over deferred task", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  // Create first task and defer it
+  const resCreate1 = await createTask({
+    topic: "DispatchOrder",
+    body: {
+      data: {
+        orderDate: new Date(2025, 6, 9),
+        shipByDate: new Date(2025, 6, 15),
+      },
+    },
+    token: token,
+  });
+  expect(resCreate1.status).toBe(200);
+
+  const futureDate = new Date();
+  futureDate.setDate(futureDate.getDate() + 7);
+  const resDefer = await deferTask({
+    topic: "DispatchOrder",
+    token: token,
+    id: resCreate1.body.id,
+    body: { defer_until: futureDate.toISOString() },
+  });
+  expect(resDefer.status).toBe(200);
+
+  // Create second task (not deferred)
+  const resCreate2 = await createTask({
+    topic: "DispatchOrder",
+    body: {
+      data: {
+        orderDate: new Date(2025, 6, 10),
+        shipByDate: new Date(2025, 6, 20),
+      },
+    },
+    token: token,
+  });
+  expect(resCreate2.status).toBe(200);
+
+  // Get next task - should return the non-deferred task
+  const resNext = await nextTask({ topic: "DispatchOrder", token: token });
+  expect(resNext.status).toBe(200);
+  expect(resNext.body.id).toBe(resCreate2.body.id);
+  expect(resNext.body.status).toBe("ASSIGNED");
+});
+
+test("tasks - defer - deferred task assigned after defer_until passes", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  // Create a task
+  const resCreate = await createTask({
+    topic: "DispatchOrder",
+    body: {
+      data: {
+        orderDate: new Date(2025, 6, 9),
+        shipByDate: new Date(2025, 6, 20),
+      },
+    },
+    token: token,
+  });
+  expect(resCreate.status).toBe(200);
+
+  // Defer the task to a date in the past (deferral period has passed)
+  const pastDate = new Date();
+  pastDate.setDate(pastDate.getDate() - 1); // 1 day in the past
+  const resDefer = await deferTask({
+    topic: "DispatchOrder",
+    token: token,
+    id: resCreate.body.id,
+    body: { defer_until: pastDate.toISOString() },
+  });
+  expect(resDefer.status).toBe(200);
+  expect(resDefer.body.status).toBe("DEFERRED");
+
+  // Get next task - should return the deferred task since defer_until has passed
+  const resNext = await nextTask({ topic: "DispatchOrder", token: token });
+  expect(resNext.status).toBe(200);
+  expect(resNext.body.id).toBe(resCreate.body.id);
+  expect(resNext.body.status).toBe("ASSIGNED");
+});
+
 async function getToken({ email }) {
   const response = await fetch(
     process.env.KEEL_TESTING_AUTH_API_URL + "/token",
@@ -625,6 +900,23 @@ async function completeTask({ topic, token, id }) {
       "Content-Type": "application/json",
       Authorization: "Bearer " + token,
     },
+  });
+
+  return {
+    status: res.status,
+    body: await res.json(),
+  };
+}
+
+async function deferTask({ topic, token, id, body }) {
+  const url = `${process.env.KEEL_TESTING_API_URL}/topics/json/${topic}/tasks/${id}/defer`;
+  const res = await fetch(url, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+    body: JSON.stringify(body),
   });
 
   return {
