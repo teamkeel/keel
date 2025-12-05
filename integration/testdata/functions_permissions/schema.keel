@@ -92,3 +92,47 @@ model Publication {
         name Text
     }
 }
+
+// Model to track if hooks were executed
+model HookLog {
+    fields {
+        actionName Text
+        hookName Text
+        executedAt Timestamp
+    }
+}
+
+model Post {
+    fields {
+        title Text
+        author User
+    }
+
+    actions {
+        // Create with schema permission that requires identity
+        create createPostWithHook() with (title, author.id) {
+            @function
+            @permission(expression: ctx.isAuthenticated)
+        }
+        // Get with schema permission that requires identity
+        get getPostWithHook(id) {
+            @function
+            @permission(expression: ctx.isAuthenticated)
+        }
+        // List with schema permission that requires identity
+        list listPostsWithHook() {
+            @function
+            @permission(expression: ctx.isAuthenticated)
+        }
+        // Update with schema permission that requires identity
+        update updatePostWithHook(id) with (title) {
+            @function
+            @permission(expression: ctx.isAuthenticated)
+        }
+        // Delete with schema permission that requires identity
+        delete deletePostWithHook(id) {
+            @function
+            @permission(expression: ctx.isAuthenticated)
+        }
+    }
+}

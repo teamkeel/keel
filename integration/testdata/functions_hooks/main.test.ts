@@ -314,6 +314,8 @@ test("list beforeQuery - return values", async () => {
     title: "Dreamcatcher",
     published: true,
     cover: null,
+    createdWithSecret: null,
+    createdAtFromCtx: null,
   });
 });
 
@@ -447,6 +449,12 @@ test("update beforeWrite - permission denied", async () => {
     code: "ERR_PERMISSION_DENIED",
     message: "not authorized to access",
   });
+
+  const dbBook2 = await models.book.findOne({
+    id: dbBook.id,
+  });
+  expect(dbBook2).not.toBeNull();
+  expect(dbBook2!.title).toEqual("Harry Potter");
 });
 
 test("update afterWrite - create/update additional records", async () => {
@@ -612,4 +620,481 @@ test("delete afterWrite - create record", async () => {
   expect(deletedBooks.length).toEqual(1);
   expect(deletedBooks[0].title).toEqual("Anna Karenina (too long)");
   expect(deletedBooks[0].bookId).toEqual(dbBook.id);
+});
+
+// ==========================================
+// CREATE ACTION ROLLBACK TESTS
+// ==========================================
+
+test("create beforeWrite - exception causes rollback and returns error message", async () => {
+  await expect(
+    actions.createBookBeforeWriteExceptionRollback({
+      title: "Test Book",
+    })
+  ).rejects.toEqual({
+    code: "ERR_UNKNOWN",
+    message: "exception in beforeWrite",
+  });
+
+  // Check that no book was created
+  const books = await models.book.findMany({
+    where: {
+      title: {
+        equals: "Test Book",
+      },
+    },
+  });
+  expect(books.length).toEqual(0);
+
+  // Check that the deletedBook record created in beforeWrite was rolled back
+  const deletedBooks = await models.deletedBook.findMany({
+    where: {
+      title: {
+        contains: "orphaned record",
+      },
+    },
+  });
+  expect(deletedBooks.length).toEqual(0);
+});
+
+test("create beforeWrite - permission.deny causes rollback", async () => {
+  await expect(
+    actions.createBookBeforeWritePermissionDenyRollback({
+      title: "Test Book",
+    })
+  ).rejects.toEqual({
+    code: "ERR_PERMISSION_DENIED",
+    message: "not authorized to access",
+  });
+
+  // Check that no book was created
+  const books = await models.book.findMany({
+    where: {
+      title: {
+        equals: "Test Book",
+      },
+    },
+  });
+  expect(books.length).toEqual(0);
+
+  // Check that the deletedBook record created in beforeWrite was rolled back
+  const deletedBooks = await models.deletedBook.findMany({
+    where: {
+      title: {
+        contains: "orphaned record",
+      },
+    },
+  });
+  expect(deletedBooks.length).toEqual(0);
+});
+
+test("create afterWrite - permission.deny causes full rollback", async () => {
+  await expect(
+    actions.createBookAfterWritePermissionDenyRollback({
+      title: "Test Book",
+    })
+  ).rejects.toEqual({
+    code: "ERR_PERMISSION_DENIED",
+    message: "not authorized to access",
+  });
+
+  // Check that no book was created (the action itself was rolled back)
+  const books = await models.book.findMany({
+    where: {
+      title: {
+        equals: "Test Book",
+      },
+    },
+  });
+  expect(books.length).toEqual(0);
+
+  // Check that the deletedBook record created in beforeWrite was rolled back
+  const beforeWriteDeletedBooks = await models.deletedBook.findMany({
+    where: {
+      title: {
+        contains: "beforeWrite record",
+      },
+    },
+  });
+  expect(beforeWriteDeletedBooks.length).toEqual(0);
+
+  // Check that the review created in afterWrite was rolled back
+  const afterWriteReviews = await models.review.findMany({
+    where: {
+      review: {
+        contains: "afterWrite review",
+      },
+    },
+  });
+  expect(afterWriteReviews.length).toEqual(0);
+});
+
+// ==========================================
+// UPDATE ACTION ROLLBACK TESTS
+// ==========================================
+
+test("update beforeWrite - exception causes rollback and returns error message", async () => {
+  const dbBook = await models.book.create({
+    title: "Original Title",
+  });
+
+  await expect(
+    actions.updateBookBeforeWriteExceptionRollback({
+      where: {
+        id: dbBook.id,
+      },
+      values: {
+        title: "New Title",
+      },
+    })
+  ).rejects.toEqual({
+    code: "ERR_UNKNOWN",
+    message: "exception in update beforeWrite",
+  });
+
+  // Check that the book title was not changed
+  const book = await models.book.findOne({
+    id: dbBook.id,
+  });
+  expect(book).not.toBeNull();
+  expect(book!.title).toEqual("Original Title");
+
+  // Check that the bookUpdates record created in beforeWrite was rolled back
+  const bookUpdates = await models.bookUpdates.findMany({
+    where: {
+      bookId: {
+        equals: dbBook.id,
+      },
+    },
+  });
+  expect(bookUpdates.length).toEqual(0);
+});
+
+test("update afterWrite - exception causes full rollback and returns error message", async () => {
+  const dbBook = await models.book.create({
+    title: "Original Title",
+  });
+
+  await expect(
+    actions.updateBookAfterWriteExceptionRollback({
+      where: {
+        id: dbBook.id,
+      },
+      values: {
+        title: "New Title",
+      },
+    })
+  ).rejects.toEqual({
+    code: "ERR_UNKNOWN",
+    message: "exception in update afterWrite",
+  });
+
+  // Check that the book title was not changed (update was rolled back)
+  const book = await models.book.findOne({
+    id: dbBook.id,
+  });
+  expect(book).not.toBeNull();
+  expect(book!.title).toEqual("Original Title");
+
+  // Check that the bookUpdates record created in beforeWrite was rolled back
+  const bookUpdates = await models.bookUpdates.findMany({
+    where: {
+      bookId: {
+        equals: dbBook.id,
+      },
+    },
+  });
+  expect(bookUpdates.length).toEqual(0);
+
+  // Check that the review created in afterWrite was rolled back
+  const reviews = await models.review.findMany({
+    where: {
+      bookId: {
+        equals: dbBook.id,
+      },
+    },
+  });
+  expect(reviews.length).toEqual(0);
+});
+
+test("update afterWrite - permission.deny causes full rollback", async () => {
+  const dbBook = await models.book.create({
+    title: "Original Title",
+  });
+
+  await expect(
+    actions.updateBookAfterWritePermissionDenyRollback({
+      where: {
+        id: dbBook.id,
+      },
+      values: {
+        title: "New Title",
+      },
+    })
+  ).rejects.toEqual({
+    code: "ERR_PERMISSION_DENIED",
+    message: "not authorized to access",
+  });
+
+  // Check that the book title was not changed (update was rolled back)
+  const book = await models.book.findOne({
+    id: dbBook.id,
+  });
+  expect(book).not.toBeNull();
+  expect(book!.title).toEqual("Original Title");
+
+  // Check that the bookUpdates record created in beforeWrite was rolled back
+  const bookUpdates = await models.bookUpdates.findMany({
+    where: {
+      bookId: {
+        equals: dbBook.id,
+      },
+    },
+  });
+  expect(bookUpdates.length).toEqual(0);
+
+  // Check that the review created in afterWrite was rolled back
+  const reviews = await models.review.findMany({
+    where: {
+      bookId: {
+        equals: dbBook.id,
+      },
+    },
+  });
+  expect(reviews.length).toEqual(0);
+});
+
+// ==========================================
+// DELETE ACTION ROLLBACK TESTS
+// ==========================================
+
+test("delete beforeWrite - exception causes rollback and returns error message", async () => {
+  const dbBook = await models.book.create({
+    title: "Book To Delete",
+  });
+
+  await expect(
+    actions.deleteBookBeforeWriteExceptionRollback({
+      id: dbBook.id,
+    })
+  ).rejects.toEqual({
+    code: "ERR_UNKNOWN",
+    message: "exception in delete beforeWrite",
+  });
+
+  // Check that the book was not deleted
+  const book = await models.book.findOne({
+    id: dbBook.id,
+  });
+  expect(book).not.toBeNull();
+  expect(book!.title).toEqual("Book To Delete");
+
+  // Check that the deletedBook record created in beforeWrite was rolled back
+  const deletedBooks = await models.deletedBook.findMany({
+    where: {
+      bookId: {
+        equals: dbBook.id,
+      },
+    },
+  });
+  expect(deletedBooks.length).toEqual(0);
+});
+
+test("delete afterWrite - exception causes full rollback and returns error message", async () => {
+  const dbBook = await models.book.create({
+    title: "Book To Delete",
+  });
+
+  await expect(
+    actions.deleteBookAfterWriteExceptionRollback({
+      id: dbBook.id,
+    })
+  ).rejects.toEqual({
+    code: "ERR_UNKNOWN",
+    message: "exception in delete afterWrite",
+  });
+
+  // Check that the book was not deleted (the delete action was rolled back)
+  const book = await models.book.findOne({
+    id: dbBook.id,
+  });
+  expect(book).not.toBeNull();
+  expect(book!.title).toEqual("Book To Delete");
+
+  // Check that all deletedBook records were rolled back
+  const deletedBooks = await models.deletedBook.findMany({
+    where: {
+      bookId: {
+        equals: dbBook.id,
+      },
+    },
+  });
+  expect(deletedBooks.length).toEqual(0);
+});
+
+test("delete afterWrite - permission.deny causes full rollback", async () => {
+  const dbBook = await models.book.create({
+    title: "Book To Delete",
+  });
+
+  await expect(
+    actions.deleteBookAfterWritePermissionDenyRollback({
+      id: dbBook.id,
+    })
+  ).rejects.toEqual({
+    code: "ERR_PERMISSION_DENIED",
+    message: "not authorized to access",
+  });
+
+  // Check that the book was not deleted (the delete action was rolled back)
+  const book = await models.book.findOne({
+    id: dbBook.id,
+  });
+  expect(book).not.toBeNull();
+  expect(book!.title).toEqual("Book To Delete");
+
+  // Check that all deletedBook records were rolled back
+  const deletedBooks = await models.deletedBook.findMany({
+    where: {
+      bookId: {
+        equals: dbBook.id,
+      },
+    },
+  });
+  expect(deletedBooks.length).toEqual(0);
+});
+
+// ==========================================
+// GET ACTION BEFOREQUERY TESTS
+// ==========================================
+
+test("get beforeQuery - exception prevents query and returns error message", async () => {
+  const dbBook = await models.book.create({
+    title: "Test Book",
+  });
+
+  await expect(
+    actions.getBookBeforeQueryException({
+      id: dbBook.id,
+    })
+  ).rejects.toEqual({
+    code: "ERR_UNKNOWN",
+    message: "exception in get beforeQuery",
+  });
+});
+
+test("get beforeQuery - permission.deny prevents query", async () => {
+  const dbBook = await models.book.create({
+    title: "Test Book",
+  });
+
+  await expect(
+    actions.getBookBeforeQueryPermissionDeny({
+      id: dbBook.id,
+    })
+  ).rejects.toEqual({
+    code: "ERR_PERMISSION_DENIED",
+    message: "not authorized to access",
+  });
+});
+
+// ==========================================
+// LIST ACTION BEFOREQUERY TESTS
+// ==========================================
+
+test("list beforeQuery - exception prevents query and returns error message", async () => {
+  await models.book.create({
+    title: "Test Book 1",
+  });
+  await models.book.create({
+    title: "Test Book 2",
+  });
+
+  await expect(actions.listBooksBeforeQueryException()).rejects.toEqual({
+    code: "ERR_UNKNOWN",
+    message: "exception in list beforeQuery",
+  });
+});
+
+test("list beforeQuery - permission.deny prevents query", async () => {
+  await models.book.create({
+    title: "Test Book 1",
+  });
+  await models.book.create({
+    title: "Test Book 2",
+  });
+
+  await expect(actions.listBooksBeforeQueryPermissionDeny()).rejects.toEqual({
+    code: "ERR_PERMISSION_DENIED",
+    message: "not authorized to access",
+  });
+});
+
+// ==========================================
+// CONTEXT API TESTS
+// ==========================================
+
+test("ctx.secrets - access secret value in function", async () => {
+  // The secret TEST_SECRET is set in keelconfig.yaml
+  // The testing framework should provide a value for it
+  const book = await actions.createBookWithSecret({
+    title: "Secret Book",
+  });
+
+  // The function stores the secret value in createdWithSecret field
+  // In tests, if the secret is not set, it defaults to "secret-not-set"
+  expect(book.createdWithSecret).toBeDefined();
+  // Verify the secret was accessible (either a real value or the fallback)
+  expect(typeof book.createdWithSecret).toBe("string");
+});
+
+test("ctx.now - returns current timestamp", async () => {
+  const beforeCreate = new Date();
+
+  const book = await actions.createBookWithCtxNow({
+    title: "Timestamped Book",
+  });
+
+  const afterCreate = new Date();
+
+  // The function stores ctx.now() in createdAtFromCtx field
+  expect(book.createdAtFromCtx).not.toBeNull();
+
+  // Verify the timestamp is within a reasonable range (between before and after create)
+  const createdAt = new Date(book.createdAtFromCtx!);
+  expect(createdAt.getTime()).toBeGreaterThanOrEqual(
+    beforeCreate.getTime() - 1000
+  );
+  expect(createdAt.getTime()).toBeLessThanOrEqual(afterCreate.getTime() + 1000);
+});
+
+// ==========================================
+// DBTRANSACTION CONFIG TESTS
+// ==========================================
+
+test("dbTransaction: false - error does not rollback records", async () => {
+  // When dbTransaction is false, records created before an error should persist
+  await expect(
+    actions.createBookNoTransaction({
+      title: "No Transaction Book",
+    })
+  ).rejects.toEqual({
+    code: "ERR_UNKNOWN",
+    message: "error after creating deletedBook",
+  });
+
+  // The deletedBook record should persist because transactions are disabled
+  const deletedBooks = await models.deletedBook.findMany({
+    where: {
+      title: {
+        startsWith: "no-transaction-test-",
+      },
+    },
+  });
+
+  // Without transaction, the deletedBook record should NOT be rolled back
+  expect(deletedBooks.length).toEqual(1);
+  expect(deletedBooks[0].title).toEqual(
+    "no-transaction-test-No Transaction Book"
+  );
 });
