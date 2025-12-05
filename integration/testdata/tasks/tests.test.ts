@@ -309,7 +309,6 @@ test("tasks - next - already assigned", async () => {
 test("tasks - assign - successfully assigned", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
-  // Create a task
   const resCreate = await createTask({
     topic: "DispatchOrder",
     body: {
@@ -322,13 +321,11 @@ test("tasks - assign - successfully assigned", async () => {
   });
   expect(resCreate.status).toBe(200);
 
-  // Get identity ID for the current user
   const identity = await models.identity.findOne({
     email: "admin@keel.xyz",
     issuer: "https://keel.so",
   });
 
-  // Assign the task to the identity
   const res = await assignTask({
     topic: "DispatchOrder",
     token: token,
@@ -373,7 +370,6 @@ test("tasks - assign - task not found", async () => {
 test("tasks - assign - completed task cannot be assigned", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
-  // Create a task
   const resCreate = await createTask({
     topic: "DispatchOrder",
     body: {
@@ -386,7 +382,6 @@ test("tasks - assign - completed task cannot be assigned", async () => {
   });
   expect(resCreate.status).toBe(200);
 
-  // Complete the task
   const resComplete = await completeTask({
     topic: "DispatchOrder",
     token: token,
@@ -395,13 +390,11 @@ test("tasks - assign - completed task cannot be assigned", async () => {
   expect(resComplete.status).toBe(200);
   expect(resComplete.body.status).toBe("COMPLETED");
 
-  // Get identity ID
   const identity = await models.identity.findOne({
     email: "admin@keel.xyz",
     issuer: "https://keel.so",
   });
 
-  // Try to assign the completed task
   const res = await assignTask({
     topic: "DispatchOrder",
     token: token,
@@ -420,7 +413,6 @@ test("tasks - assign - reassign to different user", async () => {
   const tokenAdmin = await getToken({ email: "admin@keel.xyz" });
   const tokenOther = await getToken({ email: "other@keel.xyz" });
 
-  // Create a task
   const resCreate = await createTask({
     topic: "DispatchOrder",
     body: {
@@ -433,7 +425,6 @@ test("tasks - assign - reassign to different user", async () => {
   });
   expect(resCreate.status).toBe(200);
 
-  // Get identity IDs
   const adminIdentity = await models.identity.findOne({
     email: "admin@keel.xyz",
     issuer: "https://keel.so",
@@ -443,7 +434,6 @@ test("tasks - assign - reassign to different user", async () => {
     issuer: "https://keel.so",
   });
 
-  // Assign the task to admin
   const resAssign1 = await assignTask({
     topic: "DispatchOrder",
     token: tokenAdmin,
@@ -453,7 +443,6 @@ test("tasks - assign - reassign to different user", async () => {
   expect(resAssign1.status).toBe(200);
   expect(resAssign1.body.assignedTo).toBe(adminIdentity!.id);
 
-  // Reassign the task to other user
   const resAssign2 = await assignTask({
     topic: "DispatchOrder",
     token: tokenAdmin,
@@ -475,7 +464,6 @@ test("tasks - assign - reassign to different user", async () => {
 test("tasks - assign - missing assigned_to in body", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
-  // Create a task
   const resCreate = await createTask({
     topic: "DispatchOrder",
     body: {
@@ -488,7 +476,6 @@ test("tasks - assign - missing assigned_to in body", async () => {
   });
   expect(resCreate.status).toBe(200);
 
-  // Try to assign without assigned_to
   const res = await assignTask({
     topic: "DispatchOrder",
     token: token,
@@ -506,7 +493,6 @@ test("tasks - assign - missing assigned_to in body", async () => {
 test("tasks - defer - successfully deferred", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
-  // Create a task
   const resCreate = await createTask({
     topic: "DispatchOrder",
     body: {
@@ -519,7 +505,6 @@ test("tasks - defer - successfully deferred", async () => {
   });
   expect(resCreate.status).toBe(200);
 
-  // Defer the task
   const deferUntil = new Date(2025, 7, 15).toISOString();
   const res = await deferTask({
     topic: "DispatchOrder",
@@ -560,7 +545,6 @@ test("tasks - defer - task not found", async () => {
 test("tasks - defer - completed task cannot be deferred", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
-  // Create a task
   const resCreate = await createTask({
     topic: "DispatchOrder",
     body: {
@@ -573,7 +557,6 @@ test("tasks - defer - completed task cannot be deferred", async () => {
   });
   expect(resCreate.status).toBe(200);
 
-  // Complete the task
   const resComplete = await completeTask({
     topic: "DispatchOrder",
     token: token,
@@ -582,7 +565,6 @@ test("tasks - defer - completed task cannot be deferred", async () => {
   expect(resComplete.status).toBe(200);
   expect(resComplete.body.status).toBe("COMPLETED");
 
-  // Try to defer the completed task
   const deferUntil = new Date(2025, 7, 15).toISOString();
   const res = await deferTask({
     topic: "DispatchOrder",
@@ -601,7 +583,6 @@ test("tasks - defer - completed task cannot be deferred", async () => {
 test("tasks - defer - missing defer_until in body", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
-  // Create a task
   const resCreate = await createTask({
     topic: "DispatchOrder",
     body: {
@@ -614,7 +595,6 @@ test("tasks - defer - missing defer_until in body", async () => {
   });
   expect(resCreate.status).toBe(200);
 
-  // Try to defer without defer_until
   const res = await deferTask({
     topic: "DispatchOrder",
     token: token,
@@ -632,7 +612,6 @@ test("tasks - defer - missing defer_until in body", async () => {
 test("tasks - defer - invalid defer_until format", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
-  // Create a task
   const resCreate = await createTask({
     topic: "DispatchOrder",
     body: {
@@ -645,7 +624,6 @@ test("tasks - defer - invalid defer_until format", async () => {
   });
   expect(resCreate.status).toBe(200);
 
-  // Try to defer with invalid date format
   const res = await deferTask({
     topic: "DispatchOrder",
     token: token,
@@ -663,7 +641,6 @@ test("tasks - defer - invalid defer_until format", async () => {
 test("tasks - defer - deferred task not assigned via next", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
-  // Create a task
   const resCreate = await createTask({
     topic: "DispatchOrder",
     body: {
@@ -676,9 +653,8 @@ test("tasks - defer - deferred task not assigned via next", async () => {
   });
   expect(resCreate.status).toBe(200);
 
-  // Defer the task to a future date
   const futureDate = new Date();
-  futureDate.setDate(futureDate.getDate() + 7); // 7 days in the future
+  futureDate.setDate(futureDate.getDate() + 7);
   const res = await deferTask({
     topic: "DispatchOrder",
     token: token,
@@ -688,7 +664,6 @@ test("tasks - defer - deferred task not assigned via next", async () => {
   expect(res.status).toBe(200);
   expect(res.body.status).toBe("DEFERRED");
 
-  // Try to get next task - should return 404 since the only task is deferred
   const resNext = await nextTask({ topic: "DispatchOrder", token: token });
   expect(resNext.status).toBe(404);
   expect(resNext.body).toEqual({
@@ -700,7 +675,6 @@ test("tasks - defer - deferred task not assigned via next", async () => {
 test("tasks - defer - non-deferred task picked over deferred task", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
-  // Create first task and defer it
   const resCreate1 = await createTask({
     topic: "DispatchOrder",
     body: {
@@ -723,7 +697,6 @@ test("tasks - defer - non-deferred task picked over deferred task", async () => 
   });
   expect(resDefer.status).toBe(200);
 
-  // Create second task (not deferred)
   const resCreate2 = await createTask({
     topic: "DispatchOrder",
     body: {
@@ -736,7 +709,6 @@ test("tasks - defer - non-deferred task picked over deferred task", async () => 
   });
   expect(resCreate2.status).toBe(200);
 
-  // Get next task - should return the non-deferred task
   const resNext = await nextTask({ topic: "DispatchOrder", token: token });
   expect(resNext.status).toBe(200);
   expect(resNext.body.id).toBe(resCreate2.body.id);
@@ -746,7 +718,6 @@ test("tasks - defer - non-deferred task picked over deferred task", async () => 
 test("tasks - defer - deferred task assigned after defer_until passes", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
-  // Create a task
   const resCreate = await createTask({
     topic: "DispatchOrder",
     body: {
@@ -759,9 +730,8 @@ test("tasks - defer - deferred task assigned after defer_until passes", async ()
   });
   expect(resCreate.status).toBe(200);
 
-  // Defer the task to a date in the past (deferral period has passed)
   const pastDate = new Date();
-  pastDate.setDate(pastDate.getDate() - 1); // 1 day in the past
+  pastDate.setDate(pastDate.getDate() - 1);
   const resDefer = await deferTask({
     topic: "DispatchOrder",
     token: token,
@@ -771,7 +741,6 @@ test("tasks - defer - deferred task assigned after defer_until passes", async ()
   expect(resDefer.status).toBe(200);
   expect(resDefer.body.status).toBe("DEFERRED");
 
-  // Get next task - should return the deferred task since defer_until has passed
   const resNext = await nextTask({ topic: "DispatchOrder", token: token });
   expect(resNext.status).toBe(200);
   expect(resNext.body.id).toBe(resCreate.body.id);
@@ -781,7 +750,6 @@ test("tasks - defer - deferred task assigned after defer_until passes", async ()
 test("tasks - cancel - successfully cancelled", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
-  // Create a task
   const resCreate = await createTask({
     topic: "DispatchOrder",
     body: {
@@ -794,7 +762,6 @@ test("tasks - cancel - successfully cancelled", async () => {
   });
   expect(resCreate.status).toBe(200);
 
-  // Cancel the task
   const res = await cancelTask({
     topic: "DispatchOrder",
     token: token,
@@ -831,7 +798,6 @@ test("tasks - cancel - task not found", async () => {
 test("tasks - cancel - completed task cannot be cancelled", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
-  // Create a task
   const resCreate = await createTask({
     topic: "DispatchOrder",
     body: {
@@ -844,7 +810,6 @@ test("tasks - cancel - completed task cannot be cancelled", async () => {
   });
   expect(resCreate.status).toBe(200);
 
-  // Complete the task
   const resComplete = await completeTask({
     topic: "DispatchOrder",
     token: token,
@@ -853,7 +818,6 @@ test("tasks - cancel - completed task cannot be cancelled", async () => {
   expect(resComplete.status).toBe(200);
   expect(resComplete.body.status).toBe("COMPLETED");
 
-  // Try to cancel the completed task
   const res = await cancelTask({
     topic: "DispatchOrder",
     token: token,
@@ -870,7 +834,6 @@ test("tasks - cancel - completed task cannot be cancelled", async () => {
 test("tasks - cancel - cancelled task not assigned via next", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
-  // Create a task
   const resCreate = await createTask({
     topic: "DispatchOrder",
     body: {
@@ -883,7 +846,6 @@ test("tasks - cancel - cancelled task not assigned via next", async () => {
   });
   expect(resCreate.status).toBe(200);
 
-  // Cancel the task
   const resCancel = await cancelTask({
     topic: "DispatchOrder",
     token: token,
@@ -892,7 +854,6 @@ test("tasks - cancel - cancelled task not assigned via next", async () => {
   expect(resCancel.status).toBe(200);
   expect(resCancel.body.status).toBe("CANCELLED");
 
-  // Try to get next task - should return 404 since the only task is cancelled
   const resNext = await nextTask({ topic: "DispatchOrder", token: token });
   expect(resNext.status).toBe(404);
   expect(resNext.body).toEqual({
