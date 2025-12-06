@@ -160,29 +160,44 @@ func getTask(ctx context.Context, pbTask *proto.Task, id string) (*Task, error) 
 	return &task, nil
 }
 
-// getTaskEntityID returns the ID of the entity holding the data relating to this task.
-func getTaskEntityID(ctx context.Context, pbTask *proto.Task, id string) (*string, error) {
+// getTaskEntityData returns the data fields for the task entity as a map with camelCase keys.
+func getTaskEntityData(ctx context.Context, pbTask *proto.Task, taskID string) (map[string]any, error) {
 	dbase, err := db.GetDatabase(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	var entityID *string
+	// Build select columns from task fields
+	var columns []string
+	for _, field := range pbTask.GetFields() {
+		columns = append(columns, strcase.ToSnake(field.GetName()))
+	}
 
+	// If no fields defined, return empty map
+	if len(columns) == 0 {
+		return map[string]any{}, nil
+	}
+
+	var result map[string]any
 	err = dbase.GetDB().
 		Table(strcase.ToSnake(pbTask.GetName())).
-		Select("id").
-		Where(fmt.Sprintf("%s = ?", EntityFieldNameTaskID), id).
-		Scan(&entityID).Error
+		Select(columns).
+		Where(fmt.Sprintf("%s = ?", EntityFieldNameTaskID), taskID).
+		Take(&result).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
+			return map[string]any{}, nil
 		}
-
 		return nil, err
 	}
 
-	return entityID, nil
+	// Convert snake_case keys to camelCase to match schema field names
+	data := make(map[string]any)
+	for key, value := range result {
+		data[strcase.ToLowerCamel(key)] = value
+	}
+
+	return data, nil
 }
 
 // getTaskQueue will retrieve the queue of tasks for the given topic.
@@ -677,14 +692,9 @@ func NextTask(ctx context.Context, pbTask *proto.Task, identityID string) (task 
 
 // startFlow starts a flow for the given task.
 func startFlow(ctx context.Context, pbTask *proto.Task, task *Task, identityID string) (*Task, error) {
-	entityID, err := getTaskEntityID(ctx, pbTask, task.ID)
+	flowInputs, err := getTaskEntityData(ctx, pbTask, task.ID)
 	if err != nil {
 		return nil, err
-	}
-
-	flowInputs := map[string]any{}
-	if entityID != nil {
-		flowInputs["entityId"] = *entityID
 	}
 
 	newFlowRun, err := flows.NewFlowRun(ctx, pbTask.GetFlow(), flowInputs, &identityID)
