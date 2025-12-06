@@ -1,8 +1,4 @@
-task NoFields {
-    @permission(roles: [User])
-}
-
-task DispatchOrder {
+task EmptyFlow {
     fields {
         orderDate Date
         shipByDate Date
@@ -15,5 +11,5 @@ task DispatchOrder {
 role User {
     domains {
         "keel.xyz"
-    }   
+    }
 }

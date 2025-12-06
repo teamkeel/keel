@@ -126,7 +126,7 @@ func Handler(s *proto.Schema) common.HandlerFunc {
 						}
 					}
 
-					task, err := tasks.CreateTask(ctx, topic, identityID, deferUntil, data)
+					task, err := tasks.NewTask(ctx, topic, identityID, deferUntil, data)
 					if err != nil {
 						if errors.Is(err, tasks.ErrTaskNotFound) {
 							return httpjson.NewErrorResponse(ctx, common.NewNotFoundError("Not found"), nil)
@@ -170,7 +170,7 @@ func Handler(s *proto.Schema) common.HandlerFunc {
 
 			switch pathParts[3] {
 			case "start":
-				task, err := tasks.StartTask(ctx, topic, pathParts[2])
+				task, err := tasks.StartTask(ctx, topic, pathParts[2], identityID)
 				if err != nil {
 					if errors.Is(err, tasks.ErrTaskNotFound) {
 						return httpjson.NewErrorResponse(ctx, common.NewNotFoundError("Not found"), nil)

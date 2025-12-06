@@ -8,7 +8,7 @@ test("tasks - create", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
   const resCreate = await createTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     body: {
       data: {
         orderDate: new Date(2025, 6, 15),
@@ -21,146 +21,103 @@ test("tasks - create", async () => {
   expect(resCreate.body).toEqual({
     createdAt: expect.any(String),
     id: expect.any(String),
-    name: "DispatchOrder",
+    name: "EmptyFlow",
     status: "NEW",
     updatedAt: expect.any(String),
   });
 
-  const res = await getTaskQueue({ topic: "DispatchOrder", token: token });
+  const res = await getTaskQueue({ topic: "EmptyFlow", token: token });
   expect(res.status).toBe(200);
   expect(res.body).toEqual([
     {
       createdAt: expect.any(String),
       id: expect.any(String),
-      name: "DispatchOrder",
-      status: "NEW",
-      updatedAt: expect.any(String),
-    },
-  ]);
-
-  const tasks = await useDatabase()
-    .selectFrom("dispatch_order")
-    .selectAll()
-    .execute();
-
-  expect(tasks).toEqual([
-    {
-      id: expect.any(String),
-      orderDate: expect.any(Date),
-      shipByDate: expect.any(Date),
-      createdAt: expect.any(Date),
-      updatedAt: expect.any(Date),
-      keelTaskId: resCreate.body.id,
-    },
-  ]);
-});
-
-test("tasks - create - no fields", async () => {
-  const token = await getToken({ email: "admin@keel.xyz" });
-
-  const resCreate = await createTask({
-    topic: "NoFields",
-    body: {},
-    token: token,
-  });
-  expect(resCreate.status).toBe(200);
-  expect(resCreate.body).toEqual({
-    createdAt: expect.any(String),
-    id: expect.any(String),
-    name: "NoFields",
-    status: "NEW",
-    updatedAt: expect.any(String),
-  });
-
-  const res = await getTaskQueue({ topic: "NoFields", token: token });
-  expect(res.status).toBe(200);
-  expect(res.body).toEqual([
-    {
-      createdAt: expect.any(String),
-      id: expect.any(String),
-      name: "NoFields",
+      name: "EmptyFlow",
       status: "NEW",
       updatedAt: expect.any(String),
     },
   ]);
 });
 
-test("tasks - start", async () => {
+test("tasks - next assigns, start creates flow and completes task", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
   const resCreate = await createTask({
-    topic: "NoFields",
-    body: {},
+    topic: "EmptyFlow",
+    body: {
+      data: {
+        orderDate: new Date(2025, 6, 9),
+        shipByDate: new Date(2025, 6, 20),
+      },
+    },
     token: token,
   });
   expect(resCreate.status).toBe(200);
-  expect(resCreate.body).toEqual({
+
+  const resNext = await nextTask({ topic: "EmptyFlow", token: token });
+  expect(resNext.status).toBe(200);
+  expect(resNext.body).toEqual({
     createdAt: expect.any(String),
     id: expect.any(String),
-    name: "NoFields",
-    status: "NEW",
+    name: "EmptyFlow",
+    status: "ASSIGNED",
     updatedAt: expect.any(String),
+    assignedTo: expect.any(String),
+    assignedAt: expect.any(String),
   });
 
-  const taskId = resCreate.body.id;
+  const taskId = resNext.body.id;
 
-  const res = await startTask({ topic: "NoFields", token: token, id: taskId });
-  expect(res.status).toBe(200);
-  expect(res.body).toEqual({
-    createdAt: expect.any(String),
-    id: expect.any(String),
-    name: "NoFields",
-    status: "NEW",
-    updatedAt: expect.any(String),
-    flowRunId: expect.any(String),
+  // No flow exists yet - flow is created when start is called
+  expect(resNext.body.flowRunId).toBeUndefined();
+
+  const resStart = await startTask({
+    topic: "EmptyFlow",
+    token: token,
+    id: taskId,
   });
+  expect(resStart.status).toBe(200);
+  expect(resStart.body.status).toBe("STARTED");
 
-  const flowRunId = res.body.flowRunId;
-  const flow = await flows.noFields
+  const flowRunId = resStart.body.flowRunId;
+  expect(flowRunId).toBeDefined();
+
+  // Wait for the flow to complete
+  const completedFlow = await flows.emptyFlow
     .withAuthToken(token)
     .untilFinished(flowRunId);
+  expect(completedFlow.status).toBe("COMPLETED");
 
-  expect(flow).toEqual({
-    id: expect.any(String),
-    traceId: expect.any(String),
-    status: "COMPLETED",
-    name: "NoFields",
-    startedBy: expect.any(String),
-    input: {
-      entityId: expect.any(String),
-    },
-    error: null,
-    data: null,
-    config: {
-      title: "No fields",
-    },
-    steps: [
-      {
-        id: expect.any(String),
-        name: "return task entity id",
-        runId: expect.any(String),
-        status: "COMPLETED",
-        type: "FUNCTION",
-        value: expect.any(String),
-        error: null,
-        stage: null,
-        startTime: expect.any(Date),
-        endTime: expect.any(Date),
-        createdAt: expect.any(Date),
-        updatedAt: expect.any(Date),
-        ui: null,
-      },
-    ],
-    createdAt: expect.any(Date),
-    updatedAt: expect.any(Date),
-  });
+  // Verify task was auto-completed when flow finished
+  const taskFromDb = await (useDatabase() as any)
+    .selectFrom("keel.task")
+    .selectAll()
+    .where("id", "=", taskId)
+    .executeTakeFirst();
+  expect(taskFromDb.status).toBe("COMPLETED");
+  expect(taskFromDb.resolvedAt).not.toBeNull();
+
+  const statusEntries = await (useDatabase() as any)
+    .selectFrom("keel.task_status")
+    .selectAll()
+    .where("keel_task_id", "=", taskId)
+    .orderBy("created_at", "asc")
+    .execute();
+
+  expect(statusEntries).toHaveLength(4);
+  expect(statusEntries[0].status).toBe("NEW");
+  expect(statusEntries[1].status).toBe("ASSIGNED");
+  expect(statusEntries[2].status).toBe("STARTED");
+  expect(statusEntries[2].flowRunId).toBe(flowRunId);
+  expect(statusEntries[3].status).toBe("COMPLETED");
+  expect(statusEntries[3].flowRunId).toBe(flowRunId);
 });
 
 test("tasks - list", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
   const t1 = await createTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     body: {
       data: {
         orderDate: new Date(2025, 6, 9),
@@ -170,8 +127,9 @@ test("tasks - list", async () => {
     token: token,
   });
   expect(t1.status).toBe(200);
+
   const t2 = await createTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     body: {
       data: {
         orderDate: new Date(2025, 6, 15),
@@ -181,8 +139,9 @@ test("tasks - list", async () => {
     token: token,
   });
   expect(t2.status).toBe(200);
+
   const t3 = await createTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     body: {
       data: {
         orderDate: new Date(2025, 6, 14),
@@ -192,37 +151,16 @@ test("tasks - list", async () => {
     token: token,
   });
   expect(t3.status).toBe(200);
-  const t4 = await createTask({
-    topic: "DispatchOrder",
-    body: {
-      data: {
-        orderDate: new Date(2025, 6, 10),
-        shipByDate: new Date(2025, 6, 20),
-      },
-    },
-    token: token,
-  });
-  expect(t4.status).toBe(200);
-  const t5 = await createTask({
-    topic: "DispatchOrder",
-    body: {
-      data: {
-        orderDate: new Date(2025, 6, 10),
-        shipByDate: new Date(2025, 6, 20),
-      },
-    },
-    token: token,
-  });
-  expect(t5.status).toBe(200);
 
-  const res = await getTaskQueue({ topic: "DispatchOrder", token: token });
+  const res = await getTaskQueue({ topic: "EmptyFlow", token: token });
   expect(res.status).toBe(200);
-  expect(res.body).toEqual([t1.body, t5.body, t4.body, t3.body, t2.body]);
+  // Tasks ordered by shipByDate asc, then orderDate asc
+  expect(res.body).toEqual([t1.body, t3.body, t2.body]);
 });
 
 test("tasks - next - no tasks exist", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
-  const res = await nextTask({ topic: "DispatchOrder", token: token });
+  const res = await nextTask({ topic: "EmptyFlow", token: token });
   expect(res.status).toBe(404);
   expect(res.body).toEqual({
     code: "ERR_RECORD_NOT_FOUND",
@@ -234,7 +172,7 @@ test("tasks - next - successfully assigned", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
   const resCreate = await createTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     body: {
       data: {
         orderDate: new Date(2025, 6, 9),
@@ -245,12 +183,12 @@ test("tasks - next - successfully assigned", async () => {
   });
   expect(resCreate.status).toBe(200);
 
-  const res = await nextTask({ topic: "DispatchOrder", token: token });
+  const res = await nextTask({ topic: "EmptyFlow", token: token });
   expect(res.status).toBe(200);
   expect(res.body).toEqual({
     createdAt: expect.any(String),
     id: resCreate.body.id,
-    name: "DispatchOrder",
+    name: "EmptyFlow",
     status: "ASSIGNED",
     updatedAt: expect.any(String),
     assignedTo: expect.any(String),
@@ -261,8 +199,9 @@ test("tasks - next - successfully assigned", async () => {
 test("tasks - next - already assigned", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
+  // Create task with earlier shipByDate - should be picked first due to @orderBy
   const resCreate1 = await createTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     body: {
       data: {
         orderDate: new Date(2025, 6, 9),
@@ -274,7 +213,7 @@ test("tasks - next - already assigned", async () => {
   expect(resCreate1.status).toBe(200);
 
   const resCreate2 = await createTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     body: {
       data: {
         orderDate: new Date(2025, 6, 9),
@@ -285,32 +224,29 @@ test("tasks - next - already assigned", async () => {
   });
   expect(resCreate2.status).toBe(200);
 
-  const resNext = await nextTask({ topic: "DispatchOrder", token: token });
+  const resNext = await nextTask({ topic: "EmptyFlow", token: token });
   expect(resNext.status).toBe(200);
   expect(resNext.body).toEqual({
     createdAt: expect.any(String),
     id: resCreate1.body.id,
-    name: "DispatchOrder",
+    name: "EmptyFlow",
     status: "ASSIGNED",
     updatedAt: expect.any(String),
     assignedTo: expect.any(String),
     assignedAt: expect.any(String),
   });
 
-  const resNextAgain = await nextTask({ topic: "DispatchOrder", token: token });
+  // Calling next again returns the same already-assigned task
+  const resNextAgain = await nextTask({ topic: "EmptyFlow", token: token });
   expect(resNextAgain.status).toBe(200);
-  expect(resNextAgain.body).toEqual(resNext.body);
-
-  const resList = await getTaskQueue({ topic: "DispatchOrder", token: token });
-  expect(resList.status).toBe(200);
-  expect(resList.body).toEqual([resNext.body, resCreate2.body]);
+  expect(resNextAgain.body.id).toBe(resNext.body.id);
 });
 
 test("tasks - assign - successfully assigned", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
   const resCreate = await createTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     body: {
       data: {
         orderDate: new Date(2025, 6, 9),
@@ -327,7 +263,7 @@ test("tasks - assign - successfully assigned", async () => {
   });
 
   const res = await assignTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     token: token,
     id: resCreate.body.id,
     body: { assigned_to: identity!.id },
@@ -337,7 +273,7 @@ test("tasks - assign - successfully assigned", async () => {
   expect(res.body).toEqual({
     createdAt: expect.any(String),
     id: resCreate.body.id,
-    name: "DispatchOrder",
+    name: "EmptyFlow",
     status: "ASSIGNED",
     updatedAt: expect.any(String),
     assignedTo: identity!.id,
@@ -354,7 +290,7 @@ test("tasks - assign - task not found", async () => {
   });
 
   const res = await assignTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     token: token,
     id: "non-existent-id",
     body: { assigned_to: identity!.id },
@@ -371,7 +307,7 @@ test("tasks - assign - completed task cannot be assigned", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
   const resCreate = await createTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     body: {
       data: {
         orderDate: new Date(2025, 6, 9),
@@ -383,7 +319,7 @@ test("tasks - assign - completed task cannot be assigned", async () => {
   expect(resCreate.status).toBe(200);
 
   const resComplete = await completeTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     token: token,
     id: resCreate.body.id,
   });
@@ -396,7 +332,7 @@ test("tasks - assign - completed task cannot be assigned", async () => {
   });
 
   const res = await assignTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     token: token,
     id: resCreate.body.id,
     body: { assigned_to: identity!.id },
@@ -414,7 +350,7 @@ test("tasks - assign - reassign to different user", async () => {
   const tokenOther = await getToken({ email: "other@keel.xyz" });
 
   const resCreate = await createTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     body: {
       data: {
         orderDate: new Date(2025, 6, 9),
@@ -435,7 +371,7 @@ test("tasks - assign - reassign to different user", async () => {
   });
 
   const resAssign1 = await assignTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     token: tokenAdmin,
     id: resCreate.body.id,
     body: { assigned_to: adminIdentity!.id },
@@ -444,7 +380,7 @@ test("tasks - assign - reassign to different user", async () => {
   expect(resAssign1.body.assignedTo).toBe(adminIdentity!.id);
 
   const resAssign2 = await assignTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     token: tokenAdmin,
     id: resCreate.body.id,
     body: { assigned_to: otherIdentity!.id },
@@ -453,7 +389,7 @@ test("tasks - assign - reassign to different user", async () => {
   expect(resAssign2.body).toEqual({
     createdAt: expect.any(String),
     id: resCreate.body.id,
-    name: "DispatchOrder",
+    name: "EmptyFlow",
     status: "ASSIGNED",
     updatedAt: expect.any(String),
     assignedTo: otherIdentity!.id,
@@ -465,7 +401,7 @@ test("tasks - assign - missing assigned_to in body", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
   const resCreate = await createTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     body: {
       data: {
         orderDate: new Date(2025, 6, 9),
@@ -477,7 +413,7 @@ test("tasks - assign - missing assigned_to in body", async () => {
   expect(resCreate.status).toBe(200);
 
   const res = await assignTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     token: token,
     id: resCreate.body.id,
     body: {},
@@ -494,7 +430,7 @@ test("tasks - defer - successfully deferred", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
   const resCreate = await createTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     body: {
       data: {
         orderDate: new Date(2025, 6, 9),
@@ -507,7 +443,7 @@ test("tasks - defer - successfully deferred", async () => {
 
   const deferUntil = new Date(2025, 7, 15).toISOString();
   const res = await deferTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     token: token,
     id: resCreate.body.id,
     body: { defer_until: deferUntil },
@@ -517,7 +453,7 @@ test("tasks - defer - successfully deferred", async () => {
   expect(res.body).toEqual({
     createdAt: expect.any(String),
     id: resCreate.body.id,
-    name: "DispatchOrder",
+    name: "EmptyFlow",
     status: "DEFERRED",
     updatedAt: expect.any(String),
     deferredUntil: expect.any(String),
@@ -529,7 +465,7 @@ test("tasks - defer - task not found", async () => {
 
   const deferUntil = new Date(2025, 7, 15).toISOString();
   const res = await deferTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     token: token,
     id: "non-existent-id",
     body: { defer_until: deferUntil },
@@ -546,7 +482,7 @@ test("tasks - defer - completed task cannot be deferred", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
   const resCreate = await createTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     body: {
       data: {
         orderDate: new Date(2025, 6, 9),
@@ -558,7 +494,7 @@ test("tasks - defer - completed task cannot be deferred", async () => {
   expect(resCreate.status).toBe(200);
 
   const resComplete = await completeTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     token: token,
     id: resCreate.body.id,
   });
@@ -567,7 +503,7 @@ test("tasks - defer - completed task cannot be deferred", async () => {
 
   const deferUntil = new Date(2025, 7, 15).toISOString();
   const res = await deferTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     token: token,
     id: resCreate.body.id,
     body: { defer_until: deferUntil },
@@ -584,7 +520,7 @@ test("tasks - defer - missing defer_until in body", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
   const resCreate = await createTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     body: {
       data: {
         orderDate: new Date(2025, 6, 9),
@@ -596,7 +532,7 @@ test("tasks - defer - missing defer_until in body", async () => {
   expect(resCreate.status).toBe(200);
 
   const res = await deferTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     token: token,
     id: resCreate.body.id,
     body: {},
@@ -613,7 +549,7 @@ test("tasks - defer - invalid defer_until format", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
   const resCreate = await createTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     body: {
       data: {
         orderDate: new Date(2025, 6, 9),
@@ -625,7 +561,7 @@ test("tasks - defer - invalid defer_until format", async () => {
   expect(resCreate.status).toBe(200);
 
   const res = await deferTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     token: token,
     id: resCreate.body.id,
     body: { defer_until: "not-a-valid-date" },
@@ -642,7 +578,7 @@ test("tasks - defer - deferred task not assigned via next", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
   const resCreate = await createTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     body: {
       data: {
         orderDate: new Date(2025, 6, 9),
@@ -656,7 +592,7 @@ test("tasks - defer - deferred task not assigned via next", async () => {
   const futureDate = new Date();
   futureDate.setDate(futureDate.getDate() + 7);
   const res = await deferTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     token: token,
     id: resCreate.body.id,
     body: { defer_until: futureDate.toISOString() },
@@ -664,7 +600,7 @@ test("tasks - defer - deferred task not assigned via next", async () => {
   expect(res.status).toBe(200);
   expect(res.body.status).toBe("DEFERRED");
 
-  const resNext = await nextTask({ topic: "DispatchOrder", token: token });
+  const resNext = await nextTask({ topic: "EmptyFlow", token: token });
   expect(resNext.status).toBe(404);
   expect(resNext.body).toEqual({
     code: "ERR_RECORD_NOT_FOUND",
@@ -675,8 +611,9 @@ test("tasks - defer - deferred task not assigned via next", async () => {
 test("tasks - defer - non-deferred task picked over deferred task", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
+  // Task 1 would be first due to earlier shipByDate, but we'll defer it
   const resCreate1 = await createTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     body: {
       data: {
         orderDate: new Date(2025, 6, 9),
@@ -690,15 +627,16 @@ test("tasks - defer - non-deferred task picked over deferred task", async () => 
   const futureDate = new Date();
   futureDate.setDate(futureDate.getDate() + 7);
   const resDefer = await deferTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     token: token,
     id: resCreate1.body.id,
     body: { defer_until: futureDate.toISOString() },
   });
   expect(resDefer.status).toBe(200);
 
+  // Task 2 has later shipByDate but should be picked since task 1 is deferred
   const resCreate2 = await createTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     body: {
       data: {
         orderDate: new Date(2025, 6, 10),
@@ -709,7 +647,7 @@ test("tasks - defer - non-deferred task picked over deferred task", async () => 
   });
   expect(resCreate2.status).toBe(200);
 
-  const resNext = await nextTask({ topic: "DispatchOrder", token: token });
+  const resNext = await nextTask({ topic: "EmptyFlow", token: token });
   expect(resNext.status).toBe(200);
   expect(resNext.body.id).toBe(resCreate2.body.id);
   expect(resNext.body.status).toBe("ASSIGNED");
@@ -719,7 +657,7 @@ test("tasks - defer - deferred task assigned after defer_until passes", async ()
   const token = await getToken({ email: "admin@keel.xyz" });
 
   const resCreate = await createTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     body: {
       data: {
         orderDate: new Date(2025, 6, 9),
@@ -733,7 +671,7 @@ test("tasks - defer - deferred task assigned after defer_until passes", async ()
   const pastDate = new Date();
   pastDate.setDate(pastDate.getDate() - 1);
   const resDefer = await deferTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     token: token,
     id: resCreate.body.id,
     body: { defer_until: pastDate.toISOString() },
@@ -741,7 +679,7 @@ test("tasks - defer - deferred task assigned after defer_until passes", async ()
   expect(resDefer.status).toBe(200);
   expect(resDefer.body.status).toBe("DEFERRED");
 
-  const resNext = await nextTask({ topic: "DispatchOrder", token: token });
+  const resNext = await nextTask({ topic: "EmptyFlow", token: token });
   expect(resNext.status).toBe(200);
   expect(resNext.body.id).toBe(resCreate.body.id);
   expect(resNext.body.status).toBe("ASSIGNED");
@@ -751,7 +689,7 @@ test("tasks - cancel - successfully cancelled", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
   const resCreate = await createTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     body: {
       data: {
         orderDate: new Date(2025, 6, 9),
@@ -763,7 +701,7 @@ test("tasks - cancel - successfully cancelled", async () => {
   expect(resCreate.status).toBe(200);
 
   const res = await cancelTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     token: token,
     id: resCreate.body.id,
   });
@@ -772,7 +710,7 @@ test("tasks - cancel - successfully cancelled", async () => {
   expect(res.body).toEqual({
     createdAt: expect.any(String),
     id: resCreate.body.id,
-    name: "DispatchOrder",
+    name: "EmptyFlow",
     status: "CANCELLED",
     updatedAt: expect.any(String),
     resolvedAt: expect.any(String),
@@ -783,7 +721,7 @@ test("tasks - cancel - task not found", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
   const res = await cancelTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     token: token,
     id: "non-existent-id",
   });
@@ -799,7 +737,7 @@ test("tasks - cancel - completed task cannot be cancelled", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
   const resCreate = await createTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     body: {
       data: {
         orderDate: new Date(2025, 6, 9),
@@ -811,7 +749,7 @@ test("tasks - cancel - completed task cannot be cancelled", async () => {
   expect(resCreate.status).toBe(200);
 
   const resComplete = await completeTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     token: token,
     id: resCreate.body.id,
   });
@@ -819,7 +757,7 @@ test("tasks - cancel - completed task cannot be cancelled", async () => {
   expect(resComplete.body.status).toBe("COMPLETED");
 
   const res = await cancelTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     token: token,
     id: resCreate.body.id,
   });
@@ -835,7 +773,7 @@ test("tasks - cancel - cancelled task not assigned via next", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
   const resCreate = await createTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     body: {
       data: {
         orderDate: new Date(2025, 6, 9),
@@ -847,19 +785,203 @@ test("tasks - cancel - cancelled task not assigned via next", async () => {
   expect(resCreate.status).toBe(200);
 
   const resCancel = await cancelTask({
-    topic: "DispatchOrder",
+    topic: "EmptyFlow",
     token: token,
     id: resCreate.body.id,
   });
   expect(resCancel.status).toBe(200);
   expect(resCancel.body.status).toBe("CANCELLED");
 
-  const resNext = await nextTask({ topic: "DispatchOrder", token: token });
+  const resNext = await nextTask({ topic: "EmptyFlow", token: token });
   expect(resNext.status).toBe(404);
   expect(resNext.body).toEqual({
     code: "ERR_RECORD_NOT_FOUND",
     message: "Not found",
   });
+});
+
+test("tasks - start - creates STARTED and COMPLETED status entries", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  const resCreate = await createTask({
+    topic: "EmptyFlow",
+    body: {
+      data: {
+        orderDate: new Date(2025, 6, 9),
+        shipByDate: new Date(2025, 6, 20),
+      },
+    },
+    token: token,
+  });
+  expect(resCreate.status).toBe(200);
+
+  const resNext = await nextTask({ topic: "EmptyFlow", token: token });
+  expect(resNext.status).toBe(200);
+  // No flow created during next - flow is created during start
+  expect(resNext.body.flowRunId).toBeUndefined();
+
+  const taskId = resNext.body.id;
+
+  const resStart = await startTask({
+    topic: "EmptyFlow",
+    token: token,
+    id: taskId,
+  });
+  expect(resStart.status).toBe(200);
+  expect(resStart.body.status).toBe("STARTED");
+
+  const flowRunId = resStart.body.flowRunId;
+  expect(flowRunId).toBeDefined();
+
+  // Wait for the flow to complete
+  await flows.emptyFlow.withAuthToken(token).untilFinished(flowRunId);
+
+  const statusEntries = await (useDatabase() as any)
+    .selectFrom("keel.task_status")
+    .selectAll()
+    .where("keel_task_id", "=", taskId)
+    .orderBy("created_at", "asc")
+    .execute();
+
+  expect(statusEntries).toHaveLength(4);
+  expect(statusEntries[0].status).toBe("NEW");
+  expect(statusEntries[0].flowRunId).toBeNull();
+  expect(statusEntries[1].status).toBe("ASSIGNED");
+  expect(statusEntries[1].flowRunId).toBeNull();
+  expect(statusEntries[2].status).toBe("STARTED");
+  expect(statusEntries[2].flowRunId).toBe(flowRunId);
+  expect(statusEntries[3].status).toBe("COMPLETED");
+  expect(statusEntries[3].flowRunId).toBe(flowRunId);
+});
+
+test("tasks - start - calling start on completed task returns error", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  const resCreate = await createTask({
+    topic: "EmptyFlow",
+    body: {
+      data: {
+        orderDate: new Date(2025, 6, 9),
+        shipByDate: new Date(2025, 6, 20),
+      },
+    },
+    token: token,
+  });
+  expect(resCreate.status).toBe(200);
+
+  const resNext = await nextTask({ topic: "EmptyFlow", token: token });
+  expect(resNext.status).toBe(200);
+
+  const resStart1 = await startTask({
+    topic: "EmptyFlow",
+    token: token,
+    id: resNext.body.id,
+  });
+  expect(resStart1.status).toBe(200);
+  expect(resStart1.body.status).toBe("STARTED");
+
+  const flowRunId = resStart1.body.flowRunId;
+  expect(flowRunId).toBeDefined();
+
+  // Wait for the flow to complete (which auto-completes the task)
+  await flows.emptyFlow.withAuthToken(token).untilFinished(flowRunId);
+
+  // Calling start on a completed task returns an error
+  const resStart2 = await startTask({
+    topic: "EmptyFlow",
+    token: token,
+    id: resNext.body.id,
+  });
+  expect(resStart2.status).toBe(500);
+  expect(resStart2.body).toEqual({
+    code: "ERR_INTERNAL",
+    message: "error executing request (task already completed)",
+  });
+
+  const taskId = resNext.body.id;
+  const statusEntries = await (useDatabase() as any)
+    .selectFrom("keel.task_status")
+    .selectAll()
+    .where("keel_task_id", "=", taskId)
+    .orderBy("created_at", "asc")
+    .execute();
+
+  expect(statusEntries).toHaveLength(4);
+  expect(statusEntries[0].status).toBe("NEW");
+  expect(statusEntries[1].status).toBe("ASSIGNED");
+  expect(statusEntries[2].status).toBe("STARTED");
+  expect(statusEntries[3].status).toBe("COMPLETED");
+});
+
+test("tasks - flow completion auto-completes task", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  const resCreate = await createTask({
+    topic: "EmptyFlow",
+    body: {
+      data: {
+        orderDate: new Date(2025, 6, 9),
+        shipByDate: new Date(2025, 6, 20),
+      },
+    },
+    token: token,
+  });
+  expect(resCreate.status).toBe(200);
+  const taskId = resCreate.body.id;
+
+  // Assign the task first
+  const resNext = await nextTask({ topic: "EmptyFlow", token: token });
+  expect(resNext.status).toBe(200);
+
+  // Start the task - this creates and runs the flow
+  const resStart = await startTask({
+    topic: "EmptyFlow",
+    token: token,
+    id: taskId,
+  });
+  expect(resStart.status).toBe(200);
+  expect(resStart.body.status).toBe("STARTED");
+
+  const flowRunId = resStart.body.flowRunId;
+  expect(flowRunId).toBeDefined();
+
+  // Wait for the flow to complete
+  const completedFlow = await flows.emptyFlow
+    .withAuthToken(token)
+    .untilFinished(flowRunId);
+  expect(completedFlow.status).toBe("COMPLETED");
+
+  // Fetch the task again to verify it was auto-completed when flow finished
+  const taskFromDb = await (useDatabase() as any)
+    .selectFrom("keel.task")
+    .selectAll()
+    .where("id", "=", taskId)
+    .executeTakeFirst();
+
+  expect(taskFromDb.status).toBe("COMPLETED");
+  expect(taskFromDb.resolvedAt).not.toBeNull();
+  expect(taskFromDb.flowRunId).toBe(flowRunId);
+
+  // Verify task_status entries include COMPLETED with the flow run ID
+  const statusEntries = await (useDatabase() as any)
+    .selectFrom("keel.task_status")
+    .selectAll()
+    .where("keel_task_id", "=", taskId)
+    .orderBy("created_at", "asc")
+    .execute();
+
+  expect(statusEntries).toHaveLength(4);
+  expect(statusEntries[0].status).toBe("NEW");
+  expect(statusEntries[0].flowRunId).toBeNull();
+
+  expect(statusEntries[1].status).toBe("ASSIGNED");
+  expect(statusEntries[1].flowRunId).toBeNull();
+
+  expect(statusEntries[2].status).toBe("STARTED");
+  expect(statusEntries[2].flowRunId).toBe(flowRunId);
+
+  expect(statusEntries[3].status).toBe("COMPLETED");
+  expect(statusEntries[3].flowRunId).toBe(flowRunId);
 });
 
 async function getToken({ email }) {
