@@ -252,7 +252,7 @@ func (o *Orchestrator) HandleEvent(ctx context.Context, event *EventWrapper) err
 			traceparent = util.GetTraceparent(span.SpanContext())
 		}
 
-		run, err := createRun(ctx, flow, ev.Inputs, traceparent, nil)
+		run, err := newRun(ctx, flow, ev.Inputs, traceparent, nil)
 		if err != nil {
 			return err
 		}

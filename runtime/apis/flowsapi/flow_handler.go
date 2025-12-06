@@ -65,7 +65,12 @@ func FlowHandler(s *proto.Schema) common.HandlerFunc {
 					return httpjson.NewErrorResponse(ctx, common.NewInputMalformedError("data not correctly formatted"), nil)
 				}
 
-				run, err := flows.StartFlow(ctx, flow, inputsMap)
+				run1, err := flows.NewFlowRun(ctx, flow, inputsMap, nil)
+				if err != nil {
+					return httpjson.NewErrorResponse(ctx, err, nil)
+				}
+
+				run, err := flows.StartFlow(ctx, flow, run1.ID, inputsMap)
 				if err != nil {
 					return httpjson.NewErrorResponse(ctx, err, nil)
 				}

@@ -6,16 +6,30 @@ import (
 	"time"
 
 	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/runtime/auth"
-	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/util"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 )
 
+func NewFlowRun(ctx context.Context, flow *proto.Flow, inputs map[string]any, identityID *string) (run *Run, err error) {
+	ctx, span := tracer.Start(ctx, "NewFlowRun")
+	defer span.End()
+
+	defer func() {
+		if err != nil {
+			span.RecordError(err, trace.WithStackTrace(true))
+			span.SetStatus(codes.Error, err.Error())
+		}
+	}()
+
+	traceparent := util.GetTraceparent(span.SpanContext())
+
+	return newRun(ctx, flow, inputs, traceparent, identityID)
+}
+
 // StartFlow will start a new run for the given flow with the given input.
-func StartFlow(ctx context.Context, flow *proto.Flow, inputs map[string]any) (run *Run, err error) {
+func StartFlow(ctx context.Context, flow *proto.Flow, flowRunID string, inputs map[string]any) (run *Run, err error) {
 	ctx, span := tracer.Start(ctx, "StartFlow")
 	defer span.End()
 
@@ -33,34 +47,19 @@ func StartFlow(ctx context.Context, flow *proto.Flow, inputs map[string]any) (ru
 		return
 	}
 
-	var identityID *string
-
-	if identity, err := auth.GetIdentity(ctx); err == nil {
-		idenID := identity[parser.FieldNameId].(string)
-		if idenID != "" {
-			identityID = &idenID
-		}
-	}
-
-	run, err = createRun(ctx, flow, inputs, util.GetTraceparent(span.SpanContext()), identityID)
-	if err != nil {
-		err = fmt.Errorf("creating flow run: %w", err)
-		return
-	}
-
 	span.SetAttributes(
 		attribute.String("flow", flow.GetName()),
-		attribute.String("flowRun.id", run.ID),
+		attribute.String("flowRun.id", flowRunID),
 	)
 
-	err, uiComponents := o.orchestrateRun(ctx, run.ID, inputs, nil, "")
+	err, uiComponents := o.orchestrateRun(ctx, flowRunID, inputs, nil, "")
 	if err != nil {
 		err = fmt.Errorf("orchestrating flow run: %w", err)
 		return
 	}
 
 	// load fresh state
-	run, err = getRun(ctx, run.ID)
+	run, err = getRun(ctx, flowRunID)
 	if err != nil {
 		err = fmt.Errorf("retrieving flow run: %w", err)
 		return
