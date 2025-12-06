@@ -142,7 +142,7 @@ func (t *Task) HasField(field string) bool {
 	return t.FindField(field) != nil
 }
 
-// GetFlow generates and returns the flow associated with this topic.
+// GetFlow generates and returns the flow associated with this task.
 func (t *Task) GetFlow() *Flow {
 	if t == nil {
 		return nil
@@ -151,6 +151,6 @@ func (t *Task) GetFlow() *Flow {
 	return &Flow{
 		Name:             t.GetName(),
 		Permissions:      t.GetPermissions(),
-		InputMessageName: "TaskFlowInputMessage",
+		InputMessageName: t.GetInputMessageName(),
 	}
 }

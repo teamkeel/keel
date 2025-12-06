@@ -1961,12 +1961,19 @@ flow MyFlow {
 }
 flow MyFlowWithoutInputs {}
 task MyTask {}
+task MyTaskWithFields {
+	fields {
+		orderDate Date
+		quantity Number
+	}
+}
 `
 
 	expected := `
 export declare const MyFlow: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C, Environment, Secrets, Identity, MyFlowMessage, Hardware>) };
 export declare const MyFlowWithoutInputs: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C, Environment, Secrets, Identity, never, Hardware>) };
-export declare const MyTask: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C, Environment, Secrets, Identity, TaskFlowInputMessage, Hardware>) };`
+export declare const MyTask: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C, Environment, Secrets, Identity, never, Hardware>) };
+export declare const MyTaskWithFields: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C, Environment, Secrets, Identity, MyTaskWithFieldsMessage, Hardware>) };`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		for _, f := range s.GetAllFlows() {

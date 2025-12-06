@@ -58,7 +58,13 @@ func TestScaffold(t *testing.T) {
 		}
 	}
 	flow MyFlowWithoutInputs {}
-	task MyTask {}`
+	task MyTaskNoInputs {}
+	task MyTaskWithInputs {
+		fields {
+			name Text
+			age Number
+		}
+	}`
 
 	cfg := `
 auth:
@@ -226,16 +232,29 @@ export default MyFlowWithoutInputs(config, async (ctx) => {
 		},
 		&codegen.GeneratedFile{
 			Contents: `
-import { MyTask, FlowConfig } from '@teamkeel/sdk';
+import { MyTaskNoInputs, FlowConfig } from '@teamkeel/sdk';
 
 const config = {
 	// See https://docs.keel.so/flows for options
 } as const satisfies FlowConfig;
 
-export default MyTask(config, async (ctx, inputs) => {
+export default MyTaskNoInputs(config, async (ctx) => {
 
 });`,
-			Path: "tasks/myTask.ts",
+			Path: "tasks/myTaskNoInputs.ts",
+		},
+		&codegen.GeneratedFile{
+			Contents: `
+import { MyTaskWithInputs, FlowConfig } from '@teamkeel/sdk';
+
+const config = {
+	// See https://docs.keel.so/flows for options
+} as const satisfies FlowConfig;
+
+export default MyTaskWithInputs(config, async (ctx, inputs) => {
+
+});`,
+			Path: "tasks/myTaskWithInputs.ts",
 		},
 	}
 

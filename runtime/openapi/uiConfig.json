@@ -868,7 +868,7 @@
           "type": "string"
         },
         "defaultValue": {
-          "$ref": "#/$defs/Partial%3CFileDbRecord%3E"
+          "$ref": "#/$defs/Partial<FileDbRecord>"
         },
         "optional": {
           "type": "boolean"
@@ -1016,7 +1016,7 @@
         "data": {
           "type": "array",
           "items": {
-            "$ref": "#/$defs/Record%3Cstring%2Cany%3E"
+            "$ref": "#/$defs/Record<string,any>"
           }
         },
         "columns": {

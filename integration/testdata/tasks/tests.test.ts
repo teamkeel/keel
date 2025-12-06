@@ -984,6 +984,112 @@ test("tasks - flow completion auto-completes task", async () => {
   expect(statusEntries[3].flowRunId).toBe(flowRunId);
 });
 
+test("tasks - flow receives typed inputs from task fields", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  // Create test data with various Keel types
+  const testDate = "2025-07-15";
+  const testTimestamp = "2025-07-15T14:30:00.000Z";
+
+  const resCreate = await createTask({
+    topic: "InputsTask",
+    body: {
+      data: {
+        textField: "hello world",
+        numberField: 42,
+        booleanField: true,
+        dateField: testDate,
+        timestampField: testTimestamp,
+        decimalField: 123.456,
+        enumField: "High",
+        optionalTextField: "optional value",
+      },
+    },
+    token: token,
+  });
+  expect(resCreate.status).toBe(200);
+  const taskId = resCreate.body.id;
+
+  // Assign the task
+  const resNext = await nextTask({ topic: "InputsTask", token: token });
+  expect(resNext.status).toBe(200);
+
+  // Start the task - this creates and runs the flow with the task field data as inputs
+  const resStart = await startTask({
+    topic: "InputsTask",
+    token: token,
+    id: taskId,
+  });
+  expect(resStart.status).toBe(200);
+  expect(resStart.body.status).toBe("STARTED");
+
+  const flowRunId = resStart.body.flowRunId;
+  expect(flowRunId).toBeDefined();
+
+  // Wait for the flow to complete
+  const completedFlow = await flows.inputsTask
+    .withAuthToken(token)
+    .untilFinished(flowRunId);
+
+  expect(completedFlow.status).toBe("COMPLETED");
+
+  // The flow returns the inputs as data, so we can verify the values were passed correctly
+  // The flow implementation also has runtime type assertions that would fail if types are wrong
+  // Note: dates come back as Date objects due to the testing-runtime's JSON reviver
+  expect(completedFlow.data).toEqual({
+    textField: "hello world",
+    numberField: 42,
+    booleanField: true,
+    dateField: new Date("2025-07-15T00:00:00.000Z"),
+    timestampField: new Date("2025-07-15T14:30:00.000Z"),
+    decimalField: 123.456,
+    enumField: "High",
+    optionalTextField: "optional value",
+  });
+});
+
+test("tasks - flow receives null for optional fields", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  const resCreate = await createTask({
+    topic: "InputsTask",
+    body: {
+      data: {
+        textField: "test",
+        numberField: 1,
+        booleanField: false,
+        dateField: "2025-01-01",
+        timestampField: "2025-01-01T00:00:00.000Z",
+        decimalField: 0.5,
+        enumField: "Low",
+        // optionalTextField is omitted
+      },
+    },
+    token: token,
+  });
+  expect(resCreate.status).toBe(200);
+  const taskId = resCreate.body.id;
+
+  const resNext = await nextTask({ topic: "InputsTask", token: token });
+  expect(resNext.status).toBe(200);
+
+  const resStart = await startTask({
+    topic: "InputsTask",
+    token: token,
+    id: taskId,
+  });
+  expect(resStart.status).toBe(200);
+
+  const flowRunId = resStart.body.flowRunId;
+
+  const completedFlow = await flows.inputsTask
+    .withAuthToken(token)
+    .untilFinished(flowRunId);
+
+  expect(completedFlow.status).toBe("COMPLETED");
+  expect(completedFlow.data.optionalTextField).toBeNull();
+});
+
 async function getToken({ email }) {
   const response = await fetch(
     process.env.KEEL_TESTING_AUTH_API_URL + "/token",
