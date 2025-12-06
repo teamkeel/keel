@@ -356,7 +356,6 @@ func StartTask(ctx context.Context, pbTask *proto.Task, id string, identityID st
 		case flows.StatusFailed, flows.StatusCancelled:
 			return startFlow(ctx, pbTask, task, identityID)
 		}
-
 	}
 
 	return task, nil
@@ -676,7 +675,7 @@ func NextTask(ctx context.Context, pbTask *proto.Task, identityID string) (task 
 	return result, nil
 }
 
-// startFlow starts a flow for the given task
+// startFlow starts a flow for the given task.
 func startFlow(ctx context.Context, pbTask *proto.Task, task *Task, identityID string) (*Task, error) {
 	entityID, err := getTaskEntityID(ctx, pbTask, task.ID)
 	if err != nil {

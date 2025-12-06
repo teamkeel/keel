@@ -384,7 +384,7 @@ func resetSteps(ctx context.Context, runID string, deleteSteps []string, lastSte
 	})
 }
 
-// completeRun will complete a flow run
+// completeRun will complete a flow run.
 func completeRun(ctx context.Context, runID string, config any, data any) (*Run, error) {
 	database, err := db.GetDatabase(ctx)
 	if err != nil {
@@ -416,7 +416,6 @@ func completeRun(ctx context.Context, runID string, config any, data any) (*Run,
 
 // completeTaskForFlowRun finds any task associated with this flow run and marks it as completed.
 func completeTaskForFlowRun(ctx context.Context, flowRunID string) error {
-
 	database, err := db.GetDatabase(ctx)
 	if err != nil {
 		return err
@@ -474,7 +473,7 @@ func completeTaskForFlowRun(ctx context.Context, flowRunID string) error {
 	})
 }
 
-// newRun will create a new flow run with the given input (but will not start the orchestration process)
+// newRun will create a new flow run with the given input (but will not start the orchestration process).
 func newRun(ctx context.Context, flow *proto.Flow, inputs any, traceparent string, identityID *string) (*Run, error) {
 	if flow == nil {
 		return nil, fmt.Errorf("invalid flow")
