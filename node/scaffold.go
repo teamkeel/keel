@@ -127,23 +127,17 @@ export default AfterIdentityCreated(async (ctx) => {
 	}
 
 	for _, flow := range schema.GetFlows() {
-		path := filepath.Join(FlowsDir, fmt.Sprintf("%s.ts", casing.ToLowerCamel(flow.GetName())))
+		subdir := FlowsDir
+		if flow.GetTaskName() != nil {
+			subdir = TasksDir
+		}
+
+		path := filepath.Join(subdir, fmt.Sprintf("%s.ts", casing.ToLowerCamel(flow.GetName())))
 		_, err := os.Stat(filepath.Join(dir, path))
 		if os.IsNotExist(err) {
 			generatedFiles = append(generatedFiles, &codegen.GeneratedFile{
 				Path:     path,
 				Contents: writeFlowWrapper(flow),
-			})
-		}
-	}
-
-	for _, task := range schema.GetTasks() {
-		path := filepath.Join(TasksDir, fmt.Sprintf("%s.ts", casing.ToLowerCamel(task.GetFlow().GetName())))
-		_, err := os.Stat(filepath.Join(dir, path))
-		if os.IsNotExist(err) {
-			generatedFiles = append(generatedFiles, &codegen.GeneratedFile{
-				Path:     path,
-				Contents: writeFlowWrapper(task.GetFlow()),
 			})
 		}
 	}
