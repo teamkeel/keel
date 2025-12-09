@@ -263,6 +263,20 @@ func Handler(s *proto.Schema) common.HandlerFunc {
 				}
 
 				return common.NewJsonResponse(http.StatusOK, task, nil)
+			case "unassign":
+				task, err := tasks.UnassignTask(ctx, topic, pathParts[2], identityID)
+				if err != nil {
+					if errors.Is(err, tasks.ErrTaskNotFound) {
+						return httpjson.NewErrorResponse(ctx, common.NewNotFoundError("Not found"), nil)
+					}
+					if errors.Is(err, tasks.ErrCannotUnassignResolvedTask) {
+						return httpjson.NewErrorResponse(ctx, common.NewValidationError(err.Error()), nil)
+					}
+
+					return httpjson.NewErrorResponse(ctx, err, nil)
+				}
+
+				return common.NewJsonResponse(http.StatusOK, task, nil)
 			}
 		}
 

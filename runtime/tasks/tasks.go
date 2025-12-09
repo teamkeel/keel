@@ -136,6 +136,7 @@ func (ff *filterFields) Parse(inputs map[string]any) {
 }
 
 var ErrTaskNotFound = errors.New("task not found")
+var ErrCannotUnassignResolvedTask = errors.New("cannot unassign a completed or cancelled task")
 
 // getTask returns the task with the given ID and topic.
 func getTask(ctx context.Context, pbTask *proto.Task, id string) (*Task, error) {
@@ -541,6 +542,66 @@ func CancelTask(ctx context.Context, pbTask *proto.Task, id string, identityID s
 		return tx.Save(TaskStatus{
 			TaskID: task.ID,
 			Status: StatusCancelled,
+			SetBy:  identityID,
+		}).Error
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return
+}
+
+// UnassignTask removes the assignment from a task, making it available on the queue again.
+// A completed or cancelled task cannot be unassigned.
+func UnassignTask(ctx context.Context, pbTask *proto.Task, id string, identityID string) (task *Task, err error) {
+	ctx, span := tracer.Start(ctx, "UnassignTask")
+	defer span.End()
+
+	defer func() {
+		if err != nil {
+			span.RecordError(err, trace.WithStackTrace(true))
+			span.SetStatus(codes.Error, err.Error())
+		}
+	}()
+
+	task, err = getTask(ctx, pbTask, id)
+	if err != nil {
+		return nil, err
+	}
+
+	// if task is completed or cancelled, return error
+	if task.Status == StatusCompleted || task.Status == StatusCancelled {
+		return nil, ErrCannotUnassignResolvedTask
+	}
+
+	dbase, err := db.GetDatabase(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	err = dbase.GetDB().Transaction(func(tx *gorm.DB) error {
+		errTx := tx.
+			Model(&task).
+			Clauses(clause.Returning{}).
+			Where("name = ? AND id = ?", pbTask.GetName(), id).
+			Updates(map[string]any{
+				"status":      StatusNew,
+				"assigned_to": nil,
+				"assigned_at": nil,
+			}).
+			Error
+		if errTx != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return ErrTaskNotFound
+			} else {
+				return errTx
+			}
+		}
+
+		return tx.Save(TaskStatus{
+			TaskID: task.ID,
+			Status: StatusNew,
 			SetBy:  identityID,
 		}).Error
 	})

@@ -43,6 +43,8 @@ func GenerateTasks(ctx context.Context, schema *proto.Schema) OpenAPI {
 					StringPointer(string(tasks.StatusAssigned)),
 					StringPointer(string(tasks.StatusCompleted)),
 					StringPointer(string(tasks.StatusDeferred)),
+					StringPointer(string(tasks.StatusCancelled)),
+					StringPointer(string(tasks.StatusStarted)),
 				},
 			},
 			"flowRunId":     {Type: []string{"string", "null"}},
@@ -350,6 +352,38 @@ func GenerateTasks(ctx context.Context, schema *proto.Schema) OpenAPI {
 					},
 				},
 			},
+		},
+	}
+
+	spec.Paths["/topics/json/{topic}/tasks/next"] = PathItemObject{
+		Parameters: []ParameterObject{topicParam},
+		Post: &OperationObject{
+			OperationID: StringPointer("nextTask"),
+			Responses:   taskResponse,
+		},
+	}
+
+	spec.Paths["/topics/json/{topic}/tasks/{taskId}/start"] = PathItemObject{
+		Parameters: []ParameterObject{topicParam, taskIdParam},
+		Put: &OperationObject{
+			OperationID: StringPointer("startTask"),
+			Responses:   taskResponse,
+		},
+	}
+
+	spec.Paths["/topics/json/{topic}/tasks/{taskId}/cancel"] = PathItemObject{
+		Parameters: []ParameterObject{topicParam, taskIdParam},
+		Put: &OperationObject{
+			OperationID: StringPointer("cancelTask"),
+			Responses:   taskResponse,
+		},
+	}
+
+	spec.Paths["/topics/json/{topic}/tasks/{taskId}/unassign"] = PathItemObject{
+		Parameters: []ParameterObject{topicParam, taskIdParam},
+		Put: &OperationObject{
+			OperationID: StringPointer("unassignTask"),
+			Responses:   taskResponse,
 		},
 	}
 
