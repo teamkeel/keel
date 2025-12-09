@@ -1,8 +1,4 @@
-task NoFields {
-    @permission(roles: [User])
-}
-
-task DispatchOrder {
+task EmptyFlow {
     fields {
         orderDate Date
         shipByDate Date
@@ -12,8 +8,29 @@ task DispatchOrder {
     @orderBy(shipByDate: asc, orderDate: asc)
 }
 
+enum Priority {
+    Low
+    Medium
+    High
+}
+
+task InputsTask {
+    fields {
+        textField Text
+        numberField Number
+        booleanField Boolean
+        dateField Date
+        timestampField Timestamp
+        decimalField Decimal
+        enumField Priority
+        optionalTextField Text?
+    }
+
+    @permission(roles: [User])
+}
+
 role User {
     domains {
         "keel.xyz"
-    }   
+    }
 }

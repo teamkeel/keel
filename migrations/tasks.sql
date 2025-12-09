@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS "keel"."task_status" (
 	"id" text NOT NULL DEFAULT ksuid() PRIMARY KEY,
 	"keel_task_id" TEXT NOT NULL REFERENCES "keel"."task" ("id") ON UPDATE CASCADE ON DELETE CASCADE,
 	"status" TEXT NOT NULL,
+	"flow_run_id" TEXT NULL REFERENCES "keel"."flow_run" ("id") ON UPDATE CASCADE ON DELETE SET NULL,
 	"assigned_to" TEXT REFERENCES "public"."identity" ("id") ON UPDATE CASCADE ON DELETE SET NULL,
 	"created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
 	"set_by" TEXT NOT NULL REFERENCES "public"."identity" ("id") ON UPDATE CASCADE ON DELETE RESTRICT
@@ -25,9 +26,20 @@ CREATE TABLE IF NOT EXISTS "keel"."task_status" (
 
 DO $$
 BEGIN
+	-- Add flow_run_id column to task_status if it doesn't exist
 	IF NOT EXISTS (
-		SELECT 1 FROM pg_indexes 
-		WHERE indexname = 'tasks_flow_run_id_idx' 
+		SELECT 1 FROM information_schema.columns
+		WHERE table_schema = 'keel'
+		AND table_name = 'task_status'
+		AND column_name = 'flow_run_id'
+	) THEN
+		ALTER TABLE "keel"."task_status"
+		ADD COLUMN "flow_run_id" TEXT NULL REFERENCES "keel"."flow_run" ("id") ON UPDATE CASCADE ON DELETE SET NULL;
+	END IF;
+
+	IF NOT EXISTS (
+		SELECT 1 FROM pg_indexes
+		WHERE indexname = 'tasks_flow_run_id_idx'
 		AND schemaname = 'keel'
 	) THEN
 		CREATE INDEX "tasks_flow_run_id_idx" ON "keel"."task" USING BTREE ("flow_run_id");

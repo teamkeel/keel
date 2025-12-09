@@ -137,6 +137,10 @@ var toInt = func(value any) (int, error) {
 	switch t := value.(type) {
 	case int:
 		return t, nil
+	case int32:
+		return int(t), nil
+	case int64:
+		return int(t), nil
 	case float32:
 		return int(t), nil
 	case float64:
@@ -151,6 +155,10 @@ var toInt = func(value any) (int, error) {
 var toFloat = func(value any) (float64, error) {
 	switch t := value.(type) {
 	case int:
+		return float64(t), nil
+	case int32:
+		return float64(t), nil
+	case int64:
 		return float64(t), nil
 	case float32:
 		return float64(t), nil

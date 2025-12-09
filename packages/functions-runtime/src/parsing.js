@@ -2,16 +2,28 @@ import { Duration } from "./Duration";
 import { InlineFile, File } from "./File";
 import { isPlainObject } from "./type-utils";
 
+// ISO date format regex - matches both Date (YYYY-MM-DD) and Timestamp (YYYY-MM-DDTHH:mm:ss.sssZ)
+const dateFormat =
+  /^\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?)?$/;
+
 // parseInputs takes a set of inputs and creates objects for the ones that are of a complex type.
 //
 // inputs that are objects and contain a "__typename" field are resolved to instances of the complex type
 // they represent.
+// Date strings (ISO format) are converted to JavaScript Date objects.
 function parseInputs(inputs) {
   if (inputs != null && typeof inputs === "object") {
     for (const k of Object.keys(inputs)) {
-      if (inputs[k] !== null && typeof inputs[k] === "object") {
-        if (Array.isArray(inputs[k])) {
-          inputs[k] = inputs[k].map((item) => {
+      const value = inputs[k];
+      if (value === null) {
+        continue;
+      }
+      // Handle date strings
+      if (typeof value === "string" && dateFormat.test(value)) {
+        inputs[k] = new Date(value);
+      } else if (typeof value === "object") {
+        if (Array.isArray(value)) {
+          inputs[k] = value.map((item) => {
             if (item && typeof item === "object") {
               if ("__typename" in item) {
                 return parseComplexInputType(item);
@@ -19,12 +31,16 @@ function parseInputs(inputs) {
               // Recursively parse nested objects in arrays
               return parseInputs(item);
             }
+            // Handle date strings in arrays
+            if (typeof item === "string" && dateFormat.test(item)) {
+              return new Date(item);
+            }
             return item;
           });
-        } else if ("__typename" in inputs[k]) {
-          inputs[k] = parseComplexInputType(inputs[k]);
+        } else if ("__typename" in value) {
+          inputs[k] = parseComplexInputType(value);
         } else {
-          inputs[k] = parseInputs(inputs[k]);
+          inputs[k] = parseInputs(value);
         }
       }
     }

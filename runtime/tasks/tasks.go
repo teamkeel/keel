@@ -13,7 +13,6 @@ import (
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/flows"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm"
@@ -30,6 +29,7 @@ const (
 	StatusDeferred  Status = "DEFERRED"
 	StatusCompleted Status = "COMPLETED"
 	StatusCancelled Status = "CANCELLED"
+	StatusStarted   Status = "STARTED"
 )
 
 // EntityFieldNameTaskID is the field name used in the entity table to link to a keel task.
@@ -61,6 +61,7 @@ type TaskStatus struct {
 	ID         string    `gorm:"column:id;primaryKey;->" json:"id"`
 	TaskID     string    `gorm:"column:keel_task_id"     json:"taskId"`
 	Status     Status    `gorm:"column:status"           json:"status"`
+	FlowRunID  *string   `gorm:"column:flow_run_id"      json:"flowRunId,omitempty"`
 	AssignedTo *string   `gorm:"column:assigned_to"      json:"assignedTo,omitempty"`
 	SetBy      string    `gorm:"column:set_by"           json:"setBy"`
 	CreatedAt  time.Time `gorm:"column:created_at;->"    json:"createdAt"`
@@ -159,29 +160,44 @@ func getTask(ctx context.Context, pbTask *proto.Task, id string) (*Task, error) 
 	return &task, nil
 }
 
-// getTaskEntityID returns the ID of the entity holding the data relating to this task.
-func getTaskEntityID(ctx context.Context, pbTask *proto.Task, id string) (*string, error) {
+// getTaskEntityData returns the data fields for the task entity as a map with camelCase keys.
+func getTaskEntityData(ctx context.Context, pbTask *proto.Task, taskID string) (map[string]any, error) {
 	dbase, err := db.GetDatabase(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	var entityID *string
+	// Build select columns from task fields
+	var columns []string
+	for _, field := range pbTask.GetFields() {
+		columns = append(columns, strcase.ToSnake(field.GetName()))
+	}
 
+	// If no fields defined, return empty map
+	if len(columns) == 0 {
+		return map[string]any{}, nil
+	}
+
+	var result map[string]any
 	err = dbase.GetDB().
 		Table(strcase.ToSnake(pbTask.GetName())).
-		Select("id").
-		Where(fmt.Sprintf("%s = ?", EntityFieldNameTaskID), id).
-		Scan(&entityID).Error
+		Select(columns).
+		Where(fmt.Sprintf("%s = ?", EntityFieldNameTaskID), taskID).
+		Take(&result).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
+			return map[string]any{}, nil
 		}
-
 		return nil, err
 	}
 
-	return entityID, nil
+	// Convert snake_case keys to camelCase to match schema field names
+	data := make(map[string]any)
+	for key, value := range result {
+		data[strcase.ToLowerCamel(key)] = value
+	}
+
+	return data, nil
 }
 
 // getTaskQueue will retrieve the queue of tasks for the given topic.
@@ -254,9 +270,9 @@ func GetTaskQueue(ctx context.Context, pbTask *proto.Task, inputs map[string]any
 	return
 }
 
-// CreateTask creates a new task and returns it.
-func CreateTask(ctx context.Context, pbTask *proto.Task, identityID string, deferUntil *time.Time, data map[string]any) (task *Task, err error) {
-	ctx, span := tracer.Start(ctx, "CreateTask")
+// NewTask creates a new task and returns it.
+func NewTask(ctx context.Context, pbTask *proto.Task, identityID string, deferUntil *time.Time, data map[string]any) (task *Task, err error) {
+	ctx, span := tracer.Start(ctx, "NewTask")
 	defer span.End()
 
 	defer func() {
@@ -316,8 +332,8 @@ func CreateTask(ctx context.Context, pbTask *proto.Task, identityID string, defe
 	return
 }
 
-// StartTask triggers a flow run for the given task and assigns the run id to it.
-func StartTask(ctx context.Context, pbTask *proto.Task, id string) (task *Task, err error) {
+// StartTask creates and runs a flow for the given task.
+func StartTask(ctx context.Context, pbTask *proto.Task, id string, identityID string) (task *Task, err error) {
 	ctx, span := tracer.Start(ctx, "StartTask")
 	defer span.End()
 
@@ -333,53 +349,31 @@ func StartTask(ctx context.Context, pbTask *proto.Task, id string) (task *Task, 
 		return nil, err
 	}
 
-	// if task already completed, return it
 	if task.isCompleted() {
-		return task, nil
+		return nil, errors.New("task already completed")
 	}
 
-	// if the task already has a flow run, cancel that previous run
+	// if there is no flow associated, then start a new flow
+	if task.FlowRunID == nil {
+		return startFlow(ctx, pbTask, task, identityID)
+	}
+
 	if task.FlowRunID != nil {
-		if _, err := flows.CancelFlowRun(ctx, *task.FlowRunID); err != nil {
-			// record error on trace
-			span.AddEvent("errors", trace.WithAttributes(attribute.String("error", err.Error())))
+		// get the current flow status
+		flowRun, err := flows.GetFlowRunState(ctx, *task.FlowRunID)
+		if err != nil {
+			return nil, err
+		}
+
+		switch flowRun.Status {
+		case flows.StatusNew, flows.StatusRunning, flows.StatusAwaitingInput, flows.StatusCompleted:
+			return task, nil
+		case flows.StatusFailed, flows.StatusCancelled:
+			return startFlow(ctx, pbTask, task, identityID)
 		}
 	}
 
-	// retrieve the task entity's id
-	entityID, err := getTaskEntityID(ctx, pbTask, id)
-	if err != nil {
-		return nil, err
-	}
-
-	flowInputs := map[string]any{}
-	if entityID != nil {
-		flowInputs["entityId"] = *entityID
-	}
-
-	// start the flow
-	run, err := flows.StartFlow(ctx, pbTask.GetFlow(), flowInputs)
-	if err != nil {
-		return nil, err
-	}
-
-	// set the flow run id on the task
-	dbase, err := db.GetDatabase(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	err = dbase.GetDB().
-		Model(&task).
-		Clauses(clause.Returning{}).
-		Where("name = ? AND id = ?", pbTask.GetName(), id).
-		Updates(Task{FlowRunID: &run.ID}).
-		Error
-	if err != nil {
-		return nil, err
-	}
-
-	return
+	return task, nil
 }
 
 // CompleteTask marks the given task as completed and returns it.
@@ -426,7 +420,6 @@ func CompleteTask(ctx context.Context, pbTask *proto.Task, id string, identityID
 			}
 		}
 
-		// we now save the status in the log
 		return tx.Save(TaskStatus{
 			TaskID: task.ID,
 			Status: StatusCompleted,
@@ -488,7 +481,6 @@ func DeferTask(ctx context.Context, pbTask *proto.Task, id string, deferUntil ti
 			}
 		}
 
-		// we now save the status in the log
 		return tx.Save(TaskStatus{
 			TaskID: task.ID,
 			Status: StatusDeferred,
@@ -546,7 +538,6 @@ func CancelTask(ctx context.Context, pbTask *proto.Task, id string, identityID s
 			}
 		}
 
-		// we now save the status in the log
 		return tx.Save(TaskStatus{
 			TaskID: task.ID,
 			Status: StatusCancelled,
@@ -604,7 +595,6 @@ func AssignTask(ctx context.Context, pbTask *proto.Task, id string, assignedTo, 
 			}
 		}
 
-		// we now save the status in the log
 		return tx.Save(TaskStatus{
 			TaskID:     task.ID,
 			Status:     StatusAssigned,
@@ -620,6 +610,7 @@ func AssignTask(ctx context.Context, pbTask *proto.Task, id string, assignedTo, 
 }
 
 // NextTask will assign and return the next available task to the authenticated identity.
+// It does not create or start a flow.
 func NextTask(ctx context.Context, pbTask *proto.Task, identityID string) (task *Task, err error) {
 	ctx, span := tracer.Start(ctx, "NextTask")
 	defer span.End()
@@ -697,4 +688,57 @@ func NextTask(ctx context.Context, pbTask *proto.Task, identityID string) (task 
 	}
 
 	return result, nil
+}
+
+// startFlow starts a flow for the given task.
+func startFlow(ctx context.Context, pbTask *proto.Task, task *Task, identityID string) (*Task, error) {
+	flowInputs, err := getTaskEntityData(ctx, pbTask, task.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	newFlowRun, err := flows.NewFlowRun(ctx, pbTask.GetFlow(), flowInputs, &identityID)
+	if err != nil {
+		return nil, err
+	}
+
+	dbase, err := db.GetDatabase(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	err = dbase.GetDB().Transaction(func(tx *gorm.DB) error {
+		errTx := tx.
+			Model(&task).
+			Clauses(clause.Returning{}).
+			Where("name = ? AND id = ?", pbTask.GetName(), task.ID).
+			Updates(Task{FlowRunID: &newFlowRun.ID, Status: StatusStarted}).
+			Error
+		if errTx != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return ErrTaskNotFound
+			} else {
+				return errTx
+			}
+		}
+
+		return tx.Save(TaskStatus{
+			TaskID:     task.ID,
+			Status:     StatusStarted,
+			AssignedTo: &identityID,
+			FlowRunID:  &newFlowRun.ID,
+			SetBy:      identityID,
+		}).Error
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// This must happen after setting the status due to possible race conditions (i.e. if the flow completes instantly)
+	_, err = flows.StartFlow(ctx, pbTask.GetFlow(), newFlowRun.ID, flowInputs)
+	if err != nil {
+		return nil, err
+	}
+
+	return task, nil
 }

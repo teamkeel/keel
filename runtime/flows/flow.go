@@ -402,11 +402,79 @@ func completeRun(ctx context.Context, runID string, config any, data any) (*Run,
 			Config: config,
 		})
 
-	return &run, result.Error
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	// Complete any task associated with this flow run
+	if err := completeTaskForFlowRun(ctx, runID); err != nil {
+		return nil, err
+	}
+
+	return &run, nil
 }
 
-// createRun will create a new flow run with the given input.
-func createRun(ctx context.Context, flow *proto.Flow, inputs any, traceparent string, identityID *string) (*Run, error) {
+// completeTaskForFlowRun finds any task associated with this flow run and marks it as completed.
+func completeTaskForFlowRun(ctx context.Context, flowRunID string) error {
+	database, err := db.GetDatabase(ctx)
+	if err != nil {
+		return err
+	}
+
+	now := time.Now()
+
+	// Find task associated with this flow run
+	var task struct {
+		ID         string  `gorm:"column:id"`
+		Status     string  `gorm:"column:status"`
+		AssignedTo *string `gorm:"column:assigned_to"`
+	}
+	result := database.GetDB().Table("keel.task").Where("flow_run_id = ?", flowRunID).First(&task)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			// No task associated with this flow run - this is fine
+			return nil
+		}
+		return fmt.Errorf("finding task for flow run %s: %w", flowRunID, result.Error)
+	}
+
+	if task.Status == "COMPLETED" {
+		return nil
+	}
+
+	// Use the task's assigned_to as the identity who completed the task
+	setBy := ""
+	if task.AssignedTo != nil {
+		setBy = *task.AssignedTo
+	}
+
+	// Mark task as completed and log status
+	return database.GetDB().Transaction(func(tx *gorm.DB) error {
+		if err := tx.Table("keel.task").
+			Where("id = ?", task.ID).
+			Updates(map[string]any{
+				"status":      "COMPLETED",
+				"resolved_at": &now,
+			}).Error; err != nil {
+			return fmt.Errorf("updating task %s to completed: %w", task.ID, err)
+		}
+
+		if err := tx.Table("keel.task_status").Create(map[string]any{
+			"keel_task_id": task.ID,
+			"status":       "COMPLETED",
+			"flow_run_id":  &flowRunID,
+			"assigned_to":  task.AssignedTo,
+			"set_by":       setBy,
+		}).Error; err != nil {
+			return fmt.Errorf("saving completed status for task %s: %w", task.ID, err)
+		}
+
+		return nil
+	})
+}
+
+// newRun will create a new flow run with the given input (but will not start the orchestration process).
+func newRun(ctx context.Context, flow *proto.Flow, inputs any, traceparent string, identityID *string) (*Run, error) {
 	if flow == nil {
 		return nil, fmt.Errorf("invalid flow")
 	}
