@@ -570,7 +570,6 @@ func UnassignTask(ctx context.Context, pbTask *proto.Task, id string, identityID
 		return nil, err
 	}
 
-	// if task is completed or cancelled, return error
 	if task.Status == StatusCompleted || task.Status == StatusCancelled {
 		return nil, ErrCannotUnassignResolvedTask
 	}
