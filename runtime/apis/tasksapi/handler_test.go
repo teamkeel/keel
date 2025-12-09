@@ -54,7 +54,7 @@ func TestUnassignTask_Success(t *testing.T) {
 	require.NotNil(t, task.AssignedTo)
 
 	// Make unassign request
-	request := makeUnassignRequest(ctx, schema, "TestTask", task.ID, accessToken)
+	request := makeUnassignRequest(ctx, "TestTask", task.ID, accessToken)
 	response, httpResponse, err := handleRuntimeRequest[tasks.Task](schema, request)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, httpResponse.StatusCode)
@@ -92,7 +92,7 @@ func TestUnassignTask_CannotUnassignCompletedTask(t *testing.T) {
 	require.Equal(t, tasks.StatusCompleted, task.Status)
 
 	// Try to unassign the completed task - should fail
-	request := makeUnassignRequest(ctx, schema, "TestTask", task.ID, accessToken)
+	request := makeUnassignRequest(ctx, "TestTask", task.ID, accessToken)
 	errorResponse, httpResponse, err := handleRuntimeRequest[ErrorResponse](schema, request)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
@@ -126,7 +126,7 @@ func TestUnassignTask_CannotUnassignCancelledTask(t *testing.T) {
 	require.Equal(t, tasks.StatusCancelled, task.Status)
 
 	// Try to unassign the cancelled task - should fail
-	request := makeUnassignRequest(ctx, schema, "TestTask", task.ID, accessToken)
+	request := makeUnassignRequest(ctx, "TestTask", task.ID, accessToken)
 	errorResponse, httpResponse, err := handleRuntimeRequest[ErrorResponse](schema, request)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusBadRequest, httpResponse.StatusCode)
@@ -147,7 +147,7 @@ func TestUnassignTask_TaskNotFound(t *testing.T) {
 	require.NoError(t, err)
 
 	// Try to unassign a non-existent task
-	request := makeUnassignRequest(ctx, schema, "TestTask", "non-existent-id", accessToken)
+	request := makeUnassignRequest(ctx, "TestTask", "non-existent-id", accessToken)
 	_, httpResponse, err := handleRuntimeRequest[ErrorResponse](schema, request)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusNotFound, httpResponse.StatusCode)
@@ -176,7 +176,7 @@ func TestUnassignTask_UnassignNewTask(t *testing.T) {
 	require.Equal(t, tasks.StatusNew, task.Status)
 
 	// Unassign a NEW task - should succeed (idempotent)
-	request := makeUnassignRequest(ctx, schema, "TestTask", task.ID, accessToken)
+	request := makeUnassignRequest(ctx, "TestTask", task.ID, accessToken)
 	response, httpResponse, err := handleRuntimeRequest[tasks.Task](schema, request)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, httpResponse.StatusCode)
@@ -212,7 +212,7 @@ type ErrorResponse struct {
 	Message string `json:"message"`
 }
 
-func makeUnassignRequest(ctx context.Context, schema *proto.Schema, topicName string, taskID string, accessToken string) *http.Request {
+func makeUnassignRequest(ctx context.Context, topicName string, taskID string, accessToken string) *http.Request {
 	request := httptest.NewRequest(http.MethodPut, "http://mykeelapp.keel.so/topics/json/"+topicName+"/tasks/"+taskID+"/unassign", nil)
 	request.Header.Add("Content-Type", "application/json")
 	request.Header.Add("Authorization", "Bearer "+accessToken)
