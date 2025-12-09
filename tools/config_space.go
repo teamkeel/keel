@@ -5,15 +5,15 @@ import toolsproto "github.com/teamkeel/keel/tools/proto"
 type SpaceConfigs []*SpaceConfig
 
 type SpaceConfig struct {
-	ID           string
-	Name         string
-	Colour       *SpaceColour
-	Icon         string
-	DisplayOrder int32
-	Actions      LinkConfigs
-	Groups       SpaceGroups
-	Links        ExternalLinks
-	Metrics      SpaceMetrics
+	ID           string        `json:"id"`
+	Name         string        `json:"name"`
+	Colour       *SpaceColour  `json:"colour"`
+	Icon         string        `json:"icon"`
+	DisplayOrder int32         `json:"display_order"`
+	Actions      LinkConfigs   `json:"actions"`
+	Groups       SpaceGroups   `json:"groups"`
+	Links        ExternalLinks `json:"links"`
+	Metrics      SpaceMetrics  `json:"metrics"`
 }
 
 type SpaceColour string
@@ -57,11 +57,11 @@ func (s SpaceConfigs) toProto() []*toolsproto.Space {
 type SpaceGroups []*SpaceGroup
 
 type SpaceGroup struct {
-	ID           string
-	Name         string
-	Description  string
-	DisplayOrder int32
-	Actions      LinkConfigs
+	ID           string      `json:"id"`
+	Name         string      `json:"name"`
+	Description  string      `json:"description"`
+	DisplayOrder int32       `json:"display_order"`
+	Actions      LinkConfigs `json:"actions"`
 }
 
 func (g SpaceGroups) toProto() []*toolsproto.SpaceGroup {
@@ -82,10 +82,10 @@ func (g SpaceGroups) toProto() []*toolsproto.SpaceGroup {
 type SpaceMetrics []*SpaceMetric
 
 type SpaceMetric struct {
-	Label         string
-	ToolID        string
-	FacetLocation string
-	DisplayOrder  int32
+	Label         string `json:"label"`
+	ToolID        string `json:"tool_id"`
+	FacetLocation string `json:"facet_location"`
+	DisplayOrder  int32  `json:"display_order"`
 }
 
 func (m SpaceMetrics) toProto() []*toolsproto.SpaceMetric {
