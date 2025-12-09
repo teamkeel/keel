@@ -291,6 +291,44 @@ func (s *Server) ConfigureFields(ctx context.Context, req *rpc.ConfigureFieldsRe
 	}, nil
 }
 
+func (s *Server) ListPrinters(ctx context.Context, req *rpc.ListPrintersRequest) (*rpc.ListPrintersResponse, error) {
+	config, err := GetConfig(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := rpc.ListPrintersResponse{}
+	if config != nil && config.Hardware != nil {
+		for _, p := range config.Hardware.Printers {
+			resp.Printers = append(resp.Printers, &rpc.Printer{
+				Name: p.Name,
+			})
+		}
+	}
+
+	return &resp, nil
+}
+
+// List all the tool spaces defined in this repo.
+func (s *Server) ListToolSpaces(ctx context.Context, req *rpc.ListToolSpacesRequest) (*rpc.ListToolSpacesResponse, error) {
+	toolsSvc, err := s.makeToolsService(ctx)
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+
+	spaces, err := toolsSvc.GetSpaces(ctx)
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+	if spaces == nil {
+		return nil, nil
+	}
+
+	return &rpc.ListToolSpacesResponse{
+		Spaces: spaces,
+	}, nil
+}
+
 // makeToolsService will create a tools service for this server's request (taking in the schema and config from context).
 func (s *Server) makeToolsService(ctx context.Context) (*tools.Service, error) {
 	schema, err := GetSchema(ctx)
@@ -309,22 +347,4 @@ func (s *Server) makeToolsService(ctx context.Context) (*tools.Service, error) {
 	}
 
 	return tools.NewService(tools.WithFileStorage(projectDir), tools.WithConfig(config), tools.WithSchema(schema)), nil
-}
-
-func (s *Server) ListPrinters(ctx context.Context, req *rpc.ListPrintersRequest) (*rpc.ListPrintersResponse, error) {
-	config, err := GetConfig(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	resp := rpc.ListPrintersResponse{}
-	if config != nil && config.Hardware != nil {
-		for _, p := range config.Hardware.Printers {
-			resp.Printers = append(resp.Printers, &rpc.Printer{
-				Name: p.Name,
-			})
-		}
-	}
-
-	return &resp, nil
 }

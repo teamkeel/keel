@@ -725,3 +725,46 @@ message Field {
 	optional bool image_preview = 9;
 }
 
+// A space is a collection of grouped tool links (Action), metrics and external links.
+message Space {
+	enum Colour {
+		green = 0;
+		blue = 1;
+		yellow = 2;
+		coral = 3;
+		purple = 4;
+	}
+
+	string id = 1;
+	string name = 2;
+	string icon = 3;
+	Colour colour = 4;
+
+	// Top Level actions
+	repeated ToolLink actions = 5;
+
+	// Groups containing actions
+	repeated SpaceGroup groups = 6;
+
+	repeated ExternalLink links = 7;
+
+	repeated SpaceMetric metrics = 8;
+}
+
+
+message SpaceGroup {
+	string id = 1;
+	StringTemplate name = 2;
+	optional StringTemplate description = 3; 
+	int32 display_order = 4;
+
+	repeated ToolLink actions = 5;
+}
+
+message SpaceMetric {
+	StringTemplate label = 1;
+	string tool_id = 2;
+	JsonPath facet_location = 3;
+	int32 display_order = 4;
+}
+

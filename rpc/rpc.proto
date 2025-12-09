@@ -96,6 +96,9 @@ service API {
 
 	// List configured printers
 	rpc ListPrinters(ListPrintersRequest) returns (ListPrintersResponse);
+
+	// List all the tool spaces defined in this repo.
+	rpc ListToolSpaces(ListToolSpacesRequest) returns (ListToolSpacesResponse);
 }
 
 message ListToolsRequest {}
@@ -153,4 +156,11 @@ message ListPrintersResponse {
 
 message Printer {
 	string name = 1;
+}
+
+message ListToolSpacesRequest {
+}
+
+message ListToolSpacesResponse {
+	repeated tools.Space spaces = 1;
 }

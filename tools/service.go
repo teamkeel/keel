@@ -339,3 +339,16 @@ func (s *Service) ConfigureFields(ctx context.Context, updated []*toolsproto.Fie
 	// retrieve newly configured fields
 	return s.GetFields(ctx)
 }
+
+// GetSpaces returns the configured tool spaces for this project.
+func (s *Service) GetSpaces(ctx context.Context) ([]*toolsproto.Space, error) {
+	// load existing configured spaces
+	// // userConfig, err := s.load()
+	// if err != nil {
+	// 	return nil, fmt.Errorf("loading tool configs from file: %w", err)
+	// }
+
+	// TODO: load from repo
+
+	return []*toolsproto.Space{}, nil
+}
