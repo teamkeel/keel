@@ -205,7 +205,7 @@ func GenerateFlows(ctx context.Context, schema *proto.Schema) OpenAPI {
 	spec.Paths = map[string]PathItemObject{}
 
 	// Add specific flows endpoints with defined inputs
-	for _, flow := range schema.GetAllFlows() {
+	for _, flow := range schema.GetFlows() {
 		msg := schema.FindMessage(flow.GetInputMessageName())
 		if msg == nil {
 			continue

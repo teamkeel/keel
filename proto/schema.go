@@ -164,7 +164,7 @@ func (s *Schema) FindAction(actionName string) *Action {
 
 // FindFlow finds the flow with the given name. Returns nil if a flow is not found. The matching is case insensitive.
 func (s *Schema) FindFlow(flowName string) *Flow {
-	for _, f := range s.GetAllFlows() {
+	for _, f := range s.GetFlows() {
 		if strings.EqualFold(f.GetName(), flowName) {
 			return f
 		}
@@ -234,7 +234,7 @@ func (s *Schema) FindApiNames(modelName, actionName string) []string {
 // FlowNames returns an array with the names of all flows defined in this schema.
 func (s *Schema) FlowNames() []string {
 	names := []string{}
-	for _, f := range s.GetAllFlows() {
+	for _, f := range s.GetFlows() {
 		names = append(names, f.GetName())
 	}
 
@@ -251,20 +251,9 @@ func (s *Schema) ScheduledFlowNames() []string {
 	return names
 }
 
-// GetAllFlows returns all the flows defined in the schema together with all the flows generated for tasks.
-func (s *Schema) GetAllFlows() []*Flow {
-	flows := s.GetFlows()
-
-	for _, t := range s.GetTasks() {
-		flows = append(flows, t.GetFlow())
-	}
-
-	return flows
-}
-
 // HasFlows indicates if the schema has any flows defined or any tasks that have flows.
 func (s *Schema) HasFlows() bool {
-	return len(s.GetAllFlows()) > 0
+	return len(s.GetFlows()) > 0
 }
 
 // HasScheduledFlows checks if there are any scheduled flows defined.

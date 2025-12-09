@@ -61,7 +61,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["issuer"]
+          "uniqueWith": [
+            "issuer"
+          ]
         },
         {
           "entityName": "Identity",
@@ -98,7 +100,9 @@
             "type": "TYPE_STRING"
           },
           "optional": true,
-          "uniqueWith": ["email"]
+          "uniqueWith": [
+            "email"
+          ]
         },
         {
           "entityName": "Identity",
@@ -358,19 +362,20 @@
           "optional": true
         }
       ]
-    },
+    }
+  ],
+  "flows": [
     {
-      "name": "TaskFlowInputMessage",
-      "fields": [
+      "name": "NewOrder",
+      "inputMessageName": "NewOrderMessage",
+      "permissions": [
         {
-          "messageName": "TaskFlowInputMessage",
-          "name": "entityId",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "nullable": true
+          "expression": {
+            "source": "ctx.isAuthenticated"
+          }
         }
-      ]
+      ],
+      "taskName": "NewOrder"
     }
   ],
   "tasks": [
@@ -415,7 +420,9 @@
           "type": {
             "type": "TYPE_STRING"
           },
-          "uniqueWith": ["customerCode"],
+          "uniqueWith": [
+            "customerCode"
+          ],
           "computedExpression": {
             "source": "newOrder.order.orderCode"
           }
@@ -434,7 +441,9 @@
             "type": "TYPE_STRING"
           },
           "unique": true,
-          "uniqueWith": ["orderCode"]
+          "uniqueWith": [
+            "orderCode"
+          ]
         },
         {
           "entityName": "NewOrder",

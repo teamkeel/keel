@@ -1976,7 +1976,7 @@ export declare const MyTask: { <const C extends runtime.FlowConfig>(config: C, f
 export declare const MyTaskWithFields: { <const C extends runtime.FlowConfig>(config: C, fn: runtime.FlowFunction<C, Environment, Secrets, Identity, MyTaskWithFieldsMessage, Hardware>) };`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		for _, f := range s.GetAllFlows() {
+		for _, f := range s.GetFlows() {
 			writeFlowFunctionWrapperType(w, f)
 		}
 	})

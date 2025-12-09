@@ -493,4 +493,7 @@ message Flow {
 
     // The schedule as an crontab expression.
     Schedule schedule = 4;
+
+    // The name of the task that this flow is associated with.
+    google.protobuf.StringValue task_name = 5;
 }
