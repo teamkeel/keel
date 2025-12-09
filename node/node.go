@@ -37,7 +37,7 @@ func HasFunctions(sch *proto.Schema, cfg *config.ProjectConfig) bool {
 
 	hasRoutes := len(sch.GetRoutes()) > 0
 
-	hasFlows := len(sch.GetAllFlows()) > 0
+	hasFlows := len(sch.GetFlows()) > 0
 
 	return hasCustomFunctions || hasHooks || hasJobs || hasSubscribers || hasRoutes || hasFlows
 }
