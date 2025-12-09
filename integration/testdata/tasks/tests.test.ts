@@ -969,6 +969,11 @@ test("tasks - unassign - unassigned task available in queue", async () => {
 test("tasks - unassign - creates NEW status entry", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
+  const identity = await models.identity.findOne({
+    email: "admin@keel.xyz",
+    issuer: "https://keel.so",
+  });
+
   const resCreate = await createTask({
     topic: "EmptyFlow",
     body: {
@@ -1004,9 +1009,21 @@ test("tasks - unassign - creates NEW status entry", async () => {
     .execute();
 
   expect(statusEntries).toHaveLength(3);
+
+  // Initial NEW status from task creation
   expect(statusEntries[0].status).toBe("NEW");
+  expect(statusEntries[0].setBy).toBe(identity!.id);
+  expect(statusEntries[0].assignedTo).toBeNull();
+
+  // ASSIGNED status from next
   expect(statusEntries[1].status).toBe("ASSIGNED");
-  expect(statusEntries[2].status).toBe("NEW"); // From unassign
+  expect(statusEntries[1].setBy).toBe(identity!.id);
+  expect(statusEntries[1].assignedTo).toBe(identity!.id);
+
+  // NEW status from unassign
+  expect(statusEntries[2].status).toBe("NEW");
+  expect(statusEntries[2].setBy).toBe(identity!.id);
+  expect(statusEntries[2].assignedTo).toBeNull();
 });
 
 test("tasks - unassign - can unassign NEW task (no-op)", async () => {
