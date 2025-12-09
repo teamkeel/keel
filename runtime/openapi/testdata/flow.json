@@ -1,2726 +1,2421 @@
 {
-    "openapi": "3.1.0",
-    "info": {
-        "title": "FlowsAPI",
-        "version": "1"
-    },
-    "paths": {
-        "/flows/json": {
-            "get": {
-                "operationId": "listFlows",
-                "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "flows": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "object",
-                                                "properties": {
-                                                    "name": {
-                                                        "type": "string"
-                                                    },
-                                                    "schedule": {
-                                                        "type": [
-                                                            "string",
-                                                            "null"
-                                                        ]
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": [
-                                                "object",
-                                                "null"
-                                            ],
-                                            "properties": {
-                                                "errors": {
-                                                    "type": "array",
-                                                    "properties": {
-                                                        "error": {
-                                                            "type": "string"
-                                                        },
-                                                        "field": {
-                                                            "type": "string"
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        },
-                                        "message": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/flows/json/AnotherWorkflow": {
-            "post": {
-                "operationId": "AnotherWorkflow",
-                "requestBody": {
-                    "description": "AnotherWorkflow Request",
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "age": {
-                                        "type": "number"
-                                    }
-                                },
-                                "unevaluatedProperties": false,
-                                "required": [
-                                    "age"
-                                ]
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Flow Response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Run"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Flow Response Errors",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": [
-                                                "object",
-                                                "null"
-                                            ],
-                                            "properties": {
-                                                "errors": {
-                                                    "type": "array",
-                                                    "properties": {
-                                                        "error": {
-                                                            "type": "string"
-                                                        },
-                                                        "field": {
-                                                            "type": "string"
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        },
-                                        "message": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/flows/json/MyWorkflow": {
-            "post": {
-                "operationId": "MyWorkflow",
-                "requestBody": {
-                    "description": "MyWorkflow Request",
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "age": {
-                                        "type": "number"
-                                    },
-                                    "name": {
-                                        "type": "string"
-                                    }
-                                },
-                                "unevaluatedProperties": false,
-                                "required": [
-                                    "name",
-                                    "age"
-                                ]
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Flow Response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Run"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Flow Response Errors",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": [
-                                                "object",
-                                                "null"
-                                            ],
-                                            "properties": {
-                                                "errors": {
-                                                    "type": "array",
-                                                    "properties": {
-                                                        "error": {
-                                                            "type": "string"
-                                                        },
-                                                        "field": {
-                                                            "type": "string"
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        },
-                                        "message": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/flows/json/myRuns": {
-            "get": {
-                "operationId": "getMyRuns",
-                "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/Run"
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": [
-                                                "object",
-                                                "null"
-                                            ],
-                                            "properties": {
-                                                "errors": {
-                                                    "type": "array",
-                                                    "properties": {
-                                                        "error": {
-                                                            "type": "string"
-                                                        },
-                                                        "field": {
-                                                            "type": "string"
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        },
-                                        "message": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "parameters": [
-                {
-                    "name": "limit",
-                    "in": "query",
-                    "required": false,
-                    "description": "",
-                    "schema": {
-                        "type": "number"
-                    }
-                },
-                {
-                    "name": "before",
-                    "in": "query",
-                    "required": false,
-                    "description": "",
-                    "schema": {
-                        "type": "string"
-                    }
-                },
-                {
-                    "name": "after",
-                    "in": "query",
-                    "required": false,
-                    "description": "",
-                    "schema": {
-                        "type": "string"
-                    }
-                },
-                {
-                    "name": "status",
-                    "in": "query",
-                    "required": false,
-                    "description": "",
-                    "schema": {
-                        "type": "array",
-                        "items": {
-                            "type": "string",
-                            "enum": [
-                                "NEW",
-                                "RUNNING",
-                                "AWAITING_INPUT",
-                                "FAILED",
-                                "COMPLETED",
-                                "CANCELLED"
-                            ]
-                        }
-                    },
-                    "style": "form",
-                    "explode": false
-                }
-            ]
-        },
-        "/flows/json/stats": {
-            "get": {
-                "operationId": "getRunsStats",
-                "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/Stats"
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": [
-                                                "object",
-                                                "null"
-                                            ],
-                                            "properties": {
-                                                "errors": {
-                                                    "type": "array",
-                                                    "properties": {
-                                                        "error": {
-                                                            "type": "string"
-                                                        },
-                                                        "field": {
-                                                            "type": "string"
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        },
-                                        "message": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "parameters": [
-                {
-                    "name": "before",
-                    "in": "query",
-                    "required": false,
-                    "description": "",
-                    "schema": {
-                        "type": "string",
-                        "format": "date-time"
-                    }
-                },
-                {
-                    "name": "after",
-                    "in": "query",
-                    "required": false,
-                    "description": "",
-                    "schema": {
-                        "type": "string",
-                        "format": "date-time"
-                    }
-                },
-                {
-                    "name": "interval",
-                    "in": "query",
-                    "required": false,
-                    "description": "If supplied, the results will include a time series with buckets defined by this interval period.",
-                    "schema": {
-                        "type": "string",
-                        "enum": [
-                            "daily",
-                            "hourly"
-                        ]
-                    }
-                }
-            ]
-        },
-        "/flows/json/{flow}": {
-            "post": {
-                "operationId": "startFlow",
-                "requestBody": {
-                    "description": "",
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "additionalProperties": true
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Flow Response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Run"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Flow Response Errors",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": [
-                                                "object",
-                                                "null"
-                                            ],
-                                            "properties": {
-                                                "errors": {
-                                                    "type": "array",
-                                                    "properties": {
-                                                        "error": {
-                                                            "type": "string"
-                                                        },
-                                                        "field": {
-                                                            "type": "string"
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        },
-                                        "message": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "get": {
-                "operationId": "getFlow",
-                "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/Run"
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": [
-                                                "object",
-                                                "null"
-                                            ],
-                                            "properties": {
-                                                "errors": {
-                                                    "type": "array",
-                                                    "properties": {
-                                                        "error": {
-                                                            "type": "string"
-                                                        },
-                                                        "field": {
-                                                            "type": "string"
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        },
-                                        "message": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "parameters": [
-                {
-                    "name": "limit",
-                    "in": "query",
-                    "required": false,
-                    "description": "",
-                    "schema": {
-                        "type": "number"
-                    }
-                },
-                {
-                    "name": "before",
-                    "in": "query",
-                    "required": false,
-                    "description": "",
-                    "schema": {
-                        "type": "string"
-                    }
-                },
-                {
-                    "name": "after",
-                    "in": "query",
-                    "required": false,
-                    "description": "",
-                    "schema": {
-                        "type": "string"
-                    }
-                },
-                {
-                    "name": "flow",
-                    "in": "path",
-                    "required": true,
-                    "description": "",
-                    "schema": {
-                        "type": "string"
-                    }
-                }
-            ]
-        },
-        "/flows/json/{flow}/{runId}": {
-            "get": {
-                "operationId": "getFlowRun",
-                "responses": {
-                    "200": {
-                        "description": "Flow Response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Run"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Flow Response Errors",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": [
-                                                "object",
-                                                "null"
-                                            ],
-                                            "properties": {
-                                                "errors": {
-                                                    "type": "array",
-                                                    "properties": {
-                                                        "error": {
-                                                            "type": "string"
-                                                        },
-                                                        "field": {
-                                                            "type": "string"
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        },
-                                        "message": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "parameters": [
-                {
-                    "name": "flow",
-                    "in": "path",
-                    "required": true,
-                    "description": "",
-                    "schema": {
-                        "type": "string"
-                    }
-                },
-                {
-                    "name": "runId",
-                    "in": "path",
-                    "required": true,
-                    "description": "",
-                    "schema": {
-                        "type": "string"
-                    }
-                }
-            ]
-        },
-        "/flows/json/{flow}/{runId}/back": {
-            "post": {
-                "operationId": "backFlowRun",
-                "responses": {
-                    "200": {
-                        "description": "Flow Response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Run"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Flow Response Errors",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": [
-                                                "object",
-                                                "null"
-                                            ],
-                                            "properties": {
-                                                "errors": {
-                                                    "type": "array",
-                                                    "properties": {
-                                                        "error": {
-                                                            "type": "string"
-                                                        },
-                                                        "field": {
-                                                            "type": "string"
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        },
-                                        "message": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "parameters": [
-                {
-                    "name": "flow",
-                    "in": "path",
-                    "required": true,
-                    "description": "",
-                    "schema": {
-                        "type": "string"
-                    }
-                },
-                {
-                    "name": "runId",
-                    "in": "path",
-                    "required": true,
-                    "description": "",
-                    "schema": {
-                        "type": "string"
-                    }
-                }
-            ]
-        },
-        "/flows/json/{flow}/{runId}/cancel": {
-            "post": {
-                "operationId": "cancelFlowRun",
-                "responses": {
-                    "200": {
-                        "description": "Flow Response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Run"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Flow Response Errors",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": [
-                                                "object",
-                                                "null"
-                                            ],
-                                            "properties": {
-                                                "errors": {
-                                                    "type": "array",
-                                                    "properties": {
-                                                        "error": {
-                                                            "type": "string"
-                                                        },
-                                                        "field": {
-                                                            "type": "string"
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        },
-                                        "message": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "parameters": [
-                {
-                    "name": "flow",
-                    "in": "path",
-                    "required": true,
-                    "description": "",
-                    "schema": {
-                        "type": "string"
-                    }
-                },
-                {
-                    "name": "runId",
-                    "in": "path",
-                    "required": true,
-                    "description": "",
-                    "schema": {
-                        "type": "string"
-                    }
-                }
-            ]
-        },
-        "/flows/json/{flow}/{runId}/{stepId}": {
-            "put": {
-                "operationId": "putFlowStep",
-                "requestBody": {
-                    "description": "",
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "additionalProperties": true
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Flow Response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Run"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Flow Response Errors",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": [
-                                                "object",
-                                                "null"
-                                            ],
-                                            "properties": {
-                                                "errors": {
-                                                    "type": "array",
-                                                    "properties": {
-                                                        "error": {
-                                                            "type": "string"
-                                                        },
-                                                        "field": {
-                                                            "type": "string"
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        },
-                                        "message": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "parameters": [
-                {
-                    "name": "flow",
-                    "in": "path",
-                    "required": true,
-                    "description": "",
-                    "schema": {
-                        "type": "string"
-                    }
-                },
-                {
-                    "name": "runId",
-                    "in": "path",
-                    "required": true,
-                    "description": "",
-                    "schema": {
-                        "type": "string"
-                    }
-                },
-                {
-                    "name": "stepId",
-                    "in": "path",
-                    "required": true,
-                    "description": "",
-                    "schema": {
-                        "type": "string"
-                    }
-                },
-                {
-                    "name": "action",
-                    "in": "query",
-                    "required": false,
-                    "description": "",
-                    "schema": {
-                        "type": "string"
-                    }
-                }
-            ]
-        },
-        "/flows/json/{flow}/{runId}/{stepId}/callback": {
-            "post": {
-                "operationId": "callback",
-                "requestBody": {
-                    "description": "",
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": [
-                                    "object",
-                                    "string",
-                                    "number",
-                                    "boolean",
-                                    "array"
-                                ],
-                                "additionalProperties": true
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Callback Response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": [
-                                        "object",
-                                        "string",
-                                        "number",
-                                        "boolean",
-                                        "array"
-                                    ],
-                                    "additionalProperties": true
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Callback Response Errors",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": [
-                                                "object",
-                                                "null"
-                                            ],
-                                            "properties": {
-                                                "errors": {
-                                                    "type": "array",
-                                                    "properties": {
-                                                        "error": {
-                                                            "type": "string"
-                                                        },
-                                                        "field": {
-                                                            "type": "string"
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        },
-                                        "message": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "parameters": [
-                {
-                    "name": "flow",
-                    "in": "path",
-                    "required": true,
-                    "description": "",
-                    "schema": {
-                        "type": "string"
-                    }
-                },
-                {
-                    "name": "runId",
-                    "in": "path",
-                    "required": true,
-                    "description": "",
-                    "schema": {
-                        "type": "string"
-                    }
-                },
-                {
-                    "name": "stepId",
-                    "in": "path",
-                    "required": true,
-                    "description": "",
-                    "schema": {
-                        "type": "string"
-                    }
-                },
-                {
-                    "name": "callback",
-                    "in": "query",
-                    "required": true,
-                    "description": "",
-                    "schema": {
-                        "type": "string"
-                    }
-                },
-                {
-                    "name": "element",
-                    "in": "query",
-                    "required": true,
-                    "description": "",
-                    "schema": {
-                        "type": "string"
-                    }
-                }
-            ]
-        }
-    },
-    "components": {
-        "schemas": {
-            "Run": {
-                "type": "object",
-                "properties": {
-                    "config": {
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FlowsAPI",
+    "version": "1"
+  },
+  "paths": {
+    "/flows/json": {
+      "get": {
+        "operationId": "listFlows",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "flows": {
+                      "type": "array",
+                      "items": {
                         "type": "object",
                         "properties": {
-                            "description": {
-                                "type": "string"
-                            },
-                            "stages": {
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "description": {
-                                            "type": "string"
-                                        },
-                                        "initiallyHidden": {
-                                            "type": "boolean"
-                                        },
-                                        "key": {
-                                            "type": "string"
-                                        },
-                                        "name": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "key",
-                                        "name"
-                                    ]
-                                }
-                            },
-                            "title": {
-                                "type": "string"
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "title"
-                        ]
-                    },
-                    "createdAt": {
-                        "type": "string",
-                        "format": "date-time"
+                          "name": {
+                            "type": "string"
+                          },
+                          "schedule": {
+                            "type": ["string", "null"]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
                     },
                     "data": {
-                        "type": [
-                            "object",
-                            "null"
-                        ]
-                    },
-                    "error": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "id": {
-                        "type": "string"
-                    },
-                    "input": {
-                        "type": [
-                            "object",
-                            "null"
-                        ],
-                        "additionalProperties": true
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "startTime": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "startedBy": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "status": {
-                        "type": "string",
-                        "enum": [
-                            "NEW",
-                            "RUNNING",
-                            "AWAITING_INPUT",
-                            "FAILED",
-                            "COMPLETED",
-                            "CANCELLED"
-                        ]
-                    },
-                    "steps": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/Step"
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": {
+                              "type": "string"
+                            },
+                            "field": {
+                              "type": "string"
+                            }
+                          }
                         }
+                      }
                     },
-                    "traceId": {
-                        "type": "string"
-                    },
-                    "updatedAt": {
-                        "type": "string",
-                        "format": "date-time"
+                    "message": {
+                      "type": "string"
                     }
-                },
-                "required": [
-                    "id",
-                    "status",
-                    "name",
-                    "traceId",
-                    "createdAt",
-                    "updatedAt",
-                    "steps",
-                    "config",
-                    "input"
-                ]
-            },
-            "Stats": {
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/flows/json/AnotherWorkflow": {
+      "post": {
+        "operationId": "AnotherWorkflow",
+        "requestBody": {
+          "description": "AnotherWorkflow Request",
+          "content": {
+            "application/json": {
+              "schema": {
                 "type": "object",
                 "properties": {
-                    "activeRuns": {
-                        "type": "number"
+                  "age": {
+                    "type": "number"
+                  }
+                },
+                "unevaluatedProperties": false,
+                "required": ["age"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Flow Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Run"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Flow Response Errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
                     },
-                    "completedToday": {
-                        "type": "number"
-                    },
-                    "errorRate": {
-                        "type": "number"
-                    },
-                    "lastRun": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "timeSeries": {
-                        "type": [
-                            "array",
-                            "null"
-                        ],
-                        "items": {
-                            "$ref": "#/components/schemas/StatsBucket"
+                    "data": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": {
+                              "type": "string"
+                            },
+                            "field": {
+                              "type": "string"
+                            }
+                          }
                         }
+                      }
                     },
-                    "totalRuns": {
-                        "type": "number"
+                    "message": {
+                      "type": "string"
                     }
-                },
-                "required": [
-                    "name",
-                    "lastRun",
-                    "totalRuns",
-                    "errorRate",
-                    "activeRuns",
-                    "completedToday"
-                ]
-            },
-            "StatsBucket": {
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/flows/json/MyWorkflow": {
+      "post": {
+        "operationId": "MyWorkflow",
+        "requestBody": {
+          "description": "MyWorkflow Request",
+          "content": {
+            "application/json": {
+              "schema": {
                 "type": "object",
                 "properties": {
-                    "failedRuns": {
-                        "type": "number"
-                    },
-                    "time": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "totalRuns": {
-                        "type": "number"
-                    }
+                  "age": {
+                    "type": "number"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
                 },
-                "required": [
-                    "time",
-                    "totalRuns",
-                    "failedRunts"
-                ]
-            },
-            "Step": {
+                "unevaluatedProperties": false,
+                "required": ["name", "age"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Flow Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Run"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Flow Response Errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": {
+                              "type": "string"
+                            },
+                            "field": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/flows/json/myRuns": {
+      "get": {
+        "operationId": "getMyRuns",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Run"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": {
+                              "type": "string"
+                            },
+                            "field": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "description": "",
+          "schema": {
+            "type": "number"
+          }
+        },
+        {
+          "name": "before",
+          "in": "query",
+          "required": false,
+          "description": "",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "after",
+          "in": "query",
+          "required": false,
+          "description": "",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "status",
+          "in": "query",
+          "required": false,
+          "description": "",
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "NEW",
+                "RUNNING",
+                "AWAITING_INPUT",
+                "FAILED",
+                "COMPLETED",
+                "CANCELLED"
+              ]
+            }
+          },
+          "style": "form",
+          "explode": false
+        }
+      ]
+    },
+    "/flows/json/stats": {
+      "get": {
+        "operationId": "getRunsStats",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Stats"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": {
+                              "type": "string"
+                            },
+                            "field": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "before",
+          "in": "query",
+          "required": false,
+          "description": "",
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        {
+          "name": "after",
+          "in": "query",
+          "required": false,
+          "description": "",
+          "schema": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        {
+          "name": "interval",
+          "in": "query",
+          "required": false,
+          "description": "If supplied, the results will include a time series with buckets defined by this interval period.",
+          "schema": {
+            "type": "string",
+            "enum": ["daily", "hourly"]
+          }
+        }
+      ]
+    },
+    "/flows/json/{flow}": {
+      "post": {
+        "operationId": "startFlow",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
                 "type": "object",
-                "properties": {
-                    "allowBack": {
-                        "type": [
-                            "boolean",
-                            "null"
-                        ]
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Flow Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Run"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Flow Response Errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
                     },
-                    "createdAt": {
-                        "type": "string",
-                        "format": "date-time"
+                    "data": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": {
+                              "type": "string"
+                            },
+                            "field": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
                     },
-                    "endTime": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "format": "date-time"
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "getFlow",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Run"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
                     },
-                    "error": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
+                    "data": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": {
+                              "type": "string"
+                            },
+                            "field": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
                     },
-                    "id": {
-                        "type": "string"
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "description": "",
+          "schema": {
+            "type": "number"
+          }
+        },
+        {
+          "name": "before",
+          "in": "query",
+          "required": false,
+          "description": "",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "after",
+          "in": "query",
+          "required": false,
+          "description": "",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "flow",
+          "in": "path",
+          "required": true,
+          "description": "",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "/flows/json/{flow}/{runId}": {
+      "get": {
+        "operationId": "getFlowRun",
+        "responses": {
+          "200": {
+            "description": "Flow Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Run"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Flow Response Errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": {
+                              "type": "string"
+                            },
+                            "field": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "flow",
+          "in": "path",
+          "required": true,
+          "description": "",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "runId",
+          "in": "path",
+          "required": true,
+          "description": "",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "/flows/json/{flow}/{runId}/back": {
+      "post": {
+        "operationId": "backFlowRun",
+        "responses": {
+          "200": {
+            "description": "Flow Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Run"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Flow Response Errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": {
+                              "type": "string"
+                            },
+                            "field": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "flow",
+          "in": "path",
+          "required": true,
+          "description": "",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "runId",
+          "in": "path",
+          "required": true,
+          "description": "",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "/flows/json/{flow}/{runId}/cancel": {
+      "post": {
+        "operationId": "cancelFlowRun",
+        "responses": {
+          "200": {
+            "description": "Flow Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Run"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Flow Response Errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": {
+                              "type": "string"
+                            },
+                            "field": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "flow",
+          "in": "path",
+          "required": true,
+          "description": "",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "runId",
+          "in": "path",
+          "required": true,
+          "description": "",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "/flows/json/{flow}/{runId}/{stepId}": {
+      "put": {
+        "operationId": "putFlowStep",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Flow Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Run"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Flow Response Errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": {
+                              "type": "string"
+                            },
+                            "field": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "flow",
+          "in": "path",
+          "required": true,
+          "description": "",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "runId",
+          "in": "path",
+          "required": true,
+          "description": "",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "stepId",
+          "in": "path",
+          "required": true,
+          "description": "",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "action",
+          "in": "query",
+          "required": false,
+          "description": "",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "/flows/json/{flow}/{runId}/{stepId}/callback": {
+      "post": {
+        "operationId": "callback",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": ["object", "string", "number", "boolean", "array"],
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Callback Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": ["object", "string", "number", "boolean", "array"],
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Callback Response Errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": ["object", "null"],
+                      "properties": {
+                        "errors": {
+                          "type": "array",
+                          "properties": {
+                            "error": {
+                              "type": "string"
+                            },
+                            "field": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "flow",
+          "in": "path",
+          "required": true,
+          "description": "",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "runId",
+          "in": "path",
+          "required": true,
+          "description": "",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "stepId",
+          "in": "path",
+          "required": true,
+          "description": "",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": true,
+          "description": "",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "element",
+          "in": "query",
+          "required": true,
+          "description": "",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    }
+  },
+  "components": {
+    "schemas": {
+      "Run": {
+        "type": "object",
+        "properties": {
+          "config": {
+            "type": "object",
+            "properties": {
+              "description": {
+                "type": "string"
+              },
+              "stages": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "description": {
+                      "type": "string"
+                    },
+                    "initiallyHidden": {
+                      "type": "boolean"
+                    },
+                    "key": {
+                      "type": "string"
                     },
                     "name": {
-                        "type": "string"
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": ["key", "name"]
+                }
+              },
+              "title": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false,
+            "required": ["title"]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "data": {
+            "type": ["object", "null"]
+          },
+          "error": {
+            "type": ["string", "null"]
+          },
+          "id": {
+            "type": "string"
+          },
+          "input": {
+            "type": ["object", "null"],
+            "additionalProperties": true
+          },
+          "name": {
+            "type": "string"
+          },
+          "startTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "startedBy": {
+            "type": ["string", "null"]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "NEW",
+              "RUNNING",
+              "AWAITING_INPUT",
+              "FAILED",
+              "COMPLETED",
+              "CANCELLED"
+            ]
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Step"
+            }
+          },
+          "traceId": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "name",
+          "traceId",
+          "createdAt",
+          "updatedAt",
+          "steps",
+          "config",
+          "input"
+        ]
+      },
+      "Stats": {
+        "type": "object",
+        "properties": {
+          "activeRuns": {
+            "type": "number"
+          },
+          "completedToday": {
+            "type": "number"
+          },
+          "errorRate": {
+            "type": "number"
+          },
+          "lastRun": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "name": {
+            "type": "string"
+          },
+          "timeSeries": {
+            "type": ["array", "null"],
+            "items": {
+              "$ref": "#/components/schemas/StatsBucket"
+            }
+          },
+          "totalRuns": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "name",
+          "lastRun",
+          "totalRuns",
+          "errorRate",
+          "activeRuns",
+          "completedToday"
+        ]
+      },
+      "StatsBucket": {
+        "type": "object",
+        "properties": {
+          "failedRuns": {
+            "type": "number"
+          },
+          "time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "totalRuns": {
+            "type": "number"
+          }
+        },
+        "required": ["time", "totalRuns", "failedRunts"]
+      },
+      "Step": {
+        "type": "object",
+        "properties": {
+          "allowBack": {
+            "type": ["boolean", "null"]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endTime": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          },
+          "error": {
+            "type": ["string", "null"]
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "runId": {
+            "type": "string"
+          },
+          "stage": {
+            "type": ["string", "null"]
+          },
+          "startTime": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["PENDING", "FAILED", "COMPLETED", "CANCELLED"]
+          },
+          "type": {
+            "type": "string",
+            "enum": ["FUNCTION", "UI", "COMPLETE"]
+          },
+          "ui": {
+            "$ref": "#/components/schemas/UiConfig"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "value": {
+            "type": [
+              "string",
+              "object",
+              "array",
+              "integer",
+              "number",
+              "boolean",
+              "null"
+            ],
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "id",
+          "runId",
+          "status",
+          "name",
+          "type",
+          "createdAt",
+          "updatedAt",
+          "value",
+          "ui",
+          "startTime",
+          "endTime",
+          "error"
+        ]
+      },
+      "UiConfig": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiCompleteApiResponse"
+          },
+          {
+            "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiPageApiResponse"
+          }
+        ]
+      },
+      "__UiConfigSchemas": {
+        "$defs": {
+          "BannerMode": {
+            "type": "string",
+            "enum": ["error", "info", "success", "warning"]
+          },
+          "DataGridDataTypes": {
+            "type": "string",
+            "enum": ["boolean", "hidden", "id", "number", "text"]
+          },
+          "ElementDataType": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": ["string", "number", "boolean"]
+              }
+            ]
+          },
+          "KeyValueMode": {
+            "type": "string",
+            "enum": ["card", "grid", "list"]
+          },
+          "Partial<FileDbRecord>": {
+            "type": "object",
+            "properties": {
+              "contentType": {
+                "type": "string"
+              },
+              "filename": {
+                "type": "string"
+              },
+              "key": {
+                "type": "string"
+              },
+              "size": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false
+          },
+          "Record<string,any>": {
+            "type": "object",
+            "additionalProperties": false
+          },
+          "ScanDuplicateMode": {
+            "type": "string",
+            "enum": ["none", "rejectDuplicates", "trackQuantity"],
+            "default": "none"
+          },
+          "SelectMode": {
+            "type": "string",
+            "enum": ["multi", "single"]
+          },
+          "UiCompleteApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": {
+                "type": "string",
+                "const": "ui.complete"
+              },
+              "allowRestart": {
+                "type": "object",
+                "properties": {
+                  "buttonLabel": {
+                    "type": "string"
+                  },
+                  "inputs": {},
+                  "mode": {
+                    "type": "string",
+                    "enum": ["auto", "manual"]
+                  }
+                },
+                "additionalProperties": false
+              },
+              "autoClose": {
+                "type": "boolean"
+              },
+              "content": {
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementApiResponses"
+              },
+              "description": {
+                "type": "string"
+              },
+              "fullWidth": {
+                "type": "boolean"
+              },
+              "stage": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "content"]
+          },
+          "UiElementApiResponse": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementDividerApiResponse"
+              },
+              {
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementMarkdownApiResponse"
+              },
+              {
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementHeaderApiResponse"
+              },
+              {
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementBannerApiResponse"
+              },
+              {
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementImageApiResponse"
+              },
+              {
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementCodeApiResponse"
+              },
+              {
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementGridApiResponse"
+              },
+              {
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementListApiResponse"
+              },
+              {
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementTableApiResponse"
+              },
+              {
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementKeyValueApiResponse"
+              },
+              {
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementFileApiResponse"
+              },
+              {
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementInputTextApiResponse"
+              },
+              {
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementInputNumberApiResponse"
+              },
+              {
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementInputBooleanApiResponse"
+              },
+              {
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementInputDataGridApiResponse"
+              },
+              {
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementInputScanApiResponse"
+              },
+              {
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementInputDatePickerApiResponse"
+              },
+              {
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementInputFileApiResponse"
+              },
+              {
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementSelectOneApiResponse"
+              },
+              {
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementSelectTableApiResponse"
+              },
+              {
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementIteratorApiResponse"
+              },
+              {
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementPrintApiResponse"
+              },
+              {
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementPickListApiResponse"
+              }
+            ]
+          },
+          "UiElementApiResponses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementApiResponse"
+            }
+          },
+          "UiElementBannerApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": {
+                "type": "string",
+                "const": "ui.display.banner"
+              },
+              "description": {
+                "type": "string"
+              },
+              "mode": {
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/BannerMode"
+              },
+              "title": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "description", "mode", "title"]
+          },
+          "UiElementCodeApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": {
+                "type": "string",
+                "const": "ui.display.code"
+              },
+              "code": {
+                "type": "string"
+              },
+              "language": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "code"]
+          },
+          "UiElementDividerApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": {
+                "type": "string",
+                "const": "ui.display.divider"
+              }
+            },
+            "additionalProperties": false,
+            "required": ["__type"]
+          },
+          "UiElementFileApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": {
+                "type": "string",
+                "const": "ui.display.file"
+              },
+              "file": {
+                "type": "object",
+                "properties": {
+                  "contentType": {
+                    "type": "string"
+                  },
+                  "filename": {
+                    "type": "string"
+                  },
+                  "key": {
+                    "type": "string"
+                  },
+                  "size": {
+                    "type": "number"
+                  },
+                  "url": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": ["contentType", "filename", "key", "size", "url"]
+              },
+              "title": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "title"]
+          },
+          "UiElementGridApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": {
+                "type": "string",
+                "const": "ui.display.grid"
+              },
+              "data": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "description": {
+                      "type": "string"
                     },
-                    "runId": {
-                        "type": "string"
+                    "image": {
+                      "type": "object",
+                      "properties": {
+                        "alt": {
+                          "type": "string"
+                        },
+                        "aspectRatio": {
+                          "type": "number"
+                        },
+                        "fit": {
+                          "type": "string",
+                          "enum": ["contain", "cover"]
+                        },
+                        "url": {
+                          "type": "string"
+                        }
+                      },
+                      "additionalProperties": false,
+                      "required": ["url"]
                     },
-                    "stage": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
+                    "title": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "data"]
+          },
+          "UiElementHeaderApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": {
+                "type": "string",
+                "const": "ui.display.header"
+              },
+              "description": {
+                "type": "string"
+              },
+              "level": {
+                "type": "number"
+              },
+              "title": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "description", "level", "title"]
+          },
+          "UiElementImageApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": {
+                "type": "string",
+                "const": "ui.display.image"
+              },
+              "alt": {
+                "type": "string"
+              },
+              "caption": {
+                "type": "string"
+              },
+              "size": {
+                "type": "string",
+                "enum": ["full", "large", "medium", "small", "thumbnail"]
+              },
+              "url": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "url"]
+          },
+          "UiElementInputBooleanApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": {
+                "type": "string",
+                "const": "ui.input.boolean"
+              },
+              "defaultValue": {
+                "type": "boolean"
+              },
+              "disabled": {
+                "type": "boolean"
+              },
+              "helpText": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "mode": {
+                "type": "string",
+                "enum": ["checkbox", "switch"]
+              },
+              "name": {
+                "type": "string"
+              },
+              "optional": {
+                "type": "boolean"
+              },
+              "validationError": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "__type",
+              "disabled",
+              "label",
+              "mode",
+              "name",
+              "optional"
+            ]
+          },
+          "UiElementInputDataGridApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": {
+                "type": "string",
+                "const": "ui.input.dataGrid"
+              },
+              "allowAddRows": {
+                "type": "boolean"
+              },
+              "allowDeleteRows": {
+                "type": "boolean"
+              },
+              "columns": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "editable": {
+                      "type": "boolean"
                     },
-                    "startTime": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "format": "date-time"
+                    "index": {
+                      "type": "number"
                     },
-                    "status": {
-                        "type": "string",
-                        "enum": [
-                            "PENDING",
-                            "FAILED",
-                            "COMPLETED",
-                            "CANCELLED"
-                        ]
+                    "key": {
+                      "type": "string"
+                    },
+                    "label": {
+                      "type": "string"
                     },
                     "type": {
-                        "type": "string",
-                        "enum": [
-                            "FUNCTION",
-                            "UI",
-                            "COMPLETE"
-                        ]
+                      "$ref": "#/components/schemas/__UiConfigSchemas/$defs/DataGridDataTypes"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": ["editable", "index", "key", "label", "type"]
+                }
+              },
+              "data": {
+                "type": "array",
+                "items": {}
+              },
+              "helpText": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "validationError": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "__type",
+              "allowAddRows",
+              "allowDeleteRows",
+              "columns",
+              "data",
+              "name"
+            ]
+          },
+          "UiElementInputDatePickerApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": {
+                "type": "string",
+                "const": "ui.input.datePicker"
+              },
+              "defaultValue": {
+                "type": "string"
+              },
+              "disabled": {
+                "type": "boolean"
+              },
+              "helpText": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "max": {
+                "type": "string"
+              },
+              "min": {
+                "type": "string"
+              },
+              "mode": {
+                "type": "string",
+                "enum": ["date", "dateTime"],
+                "default": "dateTime"
+              },
+              "name": {
+                "type": "string"
+              },
+              "optional": {
+                "type": "boolean"
+              },
+              "validationError": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "disabled", "label", "name", "optional"]
+          },
+          "UiElementInputFileApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": {
+                "type": "string",
+                "const": "ui.input.file"
+              },
+              "defaultValue": {
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/Partial<FileDbRecord>"
+              },
+              "disabled": {
+                "type": "boolean"
+              },
+              "helpText": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "optional": {
+                "type": "boolean"
+              },
+              "validationError": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "disabled", "label", "name", "optional"]
+          },
+          "UiElementInputNumberApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": {
+                "type": "string",
+                "const": "ui.input.number"
+              },
+              "defaultValue": {
+                "type": "number"
+              },
+              "disabled": {
+                "type": "boolean"
+              },
+              "helpText": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "max": {
+                "type": "number"
+              },
+              "min": {
+                "type": "number"
+              },
+              "name": {
+                "type": "string"
+              },
+              "optional": {
+                "type": "boolean"
+              },
+              "placeholder": {
+                "type": "string"
+              },
+              "validationError": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "disabled", "label", "name", "optional"]
+          },
+          "UiElementInputScanApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": {
+                "type": "string",
+                "const": "ui.input.scan"
+              },
+              "autoContinue": {
+                "type": "boolean"
+              },
+              "description": {
+                "type": "string"
+              },
+              "duplicateHandling": {
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/ScanDuplicateMode"
+              },
+              "max": {
+                "type": "number"
+              },
+              "min": {
+                "type": "number"
+              },
+              "mode": {
+                "type": "string",
+                "enum": ["multi", "single"]
+              },
+              "name": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "unit": {
+                "type": "string"
+              },
+              "validationError": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "__type",
+              "autoContinue",
+              "duplicateHandling",
+              "mode",
+              "name"
+            ]
+          },
+          "UiElementInputTextApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": {
+                "type": "string",
+                "const": "ui.input.text"
+              },
+              "defaultValue": {
+                "type": "string"
+              },
+              "disabled": {
+                "type": "boolean"
+              },
+              "helpText": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "maxLength": {
+                "type": "number"
+              },
+              "minLength": {
+                "type": "number"
+              },
+              "multiline": {
+                "type": "boolean"
+              },
+              "name": {
+                "type": "string"
+              },
+              "optional": {
+                "type": "boolean"
+              },
+              "placeholder": {
+                "type": "string"
+              },
+              "validationError": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "disabled", "label", "name", "optional"]
+          },
+          "UiElementIteratorApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": {
+                "type": "string",
+                "const": "ui.iterator"
+              },
+              "content": {
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementApiResponses"
+              },
+              "contentValidationErrors": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "index": {
+                      "type": "number"
                     },
-                    "ui": {
-                        "$ref": "#/components/schemas/UiConfig"
+                    "name": {
+                      "type": "string"
                     },
-                    "updatedAt": {
-                        "type": "string",
-                        "format": "date-time"
+                    "validationError": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": ["index", "name", "validationError"]
+                }
+              },
+              "max": {
+                "type": "number"
+              },
+              "min": {
+                "type": "number"
+              },
+              "name": {
+                "type": "string"
+              },
+              "validationError": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "content", "name"]
+          },
+          "UiElementKeyValueApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": {
+                "type": "string",
+                "const": "ui.display.keyValue"
+              },
+              "data": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string"
                     },
                     "value": {
-                        "type": [
-                            "string",
-                            "object",
-                            "array",
-                            "integer",
-                            "number",
-                            "boolean",
-                            "null"
-                        ],
-                        "additionalProperties": true
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        {
+                          "type": ["string", "number", "boolean"]
+                        }
+                      ]
                     }
+                  },
+                  "additionalProperties": false,
+                  "required": ["key", "value"]
+                }
+              },
+              "mode": {
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/KeyValueMode"
+              }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "data", "mode"]
+          },
+          "UiElementListApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": {
+                "type": "string",
+                "const": "ui.display.list"
+              },
+              "data": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "description": {
+                      "type": "string"
+                    },
+                    "image": {
+                      "type": "object",
+                      "properties": {
+                        "alt": {
+                          "type": "string"
+                        },
+                        "fit": {
+                          "type": "string",
+                          "enum": ["contain", "cover"]
+                        },
+                        "url": {
+                          "type": "string"
+                        }
+                      },
+                      "additionalProperties": false,
+                      "required": ["url"]
+                    },
+                    "title": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "data"]
+          },
+          "UiElementMarkdownApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": {
+                "type": "string",
+                "const": "ui.display.markdown"
+              },
+              "content": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "content"]
+          },
+          "UiElementPickListApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": {
+                "type": "string",
+                "const": "ui.interactive.pickList"
+              },
+              "autoContinue": {
+                "type": "boolean"
+              },
+              "data": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "barcodes": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "image": {
+                      "type": "object",
+                      "properties": {
+                        "alt": {
+                          "type": "string"
+                        },
+                        "fit": {
+                          "type": "string",
+                          "enum": ["contain", "cover"]
+                        },
+                        "url": {
+                          "type": "string"
+                        }
+                      },
+                      "additionalProperties": false,
+                      "required": ["url"]
+                    },
+                    "targetQuantity": {
+                      "type": "number"
+                    },
+                    "title": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": ["id", "targetQuantity"]
+                }
+              },
+              "duplicateHandling": {
+                "type": "string",
+                "enum": ["increaseQuantity", "rejectDuplicates"]
+              },
+              "name": {
+                "type": "string"
+              },
+              "supportedInputs": {
+                "type": "object",
+                "properties": {
+                  "manual": {
+                    "type": "boolean"
+                  },
+                  "scanner": {
+                    "type": "boolean"
+                  }
                 },
-                "required": [
-                    "id",
-                    "runId",
-                    "status",
-                    "name",
-                    "type",
-                    "createdAt",
-                    "updatedAt",
-                    "value",
-                    "ui",
-                    "startTime",
-                    "endTime",
-                    "error"
-                ]
+                "additionalProperties": false,
+                "required": ["manual", "scanner"]
+              },
+              "validationError": {
+                "type": "string"
+              }
             },
-            "UiConfig": {
-                "anyOf": [
-                    {
-                        "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiCompleteApiResponse"
+            "additionalProperties": false,
+            "required": [
+              "__type",
+              "autoContinue",
+              "data",
+              "name",
+              "supportedInputs"
+            ]
+          },
+          "UiElementPrintApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": {
+                "type": "string",
+                "const": "ui.interactive.print"
+              },
+              "allowReprint": {
+                "type": "boolean"
+              },
+              "autoContinue": {
+                "type": "boolean"
+              },
+              "autoPrint": {
+                "type": "boolean"
+              },
+              "data": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
                     },
-                    {
-                        "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiPageApiResponse"
+                    "dpi": {
+                      "type": "number"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "pageHeight": {
+                      "type": "number"
+                    },
+                    "pageWidth": {
+                      "type": "number"
+                    },
+                    "printer": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string",
+                      "enum": ["rawPdf", "zpl"]
+                    },
+                    "url": {
+                      "type": "string"
                     }
-                ]
+                  },
+                  "additionalProperties": false,
+                  "required": ["type"]
+                }
+              },
+              "description": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              }
             },
-            "__UiConfigSchemas": {
-                "$defs": {
-                    "BannerMode": {
-                        "type": "string",
-                        "enum": [
-                            "error",
-                            "info",
-                            "success",
-                            "warning"
-                        ]
+            "additionalProperties": false,
+            "required": [
+              "__type",
+              "allowReprint",
+              "autoContinue",
+              "autoPrint",
+              "data"
+            ]
+          },
+          "UiElementSelectOneApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": {
+                "type": "string",
+                "const": "ui.select.one"
+              },
+              "defaultValue": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  {
+                    "type": ["string", "number", "boolean"]
+                  }
+                ]
+              },
+              "disabled": {
+                "type": "boolean"
+              },
+              "helpText": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "optional": {
+                "type": "boolean"
+              },
+              "options": {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "date-time"
                     },
-                    "DataGridDataTypes": {
-                        "type": "string",
-                        "enum": [
-                            "boolean",
-                            "hidden",
-                            "id",
-                            "number",
-                            "text"
-                        ]
+                    {
+                      "type": "object",
+                      "properties": {
+                        "label": {
+                          "type": "string"
+                        },
+                        "value": {
+                          "$ref": "#/components/schemas/__UiConfigSchemas/$defs/ElementDataType"
+                        }
+                      },
+                      "additionalProperties": false,
+                      "required": ["label", "value"]
                     },
-                    "ElementDataType": {
-                        "anyOf": [
-                            {
-                                "type": "string",
-                                "format": "date-time"
-                            },
-                            {
-                                "type": [
-                                    "string",
-                                    "number",
-                                    "boolean"
-                                ]
-                            }
-                        ]
+                    {
+                      "type": ["string", "number", "boolean"]
+                    }
+                  ]
+                }
+              },
+              "validationError": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "__type",
+              "disabled",
+              "label",
+              "name",
+              "optional",
+              "options"
+            ]
+          },
+          "UiElementSelectTableApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": {
+                "type": "string",
+                "const": "ui.select.table"
+              },
+              "columns": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "index": {
+                      "type": "number"
                     },
-                    "KeyValueMode": {
-                        "type": "string",
-                        "enum": [
-                            "card",
-                            "grid",
-                            "list"
-                        ]
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": ["index", "name"]
+                }
+              },
+              "data": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/__UiConfigSchemas/$defs/Record<string,any>"
+                }
+              },
+              "disabled": {
+                "type": "boolean"
+              },
+              "helpText": {
+                "type": "string"
+              },
+              "mode": {
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/SelectMode"
+              },
+              "name": {
+                "type": "string"
+              },
+              "optional": {
+                "type": "boolean"
+              },
+              "validationError": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "__type",
+              "columns",
+              "data",
+              "disabled",
+              "mode",
+              "name",
+              "optional"
+            ]
+          },
+          "UiElementTableApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": {
+                "type": "string",
+                "const": "ui.display.table"
+              },
+              "columns": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "index": {
+                      "type": "number"
                     },
-                    "Partial<FileDbRecord>": {
-                        "type": "object",
-                        "properties": {
-                            "contentType": {
-                                "type": "string"
-                            },
-                            "filename": {
-                                "type": "string"
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": ["index", "name"]
+                }
+              },
+              "data": {
+                "type": "array",
+                "items": {}
+              }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "columns", "data"]
+          },
+          "UiPageApiResponse": {
+            "type": "object",
+            "properties": {
+              "__type": {
+                "type": "string",
+                "const": "ui.page"
+              },
+              "actions": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "hotkey": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "behaviour": {
+                              "type": "string",
+                              "enum": ["excludeForms", "includeForms"],
+                              "default": "excludeForms"
                             },
                             "key": {
-                                "type": "string"
-                            },
-                            "size": {
-                                "type": "number"
+                              "type": "string"
                             }
+                          },
+                          "additionalProperties": false,
+                          "required": ["key"]
                         },
-                        "additionalProperties": false
-                    },
-                    "Record<string,any>": {
-                        "type": "object",
-                        "additionalProperties": false
-                    },
-                    "ScanDuplicateMode": {
-                        "type": "string",
-                        "enum": [
-                            "none",
-                            "rejectDuplicates",
-                            "trackQuantity"
-                        ],
-                        "default": "none"
-                    },
-                    "SelectMode": {
-                        "type": "string",
-                        "enum": [
-                            "multi",
-                            "single"
-                        ]
-                    },
-                    "UiCompleteApiResponse": {
-                        "type": "object",
-                        "properties": {
-                            "__type": {
-                                "type": "string",
-                                "const": "ui.complete"
-                            },
-                            "allowRestart": {
-                                "type": "object",
-                                "properties": {
-                                    "buttonLabel": {
-                                        "type": "string"
-                                    },
-                                    "inputs": {},
-                                    "mode": {
-                                        "type": "string",
-                                        "enum": [
-                                            "auto",
-                                            "manual"
-                                        ]
-                                    }
-                                },
-                                "additionalProperties": false
-                            },
-                            "autoClose": {
-                                "type": "boolean"
-                            },
-                            "content": {
-                                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementApiResponses"
-                            },
-                            "description": {
-                                "type": "string"
-                            },
-                            "fullWidth": {
-                                "type": "boolean"
-                            },
-                            "stage": {
-                                "type": "string"
-                            },
-                            "title": {
-                                "type": "string"
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "__type",
-                            "content"
-                        ]
-                    },
-                    "UiElementApiResponse": {
-                        "anyOf": [
-                            {
-                                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementDividerApiResponse"
-                            },
-                            {
-                                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementMarkdownApiResponse"
-                            },
-                            {
-                                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementHeaderApiResponse"
-                            },
-                            {
-                                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementBannerApiResponse"
-                            },
-                            {
-                                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementImageApiResponse"
-                            },
-                            {
-                                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementCodeApiResponse"
-                            },
-                            {
-                                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementGridApiResponse"
-                            },
-                            {
-                                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementListApiResponse"
-                            },
-                            {
-                                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementTableApiResponse"
-                            },
-                            {
-                                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementKeyValueApiResponse"
-                            },
-                            {
-                                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementFileApiResponse"
-                            },
-                            {
-                                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementInputTextApiResponse"
-                            },
-                            {
-                                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementInputNumberApiResponse"
-                            },
-                            {
-                                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementInputBooleanApiResponse"
-                            },
-                            {
-                                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementInputDataGridApiResponse"
-                            },
-                            {
-                                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementInputScanApiResponse"
-                            },
-                            {
-                                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementInputDatePickerApiResponse"
-                            },
-                            {
-                                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementInputFileApiResponse"
-                            },
-                            {
-                                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementSelectOneApiResponse"
-                            },
-                            {
-                                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementSelectTableApiResponse"
-                            },
-                            {
-                                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementIteratorApiResponse"
-                            },
-                            {
-                                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementPrintApiResponse"
-                            },
-                            {
-                                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementPickListApiResponse"
-                            }
-                        ]
-                    },
-                    "UiElementApiResponses": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementApiResponse"
+                        {
+                          "type": "string"
                         }
+                      ]
                     },
-                    "UiElementBannerApiResponse": {
-                        "type": "object",
-                        "properties": {
-                            "__type": {
-                                "type": "string",
-                                "const": "ui.display.banner"
-                            },
-                            "description": {
-                                "type": "string"
-                            },
-                            "mode": {
-                                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/BannerMode"
-                            },
-                            "title": {
-                                "type": "string"
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "__type",
-                            "description",
-                            "mode",
-                            "title"
-                        ]
+                    "label": {
+                      "type": "string"
                     },
-                    "UiElementCodeApiResponse": {
-                        "type": "object",
-                        "properties": {
-                            "__type": {
-                                "type": "string",
-                                "const": "ui.display.code"
-                            },
-                            "code": {
-                                "type": "string"
-                            },
-                            "language": {
-                                "type": "string"
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "__type",
-                            "code"
-                        ]
+                    "mode": {
+                      "type": "string",
+                      "enum": ["destructive", "primary", "secondary"]
                     },
-                    "UiElementDividerApiResponse": {
-                        "type": "object",
-                        "properties": {
-                            "__type": {
-                                "type": "string",
-                                "const": "ui.display.divider"
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "__type"
-                        ]
-                    },
-                    "UiElementFileApiResponse": {
-                        "type": "object",
-                        "properties": {
-                            "__type": {
-                                "type": "string",
-                                "const": "ui.display.file"
-                            },
-                            "file": {
-                                "type": "object",
-                                "properties": {
-                                    "contentType": {
-                                        "type": "string"
-                                    },
-                                    "filename": {
-                                        "type": "string"
-                                    },
-                                    "key": {
-                                        "type": "string"
-                                    },
-                                    "size": {
-                                        "type": "number"
-                                    },
-                                    "url": {
-                                        "type": "string"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "contentType",
-                                    "filename",
-                                    "key",
-                                    "size",
-                                    "url"
-                                ]
-                            },
-                            "title": {
-                                "type": "string"
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "__type",
-                            "title"
-                        ]
-                    },
-                    "UiElementGridApiResponse": {
-                        "type": "object",
-                        "properties": {
-                            "__type": {
-                                "type": "string",
-                                "const": "ui.display.grid"
-                            },
-                            "data": {
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "description": {
-                                            "type": "string"
-                                        },
-                                        "image": {
-                                            "type": "object",
-                                            "properties": {
-                                                "alt": {
-                                                    "type": "string"
-                                                },
-                                                "aspectRatio": {
-                                                    "type": "number"
-                                                },
-                                                "fit": {
-                                                    "type": "string",
-                                                    "enum": [
-                                                        "contain",
-                                                        "cover"
-                                                    ]
-                                                },
-                                                "url": {
-                                                    "type": "string"
-                                                }
-                                            },
-                                            "additionalProperties": false,
-                                            "required": [
-                                                "url"
-                                            ]
-                                        },
-                                        "title": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "additionalProperties": false
-                                }
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "__type",
-                            "data"
-                        ]
-                    },
-                    "UiElementHeaderApiResponse": {
-                        "type": "object",
-                        "properties": {
-                            "__type": {
-                                "type": "string",
-                                "const": "ui.display.header"
-                            },
-                            "description": {
-                                "type": "string"
-                            },
-                            "level": {
-                                "type": "number"
-                            },
-                            "title": {
-                                "type": "string"
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "__type",
-                            "description",
-                            "level",
-                            "title"
-                        ]
-                    },
-                    "UiElementImageApiResponse": {
-                        "type": "object",
-                        "properties": {
-                            "__type": {
-                                "type": "string",
-                                "const": "ui.display.image"
-                            },
-                            "alt": {
-                                "type": "string"
-                            },
-                            "caption": {
-                                "type": "string"
-                            },
-                            "size": {
-                                "type": "string",
-                                "enum": [
-                                    "full",
-                                    "large",
-                                    "medium",
-                                    "small",
-                                    "thumbnail"
-                                ]
-                            },
-                            "url": {
-                                "type": "string"
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "__type",
-                            "url"
-                        ]
-                    },
-                    "UiElementInputBooleanApiResponse": {
-                        "type": "object",
-                        "properties": {
-                            "__type": {
-                                "type": "string",
-                                "const": "ui.input.boolean"
-                            },
-                            "defaultValue": {
-                                "type": "boolean"
-                            },
-                            "disabled": {
-                                "type": "boolean"
-                            },
-                            "helpText": {
-                                "type": "string"
-                            },
-                            "label": {
-                                "type": "string"
-                            },
-                            "mode": {
-                                "type": "string",
-                                "enum": [
-                                    "checkbox",
-                                    "switch"
-                                ]
-                            },
-                            "name": {
-                                "type": "string"
-                            },
-                            "optional": {
-                                "type": "boolean"
-                            },
-                            "validationError": {
-                                "type": "string"
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "__type",
-                            "disabled",
-                            "label",
-                            "mode",
-                            "name",
-                            "optional"
-                        ]
-                    },
-                    "UiElementInputDataGridApiResponse": {
-                        "type": "object",
-                        "properties": {
-                            "__type": {
-                                "type": "string",
-                                "const": "ui.input.dataGrid"
-                            },
-                            "allowAddRows": {
-                                "type": "boolean"
-                            },
-                            "allowDeleteRows": {
-                                "type": "boolean"
-                            },
-                            "columns": {
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "editable": {
-                                            "type": "boolean"
-                                        },
-                                        "index": {
-                                            "type": "number"
-                                        },
-                                        "key": {
-                                            "type": "string"
-                                        },
-                                        "label": {
-                                            "type": "string"
-                                        },
-                                        "type": {
-                                            "$ref": "#/components/schemas/__UiConfigSchemas/$defs/DataGridDataTypes"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "editable",
-                                        "index",
-                                        "key",
-                                        "label",
-                                        "type"
-                                    ]
-                                }
-                            },
-                            "data": {
-                                "type": "array",
-                                "items": {}
-                            },
-                            "helpText": {
-                                "type": "string"
-                            },
-                            "name": {
-                                "type": "string"
-                            },
-                            "validationError": {
-                                "type": "string"
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "__type",
-                            "allowAddRows",
-                            "allowDeleteRows",
-                            "columns",
-                            "data",
-                            "name"
-                        ]
-                    },
-                    "UiElementInputDatePickerApiResponse": {
-                        "type": "object",
-                        "properties": {
-                            "__type": {
-                                "type": "string",
-                                "const": "ui.input.datePicker"
-                            },
-                            "defaultValue": {
-                                "type": "string"
-                            },
-                            "disabled": {
-                                "type": "boolean"
-                            },
-                            "helpText": {
-                                "type": "string"
-                            },
-                            "label": {
-                                "type": "string"
-                            },
-                            "max": {
-                                "type": "string"
-                            },
-                            "min": {
-                                "type": "string"
-                            },
-                            "mode": {
-                                "type": "string",
-                                "enum": [
-                                    "date",
-                                    "dateTime"
-                                ],
-                                "default": "dateTime"
-                            },
-                            "name": {
-                                "type": "string"
-                            },
-                            "optional": {
-                                "type": "boolean"
-                            },
-                            "validationError": {
-                                "type": "string"
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "__type",
-                            "disabled",
-                            "label",
-                            "name",
-                            "optional"
-                        ]
-                    },
-                    "UiElementInputFileApiResponse": {
-                        "type": "object",
-                        "properties": {
-                            "__type": {
-                                "type": "string",
-                                "const": "ui.input.file"
-                            },
-                            "defaultValue": {
-                                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/Partial<FileDbRecord>"
-                            },
-                            "disabled": {
-                                "type": "boolean"
-                            },
-                            "helpText": {
-                                "type": "string"
-                            },
-                            "label": {
-                                "type": "string"
-                            },
-                            "name": {
-                                "type": "string"
-                            },
-                            "optional": {
-                                "type": "boolean"
-                            },
-                            "validationError": {
-                                "type": "string"
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "__type",
-                            "disabled",
-                            "label",
-                            "name",
-                            "optional"
-                        ]
-                    },
-                    "UiElementInputNumberApiResponse": {
-                        "type": "object",
-                        "properties": {
-                            "__type": {
-                                "type": "string",
-                                "const": "ui.input.number"
-                            },
-                            "defaultValue": {
-                                "type": "number"
-                            },
-                            "disabled": {
-                                "type": "boolean"
-                            },
-                            "helpText": {
-                                "type": "string"
-                            },
-                            "label": {
-                                "type": "string"
-                            },
-                            "max": {
-                                "type": "number"
-                            },
-                            "min": {
-                                "type": "number"
-                            },
-                            "name": {
-                                "type": "string"
-                            },
-                            "optional": {
-                                "type": "boolean"
-                            },
-                            "placeholder": {
-                                "type": "string"
-                            },
-                            "validationError": {
-                                "type": "string"
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "__type",
-                            "disabled",
-                            "label",
-                            "name",
-                            "optional"
-                        ]
-                    },
-                    "UiElementInputScanApiResponse": {
-                        "type": "object",
-                        "properties": {
-                            "__type": {
-                                "type": "string",
-                                "const": "ui.input.scan"
-                            },
-                            "autoContinue": {
-                                "type": "boolean"
-                            },
-                            "description": {
-                                "type": "string"
-                            },
-                            "duplicateHandling": {
-                                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/ScanDuplicateMode"
-                            },
-                            "max": {
-                                "type": "number"
-                            },
-                            "min": {
-                                "type": "number"
-                            },
-                            "mode": {
-                                "type": "string",
-                                "enum": [
-                                    "multi",
-                                    "single"
-                                ]
-                            },
-                            "name": {
-                                "type": "string"
-                            },
-                            "title": {
-                                "type": "string"
-                            },
-                            "unit": {
-                                "type": "string"
-                            },
-                            "validationError": {
-                                "type": "string"
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "__type",
-                            "autoContinue",
-                            "duplicateHandling",
-                            "mode",
-                            "name"
-                        ]
-                    },
-                    "UiElementInputTextApiResponse": {
-                        "type": "object",
-                        "properties": {
-                            "__type": {
-                                "type": "string",
-                                "const": "ui.input.text"
-                            },
-                            "defaultValue": {
-                                "type": "string"
-                            },
-                            "disabled": {
-                                "type": "boolean"
-                            },
-                            "helpText": {
-                                "type": "string"
-                            },
-                            "label": {
-                                "type": "string"
-                            },
-                            "maxLength": {
-                                "type": "number"
-                            },
-                            "minLength": {
-                                "type": "number"
-                            },
-                            "multiline": {
-                                "type": "boolean"
-                            },
-                            "name": {
-                                "type": "string"
-                            },
-                            "optional": {
-                                "type": "boolean"
-                            },
-                            "placeholder": {
-                                "type": "string"
-                            },
-                            "validationError": {
-                                "type": "string"
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "__type",
-                            "disabled",
-                            "label",
-                            "name",
-                            "optional"
-                        ]
-                    },
-                    "UiElementIteratorApiResponse": {
-                        "type": "object",
-                        "properties": {
-                            "__type": {
-                                "type": "string",
-                                "const": "ui.iterator"
-                            },
-                            "content": {
-                                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementApiResponses"
-                            },
-                            "contentValidationErrors": {
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "index": {
-                                            "type": "number"
-                                        },
-                                        "name": {
-                                            "type": "string"
-                                        },
-                                        "validationError": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "index",
-                                        "name",
-                                        "validationError"
-                                    ]
-                                }
-                            },
-                            "max": {
-                                "type": "number"
-                            },
-                            "min": {
-                                "type": "number"
-                            },
-                            "name": {
-                                "type": "string"
-                            },
-                            "validationError": {
-                                "type": "string"
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "__type",
-                            "content",
-                            "name"
-                        ]
-                    },
-                    "UiElementKeyValueApiResponse": {
-                        "type": "object",
-                        "properties": {
-                            "__type": {
-                                "type": "string",
-                                "const": "ui.display.keyValue"
-                            },
-                            "data": {
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "key": {
-                                            "type": "string"
-                                        },
-                                        "value": {
-                                            "anyOf": [
-                                                {
-                                                    "type": "string",
-                                                    "format": "date-time"
-                                                },
-                                                {
-                                                    "type": [
-                                                        "string",
-                                                        "number",
-                                                        "boolean"
-                                                    ]
-                                                }
-                                            ]
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "key",
-                                        "value"
-                                    ]
-                                }
-                            },
-                            "mode": {
-                                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/KeyValueMode"
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "__type",
-                            "data",
-                            "mode"
-                        ]
-                    },
-                    "UiElementListApiResponse": {
-                        "type": "object",
-                        "properties": {
-                            "__type": {
-                                "type": "string",
-                                "const": "ui.display.list"
-                            },
-                            "data": {
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "description": {
-                                            "type": "string"
-                                        },
-                                        "image": {
-                                            "type": "object",
-                                            "properties": {
-                                                "alt": {
-                                                    "type": "string"
-                                                },
-                                                "fit": {
-                                                    "type": "string",
-                                                    "enum": [
-                                                        "contain",
-                                                        "cover"
-                                                    ]
-                                                },
-                                                "url": {
-                                                    "type": "string"
-                                                }
-                                            },
-                                            "additionalProperties": false,
-                                            "required": [
-                                                "url"
-                                            ]
-                                        },
-                                        "title": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "additionalProperties": false
-                                }
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "__type",
-                            "data"
-                        ]
-                    },
-                    "UiElementMarkdownApiResponse": {
-                        "type": "object",
-                        "properties": {
-                            "__type": {
-                                "type": "string",
-                                "const": "ui.display.markdown"
-                            },
-                            "content": {
-                                "type": "string"
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "__type",
-                            "content"
-                        ]
-                    },
-                    "UiElementPickListApiResponse": {
-                        "type": "object",
-                        "properties": {
-                            "__type": {
-                                "type": "string",
-                                "const": "ui.interactive.pickList"
-                            },
-                            "autoContinue": {
-                                "type": "boolean"
-                            },
-                            "data": {
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "barcodes": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "string"
-                                            }
-                                        },
-                                        "description": {
-                                            "type": "string"
-                                        },
-                                        "id": {
-                                            "type": "string"
-                                        },
-                                        "image": {
-                                            "type": "object",
-                                            "properties": {
-                                                "alt": {
-                                                    "type": "string"
-                                                },
-                                                "fit": {
-                                                    "type": "string",
-                                                    "enum": [
-                                                        "contain",
-                                                        "cover"
-                                                    ]
-                                                },
-                                                "url": {
-                                                    "type": "string"
-                                                }
-                                            },
-                                            "additionalProperties": false,
-                                            "required": [
-                                                "url"
-                                            ]
-                                        },
-                                        "targetQuantity": {
-                                            "type": "number"
-                                        },
-                                        "title": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "id",
-                                        "targetQuantity"
-                                    ]
-                                }
-                            },
-                            "duplicateHandling": {
-                                "type": "string",
-                                "enum": [
-                                    "increaseQuantity",
-                                    "rejectDuplicates"
-                                ]
-                            },
-                            "name": {
-                                "type": "string"
-                            },
-                            "supportedInputs": {
-                                "type": "object",
-                                "properties": {
-                                    "manual": {
-                                        "type": "boolean"
-                                    },
-                                    "scanner": {
-                                        "type": "boolean"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "manual",
-                                    "scanner"
-                                ]
-                            },
-                            "validationError": {
-                                "type": "string"
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "__type",
-                            "autoContinue",
-                            "data",
-                            "name",
-                            "supportedInputs"
-                        ]
-                    },
-                    "UiElementPrintApiResponse": {
-                        "type": "object",
-                        "properties": {
-                            "__type": {
-                                "type": "string",
-                                "const": "ui.interactive.print"
-                            },
-                            "allowReprint": {
-                                "type": "boolean"
-                            },
-                            "autoContinue": {
-                                "type": "boolean"
-                            },
-                            "autoPrint": {
-                                "type": "boolean"
-                            },
-                            "data": {
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "string"
-                                            }
-                                        },
-                                        "dpi": {
-                                            "type": "number"
-                                        },
-                                        "name": {
-                                            "type": "string"
-                                        },
-                                        "pageHeight": {
-                                            "type": "number"
-                                        },
-                                        "pageWidth": {
-                                            "type": "number"
-                                        },
-                                        "printer": {
-                                            "type": "string"
-                                        },
-                                        "type": {
-                                            "type": "string",
-                                            "enum": [
-                                                "rawPdf",
-                                                "zpl"
-                                            ]
-                                        },
-                                        "url": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "type"
-                                    ]
-                                }
-                            },
-                            "description": {
-                                "type": "string"
-                            },
-                            "title": {
-                                "type": "string"
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "__type",
-                            "allowReprint",
-                            "autoContinue",
-                            "autoPrint",
-                            "data"
-                        ]
-                    },
-                    "UiElementSelectOneApiResponse": {
-                        "type": "object",
-                        "properties": {
-                            "__type": {
-                                "type": "string",
-                                "const": "ui.select.one"
-                            },
-                            "defaultValue": {
-                                "anyOf": [
-                                    {
-                                        "type": "string",
-                                        "format": "date-time"
-                                    },
-                                    {
-                                        "type": [
-                                            "string",
-                                            "number",
-                                            "boolean"
-                                        ]
-                                    }
-                                ]
-                            },
-                            "disabled": {
-                                "type": "boolean"
-                            },
-                            "helpText": {
-                                "type": "string"
-                            },
-                            "label": {
-                                "type": "string"
-                            },
-                            "name": {
-                                "type": "string"
-                            },
-                            "optional": {
-                                "type": "boolean"
-                            },
-                            "options": {
-                                "type": "array",
-                                "items": {
-                                    "anyOf": [
-                                        {
-                                            "type": "string",
-                                            "format": "date-time"
-                                        },
-                                        {
-                                            "type": "object",
-                                            "properties": {
-                                                "label": {
-                                                    "type": "string"
-                                                },
-                                                "value": {
-                                                    "$ref": "#/components/schemas/__UiConfigSchemas/$defs/ElementDataType"
-                                                }
-                                            },
-                                            "additionalProperties": false,
-                                            "required": [
-                                                "label",
-                                                "value"
-                                            ]
-                                        },
-                                        {
-                                            "type": [
-                                                "string",
-                                                "number",
-                                                "boolean"
-                                            ]
-                                        }
-                                    ]
-                                }
-                            },
-                            "validationError": {
-                                "type": "string"
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "__type",
-                            "disabled",
-                            "label",
-                            "name",
-                            "optional",
-                            "options"
-                        ]
-                    },
-                    "UiElementSelectTableApiResponse": {
-                        "type": "object",
-                        "properties": {
-                            "__type": {
-                                "type": "string",
-                                "const": "ui.select.table"
-                            },
-                            "columns": {
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "index": {
-                                            "type": "number"
-                                        },
-                                        "name": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "index",
-                                        "name"
-                                    ]
-                                }
-                            },
-                            "data": {
-                                "type": "array",
-                                "items": {
-                                    "$ref": "#/components/schemas/__UiConfigSchemas/$defs/Record<string,any>"
-                                }
-                            },
-                            "disabled": {
-                                "type": "boolean"
-                            },
-                            "helpText": {
-                                "type": "string"
-                            },
-                            "mode": {
-                                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/SelectMode"
-                            },
-                            "name": {
-                                "type": "string"
-                            },
-                            "optional": {
-                                "type": "boolean"
-                            },
-                            "validationError": {
-                                "type": "string"
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "__type",
-                            "columns",
-                            "data",
-                            "disabled",
-                            "mode",
-                            "name",
-                            "optional"
-                        ]
-                    },
-                    "UiElementTableApiResponse": {
-                        "type": "object",
-                        "properties": {
-                            "__type": {
-                                "type": "string",
-                                "const": "ui.display.table"
-                            },
-                            "columns": {
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "index": {
-                                            "type": "number"
-                                        },
-                                        "name": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "index",
-                                        "name"
-                                    ]
-                                }
-                            },
-                            "data": {
-                                "type": "array",
-                                "items": {}
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "__type",
-                            "columns",
-                            "data"
-                        ]
-                    },
-                    "UiPageApiResponse": {
-                        "type": "object",
-                        "properties": {
-                            "__type": {
-                                "type": "string",
-                                "const": "ui.page"
-                            },
-                            "actions": {
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "hotkey": {
-                                            "anyOf": [
-                                                {
-                                                    "type": "object",
-                                                    "properties": {
-                                                        "behaviour": {
-                                                            "type": "string",
-                                                            "enum": [
-                                                                "excludeForms",
-                                                                "includeForms"
-                                                            ],
-                                                            "default": "excludeForms"
-                                                        },
-                                                        "key": {
-                                                            "type": "string"
-                                                        }
-                                                    },
-                                                    "additionalProperties": false,
-                                                    "required": [
-                                                        "key"
-                                                    ]
-                                                },
-                                                {
-                                                    "type": "string"
-                                                }
-                                            ]
-                                        },
-                                        "label": {
-                                            "type": "string"
-                                        },
-                                        "mode": {
-                                            "type": "string",
-                                            "enum": [
-                                                "destructive",
-                                                "primary",
-                                                "secondary"
-                                            ]
-                                        },
-                                        "value": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "label",
-                                        "value"
-                                    ]
-                                }
-                            },
-                            "allowBack": {
-                                "type": "boolean"
-                            },
-                            "content": {
-                                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementApiResponses"
-                            },
-                            "description": {
-                                "type": "string"
-                            },
-                            "fullWidth": {
-                                "type": "boolean"
-                            },
-                            "hasValidationErrors": {
-                                "type": "boolean"
-                            },
-                            "stage": {
-                                "type": "string"
-                            },
-                            "title": {
-                                "type": "string"
-                            },
-                            "validationError": {
-                                "type": "string"
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "__type",
-                            "content",
-                            "hasValidationErrors"
-                        ]
+                    "value": {
+                      "type": "string"
                     }
+                  },
+                  "additionalProperties": false,
+                  "required": ["label", "value"]
                 }
-            }
+              },
+              "allowBack": {
+                "type": "boolean"
+              },
+              "content": {
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementApiResponses"
+              },
+              "description": {
+                "type": "string"
+              },
+              "fullWidth": {
+                "type": "boolean"
+              },
+              "hasValidationErrors": {
+                "type": "boolean"
+              },
+              "stage": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "validationError": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false,
+            "required": ["__type", "content", "hasValidationErrors"]
+          }
         }
+      }
     }
+  }
 }
