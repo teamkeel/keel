@@ -253,13 +253,7 @@ func (s *Schema) ScheduledFlowNames() []string {
 
 // GetAllFlows returns all the flows defined in the schema together with all the flows generated for tasks.
 func (s *Schema) GetAllFlows() []*Flow {
-	flows := s.GetFlows()
-
-	for _, t := range s.GetTasks() {
-		flows = append(flows, t.GetFlow())
-	}
-
-	return flows
+	return s.GetFlows()
 }
 
 // HasFlows indicates if the schema has any flows defined or any tasks that have flows.

@@ -90,11 +90,6 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 	// Generate the input messages for all subscribers in the schema.
 	scm.makeSubscriberInputMessages()
 
-	// Generate the input message for task flows, only if tasks are defined
-	if len(scm.proto.GetTasks()) > 0 {
-		scm.makeTaskFlowInputMessage()
-	}
-
 	return scm.proto
 }
 
@@ -1486,13 +1481,32 @@ func (scm *Builder) makeTask(decl *parser.DeclarationNode) {
 		}
 	}
 
-	// if we can have a input message, let's add it to the schema
-	if message := scm.makeTaskInputMessage(protoTask); message != nil {
+	message := scm.makeTaskInputMessage(protoTask)
+	if message != nil {
 		protoTask.InputMessageName = message.GetName()
 		scm.proto.Messages = append(scm.proto.Messages, message)
 	}
 
 	scm.proto.Tasks = append(scm.proto.Tasks, protoTask)
+
+	parserFlow := decl.Task
+	flow := &proto.Flow{
+		Name:     parserFlow.Name.Value,
+		TaskName: wrapperspb.String(protoTask.GetName()),
+	}
+
+	for _, section := range decl.Task.Sections {
+		switch {
+		case section.Attribute != nil:
+			scm.applyFlowAttribute(flow, section.Attribute)
+		}
+	}
+
+	if message != nil {
+		flow.InputMessageName = message.GetName()
+	}
+
+	scm.proto.Flows = append(scm.proto.Flows, flow)
 }
 
 // makeTaskInputMessage will create a proto input message which can be used to create a new task of the given type.
@@ -1593,25 +1607,6 @@ func (scm *Builder) makeAnyType() {
 	}
 
 	scm.proto.Messages = append(scm.proto.Messages, anyMsg)
-}
-
-// makeTaskFlowInputMessage adds a new generic input message for flows generated for tasks.
-func (scm *Builder) makeTaskFlowInputMessage() {
-	msg := &proto.Message{
-		Name: "TaskFlowInputMessage",
-		Fields: []*proto.MessageField{
-			{
-				MessageName: "TaskFlowInputMessage",
-				Name:        "entityId",
-				Type: &proto.TypeInfo{
-					Type: proto.Type_TYPE_STRING,
-				},
-				Nullable: true,
-			},
-		},
-	}
-
-	scm.proto.Messages = append(scm.proto.Messages, msg)
 }
 
 func (scm *Builder) makeMessage(decl *parser.DeclarationNode) {
