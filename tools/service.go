@@ -19,6 +19,9 @@ const ToolsDir = "tools"
 // FieldsFile is the name of the file that holds the user fields configuration for model based config.
 const FieldsFile = "_fields.json"
 
+// SpacesFile is the name of the file that holds the spaces configurations.
+const SpacesFile = "_spaces.json"
+
 const (
 	// Alphabet for unique nanoids to be used for tool ids.
 	nanoidABC = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -32,6 +35,7 @@ type Service struct {
 	ProjectDir          *string
 	ToolsConfigStorage  map[string][]byte
 	FieldsConfigStorage []byte
+	SpacesConfigStorage []byte
 }
 
 type ServiceOpt func(s *Service)
@@ -342,13 +346,11 @@ func (s *Service) ConfigureFields(ctx context.Context, updated []*toolsproto.Fie
 
 // GetSpaces returns the configured tool spaces for this project.
 func (s *Service) GetSpaces(ctx context.Context) ([]*toolsproto.Space, error) {
-	// load existing configured spaces
-	// // userConfig, err := s.load()
-	// if err != nil {
-	// 	return nil, fmt.Errorf("loading tool configs from file: %w", err)
-	// }
+	// load existing user configuration
+	userConfig, err := s.load()
+	if err != nil {
+		return nil, fmt.Errorf("loading tool configs from file: %w", err)
+	}
 
-	// TODO: load from repo
-
-	return []*toolsproto.Space{}, nil
+	return userConfig.Spaces.toProto(), nil
 }

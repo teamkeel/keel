@@ -738,17 +738,18 @@ message Space {
 	string id = 1;
 	string name = 2;
 	string icon = 3;
-	Colour colour = 4;
+	optional Colour colour = 4;
+	int32 display_order = 5;
 
 	// Top Level actions
-	repeated ToolLink actions = 5;
+	repeated ToolLink actions = 6;
 
 	// Groups containing actions
-	repeated SpaceGroup groups = 6;
+	repeated SpaceGroup groups = 7;
 
-	repeated ExternalLink links = 7;
+	repeated ExternalLink links = 8;
 
-	repeated SpaceMetric metrics = 8;
+	repeated SpaceMetric metrics = 9;
 }
 
 

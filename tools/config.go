@@ -4,4 +4,5 @@ package tools
 type UserConfig struct {
 	Tools  ToolConfigs
 	Fields FieldConfigs
+	Spaces SpaceConfigs
 }
