@@ -1,9 +1,6 @@
 {
   "openapi": "3.1.0",
-  "info": {
-    "title": "FlowsAPI",
-    "version": "1"
-  },
+  "info": { "title": "FlowsAPI", "version": "1" },
   "paths": {
     "/flows/json": {
       "get": {
@@ -21,12 +18,8 @@
                       "items": {
                         "type": "object",
                         "properties": {
-                          "name": {
-                            "type": "string"
-                          },
-                          "schedule": {
-                            "type": ["string", "null"]
-                          }
+                          "name": { "type": "string" },
+                          "schedule": { "type": ["string", "null"] }
                         }
                       }
                     }
@@ -41,28 +34,20 @@
               "application/json": {
                 "schema": {
                   "properties": {
-                    "code": {
-                      "type": "string"
-                    },
+                    "code": { "type": "string" },
                     "data": {
                       "type": ["object", "null"],
                       "properties": {
                         "errors": {
                           "type": "array",
                           "properties": {
-                            "error": {
-                              "type": "string"
-                            },
-                            "field": {
-                              "type": "string"
-                            }
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
                           }
                         }
                       }
                     },
-                    "message": {
-                      "type": "string"
-                    }
+                    "message": { "type": "string" }
                   }
                 }
               }
@@ -80,11 +65,7 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "properties": {
-                  "age": {
-                    "type": "number"
-                  }
-                },
+                "properties": { "age": { "type": "number" } },
                 "unevaluatedProperties": false,
                 "required": ["age"]
               }
@@ -96,9 +77,7 @@
             "description": "Flow Response",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Run"
-                }
+                "schema": { "$ref": "#/components/schemas/Run" }
               }
             }
           },
@@ -108,28 +87,20 @@
               "application/json": {
                 "schema": {
                   "properties": {
-                    "code": {
-                      "type": "string"
-                    },
+                    "code": { "type": "string" },
                     "data": {
                       "type": ["object", "null"],
                       "properties": {
                         "errors": {
                           "type": "array",
                           "properties": {
-                            "error": {
-                              "type": "string"
-                            },
-                            "field": {
-                              "type": "string"
-                            }
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
                           }
                         }
                       }
                     },
-                    "message": {
-                      "type": "string"
-                    }
+                    "message": { "type": "string" }
                   }
                 }
               }
@@ -148,12 +119,8 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "age": {
-                    "type": "number"
-                  },
-                  "name": {
-                    "type": "string"
-                  }
+                  "age": { "type": "number" },
+                  "name": { "type": "string" }
                 },
                 "unevaluatedProperties": false,
                 "required": ["name", "age"]
@@ -166,9 +133,7 @@
             "description": "Flow Response",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Run"
-                }
+                "schema": { "$ref": "#/components/schemas/Run" }
               }
             }
           },
@@ -178,28 +143,20 @@
               "application/json": {
                 "schema": {
                   "properties": {
-                    "code": {
-                      "type": "string"
-                    },
+                    "code": { "type": "string" },
                     "data": {
                       "type": ["object", "null"],
                       "properties": {
                         "errors": {
                           "type": "array",
                           "properties": {
-                            "error": {
-                              "type": "string"
-                            },
-                            "field": {
-                              "type": "string"
-                            }
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
                           }
                         }
                       }
                     },
-                    "message": {
-                      "type": "string"
-                    }
+                    "message": { "type": "string" }
                   }
                 }
               }
@@ -218,9 +175,7 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Run"
-                  }
+                  "items": { "$ref": "#/components/schemas/Run" }
                 }
               }
             }
@@ -231,28 +186,20 @@
               "application/json": {
                 "schema": {
                   "properties": {
-                    "code": {
-                      "type": "string"
-                    },
+                    "code": { "type": "string" },
                     "data": {
                       "type": ["object", "null"],
                       "properties": {
                         "errors": {
                           "type": "array",
                           "properties": {
-                            "error": {
-                              "type": "string"
-                            },
-                            "field": {
-                              "type": "string"
-                            }
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
                           }
                         }
                       }
                     },
-                    "message": {
-                      "type": "string"
-                    }
+                    "message": { "type": "string" }
                   }
                 }
               }
@@ -266,27 +213,21 @@
           "in": "query",
           "required": false,
           "description": "",
-          "schema": {
-            "type": "number"
-          }
+          "schema": { "type": "number" }
         },
         {
           "name": "before",
           "in": "query",
           "required": false,
           "description": "",
-          "schema": {
-            "type": "string"
-          }
+          "schema": { "type": "string" }
         },
         {
           "name": "after",
           "in": "query",
           "required": false,
           "description": "",
-          "schema": {
-            "type": "string"
-          }
+          "schema": { "type": "string" }
         },
         {
           "name": "status",
@@ -322,9 +263,7 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Stats"
-                  }
+                  "items": { "$ref": "#/components/schemas/Stats" }
                 }
               }
             }
@@ -335,28 +274,20 @@
               "application/json": {
                 "schema": {
                   "properties": {
-                    "code": {
-                      "type": "string"
-                    },
+                    "code": { "type": "string" },
                     "data": {
                       "type": ["object", "null"],
                       "properties": {
                         "errors": {
                           "type": "array",
                           "properties": {
-                            "error": {
-                              "type": "string"
-                            },
-                            "field": {
-                              "type": "string"
-                            }
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
                           }
                         }
                       }
                     },
-                    "message": {
-                      "type": "string"
-                    }
+                    "message": { "type": "string" }
                   }
                 }
               }
@@ -370,30 +301,21 @@
           "in": "query",
           "required": false,
           "description": "",
-          "schema": {
-            "type": "string",
-            "format": "date-time"
-          }
+          "schema": { "type": "string", "format": "date-time" }
         },
         {
           "name": "after",
           "in": "query",
           "required": false,
           "description": "",
-          "schema": {
-            "type": "string",
-            "format": "date-time"
-          }
+          "schema": { "type": "string", "format": "date-time" }
         },
         {
           "name": "interval",
           "in": "query",
           "required": false,
           "description": "If supplied, the results will include a time series with buckets defined by this interval period.",
-          "schema": {
-            "type": "string",
-            "enum": ["daily", "hourly"]
-          }
+          "schema": { "type": "string", "enum": ["daily", "hourly"] }
         }
       ]
     },
@@ -404,10 +326,7 @@
           "description": "",
           "content": {
             "application/json": {
-              "schema": {
-                "type": "object",
-                "additionalProperties": true
-              }
+              "schema": { "type": "object", "additionalProperties": true }
             }
           }
         },
@@ -416,9 +335,7 @@
             "description": "Flow Response",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Run"
-                }
+                "schema": { "$ref": "#/components/schemas/Run" }
               }
             }
           },
@@ -428,28 +345,20 @@
               "application/json": {
                 "schema": {
                   "properties": {
-                    "code": {
-                      "type": "string"
-                    },
+                    "code": { "type": "string" },
                     "data": {
                       "type": ["object", "null"],
                       "properties": {
                         "errors": {
                           "type": "array",
                           "properties": {
-                            "error": {
-                              "type": "string"
-                            },
-                            "field": {
-                              "type": "string"
-                            }
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
                           }
                         }
                       }
                     },
-                    "message": {
-                      "type": "string"
-                    }
+                    "message": { "type": "string" }
                   }
                 }
               }
@@ -466,9 +375,7 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Run"
-                  }
+                  "items": { "$ref": "#/components/schemas/Run" }
                 }
               }
             }
@@ -479,28 +386,20 @@
               "application/json": {
                 "schema": {
                   "properties": {
-                    "code": {
-                      "type": "string"
-                    },
+                    "code": { "type": "string" },
                     "data": {
                       "type": ["object", "null"],
                       "properties": {
                         "errors": {
                           "type": "array",
                           "properties": {
-                            "error": {
-                              "type": "string"
-                            },
-                            "field": {
-                              "type": "string"
-                            }
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
                           }
                         }
                       }
                     },
-                    "message": {
-                      "type": "string"
-                    }
+                    "message": { "type": "string" }
                   }
                 }
               }
@@ -514,36 +413,28 @@
           "in": "query",
           "required": false,
           "description": "",
-          "schema": {
-            "type": "number"
-          }
+          "schema": { "type": "number" }
         },
         {
           "name": "before",
           "in": "query",
           "required": false,
           "description": "",
-          "schema": {
-            "type": "string"
-          }
+          "schema": { "type": "string" }
         },
         {
           "name": "after",
           "in": "query",
           "required": false,
           "description": "",
-          "schema": {
-            "type": "string"
-          }
+          "schema": { "type": "string" }
         },
         {
           "name": "flow",
           "in": "path",
           "required": true,
           "description": "",
-          "schema": {
-            "type": "string"
-          }
+          "schema": { "type": "string" }
         }
       ]
     },
@@ -555,9 +446,7 @@
             "description": "Flow Response",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Run"
-                }
+                "schema": { "$ref": "#/components/schemas/Run" }
               }
             }
           },
@@ -567,28 +456,20 @@
               "application/json": {
                 "schema": {
                   "properties": {
-                    "code": {
-                      "type": "string"
-                    },
+                    "code": { "type": "string" },
                     "data": {
                       "type": ["object", "null"],
                       "properties": {
                         "errors": {
                           "type": "array",
                           "properties": {
-                            "error": {
-                              "type": "string"
-                            },
-                            "field": {
-                              "type": "string"
-                            }
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
                           }
                         }
                       }
                     },
-                    "message": {
-                      "type": "string"
-                    }
+                    "message": { "type": "string" }
                   }
                 }
               }
@@ -602,18 +483,14 @@
           "in": "path",
           "required": true,
           "description": "",
-          "schema": {
-            "type": "string"
-          }
+          "schema": { "type": "string" }
         },
         {
           "name": "runId",
           "in": "path",
           "required": true,
           "description": "",
-          "schema": {
-            "type": "string"
-          }
+          "schema": { "type": "string" }
         }
       ]
     },
@@ -625,9 +502,7 @@
             "description": "Flow Response",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Run"
-                }
+                "schema": { "$ref": "#/components/schemas/Run" }
               }
             }
           },
@@ -637,28 +512,20 @@
               "application/json": {
                 "schema": {
                   "properties": {
-                    "code": {
-                      "type": "string"
-                    },
+                    "code": { "type": "string" },
                     "data": {
                       "type": ["object", "null"],
                       "properties": {
                         "errors": {
                           "type": "array",
                           "properties": {
-                            "error": {
-                              "type": "string"
-                            },
-                            "field": {
-                              "type": "string"
-                            }
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
                           }
                         }
                       }
                     },
-                    "message": {
-                      "type": "string"
-                    }
+                    "message": { "type": "string" }
                   }
                 }
               }
@@ -672,18 +539,14 @@
           "in": "path",
           "required": true,
           "description": "",
-          "schema": {
-            "type": "string"
-          }
+          "schema": { "type": "string" }
         },
         {
           "name": "runId",
           "in": "path",
           "required": true,
           "description": "",
-          "schema": {
-            "type": "string"
-          }
+          "schema": { "type": "string" }
         }
       ]
     },
@@ -695,9 +558,7 @@
             "description": "Flow Response",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Run"
-                }
+                "schema": { "$ref": "#/components/schemas/Run" }
               }
             }
           },
@@ -707,28 +568,20 @@
               "application/json": {
                 "schema": {
                   "properties": {
-                    "code": {
-                      "type": "string"
-                    },
+                    "code": { "type": "string" },
                     "data": {
                       "type": ["object", "null"],
                       "properties": {
                         "errors": {
                           "type": "array",
                           "properties": {
-                            "error": {
-                              "type": "string"
-                            },
-                            "field": {
-                              "type": "string"
-                            }
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
                           }
                         }
                       }
                     },
-                    "message": {
-                      "type": "string"
-                    }
+                    "message": { "type": "string" }
                   }
                 }
               }
@@ -742,18 +595,14 @@
           "in": "path",
           "required": true,
           "description": "",
-          "schema": {
-            "type": "string"
-          }
+          "schema": { "type": "string" }
         },
         {
           "name": "runId",
           "in": "path",
           "required": true,
           "description": "",
-          "schema": {
-            "type": "string"
-          }
+          "schema": { "type": "string" }
         }
       ]
     },
@@ -764,10 +613,7 @@
           "description": "",
           "content": {
             "application/json": {
-              "schema": {
-                "type": "object",
-                "additionalProperties": true
-              }
+              "schema": { "type": "object", "additionalProperties": true }
             }
           }
         },
@@ -776,9 +622,7 @@
             "description": "Flow Response",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Run"
-                }
+                "schema": { "$ref": "#/components/schemas/Run" }
               }
             }
           },
@@ -788,28 +632,20 @@
               "application/json": {
                 "schema": {
                   "properties": {
-                    "code": {
-                      "type": "string"
-                    },
+                    "code": { "type": "string" },
                     "data": {
                       "type": ["object", "null"],
                       "properties": {
                         "errors": {
                           "type": "array",
                           "properties": {
-                            "error": {
-                              "type": "string"
-                            },
-                            "field": {
-                              "type": "string"
-                            }
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
                           }
                         }
                       }
                     },
-                    "message": {
-                      "type": "string"
-                    }
+                    "message": { "type": "string" }
                   }
                 }
               }
@@ -823,36 +659,28 @@
           "in": "path",
           "required": true,
           "description": "",
-          "schema": {
-            "type": "string"
-          }
+          "schema": { "type": "string" }
         },
         {
           "name": "runId",
           "in": "path",
           "required": true,
           "description": "",
-          "schema": {
-            "type": "string"
-          }
+          "schema": { "type": "string" }
         },
         {
           "name": "stepId",
           "in": "path",
           "required": true,
           "description": "",
-          "schema": {
-            "type": "string"
-          }
+          "schema": { "type": "string" }
         },
         {
           "name": "action",
           "in": "query",
           "required": false,
           "description": "",
-          "schema": {
-            "type": "string"
-          }
+          "schema": { "type": "string" }
         }
       ]
     },
@@ -888,28 +716,20 @@
               "application/json": {
                 "schema": {
                   "properties": {
-                    "code": {
-                      "type": "string"
-                    },
+                    "code": { "type": "string" },
                     "data": {
                       "type": ["object", "null"],
                       "properties": {
                         "errors": {
                           "type": "array",
                           "properties": {
-                            "error": {
-                              "type": "string"
-                            },
-                            "field": {
-                              "type": "string"
-                            }
+                            "error": { "type": "string" },
+                            "field": { "type": "string" }
                           }
                         }
                       }
                     },
-                    "message": {
-                      "type": "string"
-                    }
+                    "message": { "type": "string" }
                   }
                 }
               }
@@ -923,45 +743,35 @@
           "in": "path",
           "required": true,
           "description": "",
-          "schema": {
-            "type": "string"
-          }
+          "schema": { "type": "string" }
         },
         {
           "name": "runId",
           "in": "path",
           "required": true,
           "description": "",
-          "schema": {
-            "type": "string"
-          }
+          "schema": { "type": "string" }
         },
         {
           "name": "stepId",
           "in": "path",
           "required": true,
           "description": "",
-          "schema": {
-            "type": "string"
-          }
+          "schema": { "type": "string" }
         },
         {
           "name": "callback",
           "in": "query",
           "required": true,
           "description": "",
-          "schema": {
-            "type": "string"
-          }
+          "schema": { "type": "string" }
         },
         {
           "name": "element",
           "in": "query",
           "required": true,
           "description": "",
-          "schema": {
-            "type": "string"
-          }
+          "schema": { "type": "string" }
         }
       ]
     }
@@ -974,65 +784,34 @@
           "config": {
             "type": "object",
             "properties": {
-              "description": {
-                "type": "string"
-              },
+              "description": { "type": "string" },
               "stages": {
                 "type": "array",
                 "items": {
                   "type": "object",
                   "properties": {
-                    "description": {
-                      "type": "string"
-                    },
-                    "initiallyHidden": {
-                      "type": "boolean"
-                    },
-                    "key": {
-                      "type": "string"
-                    },
-                    "name": {
-                      "type": "string"
-                    }
+                    "description": { "type": "string" },
+                    "initiallyHidden": { "type": "boolean" },
+                    "key": { "type": "string" },
+                    "name": { "type": "string" }
                   },
                   "additionalProperties": false,
                   "required": ["key", "name"]
                 }
               },
-              "title": {
-                "type": "string"
-              }
+              "title": { "type": "string" }
             },
             "additionalProperties": false,
             "required": ["title"]
           },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "data": {
-            "type": ["object", "null"]
-          },
-          "error": {
-            "type": ["string", "null"]
-          },
-          "id": {
-            "type": "string"
-          },
-          "input": {
-            "type": ["object", "null"],
-            "additionalProperties": true
-          },
-          "name": {
-            "type": "string"
-          },
-          "startTime": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "startedBy": {
-            "type": ["string", "null"]
-          },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "data": { "type": ["object", "null"] },
+          "error": { "type": ["string", "null"] },
+          "id": { "type": "string" },
+          "input": { "type": ["object", "null"], "additionalProperties": true },
+          "name": { "type": "string" },
+          "startTime": { "type": "string", "format": "date-time" },
+          "startedBy": { "type": ["string", "null"] },
           "status": {
             "type": "string",
             "enum": [
@@ -1046,17 +825,10 @@
           },
           "steps": {
             "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Step"
-            }
+            "items": { "$ref": "#/components/schemas/Step" }
           },
-          "traceId": {
-            "type": "string"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time"
-          }
+          "traceId": { "type": "string" },
+          "updatedAt": { "type": "string", "format": "date-time" }
         },
         "required": [
           "id",
@@ -1073,31 +845,16 @@
       "Stats": {
         "type": "object",
         "properties": {
-          "activeRuns": {
-            "type": "number"
-          },
-          "completedToday": {
-            "type": "number"
-          },
-          "errorRate": {
-            "type": "number"
-          },
-          "lastRun": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "name": {
-            "type": "string"
-          },
+          "activeRuns": { "type": "number" },
+          "completedToday": { "type": "number" },
+          "errorRate": { "type": "number" },
+          "lastRun": { "type": "string", "format": "date-time" },
+          "name": { "type": "string" },
           "timeSeries": {
             "type": ["array", "null"],
-            "items": {
-              "$ref": "#/components/schemas/StatsBucket"
-            }
+            "items": { "$ref": "#/components/schemas/StatsBucket" }
           },
-          "totalRuns": {
-            "type": "number"
-          }
+          "totalRuns": { "type": "number" }
         },
         "required": [
           "name",
@@ -1111,67 +868,31 @@
       "StatsBucket": {
         "type": "object",
         "properties": {
-          "failedRuns": {
-            "type": "number"
-          },
-          "time": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "totalRuns": {
-            "type": "number"
-          }
+          "failedRuns": { "type": "number" },
+          "time": { "type": "string", "format": "date-time" },
+          "totalRuns": { "type": "number" }
         },
         "required": ["time", "totalRuns", "failedRunts"]
       },
       "Step": {
         "type": "object",
         "properties": {
-          "allowBack": {
-            "type": ["boolean", "null"]
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "endTime": {
-            "type": ["string", "null"],
-            "format": "date-time"
-          },
-          "error": {
-            "type": ["string", "null"]
-          },
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "runId": {
-            "type": "string"
-          },
-          "stage": {
-            "type": ["string", "null"]
-          },
-          "startTime": {
-            "type": ["string", "null"],
-            "format": "date-time"
-          },
+          "allowBack": { "type": ["boolean", "null"] },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "endTime": { "type": ["string", "null"], "format": "date-time" },
+          "error": { "type": ["string", "null"] },
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "runId": { "type": "string" },
+          "stage": { "type": ["string", "null"] },
+          "startTime": { "type": ["string", "null"], "format": "date-time" },
           "status": {
             "type": "string",
             "enum": ["PENDING", "FAILED", "COMPLETED", "CANCELLED"]
           },
-          "type": {
-            "type": "string",
-            "enum": ["FUNCTION", "UI", "COMPLETE"]
-          },
-          "ui": {
-            "$ref": "#/components/schemas/UiConfig"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
+          "type": { "type": "string", "enum": ["FUNCTION", "UI", "COMPLETE"] },
+          "ui": { "$ref": "#/components/schemas/UiConfig" },
+          "updatedAt": { "type": "string", "format": "date-time" },
           "value": {
             "type": [
               "string",
@@ -1222,13 +943,8 @@
           },
           "ElementDataType": {
             "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": ["string", "number", "boolean"]
-              }
+              { "type": "string", "format": "date-time" },
+              { "type": ["string", "number", "boolean"] }
             ]
           },
           "KeyValueMode": {
@@ -1238,18 +954,10 @@
           "Partial\u003cFileDbRecord\u003e": {
             "type": "object",
             "properties": {
-              "contentType": {
-                "type": "string"
-              },
-              "filename": {
-                "type": "string"
-              },
-              "key": {
-                "type": "string"
-              },
-              "size": {
-                "type": "number"
-              }
+              "contentType": { "type": "string" },
+              "filename": { "type": "string" },
+              "key": { "type": "string" },
+              "size": { "type": "number" }
             },
             "additionalProperties": false
           },
@@ -1262,49 +970,28 @@
             "enum": ["none", "rejectDuplicates", "trackQuantity"],
             "default": "none"
           },
-          "SelectMode": {
-            "type": "string",
-            "enum": ["multi", "single"]
-          },
+          "SelectMode": { "type": "string", "enum": ["multi", "single"] },
           "UiCompleteApiResponse": {
             "type": "object",
             "properties": {
-              "__type": {
-                "type": "string",
-                "const": "ui.complete"
-              },
+              "__type": { "type": "string", "const": "ui.complete" },
               "allowRestart": {
                 "type": "object",
                 "properties": {
-                  "buttonLabel": {
-                    "type": "string"
-                  },
+                  "buttonLabel": { "type": "string" },
                   "inputs": {},
-                  "mode": {
-                    "type": "string",
-                    "enum": ["auto", "manual"]
-                  }
+                  "mode": { "type": "string", "enum": ["auto", "manual"] }
                 },
                 "additionalProperties": false
               },
-              "autoClose": {
-                "type": "boolean"
-              },
+              "autoClose": { "type": "boolean" },
               "content": {
                 "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementApiResponses"
               },
-              "description": {
-                "type": "string"
-              },
-              "fullWidth": {
-                "type": "boolean"
-              },
-              "stage": {
-                "type": "string"
-              },
-              "title": {
-                "type": "string"
-              }
+              "description": { "type": "string" },
+              "fullWidth": { "type": "boolean" },
+              "stage": { "type": "string" },
+              "title": { "type": "string" }
             },
             "additionalProperties": false,
             "required": ["__type", "content"]
@@ -1391,19 +1078,12 @@
           "UiElementBannerApiResponse": {
             "type": "object",
             "properties": {
-              "__type": {
-                "type": "string",
-                "const": "ui.display.banner"
-              },
-              "description": {
-                "type": "string"
-              },
+              "__type": { "type": "string", "const": "ui.display.banner" },
+              "description": { "type": "string" },
               "mode": {
                 "$ref": "#/components/schemas/__UiConfigSchemas/$defs/BannerMode"
               },
-              "title": {
-                "type": "string"
-              }
+              "title": { "type": "string" }
             },
             "additionalProperties": false,
             "required": ["__type", "description", "mode", "title"]
@@ -1411,16 +1091,9 @@
           "UiElementCodeApiResponse": {
             "type": "object",
             "properties": {
-              "__type": {
-                "type": "string",
-                "const": "ui.display.code"
-              },
-              "code": {
-                "type": "string"
-              },
-              "language": {
-                "type": "string"
-              }
+              "__type": { "type": "string", "const": "ui.display.code" },
+              "code": { "type": "string" },
+              "language": { "type": "string" }
             },
             "additionalProperties": false,
             "required": ["__type", "code"]
@@ -1428,10 +1101,7 @@
           "UiElementDividerApiResponse": {
             "type": "object",
             "properties": {
-              "__type": {
-                "type": "string",
-                "const": "ui.display.divider"
-              }
+              "__type": { "type": "string", "const": "ui.display.divider" }
             },
             "additionalProperties": false,
             "required": ["__type"]
@@ -1439,35 +1109,20 @@
           "UiElementFileApiResponse": {
             "type": "object",
             "properties": {
-              "__type": {
-                "type": "string",
-                "const": "ui.display.file"
-              },
+              "__type": { "type": "string", "const": "ui.display.file" },
               "file": {
                 "type": "object",
                 "properties": {
-                  "contentType": {
-                    "type": "string"
-                  },
-                  "filename": {
-                    "type": "string"
-                  },
-                  "key": {
-                    "type": "string"
-                  },
-                  "size": {
-                    "type": "number"
-                  },
-                  "url": {
-                    "type": "string"
-                  }
+                  "contentType": { "type": "string" },
+                  "filename": { "type": "string" },
+                  "key": { "type": "string" },
+                  "size": { "type": "number" },
+                  "url": { "type": "string" }
                 },
                 "additionalProperties": false,
                 "required": ["contentType", "filename", "key", "size", "url"]
               },
-              "title": {
-                "type": "string"
-              }
+              "title": { "type": "string" }
             },
             "additionalProperties": false,
             "required": ["__type", "title"]
@@ -1475,41 +1130,28 @@
           "UiElementGridApiResponse": {
             "type": "object",
             "properties": {
-              "__type": {
-                "type": "string",
-                "const": "ui.display.grid"
-              },
+              "__type": { "type": "string", "const": "ui.display.grid" },
               "data": {
                 "type": "array",
                 "items": {
                   "type": "object",
                   "properties": {
-                    "description": {
-                      "type": "string"
-                    },
+                    "description": { "type": "string" },
                     "image": {
                       "type": "object",
                       "properties": {
-                        "alt": {
-                          "type": "string"
-                        },
-                        "aspectRatio": {
-                          "type": "number"
-                        },
+                        "alt": { "type": "string" },
+                        "aspectRatio": { "type": "number" },
                         "fit": {
                           "type": "string",
                           "enum": ["contain", "cover"]
                         },
-                        "url": {
-                          "type": "string"
-                        }
+                        "url": { "type": "string" }
                       },
                       "additionalProperties": false,
                       "required": ["url"]
                     },
-                    "title": {
-                      "type": "string"
-                    }
+                    "title": { "type": "string" }
                   },
                   "additionalProperties": false
                 }
@@ -1521,19 +1163,10 @@
           "UiElementHeaderApiResponse": {
             "type": "object",
             "properties": {
-              "__type": {
-                "type": "string",
-                "const": "ui.display.header"
-              },
-              "description": {
-                "type": "string"
-              },
-              "level": {
-                "type": "number"
-              },
-              "title": {
-                "type": "string"
-              }
+              "__type": { "type": "string", "const": "ui.display.header" },
+              "description": { "type": "string" },
+              "level": { "type": "number" },
+              "title": { "type": "string" }
             },
             "additionalProperties": false,
             "required": ["__type", "description", "level", "title"]
@@ -1541,23 +1174,14 @@
           "UiElementImageApiResponse": {
             "type": "object",
             "properties": {
-              "__type": {
-                "type": "string",
-                "const": "ui.display.image"
-              },
-              "alt": {
-                "type": "string"
-              },
-              "caption": {
-                "type": "string"
-              },
+              "__type": { "type": "string", "const": "ui.display.image" },
+              "alt": { "type": "string" },
+              "caption": { "type": "string" },
               "size": {
                 "type": "string",
                 "enum": ["full", "large", "medium", "small", "thumbnail"]
               },
-              "url": {
-                "type": "string"
-              }
+              "url": { "type": "string" }
             },
             "additionalProperties": false,
             "required": ["__type", "url"]
@@ -1565,35 +1189,15 @@
           "UiElementInputBooleanApiResponse": {
             "type": "object",
             "properties": {
-              "__type": {
-                "type": "string",
-                "const": "ui.input.boolean"
-              },
-              "defaultValue": {
-                "type": "boolean"
-              },
-              "disabled": {
-                "type": "boolean"
-              },
-              "helpText": {
-                "type": "string"
-              },
-              "label": {
-                "type": "string"
-              },
-              "mode": {
-                "type": "string",
-                "enum": ["checkbox", "switch"]
-              },
-              "name": {
-                "type": "string"
-              },
-              "optional": {
-                "type": "boolean"
-              },
-              "validationError": {
-                "type": "string"
-              }
+              "__type": { "type": "string", "const": "ui.input.boolean" },
+              "defaultValue": { "type": "boolean" },
+              "disabled": { "type": "boolean" },
+              "helpText": { "type": "string" },
+              "label": { "type": "string" },
+              "mode": { "type": "string", "enum": ["checkbox", "switch"] },
+              "name": { "type": "string" },
+              "optional": { "type": "boolean" },
+              "validationError": { "type": "string" }
             },
             "additionalProperties": false,
             "required": [
@@ -1608,33 +1212,18 @@
           "UiElementInputDataGridApiResponse": {
             "type": "object",
             "properties": {
-              "__type": {
-                "type": "string",
-                "const": "ui.input.dataGrid"
-              },
-              "allowAddRows": {
-                "type": "boolean"
-              },
-              "allowDeleteRows": {
-                "type": "boolean"
-              },
+              "__type": { "type": "string", "const": "ui.input.dataGrid" },
+              "allowAddRows": { "type": "boolean" },
+              "allowDeleteRows": { "type": "boolean" },
               "columns": {
                 "type": "array",
                 "items": {
                   "type": "object",
                   "properties": {
-                    "editable": {
-                      "type": "boolean"
-                    },
-                    "index": {
-                      "type": "number"
-                    },
-                    "key": {
-                      "type": "string"
-                    },
-                    "label": {
-                      "type": "string"
-                    },
+                    "editable": { "type": "boolean" },
+                    "index": { "type": "number" },
+                    "key": { "type": "string" },
+                    "label": { "type": "string" },
                     "type": {
                       "$ref": "#/components/schemas/__UiConfigSchemas/$defs/DataGridDataTypes"
                     }
@@ -1643,19 +1232,10 @@
                   "required": ["editable", "index", "key", "label", "type"]
                 }
               },
-              "data": {
-                "type": "array",
-                "items": {}
-              },
-              "helpText": {
-                "type": "string"
-              },
-              "name": {
-                "type": "string"
-              },
-              "validationError": {
-                "type": "string"
-              }
+              "data": { "type": "array", "items": {} },
+              "helpText": { "type": "string" },
+              "name": { "type": "string" },
+              "validationError": { "type": "string" }
             },
             "additionalProperties": false,
             "required": [
@@ -1670,42 +1250,21 @@
           "UiElementInputDatePickerApiResponse": {
             "type": "object",
             "properties": {
-              "__type": {
-                "type": "string",
-                "const": "ui.input.datePicker"
-              },
-              "defaultValue": {
-                "type": "string"
-              },
-              "disabled": {
-                "type": "boolean"
-              },
-              "helpText": {
-                "type": "string"
-              },
-              "label": {
-                "type": "string"
-              },
-              "max": {
-                "type": "string"
-              },
-              "min": {
-                "type": "string"
-              },
+              "__type": { "type": "string", "const": "ui.input.datePicker" },
+              "defaultValue": { "type": "string" },
+              "disabled": { "type": "boolean" },
+              "helpText": { "type": "string" },
+              "label": { "type": "string" },
+              "max": { "type": "string" },
+              "min": { "type": "string" },
               "mode": {
                 "type": "string",
                 "enum": ["date", "dateTime"],
                 "default": "dateTime"
               },
-              "name": {
-                "type": "string"
-              },
-              "optional": {
-                "type": "boolean"
-              },
-              "validationError": {
-                "type": "string"
-              }
+              "name": { "type": "string" },
+              "optional": { "type": "boolean" },
+              "validationError": { "type": "string" }
             },
             "additionalProperties": false,
             "required": ["__type", "disabled", "label", "name", "optional"]
@@ -1713,31 +1272,16 @@
           "UiElementInputFileApiResponse": {
             "type": "object",
             "properties": {
-              "__type": {
-                "type": "string",
-                "const": "ui.input.file"
-              },
+              "__type": { "type": "string", "const": "ui.input.file" },
               "defaultValue": {
-                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/Partial<FileDbRecord>"
+                "$ref": "#/components/schemas/__UiConfigSchemas/$defs/Partial%3CFileDbRecord%3E"
               },
-              "disabled": {
-                "type": "boolean"
-              },
-              "helpText": {
-                "type": "string"
-              },
-              "label": {
-                "type": "string"
-              },
-              "name": {
-                "type": "string"
-              },
-              "optional": {
-                "type": "boolean"
-              },
-              "validationError": {
-                "type": "string"
-              }
+              "disabled": { "type": "boolean" },
+              "helpText": { "type": "string" },
+              "label": { "type": "string" },
+              "name": { "type": "string" },
+              "optional": { "type": "boolean" },
+              "validationError": { "type": "string" }
             },
             "additionalProperties": false,
             "required": ["__type", "disabled", "label", "name", "optional"]
@@ -1745,40 +1289,17 @@
           "UiElementInputNumberApiResponse": {
             "type": "object",
             "properties": {
-              "__type": {
-                "type": "string",
-                "const": "ui.input.number"
-              },
-              "defaultValue": {
-                "type": "number"
-              },
-              "disabled": {
-                "type": "boolean"
-              },
-              "helpText": {
-                "type": "string"
-              },
-              "label": {
-                "type": "string"
-              },
-              "max": {
-                "type": "number"
-              },
-              "min": {
-                "type": "number"
-              },
-              "name": {
-                "type": "string"
-              },
-              "optional": {
-                "type": "boolean"
-              },
-              "placeholder": {
-                "type": "string"
-              },
-              "validationError": {
-                "type": "string"
-              }
+              "__type": { "type": "string", "const": "ui.input.number" },
+              "defaultValue": { "type": "number" },
+              "disabled": { "type": "boolean" },
+              "helpText": { "type": "string" },
+              "label": { "type": "string" },
+              "max": { "type": "number" },
+              "min": { "type": "number" },
+              "name": { "type": "string" },
+              "optional": { "type": "boolean" },
+              "placeholder": { "type": "string" },
+              "validationError": { "type": "string" }
             },
             "additionalProperties": false,
             "required": ["__type", "disabled", "label", "name", "optional"]
@@ -1786,41 +1307,19 @@
           "UiElementInputScanApiResponse": {
             "type": "object",
             "properties": {
-              "__type": {
-                "type": "string",
-                "const": "ui.input.scan"
-              },
-              "autoContinue": {
-                "type": "boolean"
-              },
-              "description": {
-                "type": "string"
-              },
+              "__type": { "type": "string", "const": "ui.input.scan" },
+              "autoContinue": { "type": "boolean" },
+              "description": { "type": "string" },
               "duplicateHandling": {
                 "$ref": "#/components/schemas/__UiConfigSchemas/$defs/ScanDuplicateMode"
               },
-              "max": {
-                "type": "number"
-              },
-              "min": {
-                "type": "number"
-              },
-              "mode": {
-                "type": "string",
-                "enum": ["multi", "single"]
-              },
-              "name": {
-                "type": "string"
-              },
-              "title": {
-                "type": "string"
-              },
-              "unit": {
-                "type": "string"
-              },
-              "validationError": {
-                "type": "string"
-              }
+              "max": { "type": "number" },
+              "min": { "type": "number" },
+              "mode": { "type": "string", "enum": ["multi", "single"] },
+              "name": { "type": "string" },
+              "title": { "type": "string" },
+              "unit": { "type": "string" },
+              "validationError": { "type": "string" }
             },
             "additionalProperties": false,
             "required": [
@@ -1834,43 +1333,18 @@
           "UiElementInputTextApiResponse": {
             "type": "object",
             "properties": {
-              "__type": {
-                "type": "string",
-                "const": "ui.input.text"
-              },
-              "defaultValue": {
-                "type": "string"
-              },
-              "disabled": {
-                "type": "boolean"
-              },
-              "helpText": {
-                "type": "string"
-              },
-              "label": {
-                "type": "string"
-              },
-              "maxLength": {
-                "type": "number"
-              },
-              "minLength": {
-                "type": "number"
-              },
-              "multiline": {
-                "type": "boolean"
-              },
-              "name": {
-                "type": "string"
-              },
-              "optional": {
-                "type": "boolean"
-              },
-              "placeholder": {
-                "type": "string"
-              },
-              "validationError": {
-                "type": "string"
-              }
+              "__type": { "type": "string", "const": "ui.input.text" },
+              "defaultValue": { "type": "string" },
+              "disabled": { "type": "boolean" },
+              "helpText": { "type": "string" },
+              "label": { "type": "string" },
+              "maxLength": { "type": "number" },
+              "minLength": { "type": "number" },
+              "multiline": { "type": "boolean" },
+              "name": { "type": "string" },
+              "optional": { "type": "boolean" },
+              "placeholder": { "type": "string" },
+              "validationError": { "type": "string" }
             },
             "additionalProperties": false,
             "required": ["__type", "disabled", "label", "name", "optional"]
@@ -1878,10 +1352,7 @@
           "UiElementIteratorApiResponse": {
             "type": "object",
             "properties": {
-              "__type": {
-                "type": "string",
-                "const": "ui.iterator"
-              },
+              "__type": { "type": "string", "const": "ui.iterator" },
               "content": {
                 "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementApiResponses"
               },
@@ -1890,32 +1361,18 @@
                 "items": {
                   "type": "object",
                   "properties": {
-                    "index": {
-                      "type": "number"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "validationError": {
-                      "type": "string"
-                    }
+                    "index": { "type": "number" },
+                    "name": { "type": "string" },
+                    "validationError": { "type": "string" }
                   },
                   "additionalProperties": false,
                   "required": ["index", "name", "validationError"]
                 }
               },
-              "max": {
-                "type": "number"
-              },
-              "min": {
-                "type": "number"
-              },
-              "name": {
-                "type": "string"
-              },
-              "validationError": {
-                "type": "string"
-              }
+              "max": { "type": "number" },
+              "min": { "type": "number" },
+              "name": { "type": "string" },
+              "validationError": { "type": "string" }
             },
             "additionalProperties": false,
             "required": ["__type", "content", "name"]
@@ -1923,27 +1380,17 @@
           "UiElementKeyValueApiResponse": {
             "type": "object",
             "properties": {
-              "__type": {
-                "type": "string",
-                "const": "ui.display.keyValue"
-              },
+              "__type": { "type": "string", "const": "ui.display.keyValue" },
               "data": {
                 "type": "array",
                 "items": {
                   "type": "object",
                   "properties": {
-                    "key": {
-                      "type": "string"
-                    },
+                    "key": { "type": "string" },
                     "value": {
                       "anyOf": [
-                        {
-                          "type": "string",
-                          "format": "date-time"
-                        },
-                        {
-                          "type": ["string", "number", "boolean"]
-                        }
+                        { "type": "string", "format": "date-time" },
+                        { "type": ["string", "number", "boolean"] }
                       ]
                     }
                   },
@@ -1961,38 +1408,27 @@
           "UiElementListApiResponse": {
             "type": "object",
             "properties": {
-              "__type": {
-                "type": "string",
-                "const": "ui.display.list"
-              },
+              "__type": { "type": "string", "const": "ui.display.list" },
               "data": {
                 "type": "array",
                 "items": {
                   "type": "object",
                   "properties": {
-                    "description": {
-                      "type": "string"
-                    },
+                    "description": { "type": "string" },
                     "image": {
                       "type": "object",
                       "properties": {
-                        "alt": {
-                          "type": "string"
-                        },
+                        "alt": { "type": "string" },
                         "fit": {
                           "type": "string",
                           "enum": ["contain", "cover"]
                         },
-                        "url": {
-                          "type": "string"
-                        }
+                        "url": { "type": "string" }
                       },
                       "additionalProperties": false,
                       "required": ["url"]
                     },
-                    "title": {
-                      "type": "string"
-                    }
+                    "title": { "type": "string" }
                   },
                   "additionalProperties": false
                 }
@@ -2004,13 +1440,8 @@
           "UiElementMarkdownApiResponse": {
             "type": "object",
             "properties": {
-              "__type": {
-                "type": "string",
-                "const": "ui.display.markdown"
-              },
-              "content": {
-                "type": "string"
-              }
+              "__type": { "type": "string", "const": "ui.display.markdown" },
+              "content": { "type": "string" }
             },
             "additionalProperties": false,
             "required": ["__type", "content"]
@@ -2022,9 +1453,7 @@
                 "type": "string",
                 "const": "ui.interactive.pickList"
               },
-              "autoContinue": {
-                "type": "boolean"
-              },
+              "autoContinue": { "type": "boolean" },
               "data": {
                 "type": "array",
                 "items": {
@@ -2032,39 +1461,25 @@
                   "properties": {
                     "barcodes": {
                       "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
+                      "items": { "type": "string" }
                     },
-                    "description": {
-                      "type": "string"
-                    },
-                    "id": {
-                      "type": "string"
-                    },
+                    "description": { "type": "string" },
+                    "id": { "type": "string" },
                     "image": {
                       "type": "object",
                       "properties": {
-                        "alt": {
-                          "type": "string"
-                        },
+                        "alt": { "type": "string" },
                         "fit": {
                           "type": "string",
                           "enum": ["contain", "cover"]
                         },
-                        "url": {
-                          "type": "string"
-                        }
+                        "url": { "type": "string" }
                       },
                       "additionalProperties": false,
                       "required": ["url"]
                     },
-                    "targetQuantity": {
-                      "type": "number"
-                    },
-                    "title": {
-                      "type": "string"
-                    }
+                    "targetQuantity": { "type": "number" },
+                    "title": { "type": "string" }
                   },
                   "additionalProperties": false,
                   "required": ["id", "targetQuantity"]
@@ -2074,25 +1489,17 @@
                 "type": "string",
                 "enum": ["increaseQuantity", "rejectDuplicates"]
               },
-              "name": {
-                "type": "string"
-              },
+              "name": { "type": "string" },
               "supportedInputs": {
                 "type": "object",
                 "properties": {
-                  "manual": {
-                    "type": "boolean"
-                  },
-                  "scanner": {
-                    "type": "boolean"
-                  }
+                  "manual": { "type": "boolean" },
+                  "scanner": { "type": "boolean" }
                 },
                 "additionalProperties": false,
                 "required": ["manual", "scanner"]
               },
-              "validationError": {
-                "type": "string"
-              }
+              "validationError": { "type": "string" }
             },
             "additionalProperties": false,
             "required": [
@@ -2106,63 +1513,30 @@
           "UiElementPrintApiResponse": {
             "type": "object",
             "properties": {
-              "__type": {
-                "type": "string",
-                "const": "ui.interactive.print"
-              },
-              "allowReprint": {
-                "type": "boolean"
-              },
-              "autoContinue": {
-                "type": "boolean"
-              },
-              "autoPrint": {
-                "type": "boolean"
-              },
+              "__type": { "type": "string", "const": "ui.interactive.print" },
+              "allowReprint": { "type": "boolean" },
+              "autoContinue": { "type": "boolean" },
+              "autoPrint": { "type": "boolean" },
               "data": {
                 "type": "array",
                 "items": {
                   "type": "object",
                   "properties": {
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    },
-                    "dpi": {
-                      "type": "number"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "pageHeight": {
-                      "type": "number"
-                    },
-                    "pageWidth": {
-                      "type": "number"
-                    },
-                    "printer": {
-                      "type": "string"
-                    },
-                    "type": {
-                      "type": "string",
-                      "enum": ["rawPdf", "zpl"]
-                    },
-                    "url": {
-                      "type": "string"
-                    }
+                    "data": { "type": "array", "items": { "type": "string" } },
+                    "dpi": { "type": "number" },
+                    "name": { "type": "string" },
+                    "pageHeight": { "type": "number" },
+                    "pageWidth": { "type": "number" },
+                    "printer": { "type": "string" },
+                    "type": { "type": "string", "enum": ["rawPdf", "zpl"] },
+                    "url": { "type": "string" }
                   },
                   "additionalProperties": false,
                   "required": ["type"]
                 }
               },
-              "description": {
-                "type": "string"
-              },
-              "title": {
-                "type": "string"
-              }
+              "description": { "type": "string" },
+              "title": { "type": "string" }
             },
             "additionalProperties": false,
             "required": [
@@ -2176,50 +1550,27 @@
           "UiElementSelectOneApiResponse": {
             "type": "object",
             "properties": {
-              "__type": {
-                "type": "string",
-                "const": "ui.select.one"
-              },
+              "__type": { "type": "string", "const": "ui.select.one" },
               "defaultValue": {
                 "anyOf": [
-                  {
-                    "type": "string",
-                    "format": "date-time"
-                  },
-                  {
-                    "type": ["string", "number", "boolean"]
-                  }
+                  { "type": "string", "format": "date-time" },
+                  { "type": ["string", "number", "boolean"] }
                 ]
               },
-              "disabled": {
-                "type": "boolean"
-              },
-              "helpText": {
-                "type": "string"
-              },
-              "label": {
-                "type": "string"
-              },
-              "name": {
-                "type": "string"
-              },
-              "optional": {
-                "type": "boolean"
-              },
+              "disabled": { "type": "boolean" },
+              "helpText": { "type": "string" },
+              "label": { "type": "string" },
+              "name": { "type": "string" },
+              "optional": { "type": "boolean" },
               "options": {
                 "type": "array",
                 "items": {
                   "anyOf": [
-                    {
-                      "type": "string",
-                      "format": "date-time"
-                    },
+                    { "type": "string", "format": "date-time" },
                     {
                       "type": "object",
                       "properties": {
-                        "label": {
-                          "type": "string"
-                        },
+                        "label": { "type": "string" },
                         "value": {
                           "$ref": "#/components/schemas/__UiConfigSchemas/$defs/ElementDataType"
                         }
@@ -2227,15 +1578,11 @@
                       "additionalProperties": false,
                       "required": ["label", "value"]
                     },
-                    {
-                      "type": ["string", "number", "boolean"]
-                    }
+                    { "type": ["string", "number", "boolean"] }
                   ]
                 }
               },
-              "validationError": {
-                "type": "string"
-              }
+              "validationError": { "type": "string" }
             },
             "additionalProperties": false,
             "required": [
@@ -2250,21 +1597,14 @@
           "UiElementSelectTableApiResponse": {
             "type": "object",
             "properties": {
-              "__type": {
-                "type": "string",
-                "const": "ui.select.table"
-              },
+              "__type": { "type": "string", "const": "ui.select.table" },
               "columns": {
                 "type": "array",
                 "items": {
                   "type": "object",
                   "properties": {
-                    "index": {
-                      "type": "number"
-                    },
-                    "name": {
-                      "type": "string"
-                    }
+                    "index": { "type": "number" },
+                    "name": { "type": "string" }
                   },
                   "additionalProperties": false,
                   "required": ["index", "name"]
@@ -2273,27 +1613,17 @@
               "data": {
                 "type": "array",
                 "items": {
-                  "$ref": "#/components/schemas/__UiConfigSchemas/$defs/Record<string,any>"
+                  "$ref": "#/components/schemas/__UiConfigSchemas/$defs/Record%3Cstring%2Cany%3E"
                 }
               },
-              "disabled": {
-                "type": "boolean"
-              },
-              "helpText": {
-                "type": "string"
-              },
+              "disabled": { "type": "boolean" },
+              "helpText": { "type": "string" },
               "mode": {
                 "$ref": "#/components/schemas/__UiConfigSchemas/$defs/SelectMode"
               },
-              "name": {
-                "type": "string"
-              },
-              "optional": {
-                "type": "boolean"
-              },
-              "validationError": {
-                "type": "string"
-              }
+              "name": { "type": "string" },
+              "optional": { "type": "boolean" },
+              "validationError": { "type": "string" }
             },
             "additionalProperties": false,
             "required": [
@@ -2309,30 +1639,20 @@
           "UiElementTableApiResponse": {
             "type": "object",
             "properties": {
-              "__type": {
-                "type": "string",
-                "const": "ui.display.table"
-              },
+              "__type": { "type": "string", "const": "ui.display.table" },
               "columns": {
                 "type": "array",
                 "items": {
                   "type": "object",
                   "properties": {
-                    "index": {
-                      "type": "number"
-                    },
-                    "name": {
-                      "type": "string"
-                    }
+                    "index": { "type": "number" },
+                    "name": { "type": "string" }
                   },
                   "additionalProperties": false,
                   "required": ["index", "name"]
                 }
               },
-              "data": {
-                "type": "array",
-                "items": {}
-              }
+              "data": { "type": "array", "items": {} }
             },
             "additionalProperties": false,
             "required": ["__type", "columns", "data"]
@@ -2340,10 +1660,7 @@
           "UiPageApiResponse": {
             "type": "object",
             "properties": {
-              "__type": {
-                "type": "string",
-                "const": "ui.page"
-              },
+              "__type": { "type": "string", "const": "ui.page" },
               "actions": {
                 "type": "array",
                 "items": {
@@ -2359,57 +1676,35 @@
                               "enum": ["excludeForms", "includeForms"],
                               "default": "excludeForms"
                             },
-                            "key": {
-                              "type": "string"
-                            }
+                            "key": { "type": "string" }
                           },
                           "additionalProperties": false,
                           "required": ["key"]
                         },
-                        {
-                          "type": "string"
-                        }
+                        { "type": "string" }
                       ]
                     },
-                    "label": {
-                      "type": "string"
-                    },
+                    "label": { "type": "string" },
                     "mode": {
                       "type": "string",
                       "enum": ["destructive", "primary", "secondary"]
                     },
-                    "value": {
-                      "type": "string"
-                    }
+                    "value": { "type": "string" }
                   },
                   "additionalProperties": false,
                   "required": ["label", "value"]
                 }
               },
-              "allowBack": {
-                "type": "boolean"
-              },
+              "allowBack": { "type": "boolean" },
               "content": {
                 "$ref": "#/components/schemas/__UiConfigSchemas/$defs/UiElementApiResponses"
               },
-              "description": {
-                "type": "string"
-              },
-              "fullWidth": {
-                "type": "boolean"
-              },
-              "hasValidationErrors": {
-                "type": "boolean"
-              },
-              "stage": {
-                "type": "string"
-              },
-              "title": {
-                "type": "string"
-              },
-              "validationError": {
-                "type": "string"
-              }
+              "description": { "type": "string" },
+              "fullWidth": { "type": "boolean" },
+              "hasValidationErrors": { "type": "boolean" },
+              "stage": { "type": "string" },
+              "title": { "type": "string" },
+              "validationError": { "type": "string" }
             },
             "additionalProperties": false,
             "required": ["__type", "content", "hasValidationErrors"]
