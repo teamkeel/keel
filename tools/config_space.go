@@ -5,11 +5,15 @@ import toolsproto "github.com/teamkeel/keel/tools/proto"
 type SpaceConfigs []*SpaceConfig
 
 type SpaceConfig struct {
-	ID      string
-	Name    string
-	Colour  *SpaceColour
-	Icon    string
-	Actions LinkConfigs
+	ID           string
+	Name         string
+	Colour       *SpaceColour
+	Icon         string
+	DisplayOrder int32
+	Actions      LinkConfigs
+	Groups       SpaceGroups
+	Links        ExternalLinks
+	Metrics      SpaceMetrics
 }
 
 type SpaceColour string
@@ -39,12 +43,61 @@ func (s SpaceConfigs) toProto() []*toolsproto.Space {
 
 				return &c
 			}(),
-			Actions: cfg.Actions.applyOn(nil),
-			//TODO: Groups: ,
-			//TODO: Links: ,
-			//TODO:  Metrics: ,
+			DisplayOrder: cfg.DisplayOrder,
+			Actions:      cfg.Actions.applyOn(nil),
+			Links:        cfg.Links.toProto(),
+			Groups:       cfg.Groups.toProto(),
+			Metrics:      cfg.Metrics.toProto(),
 		})
 	}
 
 	return spaces
+}
+
+type SpaceGroups []*SpaceGroup
+
+type SpaceGroup struct {
+	ID           string
+	Name         string
+	Description  string
+	DisplayOrder int32
+	Actions      LinkConfigs
+}
+
+func (g SpaceGroups) toProto() []*toolsproto.SpaceGroup {
+	groups := []*toolsproto.SpaceGroup{}
+	for _, cfg := range g {
+		groups = append(groups, &toolsproto.SpaceGroup{
+			Id:           cfg.ID,
+			Name:         makeStringTemplate(&cfg.Name),
+			Description:  makeStringTemplate(&cfg.Description),
+			DisplayOrder: cfg.DisplayOrder,
+			Actions:      cfg.Actions.applyOn(nil),
+		})
+	}
+
+	return groups
+}
+
+type SpaceMetrics []*SpaceMetric
+
+type SpaceMetric struct {
+	Label         string
+	ToolID        string
+	FacetLocation string
+	DisplayOrder  int32
+}
+
+func (m SpaceMetrics) toProto() []*toolsproto.SpaceMetric {
+	metrics := []*toolsproto.SpaceMetric{}
+	for _, cfg := range m {
+		metrics = append(metrics, &toolsproto.SpaceMetric{
+			Label:         makeStringTemplate(&cfg.Label),
+			ToolId:        cfg.ToolID,
+			FacetLocation: &toolsproto.JsonPath{Path: cfg.FacetLocation},
+			DisplayOrder:  cfg.DisplayOrder,
+		})
+	}
+
+	return metrics
 }
