@@ -1235,7 +1235,7 @@
             "type": "string",
             "enum": ["card", "grid", "list"]
           },
-          "Partial<FileDbRecord>": {
+          "Partial\u003cFileDbRecord\u003e": {
             "type": "object",
             "properties": {
               "contentType": {
@@ -1253,7 +1253,7 @@
             },
             "additionalProperties": false
           },
-          "Record<string,any>": {
+          "Record\u003cstring,any\u003e": {
             "type": "object",
             "additionalProperties": false
           },
