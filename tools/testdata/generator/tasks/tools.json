@@ -1,12 +1,31 @@
 {
   "toolConfigs": [
     {
+      "id": "new-task",
+      "type": "FLOW",
+      "flowConfig": {
+        "name": "New task",
+        "flowName": "NewTask",
+        "inputs": [
+          {
+            "fieldLocation": {
+              "path": "$.address"
+            },
+            "fieldType": "TYPE_STRING",
+            "displayName": "Address"
+          }
+        ]
+      }
+    },
+    {
       "id": "request-password-reset",
       "actionConfig": {
         "id": "request-password-reset",
         "name": "Request password reset",
         "actionName": "requestPasswordReset",
-        "apiNames": ["Api"],
+        "apiNames": [
+          "Api"
+        ],
         "modelName": "Identity",
         "actionType": "ACTION_TYPE_WRITE",
         "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
@@ -44,7 +63,9 @@
         "id": "reset-password",
         "name": "Reset password",
         "actionName": "resetPassword",
-        "apiNames": ["Api"],
+        "apiNames": [
+          "Api"
+        ],
         "modelName": "Identity",
         "actionType": "ACTION_TYPE_WRITE",
         "implementation": "ACTION_IMPLEMENTATION_RUNTIME",
