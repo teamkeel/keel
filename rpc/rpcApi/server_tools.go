@@ -211,7 +211,7 @@ func (s *Server) AddToolSpaceItem(ctx context.Context, req *rpc.AddToolSpaceItem
 	}
 
 	if action := req.GetAction(); action != nil {
-		space, err := toolsSvc.AddSpaceAction(ctx, action.GetSpaceId(), action.GetGroupId(), action)
+		space, err := toolsSvc.AddSpaceAction(ctx, action)
 		if err != nil {
 			return nil, twirp.NewError(twirp.Internal, err.Error())
 		}
@@ -221,6 +221,16 @@ func (s *Server) AddToolSpaceItem(ctx context.Context, req *rpc.AddToolSpaceItem
 		}, nil
 	}
 
+	if group := req.GetGroup(); group != nil {
+		space, err := toolsSvc.AddSpaceGroup(ctx, group)
+		if err != nil {
+			return nil, twirp.NewError(twirp.Internal, err.Error())
+		}
+
+		return &rpc.ToolSpaceResponse{
+			Space: space,
+		}, nil
+	}
 	//TODO: implement
 	return &rpc.ToolSpaceResponse{}, nil
 }

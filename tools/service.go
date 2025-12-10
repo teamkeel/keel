@@ -397,14 +397,14 @@ func (s *Service) RemoveSpace(ctx context.Context, spaceID string) error {
 }
 
 // AddSpaceAction adds an action to the given space. If Group ID is not empty, the action will be added to the given group.
-func (s *Service) AddSpaceAction(ctx context.Context, spaceID string, groupID string, payload *toolsproto.CreateSpaceActionPayload) (*toolsproto.Space, error) {
+func (s *Service) AddSpaceAction(ctx context.Context, payload *toolsproto.CreateSpaceActionPayload) (*toolsproto.Space, error) {
 	// load existing user configuration
 	userConfig, err := s.load()
 	if err != nil {
 		return nil, fmt.Errorf("loading space configs from file: %w", err)
 	}
 
-	space := userConfig.Spaces.findByID(spaceID)
+	space := userConfig.Spaces.findByID(payload.GetSpaceId())
 	if space == nil {
 		return nil, fmt.Errorf("space not found")
 	}
@@ -422,9 +422,53 @@ func (s *Service) AddSpaceAction(ctx context.Context, spaceID string, groupID st
 		return nil, fmt.Errorf("generating unique id: %w", err)
 	}
 
-	if err := space.addAction(&action, groupID); err != nil {
+	if err := space.addAction(&action, payload.GetGroupId()); err != nil {
 		return nil, fmt.Errorf("adding an action: %w", err)
 	}
+
+	if err := s.storeSpaces(userConfig.Spaces); err != nil {
+		return nil, fmt.Errorf("storing space configs: %w", err)
+	}
+
+	return space.toProto(), nil
+}
+
+func (s *Service) AddSpaceGroup(ctx context.Context, payload *toolsproto.CreateSpaceGroupPayload) (*toolsproto.Space, error) {
+	// load existing user configuration
+	userConfig, err := s.load()
+	if err != nil {
+		return nil, fmt.Errorf("loading space configs from file: %w", err)
+	}
+
+	space := userConfig.Spaces.findByID(payload.GetSpaceId())
+	if space == nil {
+		return nil, fmt.Errorf("space not found")
+	}
+
+	group := SpaceGroup{
+		Name: func() string {
+			if payload.GetName() != nil {
+				return payload.GetName().GetTemplate()
+			}
+
+			return ""
+		}(),
+		Description: func() string {
+			if payload.GetDescription() != nil {
+				return payload.GetDescription().GetTemplate()
+			}
+
+			return ""
+		}(),
+		DisplayOrder: payload.GetDisplayOrder(),
+	}
+
+	// set a unique ID
+	if err := group.setUniqueID(userConfig.Spaces); err != nil {
+		return nil, fmt.Errorf("generating unique id: %w", err)
+	}
+
+	space.Groups = append(space.Groups, &group)
 
 	if err := s.storeSpaces(userConfig.Spaces); err != nil {
 		return nil, fmt.Errorf("storing space configs: %w", err)

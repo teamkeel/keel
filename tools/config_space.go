@@ -42,6 +42,17 @@ func (ss SpaceConfigs) allActions() SpaceActions {
 	return actions
 }
 
+// allGroups returns all groups within these spaces.
+func (ss SpaceConfigs) allGroups() SpaceGroups {
+	groups := SpaceGroups{}
+
+	for _, space := range ss {
+		groups = append(groups, space.Groups...)
+	}
+
+	return groups
+}
+
 type SpaceConfig struct {
 	ID           string       `json:"id"`
 	Name         string       `json:"name"`
@@ -189,14 +200,6 @@ func (l SpaceLinks) toProto() []*toolsproto.SpaceLink {
 
 type SpaceGroups []*SpaceGroup
 
-type SpaceGroup struct {
-	ID           string       `json:"id"`
-	Name         string       `json:"name"`
-	Description  string       `json:"description"`
-	DisplayOrder int32        `json:"display_order"`
-	Actions      SpaceActions `json:"actions"`
-}
-
 func (g SpaceGroups) toProto() []*toolsproto.SpaceGroup {
 	groups := []*toolsproto.SpaceGroup{}
 	for _, cfg := range g {
@@ -219,6 +222,32 @@ func (g SpaceGroups) findByID(id string) *SpaceGroup {
 			return group
 		}
 	}
+
+	return nil
+}
+
+type SpaceGroup struct {
+	ID           string       `json:"id"`
+	Name         string       `json:"name"`
+	Description  string       `json:"description"`
+	DisplayOrder int32        `json:"display_order"`
+	Actions      SpaceActions `json:"actions"`
+}
+
+// setUniqueID will set a unique ID for this space group taking in account existing configs.
+func (g *SpaceGroup) setUniqueID(spaces SpaceConfigs) error {
+	id := "group-" + casing.ToKebab(g.Name)
+
+	if exists := spaces.allGroups().findByID(id); exists != nil {
+		// generate a unique id suffix
+		uid, err := gonanoid.Generate(nanoidABC, nanoidSize)
+		if err != nil {
+			return fmt.Errorf("generating unique id: %w", err)
+		}
+		id = id + "-" + uid
+	}
+
+	g.ID = id
 
 	return nil
 }
