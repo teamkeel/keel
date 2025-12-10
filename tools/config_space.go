@@ -4,9 +4,42 @@ import (
 	"fmt"
 
 	gonanoid "github.com/matoous/go-nanoid/v2"
-	"github.com/teamkeel/keel/casing"
 	toolsproto "github.com/teamkeel/keel/tools/proto"
 )
+
+// spaceItem is an interface constraint for types that belong to a space.
+type spaceItem interface {
+	GetID() string
+}
+
+var _ spaceItem = &SpaceConfig{}
+var _ spaceItem = &SpaceAction{}
+var _ spaceItem = &SpaceGroup{}
+var _ spaceItem = &SpaceMetric{}
+var _ spaceItem = &SpaceLink{}
+
+// findByID is finds an item with the given id within the given collection.
+func findByID[T spaceItem](items []T, id string) T {
+	for _, item := range items {
+		if item.GetID() == id {
+			return item
+		}
+	}
+	var zero T
+
+	return zero
+}
+
+// existsByID checks if the given item exists in the given collection.
+func existsByID[T spaceItem](items []T, id string) bool {
+	for _, item := range items {
+		if item.GetID() == id {
+			return true
+		}
+	}
+
+	return false
+}
 
 type SpaceConfigs []*SpaceConfig
 
@@ -22,57 +55,73 @@ func (ss SpaceConfigs) toProto() []*toolsproto.Space {
 
 // findByID finds a space with the given id.
 func (ss SpaceConfigs) findByID(id string) *SpaceConfig {
-	for _, c := range ss {
-		if c.ID == id {
-			return c
-		}
-	}
+	return findByID(ss, id)
+}
 
-	return nil
+// allItems is a generic helper that collects items from all spaces using an extractor function.
+func allItems[T any](spaces SpaceConfigs, extract func(*SpaceConfig) []T) []T {
+	items := []T{}
+	for _, space := range spaces {
+		items = append(items, extract(space)...)
+	}
+	return items
 }
 
 // allActions returns all actions within these spaces.
-func (ss SpaceConfigs) allActions() SpaceActions {
-	actions := SpaceActions{}
-
-	for _, space := range ss {
-		actions = append(actions, space.allActions()...)
-	}
-
-	return actions
+func (ss SpaceConfigs) allActions() []*SpaceAction {
+	return allItems(ss, func(s *SpaceConfig) []*SpaceAction { return s.allActions() })
 }
 
 // allGroups returns all groups within these spaces.
 func (ss SpaceConfigs) allGroups() SpaceGroups {
-	groups := SpaceGroups{}
-
-	for _, space := range ss {
-		groups = append(groups, space.Groups...)
-	}
-
-	return groups
+	return allItems(ss, func(s *SpaceConfig) []*SpaceGroup { return s.Groups })
 }
 
 // allMetrics returns all metrics within these spaces.
 func (ss SpaceConfigs) allMetrics() SpaceMetrics {
-	metrics := SpaceMetrics{}
-
-	for _, space := range ss {
-		metrics = append(metrics, space.Metrics...)
-	}
-
-	return metrics
+	return allItems(ss, func(s *SpaceConfig) []*SpaceMetric { return s.Metrics })
 }
 
 // allLinks returns all links within these spaces.
 func (ss SpaceConfigs) allLinks() SpaceLinks {
-	links := SpaceLinks{}
+	return allItems(ss, func(s *SpaceConfig) []*SpaceLink { return s.Links })
+}
 
-	for _, space := range ss {
-		links = append(links, space.Links...)
+// findUniqueID will generate a unique ID for the given spaceItem. The ID will be prefixed based on the type of the item.
+func (ss SpaceConfigs) findUniqueID(item spaceItem) (string, error) {
+	var id string
+	var exists bool
+
+	switch tmp := item.(type) {
+	case *SpaceConfig:
+		id = "space-" + tmp.Name
+		exists = existsByID(ss, id)
+	case *SpaceAction:
+		id = "action-" + tmp.Link.ToolID
+		exists = existsByID(ss.allActions(), id)
+	case *SpaceLink:
+		id = "link-" + tmp.Link.Label
+		exists = existsByID(ss.allLinks(), id)
+	case *SpaceGroup:
+		id = "group-" + tmp.Name
+		exists = existsByID(ss.allGroups(), id)
+	case *SpaceMetric:
+		id = "metric-" + tmp.Label
+		exists = existsByID(ss.allMetrics(), id)
+	default:
+		return "", fmt.Errorf("unknown space item type")
 	}
 
-	return links
+	if exists {
+		// generate a unique id suffix
+		uid, err := gonanoid.Generate(nanoidABC, nanoidSize)
+		if err != nil {
+			return "", fmt.Errorf("generating unique id: %w", err)
+		}
+		id = id + "-" + uid
+	}
+
+	return id, nil
 }
 
 type SpaceConfig struct {
@@ -84,6 +133,10 @@ type SpaceConfig struct {
 	Groups       SpaceGroups  `json:"groups"`
 	Links        SpaceLinks   `json:"links"`
 	Metrics      SpaceMetrics `json:"metrics"`
+}
+
+func (s *SpaceConfig) GetID() string {
+	return s.ID
 }
 
 // toProto will return the SpaceConfig as a protobuf message.
@@ -106,15 +159,9 @@ func (s *SpaceConfig) toProto() *toolsproto.Space {
 
 // setUniqueID will set a unique ID for this space config taking in account existing configs.
 func (s *SpaceConfig) setUniqueID(existing SpaceConfigs) error {
-	id := "space-" + casing.ToKebab(s.Name)
-
-	if exists := existing.findByID(id); exists != nil {
-		// generate a unique id suffix
-		uid, err := gonanoid.Generate(nanoidABC, nanoidSize)
-		if err != nil {
-			return fmt.Errorf("generating unique id: %w", err)
-		}
-		id = id + "-" + uid
+	id, err := existing.findUniqueID(s)
+	if err != nil {
+		return fmt.Errorf("finding a unique id: %w", err)
 	}
 
 	s.ID = id
@@ -169,13 +216,7 @@ func (a SpaceActions) toProto() []*toolsproto.SpaceAction {
 
 // findByID finds the action with the given id.
 func (a SpaceActions) findByID(id string) *SpaceAction {
-	for _, c := range a {
-		if c.ID == id {
-			return c
-		}
-	}
-
-	return nil
+	return findByID(a, id)
 }
 
 type SpaceAction struct {
@@ -183,17 +224,15 @@ type SpaceAction struct {
 	Link *LinkConfig `json:"link"`
 }
 
+func (a *SpaceAction) GetID() string {
+	return a.ID
+}
+
 // setUniqueID will set a unique ID for this space action taking in account existing configs.
 func (a *SpaceAction) setUniqueID(spaces SpaceConfigs) error {
-	id := "action-" + casing.ToKebab(a.Link.ToolID)
-
-	if exists := spaces.allActions().findByID(id); exists != nil {
-		// generate a unique id suffix
-		uid, err := gonanoid.Generate(nanoidABC, nanoidSize)
-		if err != nil {
-			return fmt.Errorf("generating unique id: %w", err)
-		}
-		id = id + "-" + uid
+	id, err := spaces.findUniqueID(a)
+	if err != nil {
+		return fmt.Errorf("finding a unique id: %w", err)
 	}
 
 	a.ID = id
@@ -217,13 +256,7 @@ func (ll SpaceLinks) toProto() []*toolsproto.SpaceLink {
 
 // findByID finds the link with the given id.
 func (ll SpaceLinks) findByID(id string) *SpaceLink {
-	for _, link := range ll {
-		if link.ID == id {
-			return link
-		}
-	}
-
-	return nil
+	return findByID(ll, id)
 }
 
 type SpaceLink struct {
@@ -231,17 +264,15 @@ type SpaceLink struct {
 	Link *ExternalLink `json:"link"`
 }
 
+func (l *SpaceLink) GetID() string {
+	return l.ID
+}
+
 // setUniqueID will set a unique ID for this space link taking in account existing configs.
 func (l *SpaceLink) setUniqueID(spaces SpaceConfigs) error {
-	id := "link-" + casing.ToKebab(l.Link.Label)
-
-	if exists := spaces.allLinks().findByID(id); exists != nil {
-		// generate a unique id suffix
-		uid, err := gonanoid.Generate(nanoidABC, nanoidSize)
-		if err != nil {
-			return fmt.Errorf("generating unique id: %w", err)
-		}
-		id = id + "-" + uid
+	id, err := spaces.findUniqueID(l)
+	if err != nil {
+		return fmt.Errorf("finding a unique id: %w", err)
 	}
 
 	l.ID = id
@@ -268,13 +299,7 @@ func (g SpaceGroups) toProto() []*toolsproto.SpaceGroup {
 
 // findByID finds the group with the given id.
 func (g SpaceGroups) findByID(id string) *SpaceGroup {
-	for _, group := range g {
-		if group.ID == id {
-			return group
-		}
-	}
-
-	return nil
+	return findByID(g, id)
 }
 
 type SpaceGroup struct {
@@ -285,17 +310,15 @@ type SpaceGroup struct {
 	Actions      SpaceActions `json:"actions"`
 }
 
+func (g *SpaceGroup) GetID() string {
+	return g.ID
+}
+
 // setUniqueID will set a unique ID for this space group taking in account existing configs.
 func (g *SpaceGroup) setUniqueID(spaces SpaceConfigs) error {
-	id := "group-" + casing.ToKebab(g.Name)
-
-	if exists := spaces.allGroups().findByID(id); exists != nil {
-		// generate a unique id suffix
-		uid, err := gonanoid.Generate(nanoidABC, nanoidSize)
-		if err != nil {
-			return fmt.Errorf("generating unique id: %w", err)
-		}
-		id = id + "-" + uid
+	id, err := spaces.findUniqueID(g)
+	if err != nil {
+		return fmt.Errorf("finding a unique id: %w", err)
 	}
 
 	g.ID = id
@@ -311,6 +334,10 @@ type SpaceMetric struct {
 	ToolID        string `json:"tool_id"`
 	FacetLocation string `json:"facet_location"`
 	DisplayOrder  int32  `json:"display_order"`
+}
+
+func (m *SpaceMetric) GetID() string {
+	return m.ID
 }
 
 func (m SpaceMetrics) toProto() []*toolsproto.SpaceMetric {
@@ -330,26 +357,14 @@ func (m SpaceMetrics) toProto() []*toolsproto.SpaceMetric {
 
 // findByID finds the metric with the given id.
 func (m SpaceMetrics) findByID(id string) *SpaceMetric {
-	for _, metric := range m {
-		if metric.ID == id {
-			return metric
-		}
-	}
-
-	return nil
+	return findByID(m, id)
 }
 
 // setUniqueID will set a unique ID for this space group taking in account existing configs.
 func (m *SpaceMetric) setUniqueID(spaces SpaceConfigs) error {
-	id := "metric-" + casing.ToKebab(m.Label)
-
-	if exists := spaces.allMetrics().findByID(id); exists != nil {
-		// generate a unique id suffix
-		uid, err := gonanoid.Generate(nanoidABC, nanoidSize)
-		if err != nil {
-			return fmt.Errorf("generating unique id: %w", err)
-		}
-		id = id + "-" + uid
+	id, err := spaces.findUniqueID(m)
+	if err != nil {
+		return fmt.Errorf("finding a unique id: %w", err)
 	}
 
 	m.ID = id
