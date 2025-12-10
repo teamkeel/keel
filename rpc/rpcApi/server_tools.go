@@ -231,7 +231,29 @@ func (s *Server) AddToolSpaceItem(ctx context.Context, req *rpc.AddToolSpaceItem
 			Space: space,
 		}, nil
 	}
-	//TODO: implement
+
+	if metric := req.GetMetric(); metric != nil {
+		space, err := toolsSvc.AddSpaceMetric(ctx, metric)
+		if err != nil {
+			return nil, twirp.NewError(twirp.Internal, err.Error())
+		}
+
+		return &rpc.ToolSpaceResponse{
+			Space: space,
+		}, nil
+	}
+
+	if link := req.GetLink(); link != nil {
+		space, err := toolsSvc.AddSpaceLink(ctx, link)
+		if err != nil {
+			return nil, twirp.NewError(twirp.Internal, err.Error())
+		}
+
+		return &rpc.ToolSpaceResponse{
+			Space: space,
+		}, nil
+	}
+
 	return &rpc.ToolSpaceResponse{}, nil
 }
 

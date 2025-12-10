@@ -476,3 +476,72 @@ func (s *Service) AddSpaceGroup(ctx context.Context, payload *toolsproto.CreateS
 
 	return space.toProto(), nil
 }
+
+func (s *Service) AddSpaceMetric(ctx context.Context, payload *toolsproto.CreateSpaceMetricPayload) (*toolsproto.Space, error) {
+	// load existing user configuration
+	userConfig, err := s.load()
+	if err != nil {
+		return nil, fmt.Errorf("loading space configs from file: %w", err)
+	}
+
+	space := userConfig.Spaces.findByID(payload.GetSpaceId())
+	if space == nil {
+		return nil, fmt.Errorf("space not found")
+	}
+
+	metric := SpaceMetric{
+		Label: func() string {
+			if payload.GetLabel() != nil {
+				return payload.GetLabel().GetTemplate()
+			}
+
+			return ""
+		}(),
+		ToolID:        payload.GetToolId(),
+		DisplayOrder:  payload.GetDisplayOrder(),
+		FacetLocation: payload.GetFacetLocation().GetPath(),
+	}
+
+	// set a unique ID
+	if err := metric.setUniqueID(userConfig.Spaces); err != nil {
+		return nil, fmt.Errorf("generating unique id: %w", err)
+	}
+
+	space.Metrics = append(space.Metrics, &metric)
+
+	if err := s.storeSpaces(userConfig.Spaces); err != nil {
+		return nil, fmt.Errorf("storing space configs: %w", err)
+	}
+
+	return space.toProto(), nil
+}
+
+func (s *Service) AddSpaceLink(ctx context.Context, payload *toolsproto.CreateSpaceLinkPayload) (*toolsproto.Space, error) {
+	// load existing user configuration
+	userConfig, err := s.load()
+	if err != nil {
+		return nil, fmt.Errorf("loading space configs from file: %w", err)
+	}
+
+	space := userConfig.Spaces.findByID(payload.GetSpaceId())
+	if space == nil {
+		return nil, fmt.Errorf("space not found")
+	}
+
+	link := SpaceLink{
+		Link: extractExternalLink(payload.GetLink()),
+	}
+
+	// set a unique ID
+	if err := link.setUniqueID(userConfig.Spaces); err != nil {
+		return nil, fmt.Errorf("generating unique id: %w", err)
+	}
+
+	space.Links = append(space.Links, &link)
+
+	if err := s.storeSpaces(userConfig.Spaces); err != nil {
+		return nil, fmt.Errorf("storing space configs: %w", err)
+	}
+
+	return space.toProto(), nil
+}

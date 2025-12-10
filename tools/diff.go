@@ -254,13 +254,7 @@ func extractActionConfig(generated, updated *toolsproto.ActionConfig) *ActionToo
 	}
 	cfg.ExternalLinks = ExternalLinks{}
 	for _, el := range updated.GetExternalLinks() {
-		cfg.ExternalLinks = append(cfg.ExternalLinks, &ExternalLink{
-			Label:            el.GetLabel().GetTemplate(),
-			Href:             el.GetHref().GetTemplate(),
-			Icon:             el.Icon,
-			DisplayOrder:     el.GetDisplayOrder(),
-			VisibleCondition: el.VisibleCondition,
-		})
+		cfg.ExternalLinks = append(cfg.ExternalLinks, extractExternalLink(el))
 	}
 	cfg.Sections = Sections{}
 	for _, s := range updated.GetSections() {
@@ -686,6 +680,16 @@ func extractToolGroupLinkConfig(generated, updated *toolsproto.ToolGroup_GroupAc
 	}
 
 	return &cfg
+}
+
+func extractExternalLink(el *toolsproto.ExternalLink) *ExternalLink {
+	return &ExternalLink{
+		Label:            el.GetLabel().GetTemplate(),
+		Href:             el.GetHref().GetTemplate(),
+		Icon:             el.Icon,
+		DisplayOrder:     el.GetDisplayOrder(),
+		VisibleCondition: el.VisibleCondition,
+	}
 }
 
 func diffString(old, updated string) *string {
