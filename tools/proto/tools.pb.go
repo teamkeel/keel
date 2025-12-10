@@ -441,61 +441,6 @@ func (Field_Type) EnumDescriptor() ([]byte, []int) {
 	return file_tools_proto_rawDescGZIP(), []int{32, 0}
 }
 
-type Space_Colour int32
-
-const (
-	Space_green  Space_Colour = 0
-	Space_blue   Space_Colour = 1
-	Space_yellow Space_Colour = 2
-	Space_coral  Space_Colour = 3
-	Space_purple Space_Colour = 4
-)
-
-// Enum value maps for Space_Colour.
-var (
-	Space_Colour_name = map[int32]string{
-		0: "green",
-		1: "blue",
-		2: "yellow",
-		3: "coral",
-		4: "purple",
-	}
-	Space_Colour_value = map[string]int32{
-		"green":  0,
-		"blue":   1,
-		"yellow": 2,
-		"coral":  3,
-		"purple": 4,
-	}
-)
-
-func (x Space_Colour) Enum() *Space_Colour {
-	p := new(Space_Colour)
-	*p = x
-	return p
-}
-
-func (x Space_Colour) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (Space_Colour) Descriptor() protoreflect.EnumDescriptor {
-	return file_tools_proto_enumTypes[8].Descriptor()
-}
-
-func (Space_Colour) Type() protoreflect.EnumType {
-	return &file_tools_proto_enumTypes[8]
-}
-
-func (x Space_Colour) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use Space_Colour.Descriptor instead.
-func (Space_Colour) EnumDescriptor() ([]byte, []int) {
-	return file_tools_proto_rawDescGZIP(), []int{33, 0}
-}
-
 type Capabilities struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -5093,7 +5038,7 @@ var file_tools_proto_rawDesc = []byte{
 	0x0d, 0x5f, 0x64, 0x69, 0x73, 0x70, 0x6c, 0x61, 0x79, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x42, 0x0c,
 	0x0a, 0x0a, 0x5f, 0x68, 0x65, 0x6c, 0x70, 0x5f, 0x74, 0x65, 0x78, 0x74, 0x42, 0x0a, 0x0a, 0x08,
 	0x5f, 0x76, 0x69, 0x73, 0x69, 0x62, 0x6c, 0x65, 0x42, 0x10, 0x0a, 0x0e, 0x5f, 0x69, 0x6d, 0x61,
-	0x67, 0x65, 0x5f, 0x70, 0x72, 0x65, 0x76, 0x69, 0x65, 0x77, 0x22, 0xd5, 0x02, 0x0a, 0x05, 0x53,
+	0x67, 0x65, 0x5f, 0x70, 0x72, 0x65, 0x76, 0x69, 0x65, 0x77, 0x22, 0x93, 0x02, 0x0a, 0x05, 0x53,
 	0x70, 0x61, 0x63, 0x65, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
 	0x52, 0x02, 0x69, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01,
 	0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x69, 0x63, 0x6f, 0x6e,
@@ -5111,44 +5056,40 @@ var file_tools_proto_rawDesc = []byte{
 	0x74, 0x72, 0x69, 0x63, 0x73, 0x12, 0x29, 0x0a, 0x05, 0x6c, 0x69, 0x6e, 0x6b, 0x73, 0x18, 0x08,
 	0x20, 0x03, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x74, 0x6f, 0x6f, 0x6c, 0x73, 0x2e, 0x45, 0x78, 0x74,
 	0x65, 0x72, 0x6e, 0x61, 0x6c, 0x4c, 0x69, 0x6e, 0x6b, 0x52, 0x05, 0x6c, 0x69, 0x6e, 0x6b, 0x73,
-	0x22, 0x40, 0x0a, 0x06, 0x43, 0x6f, 0x6c, 0x6f, 0x75, 0x72, 0x12, 0x09, 0x0a, 0x05, 0x67, 0x72,
-	0x65, 0x65, 0x6e, 0x10, 0x00, 0x12, 0x08, 0x0a, 0x04, 0x62, 0x6c, 0x75, 0x65, 0x10, 0x01, 0x12,
-	0x0a, 0x0a, 0x06, 0x79, 0x65, 0x6c, 0x6c, 0x6f, 0x77, 0x10, 0x02, 0x12, 0x09, 0x0a, 0x05, 0x63,
-	0x6f, 0x72, 0x61, 0x6c, 0x10, 0x03, 0x12, 0x0a, 0x0a, 0x06, 0x70, 0x75, 0x72, 0x70, 0x6c, 0x65,
-	0x10, 0x04, 0x22, 0xe5, 0x01, 0x0a, 0x0a, 0x53, 0x70, 0x61, 0x63, 0x65, 0x47, 0x72, 0x6f, 0x75,
-	0x70, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69,
-	0x64, 0x12, 0x29, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x22, 0xe5, 0x01, 0x0a, 0x0a, 0x53, 0x70, 0x61, 0x63, 0x65, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x12,
+	0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x12,
+	0x29, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x15, 0x2e,
+	0x74, 0x6f, 0x6f, 0x6c, 0x73, 0x2e, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x54, 0x65, 0x6d, 0x70,
+	0x6c, 0x61, 0x74, 0x65, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x3c, 0x0a, 0x0b, 0x64, 0x65,
+	0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32,
 	0x15, 0x2e, 0x74, 0x6f, 0x6f, 0x6c, 0x73, 0x2e, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x54, 0x65,
-	0x6d, 0x70, 0x6c, 0x61, 0x74, 0x65, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x3c, 0x0a, 0x0b,
-	0x64, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x03, 0x20, 0x01, 0x28,
-	0x0b, 0x32, 0x15, 0x2e, 0x74, 0x6f, 0x6f, 0x6c, 0x73, 0x2e, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67,
-	0x54, 0x65, 0x6d, 0x70, 0x6c, 0x61, 0x74, 0x65, 0x48, 0x00, 0x52, 0x0b, 0x64, 0x65, 0x73, 0x63,
-	0x72, 0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x88, 0x01, 0x01, 0x12, 0x23, 0x0a, 0x0d, 0x64, 0x69,
-	0x73, 0x70, 0x6c, 0x61, 0x79, 0x5f, 0x6f, 0x72, 0x64, 0x65, 0x72, 0x18, 0x04, 0x20, 0x01, 0x28,
-	0x05, 0x52, 0x0c, 0x64, 0x69, 0x73, 0x70, 0x6c, 0x61, 0x79, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x12,
-	0x29, 0x0a, 0x07, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x18, 0x05, 0x20, 0x03, 0x28, 0x0b,
-	0x32, 0x0f, 0x2e, 0x74, 0x6f, 0x6f, 0x6c, 0x73, 0x2e, 0x54, 0x6f, 0x6f, 0x6c, 0x4c, 0x69, 0x6e,
-	0x6b, 0x52, 0x07, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x42, 0x0e, 0x0a, 0x0c, 0x5f, 0x64,
-	0x65, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x22, 0xb0, 0x01, 0x0a, 0x0b, 0x53,
-	0x70, 0x61, 0x63, 0x65, 0x4d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x12, 0x2b, 0x0a, 0x05, 0x6c, 0x61,
-	0x62, 0x65, 0x6c, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x15, 0x2e, 0x74, 0x6f, 0x6f, 0x6c,
-	0x73, 0x2e, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x54, 0x65, 0x6d, 0x70, 0x6c, 0x61, 0x74, 0x65,
-	0x52, 0x05, 0x6c, 0x61, 0x62, 0x65, 0x6c, 0x12, 0x17, 0x0a, 0x07, 0x74, 0x6f, 0x6f, 0x6c, 0x5f,
-	0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x74, 0x6f, 0x6f, 0x6c, 0x49, 0x64,
-	0x12, 0x36, 0x0a, 0x0e, 0x66, 0x61, 0x63, 0x65, 0x74, 0x5f, 0x6c, 0x6f, 0x63, 0x61, 0x74, 0x69,
-	0x6f, 0x6e, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0f, 0x2e, 0x74, 0x6f, 0x6f, 0x6c, 0x73,
-	0x2e, 0x4a, 0x73, 0x6f, 0x6e, 0x50, 0x61, 0x74, 0x68, 0x52, 0x0d, 0x66, 0x61, 0x63, 0x65, 0x74,
-	0x4c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x23, 0x0a, 0x0d, 0x64, 0x69, 0x73, 0x70,
+	0x6d, 0x70, 0x6c, 0x61, 0x74, 0x65, 0x48, 0x00, 0x52, 0x0b, 0x64, 0x65, 0x73, 0x63, 0x72, 0x69,
+	0x70, 0x74, 0x69, 0x6f, 0x6e, 0x88, 0x01, 0x01, 0x12, 0x23, 0x0a, 0x0d, 0x64, 0x69, 0x73, 0x70,
 	0x6c, 0x61, 0x79, 0x5f, 0x6f, 0x72, 0x64, 0x65, 0x72, 0x18, 0x04, 0x20, 0x01, 0x28, 0x05, 0x52,
-	0x0c, 0x64, 0x69, 0x73, 0x70, 0x6c, 0x61, 0x79, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x2a, 0x47, 0x0a,
-	0x15, 0x43, 0x6f, 0x6e, 0x64, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x61, 0x6c, 0x46, 0x6f, 0x72, 0x6d,
-	0x61, 0x74, 0x4d, 0x6f, 0x64, 0x65, 0x12, 0x08, 0x0a, 0x04, 0x4e, 0x4f, 0x4e, 0x45, 0x10, 0x00,
-	0x12, 0x0a, 0x0a, 0x06, 0x4e, 0x4f, 0x52, 0x4d, 0x41, 0x4c, 0x10, 0x01, 0x12, 0x0c, 0x0a, 0x08,
-	0x49, 0x4e, 0x56, 0x45, 0x52, 0x54, 0x45, 0x44, 0x10, 0x02, 0x12, 0x0a, 0x0a, 0x06, 0x43, 0x55,
-	0x53, 0x54, 0x4f, 0x4d, 0x10, 0x03, 0x42, 0x26, 0x5a, 0x24, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62,
-	0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x74, 0x65, 0x61, 0x6d, 0x6b, 0x65, 0x65, 0x6c, 0x2f, 0x6b, 0x65,
-	0x65, 0x6c, 0x2f, 0x74, 0x6f, 0x6f, 0x6c, 0x73, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x0c, 0x64, 0x69, 0x73, 0x70, 0x6c, 0x61, 0x79, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x12, 0x29, 0x0a,
+	0x07, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x18, 0x05, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x0f,
+	0x2e, 0x74, 0x6f, 0x6f, 0x6c, 0x73, 0x2e, 0x54, 0x6f, 0x6f, 0x6c, 0x4c, 0x69, 0x6e, 0x6b, 0x52,
+	0x07, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x42, 0x0e, 0x0a, 0x0c, 0x5f, 0x64, 0x65, 0x73,
+	0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x22, 0xb0, 0x01, 0x0a, 0x0b, 0x53, 0x70, 0x61,
+	0x63, 0x65, 0x4d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x12, 0x2b, 0x0a, 0x05, 0x6c, 0x61, 0x62, 0x65,
+	0x6c, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x15, 0x2e, 0x74, 0x6f, 0x6f, 0x6c, 0x73, 0x2e,
+	0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x54, 0x65, 0x6d, 0x70, 0x6c, 0x61, 0x74, 0x65, 0x52, 0x05,
+	0x6c, 0x61, 0x62, 0x65, 0x6c, 0x12, 0x17, 0x0a, 0x07, 0x74, 0x6f, 0x6f, 0x6c, 0x5f, 0x69, 0x64,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x74, 0x6f, 0x6f, 0x6c, 0x49, 0x64, 0x12, 0x36,
+	0x0a, 0x0e, 0x66, 0x61, 0x63, 0x65, 0x74, 0x5f, 0x6c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e,
+	0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0f, 0x2e, 0x74, 0x6f, 0x6f, 0x6c, 0x73, 0x2e, 0x4a,
+	0x73, 0x6f, 0x6e, 0x50, 0x61, 0x74, 0x68, 0x52, 0x0d, 0x66, 0x61, 0x63, 0x65, 0x74, 0x4c, 0x6f,
+	0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x23, 0x0a, 0x0d, 0x64, 0x69, 0x73, 0x70, 0x6c, 0x61,
+	0x79, 0x5f, 0x6f, 0x72, 0x64, 0x65, 0x72, 0x18, 0x04, 0x20, 0x01, 0x28, 0x05, 0x52, 0x0c, 0x64,
+	0x69, 0x73, 0x70, 0x6c, 0x61, 0x79, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x2a, 0x47, 0x0a, 0x15, 0x43,
+	0x6f, 0x6e, 0x64, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x61, 0x6c, 0x46, 0x6f, 0x72, 0x6d, 0x61, 0x74,
+	0x4d, 0x6f, 0x64, 0x65, 0x12, 0x08, 0x0a, 0x04, 0x4e, 0x4f, 0x4e, 0x45, 0x10, 0x00, 0x12, 0x0a,
+	0x0a, 0x06, 0x4e, 0x4f, 0x52, 0x4d, 0x41, 0x4c, 0x10, 0x01, 0x12, 0x0c, 0x0a, 0x08, 0x49, 0x4e,
+	0x56, 0x45, 0x52, 0x54, 0x45, 0x44, 0x10, 0x02, 0x12, 0x0a, 0x0a, 0x06, 0x43, 0x55, 0x53, 0x54,
+	0x4f, 0x4d, 0x10, 0x03, 0x42, 0x26, 0x5a, 0x24, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63,
+	0x6f, 0x6d, 0x2f, 0x74, 0x65, 0x61, 0x6d, 0x6b, 0x65, 0x65, 0x6c, 0x2f, 0x6b, 0x65, 0x65, 0x6c,
+	0x2f, 0x74, 0x6f, 0x6f, 0x6c, 0x73, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -5163,7 +5104,7 @@ func file_tools_proto_rawDescGZIP() []byte {
 	return file_tools_proto_rawDescData
 }
 
-var file_tools_proto_enumTypes = make([]protoimpl.EnumInfo, 9)
+var file_tools_proto_enumTypes = make([]protoimpl.EnumInfo, 8)
 var file_tools_proto_msgTypes = make([]protoimpl.MessageInfo, 42)
 var file_tools_proto_goTypes = []any{
 	(ConditionalFormatMode)(0),                     // 0: tools.ConditionalFormatMode
@@ -5174,180 +5115,179 @@ var file_tools_proto_goTypes = []any{
 	(FormatConfig_Type)(0),                         // 5: tools.FormatConfig.Type
 	(NumberFormatConfig_Mode)(0),                   // 6: tools.NumberFormatConfig.Mode
 	(Field_Type)(0),                                // 7: tools.Field.Type
-	(Space_Colour)(0),                              // 8: tools.Space.Colour
-	(*Capabilities)(nil),                           // 9: tools.Capabilities
-	(*Tools)(nil),                                  // 10: tools.Tools
-	(*Tool)(nil),                                   // 11: tools.Tool
-	(*ActionConfig)(nil),                           // 12: tools.ActionConfig
-	(*RequestFieldConfig)(nil),                     // 13: tools.RequestFieldConfig
-	(*ResponseFieldConfig)(nil),                    // 14: tools.ResponseFieldConfig
-	(*Section)(nil),                                // 15: tools.Section
-	(*ScalarValue)(nil),                            // 16: tools.ScalarValue
-	(*StringTemplate)(nil),                         // 17: tools.StringTemplate
-	(*JsonPath)(nil),                               // 18: tools.JsonPath
-	(*ExternalLink)(nil),                           // 19: tools.ExternalLink
-	(*ToolLink)(nil),                               // 20: tools.ToolLink
-	(*ToolGroup)(nil),                              // 21: tools.ToolGroup
-	(*ResponseOverrides)(nil),                      // 22: tools.ResponseOverrides
-	(*CursorPaginationConfig)(nil),                 // 23: tools.CursorPaginationConfig
-	(*DataMapping)(nil),                            // 24: tools.DataMapping
-	(*DisplayLayoutConfig)(nil),                    // 25: tools.DisplayLayoutConfig
-	(*InboxViewConfig)(nil),                        // 26: tools.InboxViewConfig
-	(*BoardViewConfig)(nil),                        // 27: tools.BoardViewConfig
-	(*GridViewConfig)(nil),                         // 28: tools.GridViewConfig
-	(*GalleryViewConfig)(nil),                      // 29: tools.GalleryViewConfig
-	(*RecordViewConfig)(nil),                       // 30: tools.RecordViewConfig
-	(*ProgressIndicatorConfig)(nil),                // 31: tools.ProgressIndicatorConfig
-	(*FlowConfig)(nil),                             // 32: tools.FlowConfig
-	(*FlowInputConfig)(nil),                        // 33: tools.FlowInputConfig
-	(*ValidationError)(nil),                        // 34: tools.ValidationError
-	(*FilterConfig)(nil),                           // 35: tools.FilterConfig
-	(*FormatConfig)(nil),                           // 36: tools.FormatConfig
-	(*BoolFormatConfig)(nil),                       // 37: tools.BoolFormatConfig
-	(*NumberFormatConfig)(nil),                     // 38: tools.NumberFormatConfig
-	(*StringFormatConfig)(nil),                     // 39: tools.StringFormatConfig
-	(*EnumFormatConfig)(nil),                       // 40: tools.EnumFormatConfig
-	(*Field)(nil),                                  // 41: tools.Field
-	(*Space)(nil),                                  // 42: tools.Space
-	(*SpaceGroup)(nil),                             // 43: tools.SpaceGroup
-	(*SpaceMetric)(nil),                            // 44: tools.SpaceMetric
-	(*ToolGroup_GroupActionLink)(nil),              // 45: tools.ToolGroup.GroupActionLink
-	(*CursorPaginationConfig_FieldConfig)(nil),     // 46: tools.CursorPaginationConfig.FieldConfig
-	(*CursorPaginationConfig_PageSizeConfig)(nil),  // 47: tools.CursorPaginationConfig.PageSizeConfig
-	(*GalleryViewConfig_Image)(nil),                // 48: tools.GalleryViewConfig.Image
-	(*ProgressIndicatorConfig_Step)(nil),           // 49: tools.ProgressIndicatorConfig.Step
-	(*EnumFormatConfig_EnumValueFormatConfig)(nil), // 50: tools.EnumFormatConfig.EnumValueFormatConfig
-	(proto.ActionType)(0),                          // 51: proto.ActionType
-	(proto.ActionImplementation)(0),                // 52: proto.ActionImplementation
-	(proto.Type)(0),                                // 53: proto.Type
+	(*Capabilities)(nil),                           // 8: tools.Capabilities
+	(*Tools)(nil),                                  // 9: tools.Tools
+	(*Tool)(nil),                                   // 10: tools.Tool
+	(*ActionConfig)(nil),                           // 11: tools.ActionConfig
+	(*RequestFieldConfig)(nil),                     // 12: tools.RequestFieldConfig
+	(*ResponseFieldConfig)(nil),                    // 13: tools.ResponseFieldConfig
+	(*Section)(nil),                                // 14: tools.Section
+	(*ScalarValue)(nil),                            // 15: tools.ScalarValue
+	(*StringTemplate)(nil),                         // 16: tools.StringTemplate
+	(*JsonPath)(nil),                               // 17: tools.JsonPath
+	(*ExternalLink)(nil),                           // 18: tools.ExternalLink
+	(*ToolLink)(nil),                               // 19: tools.ToolLink
+	(*ToolGroup)(nil),                              // 20: tools.ToolGroup
+	(*ResponseOverrides)(nil),                      // 21: tools.ResponseOverrides
+	(*CursorPaginationConfig)(nil),                 // 22: tools.CursorPaginationConfig
+	(*DataMapping)(nil),                            // 23: tools.DataMapping
+	(*DisplayLayoutConfig)(nil),                    // 24: tools.DisplayLayoutConfig
+	(*InboxViewConfig)(nil),                        // 25: tools.InboxViewConfig
+	(*BoardViewConfig)(nil),                        // 26: tools.BoardViewConfig
+	(*GridViewConfig)(nil),                         // 27: tools.GridViewConfig
+	(*GalleryViewConfig)(nil),                      // 28: tools.GalleryViewConfig
+	(*RecordViewConfig)(nil),                       // 29: tools.RecordViewConfig
+	(*ProgressIndicatorConfig)(nil),                // 30: tools.ProgressIndicatorConfig
+	(*FlowConfig)(nil),                             // 31: tools.FlowConfig
+	(*FlowInputConfig)(nil),                        // 32: tools.FlowInputConfig
+	(*ValidationError)(nil),                        // 33: tools.ValidationError
+	(*FilterConfig)(nil),                           // 34: tools.FilterConfig
+	(*FormatConfig)(nil),                           // 35: tools.FormatConfig
+	(*BoolFormatConfig)(nil),                       // 36: tools.BoolFormatConfig
+	(*NumberFormatConfig)(nil),                     // 37: tools.NumberFormatConfig
+	(*StringFormatConfig)(nil),                     // 38: tools.StringFormatConfig
+	(*EnumFormatConfig)(nil),                       // 39: tools.EnumFormatConfig
+	(*Field)(nil),                                  // 40: tools.Field
+	(*Space)(nil),                                  // 41: tools.Space
+	(*SpaceGroup)(nil),                             // 42: tools.SpaceGroup
+	(*SpaceMetric)(nil),                            // 43: tools.SpaceMetric
+	(*ToolGroup_GroupActionLink)(nil),              // 44: tools.ToolGroup.GroupActionLink
+	(*CursorPaginationConfig_FieldConfig)(nil),     // 45: tools.CursorPaginationConfig.FieldConfig
+	(*CursorPaginationConfig_PageSizeConfig)(nil),  // 46: tools.CursorPaginationConfig.PageSizeConfig
+	(*GalleryViewConfig_Image)(nil),                // 47: tools.GalleryViewConfig.Image
+	(*ProgressIndicatorConfig_Step)(nil),           // 48: tools.ProgressIndicatorConfig.Step
+	(*EnumFormatConfig_EnumValueFormatConfig)(nil), // 49: tools.EnumFormatConfig.EnumValueFormatConfig
+	(proto.ActionType)(0),                          // 50: proto.ActionType
+	(proto.ActionImplementation)(0),                // 51: proto.ActionImplementation
+	(proto.Type)(0),                                // 52: proto.Type
 }
 var file_tools_proto_depIdxs = []int32{
-	12,  // 0: tools.Tools.tools:type_name -> tools.ActionConfig
-	11,  // 1: tools.Tools.configs:type_name -> tools.Tool
+	11,  // 0: tools.Tools.tools:type_name -> tools.ActionConfig
+	10,  // 1: tools.Tools.configs:type_name -> tools.Tool
 	1,   // 2: tools.Tool.type:type_name -> tools.Tool.ToolType
-	12,  // 3: tools.Tool.action_config:type_name -> tools.ActionConfig
-	32,  // 4: tools.Tool.flow_config:type_name -> tools.FlowConfig
-	51,  // 5: tools.ActionConfig.action_type:type_name -> proto.ActionType
-	52,  // 6: tools.ActionConfig.implementation:type_name -> proto.ActionImplementation
-	13,  // 7: tools.ActionConfig.inputs:type_name -> tools.RequestFieldConfig
-	14,  // 8: tools.ActionConfig.response:type_name -> tools.ResponseFieldConfig
-	17,  // 9: tools.ActionConfig.title:type_name -> tools.StringTemplate
-	17,  // 10: tools.ActionConfig.help_text:type_name -> tools.StringTemplate
-	9,   // 11: tools.ActionConfig.capabilities:type_name -> tools.Capabilities
-	20,  // 12: tools.ActionConfig.related_actions:type_name -> tools.ToolLink
-	23,  // 13: tools.ActionConfig.pagination:type_name -> tools.CursorPaginationConfig
-	19,  // 14: tools.ActionConfig.external_links:type_name -> tools.ExternalLink
-	20,  // 15: tools.ActionConfig.entry_activity_actions:type_name -> tools.ToolLink
-	20,  // 16: tools.ActionConfig.get_entry_action:type_name -> tools.ToolLink
-	20,  // 17: tools.ActionConfig.create_entry_action:type_name -> tools.ToolLink
-	21,  // 18: tools.ActionConfig.embedded_tools:type_name -> tools.ToolGroup
-	25,  // 19: tools.ActionConfig.display_layout:type_name -> tools.DisplayLayoutConfig
-	15,  // 20: tools.ActionConfig.sections:type_name -> tools.Section
-	34,  // 21: tools.ActionConfig.errors:type_name -> tools.ValidationError
-	35,  // 22: tools.ActionConfig.filter_config:type_name -> tools.FilterConfig
-	18,  // 23: tools.RequestFieldConfig.field_location:type_name -> tools.JsonPath
-	53,  // 24: tools.RequestFieldConfig.field_type:type_name -> proto.Type
-	17,  // 25: tools.RequestFieldConfig.help_text:type_name -> tools.StringTemplate
-	20,  // 26: tools.RequestFieldConfig.lookup_action:type_name -> tools.ToolLink
-	20,  // 27: tools.RequestFieldConfig.get_entry_action:type_name -> tools.ToolLink
-	16,  // 28: tools.RequestFieldConfig.default_value:type_name -> tools.ScalarValue
-	17,  // 29: tools.RequestFieldConfig.placeholder:type_name -> tools.StringTemplate
+	11,  // 3: tools.Tool.action_config:type_name -> tools.ActionConfig
+	31,  // 4: tools.Tool.flow_config:type_name -> tools.FlowConfig
+	50,  // 5: tools.ActionConfig.action_type:type_name -> proto.ActionType
+	51,  // 6: tools.ActionConfig.implementation:type_name -> proto.ActionImplementation
+	12,  // 7: tools.ActionConfig.inputs:type_name -> tools.RequestFieldConfig
+	13,  // 8: tools.ActionConfig.response:type_name -> tools.ResponseFieldConfig
+	16,  // 9: tools.ActionConfig.title:type_name -> tools.StringTemplate
+	16,  // 10: tools.ActionConfig.help_text:type_name -> tools.StringTemplate
+	8,   // 11: tools.ActionConfig.capabilities:type_name -> tools.Capabilities
+	19,  // 12: tools.ActionConfig.related_actions:type_name -> tools.ToolLink
+	22,  // 13: tools.ActionConfig.pagination:type_name -> tools.CursorPaginationConfig
+	18,  // 14: tools.ActionConfig.external_links:type_name -> tools.ExternalLink
+	19,  // 15: tools.ActionConfig.entry_activity_actions:type_name -> tools.ToolLink
+	19,  // 16: tools.ActionConfig.get_entry_action:type_name -> tools.ToolLink
+	19,  // 17: tools.ActionConfig.create_entry_action:type_name -> tools.ToolLink
+	20,  // 18: tools.ActionConfig.embedded_tools:type_name -> tools.ToolGroup
+	24,  // 19: tools.ActionConfig.display_layout:type_name -> tools.DisplayLayoutConfig
+	14,  // 20: tools.ActionConfig.sections:type_name -> tools.Section
+	33,  // 21: tools.ActionConfig.errors:type_name -> tools.ValidationError
+	34,  // 22: tools.ActionConfig.filter_config:type_name -> tools.FilterConfig
+	17,  // 23: tools.RequestFieldConfig.field_location:type_name -> tools.JsonPath
+	52,  // 24: tools.RequestFieldConfig.field_type:type_name -> proto.Type
+	16,  // 25: tools.RequestFieldConfig.help_text:type_name -> tools.StringTemplate
+	19,  // 26: tools.RequestFieldConfig.lookup_action:type_name -> tools.ToolLink
+	19,  // 27: tools.RequestFieldConfig.get_entry_action:type_name -> tools.ToolLink
+	15,  // 28: tools.RequestFieldConfig.default_value:type_name -> tools.ScalarValue
+	16,  // 29: tools.RequestFieldConfig.placeholder:type_name -> tools.StringTemplate
 	2,   // 30: tools.RequestFieldConfig.scope:type_name -> tools.RequestFieldConfig.ScopeType
-	34,  // 31: tools.RequestFieldConfig.errors:type_name -> tools.ValidationError
-	18,  // 32: tools.ResponseFieldConfig.field_location:type_name -> tools.JsonPath
-	53,  // 33: tools.ResponseFieldConfig.field_type:type_name -> proto.Type
-	17,  // 34: tools.ResponseFieldConfig.help_text:type_name -> tools.StringTemplate
-	20,  // 35: tools.ResponseFieldConfig.link:type_name -> tools.ToolLink
+	33,  // 31: tools.RequestFieldConfig.errors:type_name -> tools.ValidationError
+	17,  // 32: tools.ResponseFieldConfig.field_location:type_name -> tools.JsonPath
+	52,  // 33: tools.ResponseFieldConfig.field_type:type_name -> proto.Type
+	16,  // 34: tools.ResponseFieldConfig.help_text:type_name -> tools.StringTemplate
+	19,  // 35: tools.ResponseFieldConfig.link:type_name -> tools.ToolLink
 	3,   // 36: tools.ResponseFieldConfig.scope:type_name -> tools.ResponseFieldConfig.ScopeType
-	34,  // 37: tools.ResponseFieldConfig.errors:type_name -> tools.ValidationError
-	36,  // 38: tools.ResponseFieldConfig.format:type_name -> tools.FormatConfig
-	17,  // 39: tools.Section.title:type_name -> tools.StringTemplate
-	17,  // 40: tools.Section.description:type_name -> tools.StringTemplate
-	17,  // 41: tools.ExternalLink.label:type_name -> tools.StringTemplate
-	17,  // 42: tools.ExternalLink.href:type_name -> tools.StringTemplate
-	24,  // 43: tools.ToolLink.data:type_name -> tools.DataMapping
-	17,  // 44: tools.ToolLink.title:type_name -> tools.StringTemplate
-	17,  // 45: tools.ToolLink.description:type_name -> tools.StringTemplate
-	34,  // 46: tools.ToolLink.errors:type_name -> tools.ValidationError
-	17,  // 47: tools.ToolGroup.title:type_name -> tools.StringTemplate
-	45,  // 48: tools.ToolGroup.tools:type_name -> tools.ToolGroup.GroupActionLink
-	34,  // 49: tools.ToolGroup.errors:type_name -> tools.ValidationError
-	18,  // 50: tools.ResponseOverrides.field_location:type_name -> tools.JsonPath
-	46,  // 51: tools.CursorPaginationConfig.start:type_name -> tools.CursorPaginationConfig.FieldConfig
-	46,  // 52: tools.CursorPaginationConfig.end:type_name -> tools.CursorPaginationConfig.FieldConfig
-	47,  // 53: tools.CursorPaginationConfig.page_size:type_name -> tools.CursorPaginationConfig.PageSizeConfig
-	18,  // 54: tools.CursorPaginationConfig.next_page:type_name -> tools.JsonPath
-	18,  // 55: tools.CursorPaginationConfig.total_count:type_name -> tools.JsonPath
-	18,  // 56: tools.DataMapping.path:type_name -> tools.JsonPath
-	24,  // 57: tools.DataMapping.object:type_name -> tools.DataMapping
-	16,  // 58: tools.DataMapping.value:type_name -> tools.ScalarValue
+	33,  // 37: tools.ResponseFieldConfig.errors:type_name -> tools.ValidationError
+	35,  // 38: tools.ResponseFieldConfig.format:type_name -> tools.FormatConfig
+	16,  // 39: tools.Section.title:type_name -> tools.StringTemplate
+	16,  // 40: tools.Section.description:type_name -> tools.StringTemplate
+	16,  // 41: tools.ExternalLink.label:type_name -> tools.StringTemplate
+	16,  // 42: tools.ExternalLink.href:type_name -> tools.StringTemplate
+	23,  // 43: tools.ToolLink.data:type_name -> tools.DataMapping
+	16,  // 44: tools.ToolLink.title:type_name -> tools.StringTemplate
+	16,  // 45: tools.ToolLink.description:type_name -> tools.StringTemplate
+	33,  // 46: tools.ToolLink.errors:type_name -> tools.ValidationError
+	16,  // 47: tools.ToolGroup.title:type_name -> tools.StringTemplate
+	44,  // 48: tools.ToolGroup.tools:type_name -> tools.ToolGroup.GroupActionLink
+	33,  // 49: tools.ToolGroup.errors:type_name -> tools.ValidationError
+	17,  // 50: tools.ResponseOverrides.field_location:type_name -> tools.JsonPath
+	45,  // 51: tools.CursorPaginationConfig.start:type_name -> tools.CursorPaginationConfig.FieldConfig
+	45,  // 52: tools.CursorPaginationConfig.end:type_name -> tools.CursorPaginationConfig.FieldConfig
+	46,  // 53: tools.CursorPaginationConfig.page_size:type_name -> tools.CursorPaginationConfig.PageSizeConfig
+	17,  // 54: tools.CursorPaginationConfig.next_page:type_name -> tools.JsonPath
+	17,  // 55: tools.CursorPaginationConfig.total_count:type_name -> tools.JsonPath
+	17,  // 56: tools.DataMapping.path:type_name -> tools.JsonPath
+	23,  // 57: tools.DataMapping.object:type_name -> tools.DataMapping
+	15,  // 58: tools.DataMapping.value:type_name -> tools.ScalarValue
 	4,   // 59: tools.DisplayLayoutConfig.type:type_name -> tools.DisplayLayoutConfig.Type
-	26,  // 60: tools.DisplayLayoutConfig.inbox_config:type_name -> tools.InboxViewConfig
-	27,  // 61: tools.DisplayLayoutConfig.board_config:type_name -> tools.BoardViewConfig
-	28,  // 62: tools.DisplayLayoutConfig.grid_config:type_name -> tools.GridViewConfig
-	30,  // 63: tools.DisplayLayoutConfig.record_config:type_name -> tools.RecordViewConfig
-	29,  // 64: tools.DisplayLayoutConfig.gallery_config:type_name -> tools.GalleryViewConfig
-	34,  // 65: tools.DisplayLayoutConfig.errors:type_name -> tools.ValidationError
-	20,  // 66: tools.InboxViewConfig.get_tool:type_name -> tools.ToolLink
-	17,  // 67: tools.InboxViewConfig.title:type_name -> tools.StringTemplate
-	17,  // 68: tools.InboxViewConfig.description:type_name -> tools.StringTemplate
-	17,  // 69: tools.InboxViewConfig.context_field:type_name -> tools.StringTemplate
-	17,  // 70: tools.InboxViewConfig.avatar_url:type_name -> tools.StringTemplate
-	17,  // 71: tools.InboxViewConfig.avatar_fallback:type_name -> tools.StringTemplate
-	20,  // 72: tools.BoardViewConfig.get_tool:type_name -> tools.ToolLink
-	17,  // 73: tools.BoardViewConfig.title:type_name -> tools.StringTemplate
-	17,  // 74: tools.BoardViewConfig.description:type_name -> tools.StringTemplate
-	17,  // 75: tools.BoardViewConfig.context_field:type_name -> tools.StringTemplate
-	17,  // 76: tools.BoardViewConfig.avatar_url:type_name -> tools.StringTemplate
-	17,  // 77: tools.BoardViewConfig.avatar_fallback:type_name -> tools.StringTemplate
-	18,  // 78: tools.BoardViewConfig.group_by_field:type_name -> tools.JsonPath
-	20,  // 79: tools.BoardViewConfig.update_action:type_name -> tools.ToolLink
-	17,  // 80: tools.GridViewConfig.title:type_name -> tools.StringTemplate
-	17,  // 81: tools.GridViewConfig.description:type_name -> tools.StringTemplate
-	20,  // 82: tools.GridViewConfig.update_action:type_name -> tools.ToolLink
-	17,  // 83: tools.GalleryViewConfig.title:type_name -> tools.StringTemplate
-	17,  // 84: tools.GalleryViewConfig.description:type_name -> tools.StringTemplate
-	48,  // 85: tools.GalleryViewConfig.image:type_name -> tools.GalleryViewConfig.Image
-	31,  // 86: tools.RecordViewConfig.progress_indicator:type_name -> tools.ProgressIndicatorConfig
-	18,  // 87: tools.ProgressIndicatorConfig.stepper_field:type_name -> tools.JsonPath
-	49,  // 88: tools.ProgressIndicatorConfig.steps:type_name -> tools.ProgressIndicatorConfig.Step
-	17,  // 89: tools.FlowConfig.help_text:type_name -> tools.StringTemplate
-	33,  // 90: tools.FlowConfig.inputs:type_name -> tools.FlowInputConfig
-	20,  // 91: tools.FlowConfig.completion_redirect:type_name -> tools.ToolLink
-	34,  // 92: tools.FlowConfig.errors:type_name -> tools.ValidationError
-	18,  // 93: tools.FlowInputConfig.field_location:type_name -> tools.JsonPath
-	53,  // 94: tools.FlowInputConfig.field_type:type_name -> proto.Type
-	17,  // 95: tools.FlowInputConfig.help_text:type_name -> tools.StringTemplate
-	16,  // 96: tools.FlowInputConfig.default_value:type_name -> tools.ScalarValue
-	17,  // 97: tools.FlowInputConfig.placeholder:type_name -> tools.StringTemplate
-	18,  // 98: tools.FilterConfig.quick_search_field:type_name -> tools.JsonPath
+	25,  // 60: tools.DisplayLayoutConfig.inbox_config:type_name -> tools.InboxViewConfig
+	26,  // 61: tools.DisplayLayoutConfig.board_config:type_name -> tools.BoardViewConfig
+	27,  // 62: tools.DisplayLayoutConfig.grid_config:type_name -> tools.GridViewConfig
+	29,  // 63: tools.DisplayLayoutConfig.record_config:type_name -> tools.RecordViewConfig
+	28,  // 64: tools.DisplayLayoutConfig.gallery_config:type_name -> tools.GalleryViewConfig
+	33,  // 65: tools.DisplayLayoutConfig.errors:type_name -> tools.ValidationError
+	19,  // 66: tools.InboxViewConfig.get_tool:type_name -> tools.ToolLink
+	16,  // 67: tools.InboxViewConfig.title:type_name -> tools.StringTemplate
+	16,  // 68: tools.InboxViewConfig.description:type_name -> tools.StringTemplate
+	16,  // 69: tools.InboxViewConfig.context_field:type_name -> tools.StringTemplate
+	16,  // 70: tools.InboxViewConfig.avatar_url:type_name -> tools.StringTemplate
+	16,  // 71: tools.InboxViewConfig.avatar_fallback:type_name -> tools.StringTemplate
+	19,  // 72: tools.BoardViewConfig.get_tool:type_name -> tools.ToolLink
+	16,  // 73: tools.BoardViewConfig.title:type_name -> tools.StringTemplate
+	16,  // 74: tools.BoardViewConfig.description:type_name -> tools.StringTemplate
+	16,  // 75: tools.BoardViewConfig.context_field:type_name -> tools.StringTemplate
+	16,  // 76: tools.BoardViewConfig.avatar_url:type_name -> tools.StringTemplate
+	16,  // 77: tools.BoardViewConfig.avatar_fallback:type_name -> tools.StringTemplate
+	17,  // 78: tools.BoardViewConfig.group_by_field:type_name -> tools.JsonPath
+	19,  // 79: tools.BoardViewConfig.update_action:type_name -> tools.ToolLink
+	16,  // 80: tools.GridViewConfig.title:type_name -> tools.StringTemplate
+	16,  // 81: tools.GridViewConfig.description:type_name -> tools.StringTemplate
+	19,  // 82: tools.GridViewConfig.update_action:type_name -> tools.ToolLink
+	16,  // 83: tools.GalleryViewConfig.title:type_name -> tools.StringTemplate
+	16,  // 84: tools.GalleryViewConfig.description:type_name -> tools.StringTemplate
+	47,  // 85: tools.GalleryViewConfig.image:type_name -> tools.GalleryViewConfig.Image
+	30,  // 86: tools.RecordViewConfig.progress_indicator:type_name -> tools.ProgressIndicatorConfig
+	17,  // 87: tools.ProgressIndicatorConfig.stepper_field:type_name -> tools.JsonPath
+	48,  // 88: tools.ProgressIndicatorConfig.steps:type_name -> tools.ProgressIndicatorConfig.Step
+	16,  // 89: tools.FlowConfig.help_text:type_name -> tools.StringTemplate
+	32,  // 90: tools.FlowConfig.inputs:type_name -> tools.FlowInputConfig
+	19,  // 91: tools.FlowConfig.completion_redirect:type_name -> tools.ToolLink
+	33,  // 92: tools.FlowConfig.errors:type_name -> tools.ValidationError
+	17,  // 93: tools.FlowInputConfig.field_location:type_name -> tools.JsonPath
+	52,  // 94: tools.FlowInputConfig.field_type:type_name -> proto.Type
+	16,  // 95: tools.FlowInputConfig.help_text:type_name -> tools.StringTemplate
+	15,  // 96: tools.FlowInputConfig.default_value:type_name -> tools.ScalarValue
+	16,  // 97: tools.FlowInputConfig.placeholder:type_name -> tools.StringTemplate
+	17,  // 98: tools.FilterConfig.quick_search_field:type_name -> tools.JsonPath
 	5,   // 99: tools.FormatConfig.type:type_name -> tools.FormatConfig.Type
-	40,  // 100: tools.FormatConfig.enum_config:type_name -> tools.EnumFormatConfig
-	38,  // 101: tools.FormatConfig.number_config:type_name -> tools.NumberFormatConfig
-	39,  // 102: tools.FormatConfig.string_config:type_name -> tools.StringFormatConfig
-	37,  // 103: tools.FormatConfig.bool_config:type_name -> tools.BoolFormatConfig
+	39,  // 100: tools.FormatConfig.enum_config:type_name -> tools.EnumFormatConfig
+	37,  // 101: tools.FormatConfig.number_config:type_name -> tools.NumberFormatConfig
+	38,  // 102: tools.FormatConfig.string_config:type_name -> tools.StringFormatConfig
+	36,  // 103: tools.FormatConfig.bool_config:type_name -> tools.BoolFormatConfig
 	6,   // 104: tools.NumberFormatConfig.mode:type_name -> tools.NumberFormatConfig.Mode
 	0,   // 105: tools.NumberFormatConfig.colourise:type_name -> tools.ConditionalFormatMode
-	50,  // 106: tools.EnumFormatConfig.values:type_name -> tools.EnumFormatConfig.EnumValueFormatConfig
+	49,  // 106: tools.EnumFormatConfig.values:type_name -> tools.EnumFormatConfig.EnumValueFormatConfig
 	7,   // 107: tools.Field.type:type_name -> tools.Field.Type
-	36,  // 108: tools.Field.format:type_name -> tools.FormatConfig
-	17,  // 109: tools.Field.help_text:type_name -> tools.StringTemplate
-	20,  // 110: tools.Space.actions:type_name -> tools.ToolLink
-	43,  // 111: tools.Space.groups:type_name -> tools.SpaceGroup
-	44,  // 112: tools.Space.metrics:type_name -> tools.SpaceMetric
-	19,  // 113: tools.Space.links:type_name -> tools.ExternalLink
-	17,  // 114: tools.SpaceGroup.name:type_name -> tools.StringTemplate
-	17,  // 115: tools.SpaceGroup.description:type_name -> tools.StringTemplate
-	20,  // 116: tools.SpaceGroup.actions:type_name -> tools.ToolLink
-	17,  // 117: tools.SpaceMetric.label:type_name -> tools.StringTemplate
-	18,  // 118: tools.SpaceMetric.facet_location:type_name -> tools.JsonPath
-	20,  // 119: tools.ToolGroup.GroupActionLink.action_link:type_name -> tools.ToolLink
-	22,  // 120: tools.ToolGroup.GroupActionLink.response_overrides:type_name -> tools.ResponseOverrides
-	18,  // 121: tools.CursorPaginationConfig.FieldConfig.response_field:type_name -> tools.JsonPath
-	18,  // 122: tools.CursorPaginationConfig.PageSizeConfig.response_field:type_name -> tools.JsonPath
-	18,  // 123: tools.GalleryViewConfig.Image.file_field:type_name -> tools.JsonPath
-	17,  // 124: tools.GalleryViewConfig.Image.alt:type_name -> tools.StringTemplate
-	17,  // 125: tools.ProgressIndicatorConfig.Step.title:type_name -> tools.StringTemplate
+	35,  // 108: tools.Field.format:type_name -> tools.FormatConfig
+	16,  // 109: tools.Field.help_text:type_name -> tools.StringTemplate
+	19,  // 110: tools.Space.actions:type_name -> tools.ToolLink
+	42,  // 111: tools.Space.groups:type_name -> tools.SpaceGroup
+	43,  // 112: tools.Space.metrics:type_name -> tools.SpaceMetric
+	18,  // 113: tools.Space.links:type_name -> tools.ExternalLink
+	16,  // 114: tools.SpaceGroup.name:type_name -> tools.StringTemplate
+	16,  // 115: tools.SpaceGroup.description:type_name -> tools.StringTemplate
+	19,  // 116: tools.SpaceGroup.actions:type_name -> tools.ToolLink
+	16,  // 117: tools.SpaceMetric.label:type_name -> tools.StringTemplate
+	17,  // 118: tools.SpaceMetric.facet_location:type_name -> tools.JsonPath
+	19,  // 119: tools.ToolGroup.GroupActionLink.action_link:type_name -> tools.ToolLink
+	21,  // 120: tools.ToolGroup.GroupActionLink.response_overrides:type_name -> tools.ResponseOverrides
+	17,  // 121: tools.CursorPaginationConfig.FieldConfig.response_field:type_name -> tools.JsonPath
+	17,  // 122: tools.CursorPaginationConfig.PageSizeConfig.response_field:type_name -> tools.JsonPath
+	17,  // 123: tools.GalleryViewConfig.Image.file_field:type_name -> tools.JsonPath
+	16,  // 124: tools.GalleryViewConfig.Image.alt:type_name -> tools.StringTemplate
+	16,  // 125: tools.ProgressIndicatorConfig.Step.title:type_name -> tools.StringTemplate
 	126, // [126:126] is the sub-list for method output_type
 	126, // [126:126] is the sub-list for method input_type
 	126, // [126:126] is the sub-list for extension type_name
@@ -5399,7 +5339,7 @@ func file_tools_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_tools_proto_rawDesc,
-			NumEnums:      9,
+			NumEnums:      8,
 			NumMessages:   42,
 			NumExtensions: 0,
 			NumServices:   0,

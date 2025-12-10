@@ -727,14 +727,6 @@ message Field {
 
 // A space is a collection of grouped tool links (Action), metrics and external links.
 message Space {
-	enum Colour {
-		green = 0;
-		blue = 1;
-		yellow = 2;
-		coral = 3;
-		purple = 4;
-	}
-
 	string id = 1;
 	string name = 2;
 	string icon = 3;
