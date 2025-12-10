@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	gonanoid "github.com/matoous/go-nanoid/v2"
+	"github.com/samber/lo"
 	toolsproto "github.com/teamkeel/keel/tools/proto"
 )
 
@@ -180,6 +181,42 @@ func (s *SpaceConfig) allActions() SpaceActions {
 	}
 
 	return actions
+}
+
+// removeItem will remove the item with the given id from within this space. returns true if item removed, false if not found.
+func (s *SpaceConfig) removeItem(itemID string) bool {
+	if item := s.Actions.findByID(itemID); item != nil {
+		s.Actions = lo.Without(s.Actions, item)
+
+		return true
+	}
+
+	if item := s.Groups.findByID(itemID); item != nil {
+		s.Groups = lo.Without(s.Groups, item)
+
+		return true
+	}
+
+	if item := s.Links.findByID(itemID); item != nil {
+		s.Links = lo.Without(s.Links, item)
+
+		return true
+	}
+	if item := s.Metrics.findByID(itemID); item != nil {
+		s.Metrics = lo.Without(s.Metrics, item)
+
+		return true
+	}
+
+	for _, g := range s.Groups {
+		if item := g.Actions.findByID(itemID); item != nil {
+			g.Actions = lo.Without(g.Actions, item)
+
+			return true
+		}
+	}
+
+	return false
 }
 
 // addAction adds the given action to ths space. if a group ID is provided, the action is added within that group.

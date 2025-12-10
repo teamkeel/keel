@@ -395,6 +395,26 @@ func (s *Service) RemoveSpace(ctx context.Context, spaceID string) error {
 
 	return s.storeSpaces(remainingSpaces)
 }
+func (s *Service) RemoveSpaceItem(ctx context.Context, spaceID, itemID string) (*toolsproto.Space, error) {
+	// load existing user configuration
+	userConfig, err := s.load()
+	if err != nil {
+		return nil, fmt.Errorf("loading space configs from file: %w", err)
+	}
+
+	space := userConfig.Spaces.findByID(spaceID)
+	if space == nil {
+		return nil, fmt.Errorf("space not found")
+	}
+
+	space.removeItem(itemID)
+
+	if err := s.storeSpaces(userConfig.Spaces); err != nil {
+		return nil, fmt.Errorf("storing space configs: %w", err)
+	}
+
+	return space.toProto(), nil
+}
 
 // AddSpaceAction adds an action to the given space. If Group ID is not empty, the action will be added to the given group.
 func (s *Service) AddSpaceAction(ctx context.Context, payload *toolsproto.CreateSpaceActionPayload) (*toolsproto.Space, error) {

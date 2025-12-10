@@ -207,12 +207,7 @@ message AddToolSpaceItemRequest {
 message RemoveToolSpaceItemRequest {
 	string environment_id = 1;
 	string space_id = 2;
-	oneof item_id {
-		string action_id = 3;
-		string metric_id = 4;
-		string group_id = 5;
-		string link_id = 6;
-	}
+	string item_id = 3;
 }
 
 message UpdateToolSpaceItemRequest {
