@@ -3629,9 +3629,11 @@ type Space struct {
 	// Top Level actions
 	Actions []*SpaceAction `protobuf:"bytes,5,rep,name=actions,proto3" json:"actions,omitempty"`
 	// Groups containing actions
-	Groups  []*SpaceGroup   `protobuf:"bytes,6,rep,name=groups,proto3" json:"groups,omitempty"`
-	Metrics []*SpaceMetric  `protobuf:"bytes,7,rep,name=metrics,proto3" json:"metrics,omitempty"`
-	Links   []*ExternalLink `protobuf:"bytes,8,rep,name=links,proto3" json:"links,omitempty"`
+	Groups []*SpaceGroup `protobuf:"bytes,6,rep,name=groups,proto3" json:"groups,omitempty"`
+	// Space metrics
+	Metrics []*SpaceMetric `protobuf:"bytes,7,rep,name=metrics,proto3" json:"metrics,omitempty"`
+	// Extenal links
+	Links []*SpaceLink `protobuf:"bytes,8,rep,name=links,proto3" json:"links,omitempty"`
 }
 
 func (x *Space) Reset() {
@@ -3713,7 +3715,7 @@ func (x *Space) GetMetrics() []*SpaceMetric {
 	return nil
 }
 
-func (x *Space) GetLinks() []*ExternalLink {
+func (x *Space) GetLinks() []*SpaceLink {
 	if x != nil {
 		return x.Links
 	}
@@ -3797,6 +3799,154 @@ func (x *SpaceGroup) GetActions() []*SpaceAction {
 	return nil
 }
 
+// Payload for creating a Space Group
+type CreateSpaceGroupPayload struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	SpaceId      string          `protobuf:"bytes,1,opt,name=space_id,json=spaceId,proto3" json:"space_id,omitempty"`
+	Name         *StringTemplate `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Description  *StringTemplate `protobuf:"bytes,3,opt,name=description,proto3,oneof" json:"description,omitempty"`
+	DisplayOrder int32           `protobuf:"varint,4,opt,name=display_order,json=displayOrder,proto3" json:"display_order,omitempty"`
+}
+
+func (x *CreateSpaceGroupPayload) Reset() {
+	*x = CreateSpaceGroupPayload{}
+	mi := &file_tools_proto_msgTypes[35]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateSpaceGroupPayload) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateSpaceGroupPayload) ProtoMessage() {}
+
+func (x *CreateSpaceGroupPayload) ProtoReflect() protoreflect.Message {
+	mi := &file_tools_proto_msgTypes[35]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateSpaceGroupPayload.ProtoReflect.Descriptor instead.
+func (*CreateSpaceGroupPayload) Descriptor() ([]byte, []int) {
+	return file_tools_proto_rawDescGZIP(), []int{35}
+}
+
+func (x *CreateSpaceGroupPayload) GetSpaceId() string {
+	if x != nil {
+		return x.SpaceId
+	}
+	return ""
+}
+
+func (x *CreateSpaceGroupPayload) GetName() *StringTemplate {
+	if x != nil {
+		return x.Name
+	}
+	return nil
+}
+
+func (x *CreateSpaceGroupPayload) GetDescription() *StringTemplate {
+	if x != nil {
+		return x.Description
+	}
+	return nil
+}
+
+func (x *CreateSpaceGroupPayload) GetDisplayOrder() int32 {
+	if x != nil {
+		return x.DisplayOrder
+	}
+	return 0
+}
+
+// Payload for updating a Space Group
+type UpdateSpaceGroupPayload struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id            string          `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Label         *StringTemplate `protobuf:"bytes,2,opt,name=label,proto3" json:"label,omitempty"`
+	ToolId        string          `protobuf:"bytes,3,opt,name=tool_id,json=toolId,proto3" json:"tool_id,omitempty"`
+	FacetLocation *JsonPath       `protobuf:"bytes,4,opt,name=facet_location,json=facetLocation,proto3" json:"facet_location,omitempty"`
+	DisplayOrder  int32           `protobuf:"varint,5,opt,name=display_order,json=displayOrder,proto3" json:"display_order,omitempty"`
+}
+
+func (x *UpdateSpaceGroupPayload) Reset() {
+	*x = UpdateSpaceGroupPayload{}
+	mi := &file_tools_proto_msgTypes[36]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateSpaceGroupPayload) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateSpaceGroupPayload) ProtoMessage() {}
+
+func (x *UpdateSpaceGroupPayload) ProtoReflect() protoreflect.Message {
+	mi := &file_tools_proto_msgTypes[36]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateSpaceGroupPayload.ProtoReflect.Descriptor instead.
+func (*UpdateSpaceGroupPayload) Descriptor() ([]byte, []int) {
+	return file_tools_proto_rawDescGZIP(), []int{36}
+}
+
+func (x *UpdateSpaceGroupPayload) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *UpdateSpaceGroupPayload) GetLabel() *StringTemplate {
+	if x != nil {
+		return x.Label
+	}
+	return nil
+}
+
+func (x *UpdateSpaceGroupPayload) GetToolId() string {
+	if x != nil {
+		return x.ToolId
+	}
+	return ""
+}
+
+func (x *UpdateSpaceGroupPayload) GetFacetLocation() *JsonPath {
+	if x != nil {
+		return x.FacetLocation
+	}
+	return nil
+}
+
+func (x *UpdateSpaceGroupPayload) GetDisplayOrder() int32 {
+	if x != nil {
+		return x.DisplayOrder
+	}
+	return 0
+}
+
 type SpaceMetric struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3811,7 +3961,7 @@ type SpaceMetric struct {
 
 func (x *SpaceMetric) Reset() {
 	*x = SpaceMetric{}
-	mi := &file_tools_proto_msgTypes[35]
+	mi := &file_tools_proto_msgTypes[37]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3823,7 +3973,7 @@ func (x *SpaceMetric) String() string {
 func (*SpaceMetric) ProtoMessage() {}
 
 func (x *SpaceMetric) ProtoReflect() protoreflect.Message {
-	mi := &file_tools_proto_msgTypes[35]
+	mi := &file_tools_proto_msgTypes[37]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3836,7 +3986,7 @@ func (x *SpaceMetric) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SpaceMetric.ProtoReflect.Descriptor instead.
 func (*SpaceMetric) Descriptor() ([]byte, []int) {
-	return file_tools_proto_rawDescGZIP(), []int{35}
+	return file_tools_proto_rawDescGZIP(), []int{37}
 }
 
 func (x *SpaceMetric) GetId() string {
@@ -3874,6 +4024,323 @@ func (x *SpaceMetric) GetDisplayOrder() int32 {
 	return 0
 }
 
+// Payload for creating a Space Metric
+type CreateSpaceMetricPayload struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	SpaceId       string          `protobuf:"bytes,1,opt,name=space_id,json=spaceId,proto3" json:"space_id,omitempty"`
+	Label         *StringTemplate `protobuf:"bytes,2,opt,name=label,proto3" json:"label,omitempty"`
+	ToolId        string          `protobuf:"bytes,3,opt,name=tool_id,json=toolId,proto3" json:"tool_id,omitempty"`
+	FacetLocation *JsonPath       `protobuf:"bytes,4,opt,name=facet_location,json=facetLocation,proto3" json:"facet_location,omitempty"`
+	DisplayOrder  int32           `protobuf:"varint,5,opt,name=display_order,json=displayOrder,proto3" json:"display_order,omitempty"`
+}
+
+func (x *CreateSpaceMetricPayload) Reset() {
+	*x = CreateSpaceMetricPayload{}
+	mi := &file_tools_proto_msgTypes[38]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateSpaceMetricPayload) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateSpaceMetricPayload) ProtoMessage() {}
+
+func (x *CreateSpaceMetricPayload) ProtoReflect() protoreflect.Message {
+	mi := &file_tools_proto_msgTypes[38]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateSpaceMetricPayload.ProtoReflect.Descriptor instead.
+func (*CreateSpaceMetricPayload) Descriptor() ([]byte, []int) {
+	return file_tools_proto_rawDescGZIP(), []int{38}
+}
+
+func (x *CreateSpaceMetricPayload) GetSpaceId() string {
+	if x != nil {
+		return x.SpaceId
+	}
+	return ""
+}
+
+func (x *CreateSpaceMetricPayload) GetLabel() *StringTemplate {
+	if x != nil {
+		return x.Label
+	}
+	return nil
+}
+
+func (x *CreateSpaceMetricPayload) GetToolId() string {
+	if x != nil {
+		return x.ToolId
+	}
+	return ""
+}
+
+func (x *CreateSpaceMetricPayload) GetFacetLocation() *JsonPath {
+	if x != nil {
+		return x.FacetLocation
+	}
+	return nil
+}
+
+func (x *CreateSpaceMetricPayload) GetDisplayOrder() int32 {
+	if x != nil {
+		return x.DisplayOrder
+	}
+	return 0
+}
+
+// Payload for updating a Space Metric
+type UpdateSpaceMetricPayload struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id            string          `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Label         *StringTemplate `protobuf:"bytes,2,opt,name=label,proto3" json:"label,omitempty"`
+	ToolId        string          `protobuf:"bytes,3,opt,name=tool_id,json=toolId,proto3" json:"tool_id,omitempty"`
+	FacetLocation *JsonPath       `protobuf:"bytes,4,opt,name=facet_location,json=facetLocation,proto3" json:"facet_location,omitempty"`
+	DisplayOrder  int32           `protobuf:"varint,5,opt,name=display_order,json=displayOrder,proto3" json:"display_order,omitempty"`
+}
+
+func (x *UpdateSpaceMetricPayload) Reset() {
+	*x = UpdateSpaceMetricPayload{}
+	mi := &file_tools_proto_msgTypes[39]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateSpaceMetricPayload) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateSpaceMetricPayload) ProtoMessage() {}
+
+func (x *UpdateSpaceMetricPayload) ProtoReflect() protoreflect.Message {
+	mi := &file_tools_proto_msgTypes[39]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateSpaceMetricPayload.ProtoReflect.Descriptor instead.
+func (*UpdateSpaceMetricPayload) Descriptor() ([]byte, []int) {
+	return file_tools_proto_rawDescGZIP(), []int{39}
+}
+
+func (x *UpdateSpaceMetricPayload) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *UpdateSpaceMetricPayload) GetLabel() *StringTemplate {
+	if x != nil {
+		return x.Label
+	}
+	return nil
+}
+
+func (x *UpdateSpaceMetricPayload) GetToolId() string {
+	if x != nil {
+		return x.ToolId
+	}
+	return ""
+}
+
+func (x *UpdateSpaceMetricPayload) GetFacetLocation() *JsonPath {
+	if x != nil {
+		return x.FacetLocation
+	}
+	return nil
+}
+
+func (x *UpdateSpaceMetricPayload) GetDisplayOrder() int32 {
+	if x != nil {
+		return x.DisplayOrder
+	}
+	return 0
+}
+
+type SpaceLink struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id   string        `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Link *ExternalLink `protobuf:"bytes,2,opt,name=link,proto3" json:"link,omitempty"`
+}
+
+func (x *SpaceLink) Reset() {
+	*x = SpaceLink{}
+	mi := &file_tools_proto_msgTypes[40]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SpaceLink) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SpaceLink) ProtoMessage() {}
+
+func (x *SpaceLink) ProtoReflect() protoreflect.Message {
+	mi := &file_tools_proto_msgTypes[40]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SpaceLink.ProtoReflect.Descriptor instead.
+func (*SpaceLink) Descriptor() ([]byte, []int) {
+	return file_tools_proto_rawDescGZIP(), []int{40}
+}
+
+func (x *SpaceLink) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *SpaceLink) GetLink() *ExternalLink {
+	if x != nil {
+		return x.Link
+	}
+	return nil
+}
+
+// Payload for creating a Space Link
+type CreateSpaceLinkPayload struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	SpaceId string        `protobuf:"bytes,1,opt,name=space_id,json=spaceId,proto3" json:"space_id,omitempty"`
+	Link    *ExternalLink `protobuf:"bytes,2,opt,name=link,proto3" json:"link,omitempty"`
+}
+
+func (x *CreateSpaceLinkPayload) Reset() {
+	*x = CreateSpaceLinkPayload{}
+	mi := &file_tools_proto_msgTypes[41]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateSpaceLinkPayload) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateSpaceLinkPayload) ProtoMessage() {}
+
+func (x *CreateSpaceLinkPayload) ProtoReflect() protoreflect.Message {
+	mi := &file_tools_proto_msgTypes[41]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateSpaceLinkPayload.ProtoReflect.Descriptor instead.
+func (*CreateSpaceLinkPayload) Descriptor() ([]byte, []int) {
+	return file_tools_proto_rawDescGZIP(), []int{41}
+}
+
+func (x *CreateSpaceLinkPayload) GetSpaceId() string {
+	if x != nil {
+		return x.SpaceId
+	}
+	return ""
+}
+
+func (x *CreateSpaceLinkPayload) GetLink() *ExternalLink {
+	if x != nil {
+		return x.Link
+	}
+	return nil
+}
+
+// Payload for updating a Space Link
+type UpdateSpaceLinkPayload struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id   string        `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Link *ExternalLink `protobuf:"bytes,2,opt,name=link,proto3" json:"link,omitempty"`
+}
+
+func (x *UpdateSpaceLinkPayload) Reset() {
+	*x = UpdateSpaceLinkPayload{}
+	mi := &file_tools_proto_msgTypes[42]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateSpaceLinkPayload) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateSpaceLinkPayload) ProtoMessage() {}
+
+func (x *UpdateSpaceLinkPayload) ProtoReflect() protoreflect.Message {
+	mi := &file_tools_proto_msgTypes[42]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateSpaceLinkPayload.ProtoReflect.Descriptor instead.
+func (*UpdateSpaceLinkPayload) Descriptor() ([]byte, []int) {
+	return file_tools_proto_rawDescGZIP(), []int{42}
+}
+
+func (x *UpdateSpaceLinkPayload) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *UpdateSpaceLinkPayload) GetLink() *ExternalLink {
+	if x != nil {
+		return x.Link
+	}
+	return nil
+}
+
 type SpaceAction struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -3885,7 +4352,7 @@ type SpaceAction struct {
 
 func (x *SpaceAction) Reset() {
 	*x = SpaceAction{}
-	mi := &file_tools_proto_msgTypes[36]
+	mi := &file_tools_proto_msgTypes[43]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3897,7 +4364,7 @@ func (x *SpaceAction) String() string {
 func (*SpaceAction) ProtoMessage() {}
 
 func (x *SpaceAction) ProtoReflect() protoreflect.Message {
-	mi := &file_tools_proto_msgTypes[36]
+	mi := &file_tools_proto_msgTypes[43]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3910,7 +4377,7 @@ func (x *SpaceAction) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SpaceAction.ProtoReflect.Descriptor instead.
 func (*SpaceAction) Descriptor() ([]byte, []int) {
-	return file_tools_proto_rawDescGZIP(), []int{36}
+	return file_tools_proto_rawDescGZIP(), []int{43}
 }
 
 func (x *SpaceAction) GetId() string {
@@ -3921,6 +4388,122 @@ func (x *SpaceAction) GetId() string {
 }
 
 func (x *SpaceAction) GetLink() *ToolLink {
+	if x != nil {
+		return x.Link
+	}
+	return nil
+}
+
+// Payload for creating a Space Action
+type CreateSpaceActionPayload struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	SpaceId string    `protobuf:"bytes,1,opt,name=space_id,json=spaceId,proto3" json:"space_id,omitempty"`
+	GroupId *string   `protobuf:"bytes,2,opt,name=group_id,json=groupId,proto3,oneof" json:"group_id,omitempty"`
+	Link    *ToolLink `protobuf:"bytes,3,opt,name=link,proto3" json:"link,omitempty"`
+}
+
+func (x *CreateSpaceActionPayload) Reset() {
+	*x = CreateSpaceActionPayload{}
+	mi := &file_tools_proto_msgTypes[44]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateSpaceActionPayload) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateSpaceActionPayload) ProtoMessage() {}
+
+func (x *CreateSpaceActionPayload) ProtoReflect() protoreflect.Message {
+	mi := &file_tools_proto_msgTypes[44]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateSpaceActionPayload.ProtoReflect.Descriptor instead.
+func (*CreateSpaceActionPayload) Descriptor() ([]byte, []int) {
+	return file_tools_proto_rawDescGZIP(), []int{44}
+}
+
+func (x *CreateSpaceActionPayload) GetSpaceId() string {
+	if x != nil {
+		return x.SpaceId
+	}
+	return ""
+}
+
+func (x *CreateSpaceActionPayload) GetGroupId() string {
+	if x != nil && x.GroupId != nil {
+		return *x.GroupId
+	}
+	return ""
+}
+
+func (x *CreateSpaceActionPayload) GetLink() *ToolLink {
+	if x != nil {
+		return x.Link
+	}
+	return nil
+}
+
+// Payload for updating a Space Action
+type UpdateSpaceActionPayload struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id   string    `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Link *ToolLink `protobuf:"bytes,2,opt,name=link,proto3" json:"link,omitempty"`
+}
+
+func (x *UpdateSpaceActionPayload) Reset() {
+	*x = UpdateSpaceActionPayload{}
+	mi := &file_tools_proto_msgTypes[45]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateSpaceActionPayload) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateSpaceActionPayload) ProtoMessage() {}
+
+func (x *UpdateSpaceActionPayload) ProtoReflect() protoreflect.Message {
+	mi := &file_tools_proto_msgTypes[45]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateSpaceActionPayload.ProtoReflect.Descriptor instead.
+func (*UpdateSpaceActionPayload) Descriptor() ([]byte, []int) {
+	return file_tools_proto_rawDescGZIP(), []int{45}
+}
+
+func (x *UpdateSpaceActionPayload) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *UpdateSpaceActionPayload) GetLink() *ToolLink {
 	if x != nil {
 		return x.Link
 	}
@@ -3942,7 +4525,7 @@ type ToolGroup_GroupActionLink struct {
 
 func (x *ToolGroup_GroupActionLink) Reset() {
 	*x = ToolGroup_GroupActionLink{}
-	mi := &file_tools_proto_msgTypes[37]
+	mi := &file_tools_proto_msgTypes[46]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3954,7 +4537,7 @@ func (x *ToolGroup_GroupActionLink) String() string {
 func (*ToolGroup_GroupActionLink) ProtoMessage() {}
 
 func (x *ToolGroup_GroupActionLink) ProtoReflect() protoreflect.Message {
-	mi := &file_tools_proto_msgTypes[37]
+	mi := &file_tools_proto_msgTypes[46]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3996,7 +4579,7 @@ type CursorPaginationConfig_FieldConfig struct {
 
 func (x *CursorPaginationConfig_FieldConfig) Reset() {
 	*x = CursorPaginationConfig_FieldConfig{}
-	mi := &file_tools_proto_msgTypes[38]
+	mi := &file_tools_proto_msgTypes[47]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4008,7 +4591,7 @@ func (x *CursorPaginationConfig_FieldConfig) String() string {
 func (*CursorPaginationConfig_FieldConfig) ProtoMessage() {}
 
 func (x *CursorPaginationConfig_FieldConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_tools_proto_msgTypes[38]
+	mi := &file_tools_proto_msgTypes[47]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4050,7 +4633,7 @@ type CursorPaginationConfig_PageSizeConfig struct {
 
 func (x *CursorPaginationConfig_PageSizeConfig) Reset() {
 	*x = CursorPaginationConfig_PageSizeConfig{}
-	mi := &file_tools_proto_msgTypes[39]
+	mi := &file_tools_proto_msgTypes[48]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4062,7 +4645,7 @@ func (x *CursorPaginationConfig_PageSizeConfig) String() string {
 func (*CursorPaginationConfig_PageSizeConfig) ProtoMessage() {}
 
 func (x *CursorPaginationConfig_PageSizeConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_tools_proto_msgTypes[39]
+	mi := &file_tools_proto_msgTypes[48]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4112,7 +4695,7 @@ type GalleryViewConfig_Image struct {
 
 func (x *GalleryViewConfig_Image) Reset() {
 	*x = GalleryViewConfig_Image{}
-	mi := &file_tools_proto_msgTypes[40]
+	mi := &file_tools_proto_msgTypes[49]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4124,7 +4707,7 @@ func (x *GalleryViewConfig_Image) String() string {
 func (*GalleryViewConfig_Image) ProtoMessage() {}
 
 func (x *GalleryViewConfig_Image) ProtoReflect() protoreflect.Message {
-	mi := &file_tools_proto_msgTypes[40]
+	mi := &file_tools_proto_msgTypes[49]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4174,7 +4757,7 @@ type ProgressIndicatorConfig_Step struct {
 
 func (x *ProgressIndicatorConfig_Step) Reset() {
 	*x = ProgressIndicatorConfig_Step{}
-	mi := &file_tools_proto_msgTypes[41]
+	mi := &file_tools_proto_msgTypes[50]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4186,7 +4769,7 @@ func (x *ProgressIndicatorConfig_Step) String() string {
 func (*ProgressIndicatorConfig_Step) ProtoMessage() {}
 
 func (x *ProgressIndicatorConfig_Step) ProtoReflect() protoreflect.Message {
-	mi := &file_tools_proto_msgTypes[41]
+	mi := &file_tools_proto_msgTypes[50]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4236,7 +4819,7 @@ type EnumFormatConfig_EnumValueFormatConfig struct {
 
 func (x *EnumFormatConfig_EnumValueFormatConfig) Reset() {
 	*x = EnumFormatConfig_EnumValueFormatConfig{}
-	mi := &file_tools_proto_msgTypes[42]
+	mi := &file_tools_proto_msgTypes[51]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4248,7 +4831,7 @@ func (x *EnumFormatConfig_EnumValueFormatConfig) String() string {
 func (*EnumFormatConfig_EnumValueFormatConfig) ProtoMessage() {}
 
 func (x *EnumFormatConfig_EnumValueFormatConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_tools_proto_msgTypes[42]
+	mi := &file_tools_proto_msgTypes[51]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5099,7 +5682,7 @@ var file_tools_proto_rawDesc = []byte{
 	0x0d, 0x5f, 0x64, 0x69, 0x73, 0x70, 0x6c, 0x61, 0x79, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x42, 0x0c,
 	0x0a, 0x0a, 0x5f, 0x68, 0x65, 0x6c, 0x70, 0x5f, 0x74, 0x65, 0x78, 0x74, 0x42, 0x0a, 0x0a, 0x08,
 	0x5f, 0x76, 0x69, 0x73, 0x69, 0x62, 0x6c, 0x65, 0x42, 0x10, 0x0a, 0x0e, 0x5f, 0x69, 0x6d, 0x61,
-	0x67, 0x65, 0x5f, 0x70, 0x72, 0x65, 0x76, 0x69, 0x65, 0x77, 0x22, 0x96, 0x02, 0x0a, 0x05, 0x53,
+	0x67, 0x65, 0x5f, 0x70, 0x72, 0x65, 0x76, 0x69, 0x65, 0x77, 0x22, 0x93, 0x02, 0x0a, 0x05, 0x53,
 	0x70, 0x61, 0x63, 0x65, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
 	0x52, 0x02, 0x69, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01,
 	0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x69, 0x63, 0x6f, 0x6e,
@@ -5114,12 +5697,28 @@ var file_tools_proto_rawDesc = []byte{
 	0x75, 0x70, 0x52, 0x06, 0x67, 0x72, 0x6f, 0x75, 0x70, 0x73, 0x12, 0x2c, 0x0a, 0x07, 0x6d, 0x65,
 	0x74, 0x72, 0x69, 0x63, 0x73, 0x18, 0x07, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x12, 0x2e, 0x74, 0x6f,
 	0x6f, 0x6c, 0x73, 0x2e, 0x53, 0x70, 0x61, 0x63, 0x65, 0x4d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x52,
-	0x07, 0x6d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x73, 0x12, 0x29, 0x0a, 0x05, 0x6c, 0x69, 0x6e, 0x6b,
-	0x73, 0x18, 0x08, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x74, 0x6f, 0x6f, 0x6c, 0x73, 0x2e,
-	0x45, 0x78, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x4c, 0x69, 0x6e, 0x6b, 0x52, 0x05, 0x6c, 0x69,
-	0x6e, 0x6b, 0x73, 0x22, 0xe8, 0x01, 0x0a, 0x0a, 0x53, 0x70, 0x61, 0x63, 0x65, 0x47, 0x72, 0x6f,
-	0x75, 0x70, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02,
-	0x69, 0x64, 0x12, 0x29, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b,
+	0x07, 0x6d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x73, 0x12, 0x26, 0x0a, 0x05, 0x6c, 0x69, 0x6e, 0x6b,
+	0x73, 0x18, 0x08, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x10, 0x2e, 0x74, 0x6f, 0x6f, 0x6c, 0x73, 0x2e,
+	0x53, 0x70, 0x61, 0x63, 0x65, 0x4c, 0x69, 0x6e, 0x6b, 0x52, 0x05, 0x6c, 0x69, 0x6e, 0x6b, 0x73,
+	0x22, 0xe8, 0x01, 0x0a, 0x0a, 0x53, 0x70, 0x61, 0x63, 0x65, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x12,
+	0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x12,
+	0x29, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x15, 0x2e,
+	0x74, 0x6f, 0x6f, 0x6c, 0x73, 0x2e, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x54, 0x65, 0x6d, 0x70,
+	0x6c, 0x61, 0x74, 0x65, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x3c, 0x0a, 0x0b, 0x64, 0x65,
+	0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x15, 0x2e, 0x74, 0x6f, 0x6f, 0x6c, 0x73, 0x2e, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x54, 0x65,
+	0x6d, 0x70, 0x6c, 0x61, 0x74, 0x65, 0x48, 0x00, 0x52, 0x0b, 0x64, 0x65, 0x73, 0x63, 0x72, 0x69,
+	0x70, 0x74, 0x69, 0x6f, 0x6e, 0x88, 0x01, 0x01, 0x12, 0x23, 0x0a, 0x0d, 0x64, 0x69, 0x73, 0x70,
+	0x6c, 0x61, 0x79, 0x5f, 0x6f, 0x72, 0x64, 0x65, 0x72, 0x18, 0x04, 0x20, 0x01, 0x28, 0x05, 0x52,
+	0x0c, 0x64, 0x69, 0x73, 0x70, 0x6c, 0x61, 0x79, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x12, 0x2c, 0x0a,
+	0x07, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x18, 0x05, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x12,
+	0x2e, 0x74, 0x6f, 0x6f, 0x6c, 0x73, 0x2e, 0x53, 0x70, 0x61, 0x63, 0x65, 0x41, 0x63, 0x74, 0x69,
+	0x6f, 0x6e, 0x52, 0x07, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x42, 0x0e, 0x0a, 0x0c, 0x5f,
+	0x64, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x22, 0xd2, 0x01, 0x0a, 0x17,
+	0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x53, 0x70, 0x61, 0x63, 0x65, 0x47, 0x72, 0x6f, 0x75, 0x70,
+	0x50, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x73, 0x70, 0x61, 0x63, 0x65,
+	0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x73, 0x70, 0x61, 0x63, 0x65,
+	0x49, 0x64, 0x12, 0x29, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b,
 	0x32, 0x15, 0x2e, 0x74, 0x6f, 0x6f, 0x6c, 0x73, 0x2e, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x54,
 	0x65, 0x6d, 0x70, 0x6c, 0x61, 0x74, 0x65, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x3c, 0x0a,
 	0x0b, 0x64, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x03, 0x20, 0x01,
@@ -5128,34 +5727,100 @@ var file_tools_proto_rawDesc = []byte{
 	0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x88, 0x01, 0x01, 0x12, 0x23, 0x0a, 0x0d, 0x64,
 	0x69, 0x73, 0x70, 0x6c, 0x61, 0x79, 0x5f, 0x6f, 0x72, 0x64, 0x65, 0x72, 0x18, 0x04, 0x20, 0x01,
 	0x28, 0x05, 0x52, 0x0c, 0x64, 0x69, 0x73, 0x70, 0x6c, 0x61, 0x79, 0x4f, 0x72, 0x64, 0x65, 0x72,
-	0x12, 0x2c, 0x0a, 0x07, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x18, 0x05, 0x20, 0x03, 0x28,
-	0x0b, 0x32, 0x12, 0x2e, 0x74, 0x6f, 0x6f, 0x6c, 0x73, 0x2e, 0x53, 0x70, 0x61, 0x63, 0x65, 0x41,
-	0x63, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x07, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x42, 0x0e,
-	0x0a, 0x0c, 0x5f, 0x64, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x22, 0xc0,
-	0x01, 0x0a, 0x0b, 0x53, 0x70, 0x61, 0x63, 0x65, 0x4d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x12, 0x0e,
-	0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x12, 0x2b,
-	0x0a, 0x05, 0x6c, 0x61, 0x62, 0x65, 0x6c, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x15, 0x2e,
-	0x74, 0x6f, 0x6f, 0x6c, 0x73, 0x2e, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x54, 0x65, 0x6d, 0x70,
-	0x6c, 0x61, 0x74, 0x65, 0x52, 0x05, 0x6c, 0x61, 0x62, 0x65, 0x6c, 0x12, 0x17, 0x0a, 0x07, 0x74,
-	0x6f, 0x6f, 0x6c, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x74, 0x6f,
-	0x6f, 0x6c, 0x49, 0x64, 0x12, 0x36, 0x0a, 0x0e, 0x66, 0x61, 0x63, 0x65, 0x74, 0x5f, 0x6c, 0x6f,
-	0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0f, 0x2e, 0x74,
-	0x6f, 0x6f, 0x6c, 0x73, 0x2e, 0x4a, 0x73, 0x6f, 0x6e, 0x50, 0x61, 0x74, 0x68, 0x52, 0x0d, 0x66,
-	0x61, 0x63, 0x65, 0x74, 0x4c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x23, 0x0a, 0x0d,
-	0x64, 0x69, 0x73, 0x70, 0x6c, 0x61, 0x79, 0x5f, 0x6f, 0x72, 0x64, 0x65, 0x72, 0x18, 0x05, 0x20,
-	0x01, 0x28, 0x05, 0x52, 0x0c, 0x64, 0x69, 0x73, 0x70, 0x6c, 0x61, 0x79, 0x4f, 0x72, 0x64, 0x65,
-	0x72, 0x22, 0x42, 0x0a, 0x0b, 0x53, 0x70, 0x61, 0x63, 0x65, 0x41, 0x63, 0x74, 0x69, 0x6f, 0x6e,
-	0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64,
-	0x12, 0x23, 0x0a, 0x04, 0x6c, 0x69, 0x6e, 0x6b, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0f,
+	0x42, 0x0e, 0x0a, 0x0c, 0x5f, 0x64, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e,
+	0x22, 0xcc, 0x01, 0x0a, 0x17, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x53, 0x70, 0x61, 0x63, 0x65,
+	0x47, 0x72, 0x6f, 0x75, 0x70, 0x50, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x12, 0x0e, 0x0a, 0x02,
+	0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x12, 0x2b, 0x0a, 0x05,
+	0x6c, 0x61, 0x62, 0x65, 0x6c, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x15, 0x2e, 0x74, 0x6f,
+	0x6f, 0x6c, 0x73, 0x2e, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x54, 0x65, 0x6d, 0x70, 0x6c, 0x61,
+	0x74, 0x65, 0x52, 0x05, 0x6c, 0x61, 0x62, 0x65, 0x6c, 0x12, 0x17, 0x0a, 0x07, 0x74, 0x6f, 0x6f,
+	0x6c, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x74, 0x6f, 0x6f, 0x6c,
+	0x49, 0x64, 0x12, 0x36, 0x0a, 0x0e, 0x66, 0x61, 0x63, 0x65, 0x74, 0x5f, 0x6c, 0x6f, 0x63, 0x61,
+	0x74, 0x69, 0x6f, 0x6e, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0f, 0x2e, 0x74, 0x6f, 0x6f,
+	0x6c, 0x73, 0x2e, 0x4a, 0x73, 0x6f, 0x6e, 0x50, 0x61, 0x74, 0x68, 0x52, 0x0d, 0x66, 0x61, 0x63,
+	0x65, 0x74, 0x4c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x23, 0x0a, 0x0d, 0x64, 0x69,
+	0x73, 0x70, 0x6c, 0x61, 0x79, 0x5f, 0x6f, 0x72, 0x64, 0x65, 0x72, 0x18, 0x05, 0x20, 0x01, 0x28,
+	0x05, 0x52, 0x0c, 0x64, 0x69, 0x73, 0x70, 0x6c, 0x61, 0x79, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x22,
+	0xc0, 0x01, 0x0a, 0x0b, 0x53, 0x70, 0x61, 0x63, 0x65, 0x4d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x12,
+	0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x12,
+	0x2b, 0x0a, 0x05, 0x6c, 0x61, 0x62, 0x65, 0x6c, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x15,
+	0x2e, 0x74, 0x6f, 0x6f, 0x6c, 0x73, 0x2e, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x54, 0x65, 0x6d,
+	0x70, 0x6c, 0x61, 0x74, 0x65, 0x52, 0x05, 0x6c, 0x61, 0x62, 0x65, 0x6c, 0x12, 0x17, 0x0a, 0x07,
+	0x74, 0x6f, 0x6f, 0x6c, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x74,
+	0x6f, 0x6f, 0x6c, 0x49, 0x64, 0x12, 0x36, 0x0a, 0x0e, 0x66, 0x61, 0x63, 0x65, 0x74, 0x5f, 0x6c,
+	0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0f, 0x2e,
+	0x74, 0x6f, 0x6f, 0x6c, 0x73, 0x2e, 0x4a, 0x73, 0x6f, 0x6e, 0x50, 0x61, 0x74, 0x68, 0x52, 0x0d,
+	0x66, 0x61, 0x63, 0x65, 0x74, 0x4c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x23, 0x0a,
+	0x0d, 0x64, 0x69, 0x73, 0x70, 0x6c, 0x61, 0x79, 0x5f, 0x6f, 0x72, 0x64, 0x65, 0x72, 0x18, 0x05,
+	0x20, 0x01, 0x28, 0x05, 0x52, 0x0c, 0x64, 0x69, 0x73, 0x70, 0x6c, 0x61, 0x79, 0x4f, 0x72, 0x64,
+	0x65, 0x72, 0x22, 0xd8, 0x01, 0x0a, 0x18, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x53, 0x70, 0x61,
+	0x63, 0x65, 0x4d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x50, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x12,
+	0x19, 0x0a, 0x08, 0x73, 0x70, 0x61, 0x63, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x07, 0x73, 0x70, 0x61, 0x63, 0x65, 0x49, 0x64, 0x12, 0x2b, 0x0a, 0x05, 0x6c, 0x61,
+	0x62, 0x65, 0x6c, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x15, 0x2e, 0x74, 0x6f, 0x6f, 0x6c,
+	0x73, 0x2e, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x54, 0x65, 0x6d, 0x70, 0x6c, 0x61, 0x74, 0x65,
+	0x52, 0x05, 0x6c, 0x61, 0x62, 0x65, 0x6c, 0x12, 0x17, 0x0a, 0x07, 0x74, 0x6f, 0x6f, 0x6c, 0x5f,
+	0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x74, 0x6f, 0x6f, 0x6c, 0x49, 0x64,
+	0x12, 0x36, 0x0a, 0x0e, 0x66, 0x61, 0x63, 0x65, 0x74, 0x5f, 0x6c, 0x6f, 0x63, 0x61, 0x74, 0x69,
+	0x6f, 0x6e, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0f, 0x2e, 0x74, 0x6f, 0x6f, 0x6c, 0x73,
+	0x2e, 0x4a, 0x73, 0x6f, 0x6e, 0x50, 0x61, 0x74, 0x68, 0x52, 0x0d, 0x66, 0x61, 0x63, 0x65, 0x74,
+	0x4c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x23, 0x0a, 0x0d, 0x64, 0x69, 0x73, 0x70,
+	0x6c, 0x61, 0x79, 0x5f, 0x6f, 0x72, 0x64, 0x65, 0x72, 0x18, 0x05, 0x20, 0x01, 0x28, 0x05, 0x52,
+	0x0c, 0x64, 0x69, 0x73, 0x70, 0x6c, 0x61, 0x79, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x22, 0xcd, 0x01,
+	0x0a, 0x18, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x53, 0x70, 0x61, 0x63, 0x65, 0x4d, 0x65, 0x74,
+	0x72, 0x69, 0x63, 0x50, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x12, 0x2b, 0x0a, 0x05, 0x6c, 0x61,
+	0x62, 0x65, 0x6c, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x15, 0x2e, 0x74, 0x6f, 0x6f, 0x6c,
+	0x73, 0x2e, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x54, 0x65, 0x6d, 0x70, 0x6c, 0x61, 0x74, 0x65,
+	0x52, 0x05, 0x6c, 0x61, 0x62, 0x65, 0x6c, 0x12, 0x17, 0x0a, 0x07, 0x74, 0x6f, 0x6f, 0x6c, 0x5f,
+	0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x74, 0x6f, 0x6f, 0x6c, 0x49, 0x64,
+	0x12, 0x36, 0x0a, 0x0e, 0x66, 0x61, 0x63, 0x65, 0x74, 0x5f, 0x6c, 0x6f, 0x63, 0x61, 0x74, 0x69,
+	0x6f, 0x6e, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0f, 0x2e, 0x74, 0x6f, 0x6f, 0x6c, 0x73,
+	0x2e, 0x4a, 0x73, 0x6f, 0x6e, 0x50, 0x61, 0x74, 0x68, 0x52, 0x0d, 0x66, 0x61, 0x63, 0x65, 0x74,
+	0x4c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x23, 0x0a, 0x0d, 0x64, 0x69, 0x73, 0x70,
+	0x6c, 0x61, 0x79, 0x5f, 0x6f, 0x72, 0x64, 0x65, 0x72, 0x18, 0x05, 0x20, 0x01, 0x28, 0x05, 0x52,
+	0x0c, 0x64, 0x69, 0x73, 0x70, 0x6c, 0x61, 0x79, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x22, 0x44, 0x0a,
+	0x09, 0x53, 0x70, 0x61, 0x63, 0x65, 0x4c, 0x69, 0x6e, 0x6b, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x12, 0x27, 0x0a, 0x04, 0x6c, 0x69,
+	0x6e, 0x6b, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x74, 0x6f, 0x6f, 0x6c, 0x73,
+	0x2e, 0x45, 0x78, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x4c, 0x69, 0x6e, 0x6b, 0x52, 0x04, 0x6c,
+	0x69, 0x6e, 0x6b, 0x22, 0x5c, 0x0a, 0x16, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x53, 0x70, 0x61,
+	0x63, 0x65, 0x4c, 0x69, 0x6e, 0x6b, 0x50, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x12, 0x19, 0x0a,
+	0x08, 0x73, 0x70, 0x61, 0x63, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x07, 0x73, 0x70, 0x61, 0x63, 0x65, 0x49, 0x64, 0x12, 0x27, 0x0a, 0x04, 0x6c, 0x69, 0x6e, 0x6b,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x74, 0x6f, 0x6f, 0x6c, 0x73, 0x2e, 0x45,
+	0x78, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x4c, 0x69, 0x6e, 0x6b, 0x52, 0x04, 0x6c, 0x69, 0x6e,
+	0x6b, 0x22, 0x51, 0x0a, 0x16, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x53, 0x70, 0x61, 0x63, 0x65,
+	0x4c, 0x69, 0x6e, 0x6b, 0x50, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x12, 0x0e, 0x0a, 0x02, 0x69,
+	0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x12, 0x27, 0x0a, 0x04, 0x6c,
+	0x69, 0x6e, 0x6b, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x74, 0x6f, 0x6f, 0x6c,
+	0x73, 0x2e, 0x45, 0x78, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x4c, 0x69, 0x6e, 0x6b, 0x52, 0x04,
+	0x6c, 0x69, 0x6e, 0x6b, 0x22, 0x42, 0x0a, 0x0b, 0x53, 0x70, 0x61, 0x63, 0x65, 0x41, 0x63, 0x74,
+	0x69, 0x6f, 0x6e, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x02, 0x69, 0x64, 0x12, 0x23, 0x0a, 0x04, 0x6c, 0x69, 0x6e, 0x6b, 0x18, 0x02, 0x20, 0x01, 0x28,
+	0x0b, 0x32, 0x0f, 0x2e, 0x74, 0x6f, 0x6f, 0x6c, 0x73, 0x2e, 0x54, 0x6f, 0x6f, 0x6c, 0x4c, 0x69,
+	0x6e, 0x6b, 0x52, 0x04, 0x6c, 0x69, 0x6e, 0x6b, 0x22, 0x87, 0x01, 0x0a, 0x18, 0x43, 0x72, 0x65,
+	0x61, 0x74, 0x65, 0x53, 0x70, 0x61, 0x63, 0x65, 0x41, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x50, 0x61,
+	0x79, 0x6c, 0x6f, 0x61, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x73, 0x70, 0x61, 0x63, 0x65, 0x5f, 0x69,
+	0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x73, 0x70, 0x61, 0x63, 0x65, 0x49, 0x64,
+	0x12, 0x1e, 0x0a, 0x08, 0x67, 0x72, 0x6f, 0x75, 0x70, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01,
+	0x28, 0x09, 0x48, 0x00, 0x52, 0x07, 0x67, 0x72, 0x6f, 0x75, 0x70, 0x49, 0x64, 0x88, 0x01, 0x01,
+	0x12, 0x23, 0x0a, 0x04, 0x6c, 0x69, 0x6e, 0x6b, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0f,
 	0x2e, 0x74, 0x6f, 0x6f, 0x6c, 0x73, 0x2e, 0x54, 0x6f, 0x6f, 0x6c, 0x4c, 0x69, 0x6e, 0x6b, 0x52,
-	0x04, 0x6c, 0x69, 0x6e, 0x6b, 0x2a, 0x47, 0x0a, 0x15, 0x43, 0x6f, 0x6e, 0x64, 0x69, 0x74, 0x69,
-	0x6f, 0x6e, 0x61, 0x6c, 0x46, 0x6f, 0x72, 0x6d, 0x61, 0x74, 0x4d, 0x6f, 0x64, 0x65, 0x12, 0x08,
-	0x0a, 0x04, 0x4e, 0x4f, 0x4e, 0x45, 0x10, 0x00, 0x12, 0x0a, 0x0a, 0x06, 0x4e, 0x4f, 0x52, 0x4d,
-	0x41, 0x4c, 0x10, 0x01, 0x12, 0x0c, 0x0a, 0x08, 0x49, 0x4e, 0x56, 0x45, 0x52, 0x54, 0x45, 0x44,
-	0x10, 0x02, 0x12, 0x0a, 0x0a, 0x06, 0x43, 0x55, 0x53, 0x54, 0x4f, 0x4d, 0x10, 0x03, 0x42, 0x26,
-	0x5a, 0x24, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x74, 0x65, 0x61,
-	0x6d, 0x6b, 0x65, 0x65, 0x6c, 0x2f, 0x6b, 0x65, 0x65, 0x6c, 0x2f, 0x74, 0x6f, 0x6f, 0x6c, 0x73,
-	0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x04, 0x6c, 0x69, 0x6e, 0x6b, 0x42, 0x0b, 0x0a, 0x09, 0x5f, 0x67, 0x72, 0x6f, 0x75, 0x70, 0x5f,
+	0x69, 0x64, 0x22, 0x4f, 0x0a, 0x18, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x53, 0x70, 0x61, 0x63,
+	0x65, 0x41, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x50, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x12, 0x0e,
+	0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x12, 0x23,
+	0x0a, 0x04, 0x6c, 0x69, 0x6e, 0x6b, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0f, 0x2e, 0x74,
+	0x6f, 0x6f, 0x6c, 0x73, 0x2e, 0x54, 0x6f, 0x6f, 0x6c, 0x4c, 0x69, 0x6e, 0x6b, 0x52, 0x04, 0x6c,
+	0x69, 0x6e, 0x6b, 0x2a, 0x47, 0x0a, 0x15, 0x43, 0x6f, 0x6e, 0x64, 0x69, 0x74, 0x69, 0x6f, 0x6e,
+	0x61, 0x6c, 0x46, 0x6f, 0x72, 0x6d, 0x61, 0x74, 0x4d, 0x6f, 0x64, 0x65, 0x12, 0x08, 0x0a, 0x04,
+	0x4e, 0x4f, 0x4e, 0x45, 0x10, 0x00, 0x12, 0x0a, 0x0a, 0x06, 0x4e, 0x4f, 0x52, 0x4d, 0x41, 0x4c,
+	0x10, 0x01, 0x12, 0x0c, 0x0a, 0x08, 0x49, 0x4e, 0x56, 0x45, 0x52, 0x54, 0x45, 0x44, 0x10, 0x02,
+	0x12, 0x0a, 0x0a, 0x06, 0x43, 0x55, 0x53, 0x54, 0x4f, 0x4d, 0x10, 0x03, 0x42, 0x26, 0x5a, 0x24,
+	0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x74, 0x65, 0x61, 0x6d, 0x6b,
+	0x65, 0x65, 0x6c, 0x2f, 0x6b, 0x65, 0x65, 0x6c, 0x2f, 0x74, 0x6f, 0x6f, 0x6c, 0x73, 0x2f, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -5171,7 +5836,7 @@ func file_tools_proto_rawDescGZIP() []byte {
 }
 
 var file_tools_proto_enumTypes = make([]protoimpl.EnumInfo, 8)
-var file_tools_proto_msgTypes = make([]protoimpl.MessageInfo, 43)
+var file_tools_proto_msgTypes = make([]protoimpl.MessageInfo, 52)
 var file_tools_proto_goTypes = []any{
 	(ConditionalFormatMode)(0),                     // 0: tools.ConditionalFormatMode
 	(Tool_ToolType)(0),                             // 1: tools.Tool.ToolType
@@ -5216,17 +5881,26 @@ var file_tools_proto_goTypes = []any{
 	(*Field)(nil),                                  // 40: tools.Field
 	(*Space)(nil),                                  // 41: tools.Space
 	(*SpaceGroup)(nil),                             // 42: tools.SpaceGroup
-	(*SpaceMetric)(nil),                            // 43: tools.SpaceMetric
-	(*SpaceAction)(nil),                            // 44: tools.SpaceAction
-	(*ToolGroup_GroupActionLink)(nil),              // 45: tools.ToolGroup.GroupActionLink
-	(*CursorPaginationConfig_FieldConfig)(nil),     // 46: tools.CursorPaginationConfig.FieldConfig
-	(*CursorPaginationConfig_PageSizeConfig)(nil),  // 47: tools.CursorPaginationConfig.PageSizeConfig
-	(*GalleryViewConfig_Image)(nil),                // 48: tools.GalleryViewConfig.Image
-	(*ProgressIndicatorConfig_Step)(nil),           // 49: tools.ProgressIndicatorConfig.Step
-	(*EnumFormatConfig_EnumValueFormatConfig)(nil), // 50: tools.EnumFormatConfig.EnumValueFormatConfig
-	(proto.ActionType)(0),                          // 51: proto.ActionType
-	(proto.ActionImplementation)(0),                // 52: proto.ActionImplementation
-	(proto.Type)(0),                                // 53: proto.Type
+	(*CreateSpaceGroupPayload)(nil),                // 43: tools.CreateSpaceGroupPayload
+	(*UpdateSpaceGroupPayload)(nil),                // 44: tools.UpdateSpaceGroupPayload
+	(*SpaceMetric)(nil),                            // 45: tools.SpaceMetric
+	(*CreateSpaceMetricPayload)(nil),               // 46: tools.CreateSpaceMetricPayload
+	(*UpdateSpaceMetricPayload)(nil),               // 47: tools.UpdateSpaceMetricPayload
+	(*SpaceLink)(nil),                              // 48: tools.SpaceLink
+	(*CreateSpaceLinkPayload)(nil),                 // 49: tools.CreateSpaceLinkPayload
+	(*UpdateSpaceLinkPayload)(nil),                 // 50: tools.UpdateSpaceLinkPayload
+	(*SpaceAction)(nil),                            // 51: tools.SpaceAction
+	(*CreateSpaceActionPayload)(nil),               // 52: tools.CreateSpaceActionPayload
+	(*UpdateSpaceActionPayload)(nil),               // 53: tools.UpdateSpaceActionPayload
+	(*ToolGroup_GroupActionLink)(nil),              // 54: tools.ToolGroup.GroupActionLink
+	(*CursorPaginationConfig_FieldConfig)(nil),     // 55: tools.CursorPaginationConfig.FieldConfig
+	(*CursorPaginationConfig_PageSizeConfig)(nil),  // 56: tools.CursorPaginationConfig.PageSizeConfig
+	(*GalleryViewConfig_Image)(nil),                // 57: tools.GalleryViewConfig.Image
+	(*ProgressIndicatorConfig_Step)(nil),           // 58: tools.ProgressIndicatorConfig.Step
+	(*EnumFormatConfig_EnumValueFormatConfig)(nil), // 59: tools.EnumFormatConfig.EnumValueFormatConfig
+	(proto.ActionType)(0),                          // 60: proto.ActionType
+	(proto.ActionImplementation)(0),                // 61: proto.ActionImplementation
+	(proto.Type)(0),                                // 62: proto.Type
 }
 var file_tools_proto_depIdxs = []int32{
 	11,  // 0: tools.Tools.tools:type_name -> tools.ActionConfig
@@ -5234,8 +5908,8 @@ var file_tools_proto_depIdxs = []int32{
 	1,   // 2: tools.Tool.type:type_name -> tools.Tool.ToolType
 	11,  // 3: tools.Tool.action_config:type_name -> tools.ActionConfig
 	31,  // 4: tools.Tool.flow_config:type_name -> tools.FlowConfig
-	51,  // 5: tools.ActionConfig.action_type:type_name -> proto.ActionType
-	52,  // 6: tools.ActionConfig.implementation:type_name -> proto.ActionImplementation
+	60,  // 5: tools.ActionConfig.action_type:type_name -> proto.ActionType
+	61,  // 6: tools.ActionConfig.implementation:type_name -> proto.ActionImplementation
 	12,  // 7: tools.ActionConfig.inputs:type_name -> tools.RequestFieldConfig
 	13,  // 8: tools.ActionConfig.response:type_name -> tools.ResponseFieldConfig
 	16,  // 9: tools.ActionConfig.title:type_name -> tools.StringTemplate
@@ -5253,7 +5927,7 @@ var file_tools_proto_depIdxs = []int32{
 	33,  // 21: tools.ActionConfig.errors:type_name -> tools.ValidationError
 	34,  // 22: tools.ActionConfig.filter_config:type_name -> tools.FilterConfig
 	17,  // 23: tools.RequestFieldConfig.field_location:type_name -> tools.JsonPath
-	53,  // 24: tools.RequestFieldConfig.field_type:type_name -> proto.Type
+	62,  // 24: tools.RequestFieldConfig.field_type:type_name -> proto.Type
 	16,  // 25: tools.RequestFieldConfig.help_text:type_name -> tools.StringTemplate
 	19,  // 26: tools.RequestFieldConfig.lookup_action:type_name -> tools.ToolLink
 	19,  // 27: tools.RequestFieldConfig.get_entry_action:type_name -> tools.ToolLink
@@ -5262,7 +5936,7 @@ var file_tools_proto_depIdxs = []int32{
 	2,   // 30: tools.RequestFieldConfig.scope:type_name -> tools.RequestFieldConfig.ScopeType
 	33,  // 31: tools.RequestFieldConfig.errors:type_name -> tools.ValidationError
 	17,  // 32: tools.ResponseFieldConfig.field_location:type_name -> tools.JsonPath
-	53,  // 33: tools.ResponseFieldConfig.field_type:type_name -> proto.Type
+	62,  // 33: tools.ResponseFieldConfig.field_type:type_name -> proto.Type
 	16,  // 34: tools.ResponseFieldConfig.help_text:type_name -> tools.StringTemplate
 	19,  // 35: tools.ResponseFieldConfig.link:type_name -> tools.ToolLink
 	3,   // 36: tools.ResponseFieldConfig.scope:type_name -> tools.ResponseFieldConfig.ScopeType
@@ -5277,12 +5951,12 @@ var file_tools_proto_depIdxs = []int32{
 	16,  // 45: tools.ToolLink.description:type_name -> tools.StringTemplate
 	33,  // 46: tools.ToolLink.errors:type_name -> tools.ValidationError
 	16,  // 47: tools.ToolGroup.title:type_name -> tools.StringTemplate
-	45,  // 48: tools.ToolGroup.tools:type_name -> tools.ToolGroup.GroupActionLink
+	54,  // 48: tools.ToolGroup.tools:type_name -> tools.ToolGroup.GroupActionLink
 	33,  // 49: tools.ToolGroup.errors:type_name -> tools.ValidationError
 	17,  // 50: tools.ResponseOverrides.field_location:type_name -> tools.JsonPath
-	46,  // 51: tools.CursorPaginationConfig.start:type_name -> tools.CursorPaginationConfig.FieldConfig
-	46,  // 52: tools.CursorPaginationConfig.end:type_name -> tools.CursorPaginationConfig.FieldConfig
-	47,  // 53: tools.CursorPaginationConfig.page_size:type_name -> tools.CursorPaginationConfig.PageSizeConfig
+	55,  // 51: tools.CursorPaginationConfig.start:type_name -> tools.CursorPaginationConfig.FieldConfig
+	55,  // 52: tools.CursorPaginationConfig.end:type_name -> tools.CursorPaginationConfig.FieldConfig
+	56,  // 53: tools.CursorPaginationConfig.page_size:type_name -> tools.CursorPaginationConfig.PageSizeConfig
 	17,  // 54: tools.CursorPaginationConfig.next_page:type_name -> tools.JsonPath
 	17,  // 55: tools.CursorPaginationConfig.total_count:type_name -> tools.JsonPath
 	17,  // 56: tools.DataMapping.path:type_name -> tools.JsonPath
@@ -5314,16 +5988,16 @@ var file_tools_proto_depIdxs = []int32{
 	19,  // 82: tools.GridViewConfig.update_action:type_name -> tools.ToolLink
 	16,  // 83: tools.GalleryViewConfig.title:type_name -> tools.StringTemplate
 	16,  // 84: tools.GalleryViewConfig.description:type_name -> tools.StringTemplate
-	48,  // 85: tools.GalleryViewConfig.image:type_name -> tools.GalleryViewConfig.Image
+	57,  // 85: tools.GalleryViewConfig.image:type_name -> tools.GalleryViewConfig.Image
 	30,  // 86: tools.RecordViewConfig.progress_indicator:type_name -> tools.ProgressIndicatorConfig
 	17,  // 87: tools.ProgressIndicatorConfig.stepper_field:type_name -> tools.JsonPath
-	49,  // 88: tools.ProgressIndicatorConfig.steps:type_name -> tools.ProgressIndicatorConfig.Step
+	58,  // 88: tools.ProgressIndicatorConfig.steps:type_name -> tools.ProgressIndicatorConfig.Step
 	16,  // 89: tools.FlowConfig.help_text:type_name -> tools.StringTemplate
 	32,  // 90: tools.FlowConfig.inputs:type_name -> tools.FlowInputConfig
 	19,  // 91: tools.FlowConfig.completion_redirect:type_name -> tools.ToolLink
 	33,  // 92: tools.FlowConfig.errors:type_name -> tools.ValidationError
 	17,  // 93: tools.FlowInputConfig.field_location:type_name -> tools.JsonPath
-	53,  // 94: tools.FlowInputConfig.field_type:type_name -> proto.Type
+	62,  // 94: tools.FlowInputConfig.field_type:type_name -> proto.Type
 	16,  // 95: tools.FlowInputConfig.help_text:type_name -> tools.StringTemplate
 	15,  // 96: tools.FlowInputConfig.default_value:type_name -> tools.ScalarValue
 	16,  // 97: tools.FlowInputConfig.placeholder:type_name -> tools.StringTemplate
@@ -5335,32 +6009,45 @@ var file_tools_proto_depIdxs = []int32{
 	36,  // 103: tools.FormatConfig.bool_config:type_name -> tools.BoolFormatConfig
 	6,   // 104: tools.NumberFormatConfig.mode:type_name -> tools.NumberFormatConfig.Mode
 	0,   // 105: tools.NumberFormatConfig.colourise:type_name -> tools.ConditionalFormatMode
-	50,  // 106: tools.EnumFormatConfig.values:type_name -> tools.EnumFormatConfig.EnumValueFormatConfig
+	59,  // 106: tools.EnumFormatConfig.values:type_name -> tools.EnumFormatConfig.EnumValueFormatConfig
 	7,   // 107: tools.Field.type:type_name -> tools.Field.Type
 	35,  // 108: tools.Field.format:type_name -> tools.FormatConfig
 	16,  // 109: tools.Field.help_text:type_name -> tools.StringTemplate
-	44,  // 110: tools.Space.actions:type_name -> tools.SpaceAction
+	51,  // 110: tools.Space.actions:type_name -> tools.SpaceAction
 	42,  // 111: tools.Space.groups:type_name -> tools.SpaceGroup
-	43,  // 112: tools.Space.metrics:type_name -> tools.SpaceMetric
-	18,  // 113: tools.Space.links:type_name -> tools.ExternalLink
+	45,  // 112: tools.Space.metrics:type_name -> tools.SpaceMetric
+	48,  // 113: tools.Space.links:type_name -> tools.SpaceLink
 	16,  // 114: tools.SpaceGroup.name:type_name -> tools.StringTemplate
 	16,  // 115: tools.SpaceGroup.description:type_name -> tools.StringTemplate
-	44,  // 116: tools.SpaceGroup.actions:type_name -> tools.SpaceAction
-	16,  // 117: tools.SpaceMetric.label:type_name -> tools.StringTemplate
-	17,  // 118: tools.SpaceMetric.facet_location:type_name -> tools.JsonPath
-	19,  // 119: tools.SpaceAction.link:type_name -> tools.ToolLink
-	19,  // 120: tools.ToolGroup.GroupActionLink.action_link:type_name -> tools.ToolLink
-	21,  // 121: tools.ToolGroup.GroupActionLink.response_overrides:type_name -> tools.ResponseOverrides
-	17,  // 122: tools.CursorPaginationConfig.FieldConfig.response_field:type_name -> tools.JsonPath
-	17,  // 123: tools.CursorPaginationConfig.PageSizeConfig.response_field:type_name -> tools.JsonPath
-	17,  // 124: tools.GalleryViewConfig.Image.file_field:type_name -> tools.JsonPath
-	16,  // 125: tools.GalleryViewConfig.Image.alt:type_name -> tools.StringTemplate
-	16,  // 126: tools.ProgressIndicatorConfig.Step.title:type_name -> tools.StringTemplate
-	127, // [127:127] is the sub-list for method output_type
-	127, // [127:127] is the sub-list for method input_type
-	127, // [127:127] is the sub-list for extension type_name
-	127, // [127:127] is the sub-list for extension extendee
-	0,   // [0:127] is the sub-list for field type_name
+	51,  // 116: tools.SpaceGroup.actions:type_name -> tools.SpaceAction
+	16,  // 117: tools.CreateSpaceGroupPayload.name:type_name -> tools.StringTemplate
+	16,  // 118: tools.CreateSpaceGroupPayload.description:type_name -> tools.StringTemplate
+	16,  // 119: tools.UpdateSpaceGroupPayload.label:type_name -> tools.StringTemplate
+	17,  // 120: tools.UpdateSpaceGroupPayload.facet_location:type_name -> tools.JsonPath
+	16,  // 121: tools.SpaceMetric.label:type_name -> tools.StringTemplate
+	17,  // 122: tools.SpaceMetric.facet_location:type_name -> tools.JsonPath
+	16,  // 123: tools.CreateSpaceMetricPayload.label:type_name -> tools.StringTemplate
+	17,  // 124: tools.CreateSpaceMetricPayload.facet_location:type_name -> tools.JsonPath
+	16,  // 125: tools.UpdateSpaceMetricPayload.label:type_name -> tools.StringTemplate
+	17,  // 126: tools.UpdateSpaceMetricPayload.facet_location:type_name -> tools.JsonPath
+	18,  // 127: tools.SpaceLink.link:type_name -> tools.ExternalLink
+	18,  // 128: tools.CreateSpaceLinkPayload.link:type_name -> tools.ExternalLink
+	18,  // 129: tools.UpdateSpaceLinkPayload.link:type_name -> tools.ExternalLink
+	19,  // 130: tools.SpaceAction.link:type_name -> tools.ToolLink
+	19,  // 131: tools.CreateSpaceActionPayload.link:type_name -> tools.ToolLink
+	19,  // 132: tools.UpdateSpaceActionPayload.link:type_name -> tools.ToolLink
+	19,  // 133: tools.ToolGroup.GroupActionLink.action_link:type_name -> tools.ToolLink
+	21,  // 134: tools.ToolGroup.GroupActionLink.response_overrides:type_name -> tools.ResponseOverrides
+	17,  // 135: tools.CursorPaginationConfig.FieldConfig.response_field:type_name -> tools.JsonPath
+	17,  // 136: tools.CursorPaginationConfig.PageSizeConfig.response_field:type_name -> tools.JsonPath
+	17,  // 137: tools.GalleryViewConfig.Image.file_field:type_name -> tools.JsonPath
+	16,  // 138: tools.GalleryViewConfig.Image.alt:type_name -> tools.StringTemplate
+	16,  // 139: tools.ProgressIndicatorConfig.Step.title:type_name -> tools.StringTemplate
+	140, // [140:140] is the sub-list for method output_type
+	140, // [140:140] is the sub-list for method input_type
+	140, // [140:140] is the sub-list for extension type_name
+	140, // [140:140] is the sub-list for extension extendee
+	0,   // [0:140] is the sub-list for field type_name
 }
 
 func init() { file_tools_proto_init() }
@@ -5398,17 +6085,19 @@ func file_tools_proto_init() {
 	file_tools_proto_msgTypes[30].OneofWrappers = []any{}
 	file_tools_proto_msgTypes[32].OneofWrappers = []any{}
 	file_tools_proto_msgTypes[34].OneofWrappers = []any{}
-	file_tools_proto_msgTypes[39].OneofWrappers = []any{}
-	file_tools_proto_msgTypes[40].OneofWrappers = []any{}
-	file_tools_proto_msgTypes[41].OneofWrappers = []any{}
-	file_tools_proto_msgTypes[42].OneofWrappers = []any{}
+	file_tools_proto_msgTypes[35].OneofWrappers = []any{}
+	file_tools_proto_msgTypes[44].OneofWrappers = []any{}
+	file_tools_proto_msgTypes[48].OneofWrappers = []any{}
+	file_tools_proto_msgTypes[49].OneofWrappers = []any{}
+	file_tools_proto_msgTypes[50].OneofWrappers = []any{}
+	file_tools_proto_msgTypes[51].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_tools_proto_rawDesc,
 			NumEnums:      8,
-			NumMessages:   43,
+			NumMessages:   52,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

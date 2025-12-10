@@ -5,14 +5,14 @@ import toolsproto "github.com/teamkeel/keel/tools/proto"
 type SpaceConfigs []*SpaceConfig
 
 type SpaceConfig struct {
-	ID           string        `json:"id"`
-	Name         string        `json:"name"`
-	Icon         string        `json:"icon"`
-	DisplayOrder int32         `json:"display_order"`
-	Actions      SpaceActions  `json:"actions"`
-	Groups       SpaceGroups   `json:"groups"`
-	Links        ExternalLinks `json:"links"`
-	Metrics      SpaceMetrics  `json:"metrics"`
+	ID           string       `json:"id"`
+	Name         string       `json:"name"`
+	Icon         string       `json:"icon"`
+	DisplayOrder int32        `json:"display_order"`
+	Actions      SpaceActions `json:"actions"`
+	Groups       SpaceGroups  `json:"groups"`
+	Links        SpaceLinks   `json:"links"`
+	Metrics      SpaceMetrics `json:"metrics"`
 }
 
 // toProto will return the SpaceConfigs as protobuf messages.
@@ -51,6 +51,25 @@ func (a SpaceActions) toProto() []*toolsproto.SpaceAction {
 	}
 
 	return actions
+}
+
+type SpaceLinks []*SpaceLink
+
+type SpaceLink struct {
+	ID   string       `json:"id"`
+	Link ExternalLink `json:"link"`
+}
+
+func (l SpaceLinks) toProto() []*toolsproto.SpaceLink {
+	links := []*toolsproto.SpaceLink{}
+	for _, cfg := range l {
+		links = append(links, &toolsproto.SpaceLink{
+			Id:   cfg.ID,
+			Link: cfg.Link.toProto(),
+		})
+	}
+
+	return links
 }
 
 type SpaceGroups []*SpaceGroup
