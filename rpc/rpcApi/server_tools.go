@@ -187,6 +187,33 @@ func (s *Server) CreateToolSpace(ctx context.Context, req *rpc.CreateToolSpaceRe
 	}, nil
 }
 
+// Updates a new tool space. Returns the newly updated space.
+func (s *Server) UpdateToolSpace(ctx context.Context, req *rpc.UpdateToolSpaceRequest) (*rpc.ToolSpaceResponse, error) {
+	toolsSvc, err := s.makeToolsService(ctx)
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+
+	updated := tools.SpaceConfig{
+		ID:           req.GetSpaceId(),
+		Name:         req.GetName(),
+		Icon:         req.GetIcon(),
+		DisplayOrder: req.GetDisplayOrder(),
+	}
+
+	space, err := toolsSvc.UpdateSpace(ctx, &updated)
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+	if space == nil {
+		return nil, twirp.NewError(twirp.NotFound, "item not found")
+	}
+
+	return &rpc.ToolSpaceResponse{
+		Space: space,
+	}, nil
+}
+
 // Removes a space from the project.
 func (s *Server) RemoveToolSpace(ctx context.Context, req *rpc.RemoveToolSpaceRequest) (*rpc.RemoveToolSpaceResponse, error) {
 	toolsSvc, err := s.makeToolsService(ctx)

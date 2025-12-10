@@ -103,6 +103,8 @@ service API {
 	rpc CreateToolSpace(CreateToolSpaceRequest) returns (ToolSpaceResponse);
 	// Removes a space from the project.
 	rpc RemoveToolSpace(RemoveToolSpaceRequest) returns (RemoveToolSpaceResponse);
+	// Updates a tool space. Returns the newly updated space.
+	rpc UpdateToolSpace(UpdateToolSpaceRequest) returns (ToolSpaceResponse);
 	// Adds a new space item (group, action, metric) to a given space. Returns the updated space. 
 	rpc AddToolSpaceItem(AddToolSpaceItemRequest) returns (ToolSpaceResponse);
 	// Removes a space item from a given space. Returns the updated space.
@@ -178,6 +180,13 @@ message ListToolSpacesResponse {
 
 message CreateToolSpaceRequest {
 	string environment_id = 1;
+	string name = 2;
+	string icon = 3;
+	int32 display_order = 4;
+}
+
+message UpdateToolSpaceRequest {
+	string space_id = 1;
 	string name = 2;
 	string icon = 3;
 	int32 display_order = 4;

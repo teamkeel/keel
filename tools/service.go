@@ -377,6 +377,30 @@ func (s *Service) AddSpace(ctx context.Context, space *SpaceConfig) (*toolsproto
 	return space.toProto(), nil
 }
 
+// UpdateSpace will update an existing space with the given data (note that containing space items are not subject to updates).
+func (s *Service) UpdateSpace(ctx context.Context, updated *SpaceConfig) (*toolsproto.Space, error) {
+	// load existing user configuration
+	userConfig, err := s.load()
+	if err != nil {
+		return nil, fmt.Errorf("loading space configs from file: %w", err)
+	}
+
+	space := userConfig.Spaces.findByID(updated.ID)
+	if space == nil {
+		return nil, nil
+	}
+
+	space.Icon = updated.Icon
+	space.Name = updated.Name
+	space.DisplayOrder = updated.DisplayOrder
+
+	if err := s.storeSpaces(userConfig.Spaces); err != nil {
+		return nil, fmt.Errorf("storing space configs: %w", err)
+	}
+
+	return space.toProto(), nil
+}
+
 // RemoveSpace will remove the given space config from the storage.
 func (s *Service) RemoveSpace(ctx context.Context, spaceID string) error {
 	// load existing user configuration
