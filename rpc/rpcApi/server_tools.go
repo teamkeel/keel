@@ -189,8 +189,18 @@ func (s *Server) CreateToolSpace(ctx context.Context, req *rpc.CreateToolSpaceRe
 
 // Removes a space from the project.
 func (s *Server) RemoveToolSpace(ctx context.Context, req *rpc.RemoveToolSpaceRequest) (*rpc.RemoveToolSpaceResponse, error) {
-	//TODO: implement
-	return nil, nil
+	toolsSvc, err := s.makeToolsService(ctx)
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+
+	if err := toolsSvc.RemoveSpace(ctx, req.GetSpaceId()); err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+
+	return &rpc.RemoveToolSpaceResponse{
+		SpaceId: req.GetSpaceId(),
+	}, nil
 }
 
 // Adds a new space item (group, action, metric) to a given space. Returns the updated space.
