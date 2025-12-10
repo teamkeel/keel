@@ -9,7 +9,7 @@ type SpaceConfig struct {
 	Name         string        `json:"name"`
 	Icon         string        `json:"icon"`
 	DisplayOrder int32         `json:"display_order"`
-	Actions      LinkConfigs   `json:"actions"`
+	Actions      SpaceActions  `json:"actions"`
 	Groups       SpaceGroups   `json:"groups"`
 	Links        ExternalLinks `json:"links"`
 	Metrics      SpaceMetrics  `json:"metrics"`
@@ -24,7 +24,7 @@ func (s SpaceConfigs) toProto() []*toolsproto.Space {
 			Name:         cfg.Name,
 			Icon:         cfg.Icon,
 			DisplayOrder: cfg.DisplayOrder,
-			Actions:      cfg.Actions.applyOn(nil),
+			Actions:      cfg.Actions.toProto(),
 			Links:        cfg.Links.toProto(),
 			Groups:       cfg.Groups.toProto(),
 			Metrics:      cfg.Metrics.toProto(),
@@ -34,14 +34,33 @@ func (s SpaceConfigs) toProto() []*toolsproto.Space {
 	return spaces
 }
 
+type SpaceActions []*SpaceAction
+
+type SpaceAction struct {
+	ID   string     `json:"id"`
+	Link LinkConfig `json:"link"`
+}
+
+func (a SpaceActions) toProto() []*toolsproto.SpaceAction {
+	actions := []*toolsproto.SpaceAction{}
+	for _, cfg := range a {
+		actions = append(actions, &toolsproto.SpaceAction{
+			Id:   cfg.ID,
+			Link: cfg.Link.applyOn(nil),
+		})
+	}
+
+	return actions
+}
+
 type SpaceGroups []*SpaceGroup
 
 type SpaceGroup struct {
-	ID           string      `json:"id"`
-	Name         string      `json:"name"`
-	Description  string      `json:"description"`
-	DisplayOrder int32       `json:"display_order"`
-	Actions      LinkConfigs `json:"actions"`
+	ID           string       `json:"id"`
+	Name         string       `json:"name"`
+	Description  string       `json:"description"`
+	DisplayOrder int32        `json:"display_order"`
+	Actions      SpaceActions `json:"actions"`
 }
 
 func (g SpaceGroups) toProto() []*toolsproto.SpaceGroup {
@@ -52,7 +71,7 @@ func (g SpaceGroups) toProto() []*toolsproto.SpaceGroup {
 			Name:         makeStringTemplate(&cfg.Name),
 			Description:  makeStringTemplate(&cfg.Description),
 			DisplayOrder: cfg.DisplayOrder,
-			Actions:      cfg.Actions.applyOn(nil),
+			Actions:      cfg.Actions.toProto(),
 		})
 	}
 
@@ -62,6 +81,7 @@ func (g SpaceGroups) toProto() []*toolsproto.SpaceGroup {
 type SpaceMetrics []*SpaceMetric
 
 type SpaceMetric struct {
+	ID            string `json:"id"`
 	Label         string `json:"label"`
 	ToolID        string `json:"tool_id"`
 	FacetLocation string `json:"facet_location"`
@@ -72,6 +92,7 @@ func (m SpaceMetrics) toProto() []*toolsproto.SpaceMetric {
 	metrics := []*toolsproto.SpaceMetric{}
 	for _, cfg := range m {
 		metrics = append(metrics, &toolsproto.SpaceMetric{
+			Id:            cfg.ID,
 			Label:         makeStringTemplate(&cfg.Label),
 			ToolId:        cfg.ToolID,
 			FacetLocation: &toolsproto.JsonPath{Path: cfg.FacetLocation},
