@@ -800,6 +800,299 @@ test("tasks - cancel - cancelled task not assigned via next", async () => {
   });
 });
 
+test("tasks - unassign - successfully unassigned", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  const resCreate = await createTask({
+    topic: "EmptyFlow",
+    body: {
+      data: {
+        orderDate: new Date(2025, 6, 9),
+        shipByDate: new Date(2025, 6, 20),
+      },
+    },
+    token: token,
+  });
+  expect(resCreate.status).toBe(200);
+
+  // Assign the task first via next
+  const resNext = await nextTask({ topic: "EmptyFlow", token: token });
+  expect(resNext.status).toBe(200);
+  expect(resNext.body.status).toBe("ASSIGNED");
+  expect(resNext.body.assignedTo).toBeDefined();
+  expect(resNext.body.assignedAt).toBeDefined();
+
+  // Unassign the task
+  const res = await unassignTask({
+    topic: "EmptyFlow",
+    token: token,
+    id: resCreate.body.id,
+  });
+
+  expect(res.status).toBe(200);
+  expect(res.body).toEqual({
+    createdAt: expect.any(String),
+    id: resCreate.body.id,
+    name: "EmptyFlow",
+    status: "NEW",
+    updatedAt: expect.any(String),
+  });
+  // assignedTo and assignedAt should be cleared
+  expect(res.body.assignedTo).toBeUndefined();
+  expect(res.body.assignedAt).toBeUndefined();
+});
+
+test("tasks - unassign - task not found", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  const res = await unassignTask({
+    topic: "EmptyFlow",
+    token: token,
+    id: "non-existent-id",
+  });
+
+  expect(res.status).toBe(404);
+  expect(res.body).toEqual({
+    code: "ERR_RECORD_NOT_FOUND",
+    message: "Not found",
+  });
+});
+
+test("tasks - unassign - completed task cannot be unassigned", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  const resCreate = await createTask({
+    topic: "EmptyFlow",
+    body: {
+      data: {
+        orderDate: new Date(2025, 6, 9),
+        shipByDate: new Date(2025, 6, 20),
+      },
+    },
+    token: token,
+  });
+  expect(resCreate.status).toBe(200);
+
+  const resComplete = await completeTask({
+    topic: "EmptyFlow",
+    token: token,
+    id: resCreate.body.id,
+  });
+  expect(resComplete.status).toBe(200);
+  expect(resComplete.body.status).toBe("COMPLETED");
+
+  const res = await unassignTask({
+    topic: "EmptyFlow",
+    token: token,
+    id: resCreate.body.id,
+  });
+
+  expect(res.status).toBe(400);
+  expect(res.body).toEqual({
+    code: "ERR_INVALID_INPUT",
+    message: "cannot unassign a completed or cancelled task",
+  });
+});
+
+test("tasks - unassign - cancelled task cannot be unassigned", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  const resCreate = await createTask({
+    topic: "EmptyFlow",
+    body: {
+      data: {
+        orderDate: new Date(2025, 6, 9),
+        shipByDate: new Date(2025, 6, 20),
+      },
+    },
+    token: token,
+  });
+  expect(resCreate.status).toBe(200);
+
+  const resCancel = await cancelTask({
+    topic: "EmptyFlow",
+    token: token,
+    id: resCreate.body.id,
+  });
+  expect(resCancel.status).toBe(200);
+  expect(resCancel.body.status).toBe("CANCELLED");
+
+  const res = await unassignTask({
+    topic: "EmptyFlow",
+    token: token,
+    id: resCreate.body.id,
+  });
+
+  expect(res.status).toBe(400);
+  expect(res.body).toEqual({
+    code: "ERR_INVALID_INPUT",
+    message: "cannot unassign a completed or cancelled task",
+  });
+});
+
+test("tasks - unassign - unassigned task available in queue", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  const resCreate = await createTask({
+    topic: "EmptyFlow",
+    body: {
+      data: {
+        orderDate: new Date(2025, 6, 9),
+        shipByDate: new Date(2025, 6, 20),
+      },
+    },
+    token: token,
+  });
+  expect(resCreate.status).toBe(200);
+
+  // Assign the task
+  const resNext1 = await nextTask({ topic: "EmptyFlow", token: token });
+  expect(resNext1.status).toBe(200);
+  expect(resNext1.body.status).toBe("ASSIGNED");
+
+  // Unassign the task
+  const resUnassign = await unassignTask({
+    topic: "EmptyFlow",
+    token: token,
+    id: resCreate.body.id,
+  });
+  expect(resUnassign.status).toBe(200);
+  expect(resUnassign.body.status).toBe("NEW");
+
+  // Task should now be available via next again
+  const resNext2 = await nextTask({ topic: "EmptyFlow", token: token });
+  expect(resNext2.status).toBe(200);
+  expect(resNext2.body.id).toBe(resCreate.body.id);
+  expect(resNext2.body.status).toBe("ASSIGNED");
+});
+
+test("tasks - unassign - creates NEW status entry", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  const identity = await models.identity.findOne({
+    email: "admin@keel.xyz",
+    issuer: "https://keel.so",
+  });
+
+  const resCreate = await createTask({
+    topic: "EmptyFlow",
+    body: {
+      data: {
+        orderDate: new Date(2025, 6, 9),
+        shipByDate: new Date(2025, 6, 20),
+      },
+    },
+    token: token,
+  });
+  expect(resCreate.status).toBe(200);
+
+  // Assign the task
+  const resNext = await nextTask({ topic: "EmptyFlow", token: token });
+  expect(resNext.status).toBe(200);
+
+  const taskId = resNext.body.id;
+
+  // Unassign the task
+  const resUnassign = await unassignTask({
+    topic: "EmptyFlow",
+    token: token,
+    id: taskId,
+  });
+  expect(resUnassign.status).toBe(200);
+
+  // Verify status entries include the NEW status from unassign
+  const statusEntries = await (useDatabase() as any)
+    .selectFrom("keel.task_status")
+    .selectAll()
+    .where("keel_task_id", "=", taskId)
+    .orderBy("created_at", "asc")
+    .execute();
+
+  expect(statusEntries).toHaveLength(3);
+
+  // Initial NEW status from task creation
+  expect(statusEntries[0].status).toBe("NEW");
+  expect(statusEntries[0].setBy).toBe(identity!.id);
+  expect(statusEntries[0].assignedTo).toBeNull();
+
+  // ASSIGNED status from next
+  expect(statusEntries[1].status).toBe("ASSIGNED");
+  expect(statusEntries[1].setBy).toBe(identity!.id);
+  expect(statusEntries[1].assignedTo).toBe(identity!.id);
+
+  // NEW status from unassign
+  expect(statusEntries[2].status).toBe("NEW");
+  expect(statusEntries[2].setBy).toBe(identity!.id);
+  expect(statusEntries[2].assignedTo).toBeNull();
+});
+
+test("tasks - unassign - can unassign NEW task (no-op)", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  const resCreate = await createTask({
+    topic: "EmptyFlow",
+    body: {
+      data: {
+        orderDate: new Date(2025, 6, 9),
+        shipByDate: new Date(2025, 6, 20),
+      },
+    },
+    token: token,
+  });
+  expect(resCreate.status).toBe(200);
+  expect(resCreate.body.status).toBe("NEW");
+
+  // Unassign a task that was never assigned (should still work)
+  const res = await unassignTask({
+    topic: "EmptyFlow",
+    token: token,
+    id: resCreate.body.id,
+  });
+
+  expect(res.status).toBe(200);
+  expect(res.body.status).toBe("NEW");
+});
+
+test("tasks - unassign - can unassign DEFERRED task", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  const resCreate = await createTask({
+    topic: "EmptyFlow",
+    body: {
+      data: {
+        orderDate: new Date(2025, 6, 9),
+        shipByDate: new Date(2025, 6, 20),
+      },
+    },
+    token: token,
+  });
+  expect(resCreate.status).toBe(200);
+
+  // Defer the task
+  const futureDate = new Date();
+  futureDate.setDate(futureDate.getDate() + 7);
+  const resDefer = await deferTask({
+    topic: "EmptyFlow",
+    token: token,
+    id: resCreate.body.id,
+    body: { defer_until: futureDate.toISOString() },
+  });
+  expect(resDefer.status).toBe(200);
+  expect(resDefer.body.status).toBe("DEFERRED");
+
+  // Unassign the deferred task (should work and reset to NEW, but preserve deferredUntil)
+  const res = await unassignTask({
+    topic: "EmptyFlow",
+    token: token,
+    id: resCreate.body.id,
+  });
+
+  expect(res.status).toBe(200);
+  expect(res.body.status).toBe("NEW");
+  // deferredUntil is preserved - task still has the deferred_until set
+  expect(res.body.deferredUntil).toBeDefined();
+});
+
 test("tasks - start - creates STARTED and COMPLETED status entries", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
@@ -1239,6 +1532,22 @@ async function deferTask({ topic, token, id, body }) {
 
 async function cancelTask({ topic, token, id }) {
   const url = `${process.env.KEEL_TESTING_API_URL}/topics/json/${topic}/tasks/${id}/cancel`;
+  const res = await fetch(url, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+  });
+
+  return {
+    status: res.status,
+    body: await res.json(),
+  };
+}
+
+async function unassignTask({ topic, token, id }) {
+  const url = `${process.env.KEEL_TESTING_API_URL}/topics/json/${topic}/tasks/${id}/unassign`;
   const res = await fetch(url, {
     method: "PUT",
     headers: {
