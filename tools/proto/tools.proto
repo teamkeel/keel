@@ -765,10 +765,9 @@ message CreateSpaceGroupPayload {
 // Payload for updating a Space Group
 message UpdateSpaceGroupPayload {
 	string id = 1;
-	StringTemplate label = 2;
-	string tool_id = 3;
-	JsonPath facet_location = 4;
-	int32 display_order = 5;
+	StringTemplate name = 2;
+	optional StringTemplate description = 3; 
+	int32 display_order = 4;
 }
 
 message SpaceMetric {

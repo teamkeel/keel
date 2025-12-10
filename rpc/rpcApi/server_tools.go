@@ -276,6 +276,33 @@ func (s *Server) RemoveToolSpaceItem(ctx context.Context, req *rpc.RemoveToolSpa
 
 // Updates a tool space item (group, action, metric). Returns the updated space.
 func (s *Server) UpdateToolSpaceItem(ctx context.Context, req *rpc.UpdateToolSpaceItemRequest) (*rpc.ToolSpaceResponse, error) {
-	//TODO: implement
-	return nil, nil
+	toolsSvc, err := s.makeToolsService(ctx)
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+
+	var item any
+	switch {
+	case req.GetAction() != nil:
+		item = req.GetAction()
+	case req.GetMetric() != nil:
+		item = req.GetMetric()
+	case req.GetLink() != nil:
+		item = req.GetLink()
+	case req.GetGroup() != nil:
+		item = req.GetGroup()
+	}
+
+	space, err := toolsSvc.UpdateSpaceItem(ctx, item)
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+
+	if space == nil {
+		return nil, twirp.NewError(twirp.NotFound, "item not found")
+	}
+
+	return &rpc.ToolSpaceResponse{
+		Space: space,
+	}, nil
 }

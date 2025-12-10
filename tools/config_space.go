@@ -69,7 +69,7 @@ func allItems[T any](spaces SpaceConfigs, extract func(*SpaceConfig) []T) []T {
 }
 
 // allActions returns all actions within these spaces.
-func (ss SpaceConfigs) allActions() []*SpaceAction {
+func (ss SpaceConfigs) allActions() SpaceActions {
 	return allItems(ss, func(s *SpaceConfig) []*SpaceAction { return s.allActions() })
 }
 
