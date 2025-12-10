@@ -395,3 +395,40 @@ func (s *Service) RemoveSpace(ctx context.Context, spaceID string) error {
 
 	return s.storeSpaces(remainingSpaces)
 }
+
+// AddSpaceAction adds an action to the given space. If Group ID is not empty, the action will be added to the given group.
+func (s *Service) AddSpaceAction(ctx context.Context, spaceID string, groupID string, payload *toolsproto.CreateSpaceActionPayload) (*toolsproto.Space, error) {
+	// load existing user configuration
+	userConfig, err := s.load()
+	if err != nil {
+		return nil, fmt.Errorf("loading space configs from file: %w", err)
+	}
+
+	space := userConfig.Spaces.findByID(spaceID)
+	if space == nil {
+		return nil, fmt.Errorf("space not found")
+	}
+
+	action := SpaceAction{
+		Link: extractLinkConfig(nil, payload.GetLink()),
+	}
+
+	if action.Link == nil {
+		return nil, fmt.Errorf("invalid link")
+	}
+
+	// set a unique ID
+	if err := action.setUniqueID(userConfig.Spaces); err != nil {
+		return nil, fmt.Errorf("generating unique id: %w", err)
+	}
+
+	if err := space.addAction(&action, groupID); err != nil {
+		return nil, fmt.Errorf("adding an action: %w", err)
+	}
+
+	if err := s.storeSpaces(userConfig.Spaces); err != nil {
+		return nil, fmt.Errorf("storing space configs: %w", err)
+	}
+
+	return space.toProto(), nil
+}
