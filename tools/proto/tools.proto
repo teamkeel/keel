@@ -727,31 +727,23 @@ message Field {
 
 // A space is a collection of grouped tool links (Action), metrics and external links.
 message Space {
-	enum Colour {
-		green = 0;
-		blue = 1;
-		yellow = 2;
-		coral = 3;
-		purple = 4;
-	}
-
 	string id = 1;
 	string name = 2;
 	string icon = 3;
-	optional Colour colour = 4;
-	int32 display_order = 5;
+	int32 display_order = 4;
 
 	// Top Level actions
-	repeated ToolLink actions = 6;
+	repeated SpaceAction actions = 5;
 
 	// Groups containing actions
-	repeated SpaceGroup groups = 7;
+	repeated SpaceGroup groups = 6;
 
-	repeated ExternalLink links = 8;
+	// Space metrics
+	repeated SpaceMetric metrics = 7;
 
-	repeated SpaceMetric metrics = 9;
+	// Extenal links
+	repeated SpaceLink links = 8;
 }
-
 
 message SpaceGroup {
 	string id = 1;
@@ -759,13 +751,85 @@ message SpaceGroup {
 	optional StringTemplate description = 3; 
 	int32 display_order = 4;
 
-	repeated ToolLink actions = 5;
+	repeated SpaceAction actions = 5;
+}
+
+// Payload for creating a Space Group
+message CreateSpaceGroupPayload {
+	string space_id = 1;
+	StringTemplate name = 2;
+	optional StringTemplate description = 3; 
+	int32 display_order = 4;
+}
+
+// Payload for updating a Space Group
+message UpdateSpaceGroupPayload {
+	string id = 1;
+	StringTemplate label = 2;
+	string tool_id = 3;
+	JsonPath facet_location = 4;
+	int32 display_order = 5;
 }
 
 message SpaceMetric {
-	StringTemplate label = 1;
-	string tool_id = 2;
-	JsonPath facet_location = 3;
-	int32 display_order = 4;
+	string id = 1;
+	StringTemplate label = 2;
+	string tool_id = 3;
+	JsonPath facet_location = 4;
+	int32 display_order = 5;
+}
+
+// Payload for creating a Space Metric
+message CreateSpaceMetricPayload {
+	string space_id = 1;
+	StringTemplate label = 2;
+	string tool_id = 3;
+	JsonPath facet_location = 4;
+	int32 display_order = 5;
+}
+
+// Payload for updating a Space Metric
+message UpdateSpaceMetricPayload {
+	string id = 1;
+	StringTemplate label = 2;
+	string tool_id = 3;
+	JsonPath facet_location = 4;
+	int32 display_order = 5;
+}
+
+
+message SpaceLink {
+	string id = 1;
+	ExternalLink link = 2;
+}
+
+// Payload for creating a Space Link
+message CreateSpaceLinkPayload {
+	string space_id = 1;
+	ExternalLink link = 2;
+}
+
+// Payload for updating a Space Link
+message UpdateSpaceLinkPayload {
+	string id = 1;
+	ExternalLink link = 2;
+}
+
+message SpaceAction {
+	string id = 1;
+	ToolLink link = 2;
+}
+
+// Payload for creating a Space Action
+message CreateSpaceActionPayload {
+	string space_id = 1;
+	optional string group_id = 2;
+	ToolLink link = 3;
+}
+
+// Payload for updating a Space Action
+message UpdateSpaceActionPayload {
+	string id = 1;
+	ToolLink link = 2;
 }
 

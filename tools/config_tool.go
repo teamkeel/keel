@@ -551,15 +551,22 @@ type ExternalLinks []*ExternalLink
 func (els ExternalLinks) toProto() []*toolsproto.ExternalLink {
 	elinks := []*toolsproto.ExternalLink{}
 	for _, el := range els {
-		elinks = append(elinks, &toolsproto.ExternalLink{
-			Label:            makeStringTemplate(&el.Label),
-			Href:             makeStringTemplate(&el.Href),
-			Icon:             el.Icon,
-			DisplayOrder:     el.DisplayOrder,
-			VisibleCondition: el.VisibleCondition,
-		})
+		elinks = append(elinks, el.toProto())
 	}
 	return elinks
+}
+
+func (el *ExternalLink) toProto() *toolsproto.ExternalLink {
+	if el == nil {
+		return nil
+	}
+	return &toolsproto.ExternalLink{
+		Label:            makeStringTemplate(&el.Label),
+		Href:             makeStringTemplate(&el.Href),
+		Icon:             el.Icon,
+		DisplayOrder:     el.DisplayOrder,
+		VisibleCondition: el.VisibleCondition,
+	}
 }
 
 type Section struct {
