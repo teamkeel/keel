@@ -191,6 +191,29 @@ func (s *Service) storeFields(cfgs FieldConfigs) error {
 	return nil
 }
 
+// storeSpaces will save the given user configuration for tool spaces.
+func (s *Service) storeSpaces(cfgs SpaceConfigs) error {
+	b, err := json.Marshal(cfgs)
+	if err != nil {
+		return err
+	}
+	var dest bytes.Buffer
+	if err := json.Indent(&dest, b, "", "  "); err != nil {
+		return fmt.Errorf("formatting fields config: %w", err)
+	}
+
+	if s.hasFileStorage() {
+		err = os.WriteFile(filepath.Join(s.storageFolder(), SpacesFile), dest.Bytes(), 0666)
+		if err != nil {
+			return err
+		}
+	}
+
+	s.SpacesConfigStorage = dest.Bytes()
+
+	return nil
+}
+
 // storeTools will save the given user configuration.
 func (s *Service) storeTools(cfgs ToolConfigs) error {
 	if s.hasFileStorage() {

@@ -354,3 +354,25 @@ func (s *Service) GetSpaces(ctx context.Context) ([]*toolsproto.Space, error) {
 
 	return userConfig.Spaces.toProto(), nil
 }
+
+// AddSpace will add the given space config to the existing ones and store it.
+func (s *Service) AddSpace(ctx context.Context, space *SpaceConfig) (*toolsproto.Space, error) {
+	// load existing user configuration
+	userConfig, err := s.load()
+	if err != nil {
+		return nil, fmt.Errorf("loading space configs from file: %w", err)
+	}
+
+	// set a unique id
+	if err := space.setUniqueID(userConfig.Spaces); err != nil {
+		return nil, fmt.Errorf("creating a unique space id: %w", err)
+	}
+
+	userConfig.Spaces = append(userConfig.Spaces, space)
+
+	if err := s.storeSpaces(userConfig.Spaces); err != nil {
+		return nil, fmt.Errorf("storing space configs: %w", err)
+	}
+
+	return space.toProto(), nil
+}

@@ -9,6 +9,25 @@ import (
 	"github.com/twitchtv/twirp"
 )
 
+// makeToolsService will create a tools service for this server's request (taking in the schema and config from context).
+func (s *Server) makeToolsService(ctx context.Context) (*tools.Service, error) {
+	schema, err := GetSchema(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	config, err := GetConfig(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	projectDir, err := GetProjectDir(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return tools.NewService(tools.WithFileStorage(projectDir), tools.WithConfig(config), tools.WithSchema(schema)), nil
+}
 func (s *Server) ListTools(ctx context.Context, input *rpc.ListToolsRequest) (*rpc.ListToolsResponse, error) {
 	toolsSvc, err := s.makeToolsService(ctx)
 	if err != nil {
@@ -146,30 +165,26 @@ func (s *Server) ListToolSpaces(ctx context.Context, req *rpc.ListToolSpacesRequ
 	}, nil
 }
 
-// makeToolsService will create a tools service for this server's request (taking in the schema and config from context).
-func (s *Server) makeToolsService(ctx context.Context) (*tools.Service, error) {
-	schema, err := GetSchema(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	config, err := GetConfig(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	projectDir, err := GetProjectDir(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return tools.NewService(tools.WithFileStorage(projectDir), tools.WithConfig(config), tools.WithSchema(schema)), nil
-}
-
 // Creates a new tool space. Returns the newly added space.
 func (s *Server) CreateToolSpace(ctx context.Context, req *rpc.CreateToolSpaceRequest) (*rpc.ToolSpaceResponse, error) {
-	//TODO: implement
-	return nil, nil
+	toolsSvc, err := s.makeToolsService(ctx)
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+
+	cfg := tools.SpaceConfig{
+		Name:         req.GetName(),
+		Icon:         req.GetIcon(),
+		DisplayOrder: req.GetDisplayOrder(),
+	}
+
+	space, err := toolsSvc.AddSpace(ctx, &cfg)
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+	return &rpc.ToolSpaceResponse{
+		Space: space,
+	}, nil
 }
 
 // Removes a space from the project.

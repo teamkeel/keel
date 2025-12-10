@@ -1,6 +1,12 @@
 package tools
 
-import toolsproto "github.com/teamkeel/keel/tools/proto"
+import (
+	"fmt"
+
+	gonanoid "github.com/matoous/go-nanoid/v2"
+	"github.com/teamkeel/keel/casing"
+	toolsproto "github.com/teamkeel/keel/tools/proto"
+)
 
 type SpaceConfigs []*SpaceConfig
 
@@ -19,19 +25,57 @@ type SpaceConfig struct {
 func (s SpaceConfigs) toProto() []*toolsproto.Space {
 	spaces := []*toolsproto.Space{}
 	for _, cfg := range s {
-		spaces = append(spaces, &toolsproto.Space{
-			Id:           cfg.ID,
-			Name:         cfg.Name,
-			Icon:         cfg.Icon,
-			DisplayOrder: cfg.DisplayOrder,
-			Actions:      cfg.Actions.toProto(),
-			Links:        cfg.Links.toProto(),
-			Groups:       cfg.Groups.toProto(),
-			Metrics:      cfg.Metrics.toProto(),
-		})
+		spaces = append(spaces, cfg.toProto())
 	}
 
 	return spaces
+}
+
+// findByID finds a space with the given id
+func (s SpaceConfigs) findByID(id string) *SpaceConfig {
+	for _, c := range s {
+		if c.ID == id {
+			return c
+		}
+	}
+
+	return nil
+}
+
+// toProto will return the SpaceConfig as a protobuf message.
+func (s *SpaceConfig) toProto() *toolsproto.Space {
+	if s == nil {
+		return nil
+	}
+
+	return &toolsproto.Space{
+		Id:           s.ID,
+		Name:         s.Name,
+		Icon:         s.Icon,
+		DisplayOrder: s.DisplayOrder,
+		Actions:      s.Actions.toProto(),
+		Links:        s.Links.toProto(),
+		Groups:       s.Groups.toProto(),
+		Metrics:      s.Metrics.toProto(),
+	}
+}
+
+// setUniqueID will set a unique ID for this space config taking in account exitsing configs
+func (s *SpaceConfig) setUniqueID(existing SpaceConfigs) error {
+	id := "space-" + casing.ToKebab(s.Name)
+
+	if exists := existing.findByID(id); exists != nil {
+		// generate a unique id suffix
+		uid, err := gonanoid.Generate(nanoidABC, nanoidSize)
+		if err != nil {
+			return fmt.Errorf("generating unique id: %w", err)
+		}
+		id = id + "-" + uid
+	}
+
+	s.ID = id
+
+	return nil
 }
 
 type SpaceActions []*SpaceAction
