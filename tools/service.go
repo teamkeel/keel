@@ -376,3 +376,22 @@ func (s *Service) AddSpace(ctx context.Context, space *SpaceConfig) (*toolsproto
 
 	return space.toProto(), nil
 }
+
+// RemoveSpace will remove the given space config from the storage.
+func (s *Service) RemoveSpace(ctx context.Context, spaceID string) error {
+	// load existing user configuration
+	userConfig, err := s.load()
+	if err != nil {
+		return fmt.Errorf("loading space configs from file: %w", err)
+	}
+
+	remainingSpaces := SpaceConfigs{}
+
+	for _, sp := range userConfig.Spaces {
+		if sp.ID != spaceID {
+			remainingSpaces = append(remainingSpaces, sp)
+		}
+	}
+
+	return s.storeSpaces(remainingSpaces)
+}
