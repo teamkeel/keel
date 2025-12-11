@@ -138,6 +138,21 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 	bucketName := "testing-bucket-name"
 	functionsARN := "arn:test:lambda:functions:function"
 
+	// Generate private key early so it can be passed to functions server
+	pk, err := testhelpers.GetEmbeddedPrivateKey()
+	if err != nil {
+		return err
+	}
+
+	pkBytes := x509.MarshalPKCS1PrivateKey(pk)
+	pkPem := pem.EncodeToMemory(
+		&pem.Block{
+			Type:  "RSA PRIVATE KEY",
+			Bytes: pkBytes,
+		},
+	)
+	pkBase64 := base64.StdEncoding.EncodeToString(pkPem)
+
 	var functionsServer *node.DevelopmentServer
 
 	if node.HasFunctions(schema, config) {
@@ -154,6 +169,12 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 			"AWS_REGION":            "test",
 
 			"OTEL_RESOURCE_ATTRIBUTES": "service.name=functions",
+
+			// Private key for JWT signing (used by tasks SDK withIdentity)
+			"KEEL_PRIVATE_KEY": pkBase64,
+
+			// API URL for tasks SDK
+			"KEEL_API_URL": serverURL,
 		}
 
 		maps.Copy(functionEnvVars, envVars)
@@ -183,21 +204,6 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 
 	// This is needed by the auth endpoints to return the right URL's
 	os.Setenv("KEEL_API_URL", fmt.Sprintf("http://localhost:%s", runtimePort))
-
-	pk, err := testhelpers.GetEmbeddedPrivateKey()
-	if err != nil {
-		return err
-	}
-
-	pkBytes := x509.MarshalPKCS1PrivateKey(pk)
-	pkPem := pem.EncodeToMemory(
-		&pem.Block{
-			Type:  "RSA PRIVATE KEY",
-			Bytes: pkBytes,
-		},
-	)
-
-	pkBase64 := base64.StdEncoding.EncodeToString(pkPem)
 
 	var lambdaHandler *runtime.Handler
 
@@ -377,7 +383,7 @@ func Run(ctx context.Context, opts *RunnerOpts) error {
 		fmt.Sprintf("KEEL_DB_CONN=%s", dbConnString),
 		// Disables experimental fetch warning that pollutes console experience when running tests
 		"NODE_NO_WARNINGS=1",
-		fmt.Sprintf("KEEL_DEFAULT_PK=%s", pkBase64),
+		fmt.Sprintf("KEEL_PRIVATE_KEY=%s", pkBase64),
 
 		// Need to set these so the sdk uses the test endpoint in tests
 		fmt.Sprintf("TEST_AWS_ENDPOINT=%s/aws", serverURL),

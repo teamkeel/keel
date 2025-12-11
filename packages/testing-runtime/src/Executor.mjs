@@ -47,7 +47,7 @@ export class Executor {
 
     // An Identity instance is provided make a JWT
     if (this._identity !== null) {
-      const base64pk = process.env.KEEL_DEFAULT_PK;
+      const base64pk = process.env.KEEL_PRIVATE_KEY;
       let privateKey = undefined;
 
       if (base64pk) {

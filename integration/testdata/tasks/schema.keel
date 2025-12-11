@@ -29,6 +29,26 @@ task InputsTask {
     @permission(roles: [User])
 }
 
+// Task that creates child tasks from within its flow
+task ParentTask {
+    fields {
+        name Text
+        childCount Number
+    }
+
+    @permission(roles: [User])
+}
+
+// Simple task that can be created by the ParentTask flow
+task ChildTask {
+    fields {
+        parentName Text
+        index Number
+    }
+
+    @permission(roles: [User])
+}
+
 role User {
     domains {
         "keel.xyz"

@@ -1512,6 +1512,339 @@ test("tasks SDK - defer with different identity reflects in task_status", async 
   expect(statusEntries[1].setBy).toBe(otherIdentity!.id);
 });
 
+test("tasks SDK - withIdentity on tasks module creates task as that identity", async () => {
+  // Get tokens to create identities
+  await getToken({ email: "admin@keel.xyz" });
+  await getToken({ email: "other@keel.xyz" });
+
+  const otherIdentity = await models.identity.findOne({
+    email: "other@keel.xyz",
+    issuer: "https://keel.so",
+  });
+
+  // Create task using withIdentity on the tasks module
+  const task = await tasks.emptyFlow.withIdentity(otherIdentity!).create({
+    orderDate: new Date("2025-07-15"),
+    shipByDate: new Date("2025-07-30"),
+  });
+
+  expect(task.id).toBeDefined();
+  expect(task.status).toBe("NEW");
+
+  // Check task_status to verify the identity was used
+  const statusEntries = await (useDatabase() as any)
+    .selectFrom("keel.task_status")
+    .selectAll()
+    .where("keel_task_id", "=", task.id)
+    .execute();
+
+  expect(statusEntries).toHaveLength(1);
+  expect(statusEntries[0].status).toBe("NEW");
+  expect(statusEntries[0].setBy).toBe(otherIdentity!.id);
+});
+
+test("tasks SDK - withAuthToken on tasks module creates task as that identity", async () => {
+  const adminToken = await getToken({ email: "admin@keel.xyz" });
+
+  const adminIdentity = await models.identity.findOne({
+    email: "admin@keel.xyz",
+    issuer: "https://keel.so",
+  });
+
+  // Create task using withAuthToken on the tasks module
+  const task = await tasks.emptyFlow.withAuthToken(adminToken).create({
+    orderDate: new Date("2025-07-15"),
+    shipByDate: new Date("2025-07-30"),
+  });
+
+  expect(task.id).toBeDefined();
+  expect(task.status).toBe("NEW");
+
+  // Check task_status to verify the identity was used
+  const statusEntries = await (useDatabase() as any)
+    .selectFrom("keel.task_status")
+    .selectAll()
+    .where("keel_task_id", "=", task.id)
+    .execute();
+
+  expect(statusEntries).toHaveLength(1);
+  expect(statusEntries[0].status).toBe("NEW");
+  expect(statusEntries[0].setBy).toBe(adminIdentity!.id);
+});
+
+test("tasks SDK - withIdentity on Task instance performs action as that identity", async () => {
+  const adminToken = await getToken({ email: "admin@keel.xyz" });
+  await getToken({ email: "other@keel.xyz" });
+
+  const adminIdentity = await models.identity.findOne({
+    email: "admin@keel.xyz",
+    issuer: "https://keel.so",
+  });
+  const otherIdentity = await models.identity.findOne({
+    email: "other@keel.xyz",
+    issuer: "https://keel.so",
+  });
+
+  // Create task as admin
+  const task = await tasks.emptyFlow.withAuthToken(adminToken).create({
+    orderDate: new Date("2025-07-15"),
+    shipByDate: new Date("2025-07-30"),
+  });
+
+  // Use withIdentity on the task instance to complete as other user
+  const completedTask = await task.withIdentity(otherIdentity!).complete();
+  expect(completedTask.status).toBe("COMPLETED");
+
+  // Check task_status entries
+  const statusEntries = await (useDatabase() as any)
+    .selectFrom("keel.task_status")
+    .selectAll()
+    .where("keel_task_id", "=", task.id)
+    .orderBy("created_at", "asc")
+    .execute();
+
+  expect(statusEntries).toHaveLength(2);
+
+  // NEW status - set_by is admin (creator)
+  expect(statusEntries[0].status).toBe("NEW");
+  expect(statusEntries[0].setBy).toBe(adminIdentity!.id);
+
+  // COMPLETED status - set_by is other (via withIdentity)
+  expect(statusEntries[1].status).toBe("COMPLETED");
+  expect(statusEntries[1].setBy).toBe(otherIdentity!.id);
+});
+
+test("tasks SDK - withAuthToken on Task instance performs action as that identity", async () => {
+  const adminToken = await getToken({ email: "admin@keel.xyz" });
+  const otherToken = await getToken({ email: "other@keel.xyz" });
+
+  const adminIdentity = await models.identity.findOne({
+    email: "admin@keel.xyz",
+    issuer: "https://keel.so",
+  });
+  const otherIdentity = await models.identity.findOne({
+    email: "other@keel.xyz",
+    issuer: "https://keel.so",
+  });
+
+  // Create task as admin
+  const task = await tasks.emptyFlow.withAuthToken(adminToken).create({
+    orderDate: new Date("2025-07-15"),
+    shipByDate: new Date("2025-07-30"),
+  });
+
+  // Use withAuthToken on the task instance to assign as other user
+  const assignedTask = await task
+    .withAuthToken(otherToken)
+    .assign({ identityId: otherIdentity!.id });
+  expect(assignedTask.status).toBe("ASSIGNED");
+  expect(assignedTask.assignedTo).toBe(otherIdentity!.id);
+
+  // Check task_status entries
+  const statusEntries = await (useDatabase() as any)
+    .selectFrom("keel.task_status")
+    .selectAll()
+    .where("keel_task_id", "=", task.id)
+    .orderBy("created_at", "asc")
+    .execute();
+
+  expect(statusEntries).toHaveLength(2);
+
+  // NEW status - set_by is admin (creator)
+  expect(statusEntries[0].status).toBe("NEW");
+  expect(statusEntries[0].setBy).toBe(adminIdentity!.id);
+
+  // ASSIGNED status - set_by is other (via withAuthToken)
+  expect(statusEntries[1].status).toBe("ASSIGNED");
+  expect(statusEntries[1].setBy).toBe(otherIdentity!.id);
+});
+
+test("tasks SDK - chaining withIdentity then action methods on Task instance", async () => {
+  const adminToken = await getToken({ email: "admin@keel.xyz" });
+  await getToken({ email: "other@keel.xyz" });
+
+  const adminIdentity = await models.identity.findOne({
+    email: "admin@keel.xyz",
+    issuer: "https://keel.so",
+  });
+  const otherIdentity = await models.identity.findOne({
+    email: "other@keel.xyz",
+    issuer: "https://keel.so",
+  });
+
+  // Create task as admin
+  const task = await tasks.emptyFlow.withAuthToken(adminToken).create({
+    orderDate: new Date("2025-07-15"),
+    shipByDate: new Date("2025-07-30"),
+  });
+
+  // Chain multiple operations with different identities
+  const assignedTask = await task
+    .withIdentity(otherIdentity!)
+    .assign({ identityId: otherIdentity!.id });
+
+  // Defer using admin identity
+  const deferDate = new Date(2025, 11, 25);
+  const deferredTask = await assignedTask
+    .withIdentity(adminIdentity!)
+    .defer({ deferUntil: deferDate });
+
+  expect(deferredTask.status).toBe("DEFERRED");
+
+  // Check task_status entries
+  const statusEntries = await (useDatabase() as any)
+    .selectFrom("keel.task_status")
+    .selectAll()
+    .where("keel_task_id", "=", task.id)
+    .orderBy("created_at", "asc")
+    .execute();
+
+  expect(statusEntries).toHaveLength(3);
+
+  // NEW status - set_by is admin (creator)
+  expect(statusEntries[0].status).toBe("NEW");
+  expect(statusEntries[0].setBy).toBe(adminIdentity!.id);
+
+  // ASSIGNED status - set_by is other
+  expect(statusEntries[1].status).toBe("ASSIGNED");
+  expect(statusEntries[1].setBy).toBe(otherIdentity!.id);
+
+  // DEFERRED status - set_by is admin
+  expect(statusEntries[2].status).toBe("DEFERRED");
+  expect(statusEntries[2].setBy).toBe(adminIdentity!.id);
+});
+
+test("tasks SDK - flow creates child tasks using tasks module", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  const adminIdentity = await models.identity.findOne({
+    email: "admin@keel.xyz",
+    issuer: "https://keel.so",
+  });
+
+  // Create a parent task that will create child tasks in its flow
+  const parentTask = await tasks.parentTask.withAuthToken(token).create({
+    name: "Parent Task",
+    childCount: 3,
+  });
+
+  expect(parentTask.id).toBeDefined();
+  expect(parentTask.status).toBe("NEW");
+
+  // Assign and start the parent task
+  const assignedTask = await parentTask.assign({
+    identityId: adminIdentity!.id,
+  });
+  const startedTask = await assignedTask.start();
+
+  expect(startedTask.status).toBe("STARTED");
+  expect(startedTask.flowRunId).toBeDefined();
+
+  // Wait for the flow to complete
+  const completedFlow = await flows.parentTask
+    .withAuthToken(token)
+    .untilFinished(startedTask.flowRunId!);
+
+  expect(completedFlow.status).toBe("COMPLETED");
+  expect(completedFlow.data.parentName).toBe("Parent Task");
+  expect(completedFlow.data.childCount).toBe(3);
+  expect(completedFlow.data.childTaskIds).toHaveLength(3);
+
+  // Verify child tasks were created in the database
+  const childTasks = await (useDatabase() as any)
+    .selectFrom("keel.task")
+    .selectAll()
+    .where("name", "=", "ChildTask")
+    .orderBy("created_at", "asc")
+    .execute();
+
+  expect(childTasks).toHaveLength(3);
+
+  // All child tasks should be NEW status
+  for (const childTask of childTasks) {
+    expect(childTask.status).toBe("NEW");
+  }
+
+  // Verify the child task data
+  const childTaskData = await (useDatabase() as any)
+    .selectFrom("child_task")
+    .selectAll()
+    .orderBy("index", "asc")
+    .execute();
+
+  expect(childTaskData).toHaveLength(3);
+  expect(childTaskData[0].parentName).toBe("Parent Task");
+  expect(childTaskData[0].index).toBe(1);
+  expect(childTaskData[1].parentName).toBe("Parent Task");
+  expect(childTaskData[1].index).toBe(2);
+  expect(childTaskData[2].parentName).toBe("Parent Task");
+  expect(childTaskData[2].index).toBe(3);
+
+  // Verify task_status entries for child tasks have correct set_by
+  for (const childTask of childTasks) {
+    const statusEntries = await (useDatabase() as any)
+      .selectFrom("keel.task_status")
+      .selectAll()
+      .where("keel_task_id", "=", childTask.id)
+      .execute();
+
+    expect(statusEntries).toHaveLength(1);
+    expect(statusEntries[0].status).toBe("NEW");
+    // Child tasks should be created by the same identity that started the parent flow
+    expect(statusEntries[0].setBy).toBe(adminIdentity!.id);
+  }
+});
+
+test("tasks SDK - flow creates tasks with different identity using withIdentity", async () => {
+  const adminToken = await getToken({ email: "admin@keel.xyz" });
+  await getToken({ email: "other@keel.xyz" });
+
+  const adminIdentity = await models.identity.findOne({
+    email: "admin@keel.xyz",
+    issuer: "https://keel.so",
+  });
+
+  // Create parent task
+  const parentTask = await tasks.parentTask.withAuthToken(adminToken).create({
+    name: "Test Parent",
+    childCount: 2,
+  });
+
+  // Assign and start
+  const assignedTask = await parentTask.assign({
+    identityId: adminIdentity!.id,
+  });
+  const startedTask = await assignedTask.start();
+
+  // Wait for completion
+  const completedFlow = await flows.parentTask
+    .withAuthToken(adminToken)
+    .untilFinished(startedTask.flowRunId!);
+
+  expect(completedFlow.status).toBe("COMPLETED");
+
+  // The child tasks should have been created using ctx.identity (admin)
+  // which is passed via withIdentity in the flow
+  const childTasks = await (useDatabase() as any)
+    .selectFrom("keel.task")
+    .selectAll()
+    .where("name", "=", "ChildTask")
+    .execute();
+
+  expect(childTasks.length).toBeGreaterThanOrEqual(2);
+
+  // Verify the tasks were created with the correct identity
+  for (const childTask of childTasks) {
+    const statusEntries = await (useDatabase() as any)
+      .selectFrom("keel.task_status")
+      .selectAll()
+      .where("keel_task_id", "=", childTask.id)
+      .execute();
+
+    expect(statusEntries[0].setBy).toBe(adminIdentity!.id);
+  }
+});
+
 async function getToken({ email }: { email: string }) {
   const response = await fetch(
     process.env.KEEL_TESTING_AUTH_API_URL + "/token",
