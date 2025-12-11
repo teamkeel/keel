@@ -1056,43 +1056,36 @@ func writeTasksAPIDeclarations(w *codegen.Writer, schema *proto.Schema) {
 		w.Writef("export interface %sTask extends runtime.Task {\n", task.GetName())
 		w.Indent()
 
-		// withIdentity method
 		tsDocComment(w, func(w *codegen.Writer) {
 			w.Writeln("* Returns a new Task instance that will use the given identity for authentication.")
 		})
 		w.Writef("withIdentity(identity: Identity): %sTask;\n", task.GetName())
 
-		// withAuthToken method
 		tsDocComment(w, func(w *codegen.Writer) {
 			w.Writeln("* Returns a new Task instance that will use the given auth token for authentication.")
 		})
 		w.Writef("withAuthToken(token: string): %sTask;\n", task.GetName())
 
-		// assign method
 		tsDocComment(w, func(w *codegen.Writer) {
 			w.Writeln("* Assigns the task to an identity")
 		})
 		w.Writef("assign(options: { identityId: string }): Promise<%sTask>;\n", task.GetName())
 
-		// start method
 		tsDocComment(w, func(w *codegen.Writer) {
 			w.Writeln("* Starts the task, creating and running the associated flow")
 		})
 		w.Writef("start(): Promise<%sTask>;\n", task.GetName())
 
-		// complete method
 		tsDocComment(w, func(w *codegen.Writer) {
 			w.Writeln("* Completes the task")
 		})
 		w.Writef("complete(): Promise<%sTask>;\n", task.GetName())
 
-		// defer method
 		tsDocComment(w, func(w *codegen.Writer) {
 			w.Writeln("* Defers the task until the specified date")
 		})
 		w.Writef("defer(options: { deferUntil: Date }): Promise<%sTask>;\n", task.GetName())
 
-		// cancel method
 		tsDocComment(w, func(w *codegen.Writer) {
 			w.Writeln("* Cancels the task")
 		})
@@ -1102,24 +1095,21 @@ func writeTasksAPIDeclarations(w *codegen.Writer, schema *proto.Schema) {
 		w.Writeln("}")
 	}
 
-	// Write individual task API types
+	// Write task API types
 	for _, task := range schema.GetTasks() {
 		w.Writef("export type %sTaskAPI = {\n", task.GetName())
 		w.Indent()
 
-		// withIdentity method
 		tsDocComment(w, func(w *codegen.Writer) {
 			w.Writeln("* Returns a new TaskAPI instance that will use the given identity for authentication.")
 		})
 		w.Writef("withIdentity(identity: Identity): %sTaskAPI;\n", task.GetName())
 
-		// withAuthToken method
 		tsDocComment(w, func(w *codegen.Writer) {
 			w.Writeln("* Returns a new TaskAPI instance that will use the given auth token for authentication.")
 		})
 		w.Writef("withAuthToken(token: string): %sTaskAPI;\n", task.GetName())
 
-		// create method
 		tsDocComment(w, func(w *codegen.Writer) {
 			w.Writef("* Create a new %s task\n", task.GetName())
 		})
@@ -1133,7 +1123,6 @@ func writeTasksAPIDeclarations(w *codegen.Writer, schema *proto.Schema) {
 		w.Writeln("}")
 	}
 
-	// Write TasksAPI type
 	w.Writeln("export type TasksAPI = {")
 	w.Indent()
 	for _, task := range schema.GetTasks() {

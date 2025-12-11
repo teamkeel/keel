@@ -442,10 +442,9 @@ func completeTaskForFlowRun(ctx context.Context, flowRunID string) error {
 		return nil
 	}
 
-	// Use the task's assigned_to as the identity who completed the task
-	setBy := ""
-	if task.AssignedTo != nil {
-		setBy = *task.AssignedTo
+	// Task must have an assignee - this should always be true since tasks must be assigned before starting
+	if task.AssignedTo == nil {
+		return fmt.Errorf("task %s has no assignee but has a flow run", task.ID)
 	}
 
 	// Mark task as completed and log status
@@ -464,7 +463,7 @@ func completeTaskForFlowRun(ctx context.Context, flowRunID string) error {
 			"status":       "COMPLETED",
 			"flow_run_id":  &flowRunID,
 			"assigned_to":  task.AssignedTo,
-			"set_by":       setBy,
+			"set_by":       *task.AssignedTo,
 		}).Error; err != nil {
 			return fmt.Errorf("saving completed status for task %s: %w", task.ID, err)
 		}

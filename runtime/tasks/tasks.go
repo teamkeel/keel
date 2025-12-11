@@ -63,7 +63,7 @@ type TaskStatus struct {
 	Status     Status    `gorm:"column:status"           json:"status"`
 	FlowRunID  *string   `gorm:"column:flow_run_id"      json:"flowRunId,omitempty"`
 	AssignedTo *string   `gorm:"column:assigned_to"      json:"assignedTo,omitempty"`
-	SetBy      *string   `gorm:"column:set_by"           json:"setBy,omitempty"`
+	SetBy      string    `gorm:"column:set_by"           json:"setBy"`
 	CreatedAt  time.Time `gorm:"column:created_at;->"    json:"createdAt"`
 }
 
@@ -308,7 +308,7 @@ func NewTask(ctx context.Context, pbTask *proto.Task, identityID string, deferUn
 		err = tx.Save(TaskStatus{
 			TaskID: task.ID,
 			Status: task.Status,
-			SetBy:  &identityID,
+			SetBy:  identityID,
 		}).Error
 		if err != nil {
 			return err
@@ -424,7 +424,7 @@ func CompleteTask(ctx context.Context, pbTask *proto.Task, id string, identityID
 		return tx.Save(TaskStatus{
 			TaskID: task.ID,
 			Status: StatusCompleted,
-			SetBy:  &identityID,
+			SetBy:  identityID,
 		}).Error
 	})
 	if err != nil {
@@ -485,7 +485,7 @@ func DeferTask(ctx context.Context, pbTask *proto.Task, id string, deferUntil ti
 		return tx.Save(TaskStatus{
 			TaskID: task.ID,
 			Status: StatusDeferred,
-			SetBy:  &identityID,
+			SetBy:  identityID,
 		}).Error
 	})
 	if err != nil {
@@ -542,7 +542,7 @@ func CancelTask(ctx context.Context, pbTask *proto.Task, id string, identityID s
 		return tx.Save(TaskStatus{
 			TaskID: task.ID,
 			Status: StatusCancelled,
-			SetBy:  &identityID,
+			SetBy:  identityID,
 		}).Error
 	})
 	if err != nil {
@@ -659,7 +659,7 @@ func AssignTask(ctx context.Context, pbTask *proto.Task, id string, assignedTo, 
 			TaskID:     task.ID,
 			Status:     StatusAssigned,
 			AssignedTo: &assignedTo,
-			SetBy:      &identityID,
+			SetBy:      identityID,
 		}).Error
 	})
 	if err != nil {
@@ -735,7 +735,7 @@ func NextTask(ctx context.Context, pbTask *proto.Task, identityID string) (task 
 			TaskID:     candidate.ID,
 			Status:     StatusAssigned,
 			AssignedTo: &identityID,
-			SetBy:      &identityID,
+			SetBy:      identityID,
 		}).Error; errTx != nil {
 			return errTx
 		}
@@ -787,7 +787,7 @@ func startFlow(ctx context.Context, pbTask *proto.Task, task *Task, identityID s
 			Status:     StatusStarted,
 			AssignedTo: &identityID,
 			FlowRunID:  &newFlowRun.ID,
-			SetBy:      &identityID,
+			SetBy:      identityID,
 		}).Error
 	})
 	if err != nil {
