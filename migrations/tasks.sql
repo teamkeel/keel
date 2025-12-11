@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS "keel"."task_status" (
 	"flow_run_id" TEXT NULL REFERENCES "keel"."flow_run" ("id") ON UPDATE CASCADE ON DELETE SET NULL,
 	"assigned_to" TEXT REFERENCES "public"."identity" ("id") ON UPDATE CASCADE ON DELETE SET NULL,
 	"created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
-	"set_by" TEXT NOT NULL REFERENCES "public"."identity" ("id") ON UPDATE CASCADE ON DELETE RESTRICT
+	"set_by" TEXT REFERENCES "public"."identity" ("id") ON UPDATE CASCADE ON DELETE RESTRICT
 );
 
 DO $$
