@@ -1,5 +1,5 @@
 import { resetDatabase, models, flows } from "@teamkeel/testing";
-import { useDatabase } from "@teamkeel/sdk";
+import { useDatabase, tasks, Priority } from "@teamkeel/sdk";
 import { beforeEach, expect, test } from "vitest";
 
 beforeEach(resetDatabase);
@@ -7,31 +7,27 @@ beforeEach(resetDatabase);
 test("tasks - create", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
-  const resCreate = await createTask({
-    topic: "EmptyFlow",
-    body: {
-      data: {
-        orderDate: new Date(2025, 6, 15),
-        shipByDate: new Date(2025, 6, 30),
-      },
-    },
-    token: token,
+  const task = await tasks.emptyFlow.withAuthToken(token).create({
+    orderDate: new Date(2025, 6, 15),
+    shipByDate: new Date(2025, 6, 30),
   });
-  expect(resCreate.status).toBe(200);
-  expect(resCreate.body).toEqual({
-    createdAt: expect.any(String),
-    id: expect.any(String),
-    name: "EmptyFlow",
-    status: "NEW",
-    updatedAt: expect.any(String),
-  });
+
+  expect(task.id).toBeDefined();
+  expect(task.topic).toBe("EmptyFlow");
+  expect(task.status).toBe("NEW");
+  expect(task.deferredUntil).toBeUndefined();
+  expect(task.assignedTo).toBeUndefined();
+  expect(task.assignedAt).toBeUndefined();
+  expect(task.resolvedAt).toBeUndefined();
+  expect(task.createdAt).toBeInstanceOf(Date);
+  expect(task.updatedAt).toBeInstanceOf(Date);
 
   const res = await getTaskQueue({ topic: "EmptyFlow", token: token });
   expect(res.status).toBe(200);
   expect(res.body).toEqual([
     {
       createdAt: expect.any(String),
-      id: expect.any(String),
+      id: task.id,
       name: "EmptyFlow",
       status: "NEW",
       updatedAt: expect.any(String),
@@ -42,23 +38,16 @@ test("tasks - create", async () => {
 test("tasks - next assigns, start creates flow and completes task", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
-  const resCreate = await createTask({
-    topic: "EmptyFlow",
-    body: {
-      data: {
-        orderDate: new Date(2025, 6, 9),
-        shipByDate: new Date(2025, 6, 20),
-      },
-    },
-    token: token,
+  const task = await tasks.emptyFlow.withAuthToken(token).create({
+    orderDate: new Date(2025, 6, 9),
+    shipByDate: new Date(2025, 6, 20),
   });
-  expect(resCreate.status).toBe(200);
 
   const resNext = await nextTask({ topic: "EmptyFlow", token: token });
   expect(resNext.status).toBe(200);
   expect(resNext.body).toEqual({
     createdAt: expect.any(String),
-    id: expect.any(String),
+    id: task.id,
     name: "EmptyFlow",
     status: "ASSIGNED",
     updatedAt: expect.any(String),
@@ -116,46 +105,25 @@ test("tasks - next assigns, start creates flow and completes task", async () => 
 test("tasks - list", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
-  const t1 = await createTask({
-    topic: "EmptyFlow",
-    body: {
-      data: {
-        orderDate: new Date(2025, 6, 9),
-        shipByDate: new Date(2025, 6, 20),
-      },
-    },
-    token: token,
+  const t1 = await tasks.emptyFlow.withAuthToken(token).create({
+    orderDate: new Date(2025, 6, 9),
+    shipByDate: new Date(2025, 6, 20),
   });
-  expect(t1.status).toBe(200);
 
-  const t2 = await createTask({
-    topic: "EmptyFlow",
-    body: {
-      data: {
-        orderDate: new Date(2025, 6, 15),
-        shipByDate: new Date(2025, 6, 30),
-      },
-    },
-    token: token,
+  const t2 = await tasks.emptyFlow.withAuthToken(token).create({
+    orderDate: new Date(2025, 6, 15),
+    shipByDate: new Date(2025, 6, 30),
   });
-  expect(t2.status).toBe(200);
 
-  const t3 = await createTask({
-    topic: "EmptyFlow",
-    body: {
-      data: {
-        orderDate: new Date(2025, 6, 14),
-        shipByDate: new Date(2025, 6, 30),
-      },
-    },
-    token: token,
+  const t3 = await tasks.emptyFlow.withAuthToken(token).create({
+    orderDate: new Date(2025, 6, 14),
+    shipByDate: new Date(2025, 6, 30),
   });
-  expect(t3.status).toBe(200);
 
   const res = await getTaskQueue({ topic: "EmptyFlow", token: token });
   expect(res.status).toBe(200);
   // Tasks ordered by shipByDate asc, then orderDate asc
-  expect(res.body).toEqual([t1.body, t3.body, t2.body]);
+  expect(res.body.map((t: any) => t.id)).toEqual([t1.id, t3.id, t2.id]);
 });
 
 test("tasks - next - no tasks exist", async () => {
@@ -171,23 +139,16 @@ test("tasks - next - no tasks exist", async () => {
 test("tasks - next - successfully assigned", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
-  const resCreate = await createTask({
-    topic: "EmptyFlow",
-    body: {
-      data: {
-        orderDate: new Date(2025, 6, 9),
-        shipByDate: new Date(2025, 6, 20),
-      },
-    },
-    token: token,
+  const task = await tasks.emptyFlow.withAuthToken(token).create({
+    orderDate: new Date(2025, 6, 9),
+    shipByDate: new Date(2025, 6, 20),
   });
-  expect(resCreate.status).toBe(200);
 
   const res = await nextTask({ topic: "EmptyFlow", token: token });
   expect(res.status).toBe(200);
   expect(res.body).toEqual({
     createdAt: expect.any(String),
-    id: resCreate.body.id,
+    id: task.id,
     name: "EmptyFlow",
     status: "ASSIGNED",
     updatedAt: expect.any(String),
@@ -200,35 +161,21 @@ test("tasks - next - already assigned", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
   // Create task with earlier shipByDate - should be picked first due to @orderBy
-  const resCreate1 = await createTask({
-    topic: "EmptyFlow",
-    body: {
-      data: {
-        orderDate: new Date(2025, 6, 9),
-        shipByDate: new Date(2025, 4, 20),
-      },
-    },
-    token: token,
+  const task1 = await tasks.emptyFlow.withAuthToken(token).create({
+    orderDate: new Date(2025, 6, 9),
+    shipByDate: new Date(2025, 4, 20),
   });
-  expect(resCreate1.status).toBe(200);
 
-  const resCreate2 = await createTask({
-    topic: "EmptyFlow",
-    body: {
-      data: {
-        orderDate: new Date(2025, 6, 9),
-        shipByDate: new Date(2025, 6, 20),
-      },
-    },
-    token: token,
+  const task2 = await tasks.emptyFlow.withAuthToken(token).create({
+    orderDate: new Date(2025, 6, 9),
+    shipByDate: new Date(2025, 6, 20),
   });
-  expect(resCreate2.status).toBe(200);
 
   const resNext = await nextTask({ topic: "EmptyFlow", token: token });
   expect(resNext.status).toBe(200);
   expect(resNext.body).toEqual({
     createdAt: expect.any(String),
-    id: resCreate1.body.id,
+    id: task1.id,
     name: "EmptyFlow",
     status: "ASSIGNED",
     updatedAt: expect.any(String),
@@ -245,40 +192,25 @@ test("tasks - next - already assigned", async () => {
 test("tasks - assign - successfully assigned", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
-  const resCreate = await createTask({
-    topic: "EmptyFlow",
-    body: {
-      data: {
-        orderDate: new Date(2025, 6, 9),
-        shipByDate: new Date(2025, 6, 20),
-      },
-    },
-    token: token,
+  const task = await tasks.emptyFlow.withAuthToken(token).create({
+    orderDate: new Date(2025, 6, 9),
+    shipByDate: new Date(2025, 6, 20),
   });
-  expect(resCreate.status).toBe(200);
 
   const identity = await models.identity.findOne({
     email: "admin@keel.xyz",
     issuer: "https://keel.so",
   });
 
-  const res = await assignTask({
-    topic: "EmptyFlow",
-    token: token,
-    id: resCreate.body.id,
-    body: { assigned_to: identity!.id },
-  });
+  const assignedTask = await task.assign({ identityId: identity!.id });
 
-  expect(res.status).toBe(200);
-  expect(res.body).toEqual({
-    createdAt: expect.any(String),
-    id: resCreate.body.id,
-    name: "EmptyFlow",
-    status: "ASSIGNED",
-    updatedAt: expect.any(String),
-    assignedTo: identity!.id,
-    assignedAt: expect.any(String),
-  });
+  expect(assignedTask.id).toBe(task.id);
+  expect(assignedTask.topic).toBe("EmptyFlow");
+  expect(assignedTask.status).toBe("ASSIGNED");
+  expect(assignedTask.assignedTo).toBe(identity!.id);
+  expect(assignedTask.assignedAt).toBeInstanceOf(Date);
+  expect(assignedTask.createdAt).toBeInstanceOf(Date);
+  expect(assignedTask.updatedAt).toBeInstanceOf(Date);
 });
 
 test("tasks - assign - task not found", async () => {
@@ -306,60 +238,34 @@ test("tasks - assign - task not found", async () => {
 test("tasks - assign - completed task cannot be assigned", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
-  const resCreate = await createTask({
-    topic: "EmptyFlow",
-    body: {
-      data: {
-        orderDate: new Date(2025, 6, 9),
-        shipByDate: new Date(2025, 6, 20),
-      },
-    },
-    token: token,
+  const task = await tasks.emptyFlow.withAuthToken(token).create({
+    orderDate: new Date(2025, 6, 9),
+    shipByDate: new Date(2025, 6, 20),
   });
-  expect(resCreate.status).toBe(200);
 
-  const resComplete = await completeTask({
-    topic: "EmptyFlow",
-    token: token,
-    id: resCreate.body.id,
-  });
-  expect(resComplete.status).toBe(200);
-  expect(resComplete.body.status).toBe("COMPLETED");
+  // Complete the task using SDK
+  const completedTask = await task.complete();
+  expect(completedTask.status).toBe("COMPLETED");
 
   const identity = await models.identity.findOne({
     email: "admin@keel.xyz",
     issuer: "https://keel.so",
   });
 
-  const res = await assignTask({
-    topic: "EmptyFlow",
-    token: token,
-    id: resCreate.body.id,
-    body: { assigned_to: identity!.id },
-  });
-
-  expect(res.status).toBe(500);
-  expect(res.body).toEqual({
-    code: "ERR_INTERNAL",
-    message: "error executing request (task already completed)",
-  });
+  // Trying to assign a completed task should throw an error
+  await expect(task.assign({ identityId: identity!.id })).rejects.toThrow(
+    "task already completed"
+  );
 });
 
 test("tasks - assign - reassign to different user", async () => {
   const tokenAdmin = await getToken({ email: "admin@keel.xyz" });
   const tokenOther = await getToken({ email: "other@keel.xyz" });
 
-  const resCreate = await createTask({
-    topic: "EmptyFlow",
-    body: {
-      data: {
-        orderDate: new Date(2025, 6, 9),
-        shipByDate: new Date(2025, 6, 20),
-      },
-    },
-    token: tokenAdmin,
+  const task = await tasks.emptyFlow.withAuthToken(tokenAdmin).create({
+    orderDate: new Date(2025, 6, 9),
+    shipByDate: new Date(2025, 6, 20),
   });
-  expect(resCreate.status).toBe(200);
 
   const adminIdentity = await models.identity.findOne({
     email: "admin@keel.xyz",
@@ -370,52 +276,31 @@ test("tasks - assign - reassign to different user", async () => {
     issuer: "https://keel.so",
   });
 
-  const resAssign1 = await assignTask({
-    topic: "EmptyFlow",
-    token: tokenAdmin,
-    id: resCreate.body.id,
-    body: { assigned_to: adminIdentity!.id },
-  });
-  expect(resAssign1.status).toBe(200);
-  expect(resAssign1.body.assignedTo).toBe(adminIdentity!.id);
+  // First assign to admin
+  const assignedTask1 = await task.assign({ identityId: adminIdentity!.id });
+  expect(assignedTask1.assignedTo).toBe(adminIdentity!.id);
 
-  const resAssign2 = await assignTask({
-    topic: "EmptyFlow",
-    token: tokenAdmin,
-    id: resCreate.body.id,
-    body: { assigned_to: otherIdentity!.id },
-  });
-  expect(resAssign2.status).toBe(200);
-  expect(resAssign2.body).toEqual({
-    createdAt: expect.any(String),
-    id: resCreate.body.id,
-    name: "EmptyFlow",
-    status: "ASSIGNED",
-    updatedAt: expect.any(String),
-    assignedTo: otherIdentity!.id,
-    assignedAt: expect.any(String),
-  });
+  // Reassign to other user
+  const assignedTask2 = await task.assign({ identityId: otherIdentity!.id });
+  expect(assignedTask2.id).toBe(task.id);
+  expect(assignedTask2.topic).toBe("EmptyFlow");
+  expect(assignedTask2.status).toBe("ASSIGNED");
+  expect(assignedTask2.assignedTo).toBe(otherIdentity!.id);
+  expect(assignedTask2.assignedAt).toBeInstanceOf(Date);
 });
 
 test("tasks - assign - missing assigned_to in body", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
-  const resCreate = await createTask({
-    topic: "EmptyFlow",
-    body: {
-      data: {
-        orderDate: new Date(2025, 6, 9),
-        shipByDate: new Date(2025, 6, 20),
-      },
-    },
-    token: token,
+  const task = await tasks.emptyFlow.withAuthToken(token).create({
+    orderDate: new Date(2025, 6, 9),
+    shipByDate: new Date(2025, 6, 20),
   });
-  expect(resCreate.status).toBe(200);
 
   const res = await assignTask({
     topic: "EmptyFlow",
     token: token,
-    id: resCreate.body.id,
+    id: task.id,
     body: {},
   });
 
@@ -429,35 +314,20 @@ test("tasks - assign - missing assigned_to in body", async () => {
 test("tasks - defer - successfully deferred", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
-  const resCreate = await createTask({
-    topic: "EmptyFlow",
-    body: {
-      data: {
-        orderDate: new Date(2025, 6, 9),
-        shipByDate: new Date(2025, 6, 20),
-      },
-    },
-    token: token,
-  });
-  expect(resCreate.status).toBe(200);
-
-  const deferUntil = new Date(2025, 7, 15).toISOString();
-  const res = await deferTask({
-    topic: "EmptyFlow",
-    token: token,
-    id: resCreate.body.id,
-    body: { defer_until: deferUntil },
+  const task = await tasks.emptyFlow.withAuthToken(token).create({
+    orderDate: new Date(2025, 6, 9),
+    shipByDate: new Date(2025, 6, 20),
   });
 
-  expect(res.status).toBe(200);
-  expect(res.body).toEqual({
-    createdAt: expect.any(String),
-    id: resCreate.body.id,
-    name: "EmptyFlow",
-    status: "DEFERRED",
-    updatedAt: expect.any(String),
-    deferredUntil: expect.any(String),
-  });
+  const deferUntil = new Date(2025, 7, 15);
+  const deferredTask = await task.defer({ deferUntil });
+
+  expect(deferredTask.id).toBe(task.id);
+  expect(deferredTask.topic).toBe("EmptyFlow");
+  expect(deferredTask.status).toBe("DEFERRED");
+  expect(deferredTask.deferredUntil).toEqual(deferUntil);
+  expect(deferredTask.createdAt).toBeInstanceOf(Date);
+  expect(deferredTask.updatedAt).toBeInstanceOf(Date);
 });
 
 test("tasks - defer - task not found", async () => {
@@ -481,60 +351,34 @@ test("tasks - defer - task not found", async () => {
 test("tasks - defer - completed task cannot be deferred", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
-  const resCreate = await createTask({
-    topic: "EmptyFlow",
-    body: {
-      data: {
-        orderDate: new Date(2025, 6, 9),
-        shipByDate: new Date(2025, 6, 20),
-      },
-    },
-    token: token,
-  });
-  expect(resCreate.status).toBe(200);
-
-  const resComplete = await completeTask({
-    topic: "EmptyFlow",
-    token: token,
-    id: resCreate.body.id,
-  });
-  expect(resComplete.status).toBe(200);
-  expect(resComplete.body.status).toBe("COMPLETED");
-
-  const deferUntil = new Date(2025, 7, 15).toISOString();
-  const res = await deferTask({
-    topic: "EmptyFlow",
-    token: token,
-    id: resCreate.body.id,
-    body: { defer_until: deferUntil },
+  const task = await tasks.emptyFlow.withAuthToken(token).create({
+    orderDate: new Date(2025, 6, 9),
+    shipByDate: new Date(2025, 6, 20),
   });
 
-  expect(res.status).toBe(500);
-  expect(res.body).toEqual({
-    code: "ERR_INTERNAL",
-    message: "error executing request (task already completed)",
-  });
+  // Complete the task using SDK
+  const completedTask = await task.complete();
+  expect(completedTask.status).toBe("COMPLETED");
+
+  // Trying to defer a completed task should throw an error
+  const deferUntil = new Date(2025, 7, 15);
+  await expect(task.defer({ deferUntil })).rejects.toThrow(
+    "task already completed"
+  );
 });
 
 test("tasks - defer - missing defer_until in body", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
-  const resCreate = await createTask({
-    topic: "EmptyFlow",
-    body: {
-      data: {
-        orderDate: new Date(2025, 6, 9),
-        shipByDate: new Date(2025, 6, 20),
-      },
-    },
-    token: token,
+  const task = await tasks.emptyFlow.withAuthToken(token).create({
+    orderDate: new Date(2025, 6, 9),
+    shipByDate: new Date(2025, 6, 20),
   });
-  expect(resCreate.status).toBe(200);
 
   const res = await deferTask({
     topic: "EmptyFlow",
     token: token,
-    id: resCreate.body.id,
+    id: task.id,
     body: {},
   });
 
@@ -548,22 +392,15 @@ test("tasks - defer - missing defer_until in body", async () => {
 test("tasks - defer - invalid defer_until format", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
-  const resCreate = await createTask({
-    topic: "EmptyFlow",
-    body: {
-      data: {
-        orderDate: new Date(2025, 6, 9),
-        shipByDate: new Date(2025, 6, 20),
-      },
-    },
-    token: token,
+  const task = await tasks.emptyFlow.withAuthToken(token).create({
+    orderDate: new Date(2025, 6, 9),
+    shipByDate: new Date(2025, 6, 20),
   });
-  expect(resCreate.status).toBe(200);
 
   const res = await deferTask({
     topic: "EmptyFlow",
     token: token,
-    id: resCreate.body.id,
+    id: task.id,
     body: { defer_until: "not-a-valid-date" },
   });
 
@@ -577,29 +414,17 @@ test("tasks - defer - invalid defer_until format", async () => {
 test("tasks - defer - deferred task not assigned via next", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
-  const resCreate = await createTask({
-    topic: "EmptyFlow",
-    body: {
-      data: {
-        orderDate: new Date(2025, 6, 9),
-        shipByDate: new Date(2025, 6, 20),
-      },
-    },
-    token: token,
+  const task = await tasks.emptyFlow.withAuthToken(token).create({
+    orderDate: new Date(2025, 6, 9),
+    shipByDate: new Date(2025, 6, 20),
   });
-  expect(resCreate.status).toBe(200);
 
   const futureDate = new Date();
   futureDate.setDate(futureDate.getDate() + 7);
-  const res = await deferTask({
-    topic: "EmptyFlow",
-    token: token,
-    id: resCreate.body.id,
-    body: { defer_until: futureDate.toISOString() },
-  });
-  expect(res.status).toBe(200);
-  expect(res.body.status).toBe("DEFERRED");
+  const deferredTask = await task.defer({ deferUntil: futureDate });
+  expect(deferredTask.status).toBe("DEFERRED");
 
+  // Deferred task should not be assigned via next
   const resNext = await nextTask({ topic: "EmptyFlow", token: token });
   expect(resNext.status).toBe(404);
   expect(resNext.body).toEqual({
@@ -612,109 +437,64 @@ test("tasks - defer - non-deferred task picked over deferred task", async () => 
   const token = await getToken({ email: "admin@keel.xyz" });
 
   // Task 1 would be first due to earlier shipByDate, but we'll defer it
-  const resCreate1 = await createTask({
-    topic: "EmptyFlow",
-    body: {
-      data: {
-        orderDate: new Date(2025, 6, 9),
-        shipByDate: new Date(2025, 6, 15),
-      },
-    },
-    token: token,
+  const task1 = await tasks.emptyFlow.withAuthToken(token).create({
+    orderDate: new Date(2025, 6, 9),
+    shipByDate: new Date(2025, 6, 15),
   });
-  expect(resCreate1.status).toBe(200);
 
   const futureDate = new Date();
   futureDate.setDate(futureDate.getDate() + 7);
-  const resDefer = await deferTask({
-    topic: "EmptyFlow",
-    token: token,
-    id: resCreate1.body.id,
-    body: { defer_until: futureDate.toISOString() },
-  });
-  expect(resDefer.status).toBe(200);
+  const deferredTask = await task1.defer({ deferUntil: futureDate });
+  expect(deferredTask.status).toBe("DEFERRED");
 
   // Task 2 has later shipByDate but should be picked since task 1 is deferred
-  const resCreate2 = await createTask({
-    topic: "EmptyFlow",
-    body: {
-      data: {
-        orderDate: new Date(2025, 6, 10),
-        shipByDate: new Date(2025, 6, 20),
-      },
-    },
-    token: token,
+  const task2 = await tasks.emptyFlow.withAuthToken(token).create({
+    orderDate: new Date(2025, 6, 10),
+    shipByDate: new Date(2025, 6, 20),
   });
-  expect(resCreate2.status).toBe(200);
 
   const resNext = await nextTask({ topic: "EmptyFlow", token: token });
   expect(resNext.status).toBe(200);
-  expect(resNext.body.id).toBe(resCreate2.body.id);
+  expect(resNext.body.id).toBe(task2.id);
   expect(resNext.body.status).toBe("ASSIGNED");
 });
 
 test("tasks - defer - deferred task assigned after defer_until passes", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
-  const resCreate = await createTask({
-    topic: "EmptyFlow",
-    body: {
-      data: {
-        orderDate: new Date(2025, 6, 9),
-        shipByDate: new Date(2025, 6, 20),
-      },
-    },
-    token: token,
+  const task = await tasks.emptyFlow.withAuthToken(token).create({
+    orderDate: new Date(2025, 6, 9),
+    shipByDate: new Date(2025, 6, 20),
   });
-  expect(resCreate.status).toBe(200);
 
   const pastDate = new Date();
   pastDate.setDate(pastDate.getDate() - 1);
-  const resDefer = await deferTask({
-    topic: "EmptyFlow",
-    token: token,
-    id: resCreate.body.id,
-    body: { defer_until: pastDate.toISOString() },
-  });
-  expect(resDefer.status).toBe(200);
-  expect(resDefer.body.status).toBe("DEFERRED");
+  const deferredTask = await task.defer({ deferUntil: pastDate });
+  expect(deferredTask.status).toBe("DEFERRED");
 
+  // Task should be assignable via next since defer_until has passed
   const resNext = await nextTask({ topic: "EmptyFlow", token: token });
   expect(resNext.status).toBe(200);
-  expect(resNext.body.id).toBe(resCreate.body.id);
+  expect(resNext.body.id).toBe(task.id);
   expect(resNext.body.status).toBe("ASSIGNED");
 });
 
 test("tasks - cancel - successfully cancelled", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
-  const resCreate = await createTask({
-    topic: "EmptyFlow",
-    body: {
-      data: {
-        orderDate: new Date(2025, 6, 9),
-        shipByDate: new Date(2025, 6, 20),
-      },
-    },
-    token: token,
-  });
-  expect(resCreate.status).toBe(200);
-
-  const res = await cancelTask({
-    topic: "EmptyFlow",
-    token: token,
-    id: resCreate.body.id,
+  const task = await tasks.emptyFlow.withAuthToken(token).create({
+    orderDate: new Date(2025, 6, 9),
+    shipByDate: new Date(2025, 6, 20),
   });
 
-  expect(res.status).toBe(200);
-  expect(res.body).toEqual({
-    createdAt: expect.any(String),
-    id: resCreate.body.id,
-    name: "EmptyFlow",
-    status: "CANCELLED",
-    updatedAt: expect.any(String),
-    resolvedAt: expect.any(String),
-  });
+  const cancelledTask = await task.cancel();
+
+  expect(cancelledTask.id).toBe(task.id);
+  expect(cancelledTask.topic).toBe("EmptyFlow");
+  expect(cancelledTask.status).toBe("CANCELLED");
+  expect(cancelledTask.resolvedAt).toBeInstanceOf(Date);
+  expect(cancelledTask.createdAt).toBeInstanceOf(Date);
+  expect(cancelledTask.updatedAt).toBeInstanceOf(Date);
 });
 
 test("tasks - cancel - task not found", async () => {
@@ -736,62 +516,31 @@ test("tasks - cancel - task not found", async () => {
 test("tasks - cancel - completed task cannot be cancelled", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
-  const resCreate = await createTask({
-    topic: "EmptyFlow",
-    body: {
-      data: {
-        orderDate: new Date(2025, 6, 9),
-        shipByDate: new Date(2025, 6, 20),
-      },
-    },
-    token: token,
-  });
-  expect(resCreate.status).toBe(200);
-
-  const resComplete = await completeTask({
-    topic: "EmptyFlow",
-    token: token,
-    id: resCreate.body.id,
-  });
-  expect(resComplete.status).toBe(200);
-  expect(resComplete.body.status).toBe("COMPLETED");
-
-  const res = await cancelTask({
-    topic: "EmptyFlow",
-    token: token,
-    id: resCreate.body.id,
+  const task = await tasks.emptyFlow.withAuthToken(token).create({
+    orderDate: new Date(2025, 6, 9),
+    shipByDate: new Date(2025, 6, 20),
   });
 
-  expect(res.status).toBe(500);
-  expect(res.body).toEqual({
-    code: "ERR_INTERNAL",
-    message: "error executing request (task already completed)",
-  });
+  // Complete the task using SDK
+  const completedTask = await task.complete();
+  expect(completedTask.status).toBe("COMPLETED");
+
+  // Trying to cancel a completed task should throw an error
+  await expect(task.cancel()).rejects.toThrow("task already completed");
 });
 
 test("tasks - cancel - cancelled task not assigned via next", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
-  const resCreate = await createTask({
-    topic: "EmptyFlow",
-    body: {
-      data: {
-        orderDate: new Date(2025, 6, 9),
-        shipByDate: new Date(2025, 6, 20),
-      },
-    },
-    token: token,
+  const task = await tasks.emptyFlow.withAuthToken(token).create({
+    orderDate: new Date(2025, 6, 9),
+    shipByDate: new Date(2025, 6, 20),
   });
-  expect(resCreate.status).toBe(200);
 
-  const resCancel = await cancelTask({
-    topic: "EmptyFlow",
-    token: token,
-    id: resCreate.body.id,
-  });
-  expect(resCancel.status).toBe(200);
-  expect(resCancel.body.status).toBe("CANCELLED");
+  const cancelledTask = await task.cancel();
+  expect(cancelledTask.status).toBe("CANCELLED");
 
+  // Cancelled task should not be assigned via next
   const resNext = await nextTask({ topic: "EmptyFlow", token: token });
   expect(resNext.status).toBe(404);
   expect(resNext.body).toEqual({
@@ -803,17 +552,10 @@ test("tasks - cancel - cancelled task not assigned via next", async () => {
 test("tasks - unassign - successfully unassigned", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
-  const resCreate = await createTask({
-    topic: "EmptyFlow",
-    body: {
-      data: {
-        orderDate: new Date(2025, 6, 9),
-        shipByDate: new Date(2025, 6, 20),
-      },
-    },
-    token: token,
+  const task = await tasks.emptyFlow.withAuthToken(token).create({
+    orderDate: new Date(2025, 6, 9),
+    shipByDate: new Date(2025, 6, 20),
   });
-  expect(resCreate.status).toBe(200);
 
   // Assign the task first via next
   const resNext = await nextTask({ topic: "EmptyFlow", token: token });
@@ -826,13 +568,13 @@ test("tasks - unassign - successfully unassigned", async () => {
   const res = await unassignTask({
     topic: "EmptyFlow",
     token: token,
-    id: resCreate.body.id,
+    id: task.id,
   });
 
   expect(res.status).toBe(200);
   expect(res.body).toEqual({
     createdAt: expect.any(String),
-    id: resCreate.body.id,
+    id: task.id,
     name: "EmptyFlow",
     status: "NEW",
     updatedAt: expect.any(String),
@@ -861,30 +603,19 @@ test("tasks - unassign - task not found", async () => {
 test("tasks - unassign - completed task cannot be unassigned", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
-  const resCreate = await createTask({
-    topic: "EmptyFlow",
-    body: {
-      data: {
-        orderDate: new Date(2025, 6, 9),
-        shipByDate: new Date(2025, 6, 20),
-      },
-    },
-    token: token,
+  const task = await tasks.emptyFlow.withAuthToken(token).create({
+    orderDate: new Date(2025, 6, 9),
+    shipByDate: new Date(2025, 6, 20),
   });
-  expect(resCreate.status).toBe(200);
 
-  const resComplete = await completeTask({
-    topic: "EmptyFlow",
-    token: token,
-    id: resCreate.body.id,
-  });
-  expect(resComplete.status).toBe(200);
-  expect(resComplete.body.status).toBe("COMPLETED");
+  // Complete the task using SDK
+  const completedTask = await task.complete();
+  expect(completedTask.status).toBe("COMPLETED");
 
   const res = await unassignTask({
     topic: "EmptyFlow",
     token: token,
-    id: resCreate.body.id,
+    id: task.id,
   });
 
   expect(res.status).toBe(400);
@@ -897,30 +628,19 @@ test("tasks - unassign - completed task cannot be unassigned", async () => {
 test("tasks - unassign - cancelled task cannot be unassigned", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
-  const resCreate = await createTask({
-    topic: "EmptyFlow",
-    body: {
-      data: {
-        orderDate: new Date(2025, 6, 9),
-        shipByDate: new Date(2025, 6, 20),
-      },
-    },
-    token: token,
+  const task = await tasks.emptyFlow.withAuthToken(token).create({
+    orderDate: new Date(2025, 6, 9),
+    shipByDate: new Date(2025, 6, 20),
   });
-  expect(resCreate.status).toBe(200);
 
-  const resCancel = await cancelTask({
-    topic: "EmptyFlow",
-    token: token,
-    id: resCreate.body.id,
-  });
-  expect(resCancel.status).toBe(200);
-  expect(resCancel.body.status).toBe("CANCELLED");
+  // Cancel the task using SDK
+  const cancelledTask = await task.cancel();
+  expect(cancelledTask.status).toBe("CANCELLED");
 
   const res = await unassignTask({
     topic: "EmptyFlow",
     token: token,
-    id: resCreate.body.id,
+    id: task.id,
   });
 
   expect(res.status).toBe(400);
@@ -933,17 +653,10 @@ test("tasks - unassign - cancelled task cannot be unassigned", async () => {
 test("tasks - unassign - unassigned task available in queue", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
-  const resCreate = await createTask({
-    topic: "EmptyFlow",
-    body: {
-      data: {
-        orderDate: new Date(2025, 6, 9),
-        shipByDate: new Date(2025, 6, 20),
-      },
-    },
-    token: token,
+  const task = await tasks.emptyFlow.withAuthToken(token).create({
+    orderDate: new Date(2025, 6, 9),
+    shipByDate: new Date(2025, 6, 20),
   });
-  expect(resCreate.status).toBe(200);
 
   // Assign the task
   const resNext1 = await nextTask({ topic: "EmptyFlow", token: token });
@@ -954,7 +667,7 @@ test("tasks - unassign - unassigned task available in queue", async () => {
   const resUnassign = await unassignTask({
     topic: "EmptyFlow",
     token: token,
-    id: resCreate.body.id,
+    id: task.id,
   });
   expect(resUnassign.status).toBe(200);
   expect(resUnassign.body.status).toBe("NEW");
@@ -962,7 +675,7 @@ test("tasks - unassign - unassigned task available in queue", async () => {
   // Task should now be available via next again
   const resNext2 = await nextTask({ topic: "EmptyFlow", token: token });
   expect(resNext2.status).toBe(200);
-  expect(resNext2.body.id).toBe(resCreate.body.id);
+  expect(resNext2.body.id).toBe(task.id);
   expect(resNext2.body.status).toBe("ASSIGNED");
 });
 
@@ -974,29 +687,20 @@ test("tasks - unassign - creates NEW status entry", async () => {
     issuer: "https://keel.so",
   });
 
-  const resCreate = await createTask({
-    topic: "EmptyFlow",
-    body: {
-      data: {
-        orderDate: new Date(2025, 6, 9),
-        shipByDate: new Date(2025, 6, 20),
-      },
-    },
-    token: token,
+  const task = await tasks.emptyFlow.withAuthToken(token).create({
+    orderDate: new Date(2025, 6, 9),
+    shipByDate: new Date(2025, 6, 20),
   });
-  expect(resCreate.status).toBe(200);
 
   // Assign the task
   const resNext = await nextTask({ topic: "EmptyFlow", token: token });
   expect(resNext.status).toBe(200);
 
-  const taskId = resNext.body.id;
-
   // Unassign the task
   const resUnassign = await unassignTask({
     topic: "EmptyFlow",
     token: token,
-    id: taskId,
+    id: task.id,
   });
   expect(resUnassign.status).toBe(200);
 
@@ -1004,7 +708,7 @@ test("tasks - unassign - creates NEW status entry", async () => {
   const statusEntries = await (useDatabase() as any)
     .selectFrom("keel.task_status")
     .selectAll()
-    .where("keel_task_id", "=", taskId)
+    .where("keel_task_id", "=", task.id)
     .orderBy("created_at", "asc")
     .execute();
 
@@ -1029,24 +733,17 @@ test("tasks - unassign - creates NEW status entry", async () => {
 test("tasks - unassign - can unassign NEW task (no-op)", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
-  const resCreate = await createTask({
-    topic: "EmptyFlow",
-    body: {
-      data: {
-        orderDate: new Date(2025, 6, 9),
-        shipByDate: new Date(2025, 6, 20),
-      },
-    },
-    token: token,
+  const task = await tasks.emptyFlow.withAuthToken(token).create({
+    orderDate: new Date(2025, 6, 9),
+    shipByDate: new Date(2025, 6, 20),
   });
-  expect(resCreate.status).toBe(200);
-  expect(resCreate.body.status).toBe("NEW");
+  expect(task.status).toBe("NEW");
 
   // Unassign a task that was never assigned (should still work)
   const res = await unassignTask({
     topic: "EmptyFlow",
     token: token,
-    id: resCreate.body.id,
+    id: task.id,
   });
 
   expect(res.status).toBe(200);
@@ -1056,35 +753,22 @@ test("tasks - unassign - can unassign NEW task (no-op)", async () => {
 test("tasks - unassign - can unassign DEFERRED task", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
-  const resCreate = await createTask({
-    topic: "EmptyFlow",
-    body: {
-      data: {
-        orderDate: new Date(2025, 6, 9),
-        shipByDate: new Date(2025, 6, 20),
-      },
-    },
-    token: token,
+  const task = await tasks.emptyFlow.withAuthToken(token).create({
+    orderDate: new Date(2025, 6, 9),
+    shipByDate: new Date(2025, 6, 20),
   });
-  expect(resCreate.status).toBe(200);
 
-  // Defer the task
+  // Defer the task using SDK
   const futureDate = new Date();
   futureDate.setDate(futureDate.getDate() + 7);
-  const resDefer = await deferTask({
-    topic: "EmptyFlow",
-    token: token,
-    id: resCreate.body.id,
-    body: { defer_until: futureDate.toISOString() },
-  });
-  expect(resDefer.status).toBe(200);
-  expect(resDefer.body.status).toBe("DEFERRED");
+  const deferredTask = await task.defer({ deferUntil: futureDate });
+  expect(deferredTask.status).toBe("DEFERRED");
 
   // Unassign the deferred task (should work and reset to NEW, but preserve deferredUntil)
   const res = await unassignTask({
     topic: "EmptyFlow",
     token: token,
-    id: resCreate.body.id,
+    id: task.id,
   });
 
   expect(res.status).toBe(200);
@@ -1096,43 +780,34 @@ test("tasks - unassign - can unassign DEFERRED task", async () => {
 test("tasks - start - creates STARTED and COMPLETED status entries", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
-  const resCreate = await createTask({
-    topic: "EmptyFlow",
-    body: {
-      data: {
-        orderDate: new Date(2025, 6, 9),
-        shipByDate: new Date(2025, 6, 20),
-      },
-    },
-    token: token,
+  const task = await tasks.emptyFlow.withAuthToken(token).create({
+    orderDate: new Date(2025, 6, 9),
+    shipByDate: new Date(2025, 6, 20),
   });
-  expect(resCreate.status).toBe(200);
 
-  const resNext = await nextTask({ topic: "EmptyFlow", token: token });
-  expect(resNext.status).toBe(200);
-  // No flow created during next - flow is created during start
-  expect(resNext.body.flowRunId).toBeUndefined();
-
-  const taskId = resNext.body.id;
-
-  const resStart = await startTask({
-    topic: "EmptyFlow",
-    token: token,
-    id: taskId,
+  const identity = await models.identity.findOne({
+    email: "admin@keel.xyz",
+    issuer: "https://keel.so",
   });
-  expect(resStart.status).toBe(200);
-  expect(resStart.body.status).toBe("STARTED");
 
-  const flowRunId = resStart.body.flowRunId;
+  // Assign task using SDK
+  const assignedTask = await task.assign({ identityId: identity!.id });
+  expect(assignedTask.flowRunId).toBeUndefined();
+
+  // Start the task using SDK
+  const startedTask = await assignedTask.start();
+  expect(startedTask.status).toBe("STARTED");
+
+  const flowRunId = startedTask.flowRunId;
   expect(flowRunId).toBeDefined();
 
   // Wait for the flow to complete
-  await flows.emptyFlow.withAuthToken(token).untilFinished(flowRunId);
+  await flows.emptyFlow.withAuthToken(token).untilFinished(flowRunId!);
 
   const statusEntries = await (useDatabase() as any)
     .selectFrom("keel.task_status")
     .selectAll()
-    .where("keel_task_id", "=", taskId)
+    .where("keel_task_id", "=", task.id)
     .orderBy("created_at", "asc")
     .execute();
 
@@ -1150,52 +825,34 @@ test("tasks - start - creates STARTED and COMPLETED status entries", async () =>
 test("tasks - start - calling start on completed task returns error", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
-  const resCreate = await createTask({
-    topic: "EmptyFlow",
-    body: {
-      data: {
-        orderDate: new Date(2025, 6, 9),
-        shipByDate: new Date(2025, 6, 20),
-      },
-    },
-    token: token,
+  const task = await tasks.emptyFlow.withAuthToken(token).create({
+    orderDate: new Date(2025, 6, 9),
+    shipByDate: new Date(2025, 6, 20),
   });
-  expect(resCreate.status).toBe(200);
 
-  const resNext = await nextTask({ topic: "EmptyFlow", token: token });
-  expect(resNext.status).toBe(200);
-
-  const resStart1 = await startTask({
-    topic: "EmptyFlow",
-    token: token,
-    id: resNext.body.id,
+  const identity = await models.identity.findOne({
+    email: "admin@keel.xyz",
+    issuer: "https://keel.so",
   });
-  expect(resStart1.status).toBe(200);
-  expect(resStart1.body.status).toBe("STARTED");
 
-  const flowRunId = resStart1.body.flowRunId;
+  // Assign and start using SDK
+  const assignedTask = await task.assign({ identityId: identity!.id });
+  const startedTask = await assignedTask.start();
+  expect(startedTask.status).toBe("STARTED");
+
+  const flowRunId = startedTask.flowRunId;
   expect(flowRunId).toBeDefined();
 
   // Wait for the flow to complete (which auto-completes the task)
-  await flows.emptyFlow.withAuthToken(token).untilFinished(flowRunId);
+  await flows.emptyFlow.withAuthToken(token).untilFinished(flowRunId!);
 
-  // Calling start on a completed task returns an error
-  const resStart2 = await startTask({
-    topic: "EmptyFlow",
-    token: token,
-    id: resNext.body.id,
-  });
-  expect(resStart2.status).toBe(500);
-  expect(resStart2.body).toEqual({
-    code: "ERR_INTERNAL",
-    message: "error executing request (task already completed)",
-  });
+  // Calling start on a completed task should throw an error
+  await expect(assignedTask.start()).rejects.toThrow("task already completed");
 
-  const taskId = resNext.body.id;
   const statusEntries = await (useDatabase() as any)
     .selectFrom("keel.task_status")
     .selectAll()
-    .where("keel_task_id", "=", taskId)
+    .where("keel_task_id", "=", task.id)
     .orderBy("created_at", "asc")
     .execute();
 
@@ -1209,46 +866,37 @@ test("tasks - start - calling start on completed task returns error", async () =
 test("tasks - flow completion auto-completes task", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
-  const resCreate = await createTask({
-    topic: "EmptyFlow",
-    body: {
-      data: {
-        orderDate: new Date(2025, 6, 9),
-        shipByDate: new Date(2025, 6, 20),
-      },
-    },
-    token: token,
+  const task = await tasks.emptyFlow.withAuthToken(token).create({
+    orderDate: new Date(2025, 6, 9),
+    shipByDate: new Date(2025, 6, 20),
   });
-  expect(resCreate.status).toBe(200);
-  const taskId = resCreate.body.id;
 
-  // Assign the task first
-  const resNext = await nextTask({ topic: "EmptyFlow", token: token });
-  expect(resNext.status).toBe(200);
-
-  // Start the task - this creates and runs the flow
-  const resStart = await startTask({
-    topic: "EmptyFlow",
-    token: token,
-    id: taskId,
+  const identity = await models.identity.findOne({
+    email: "admin@keel.xyz",
+    issuer: "https://keel.so",
   });
-  expect(resStart.status).toBe(200);
-  expect(resStart.body.status).toBe("STARTED");
 
-  const flowRunId = resStart.body.flowRunId;
+  // Assign task using SDK
+  const assignedTask = await task.assign({ identityId: identity!.id });
+
+  // Start the task using SDK - this creates and runs the flow
+  const startedTask = await assignedTask.start();
+  expect(startedTask.status).toBe("STARTED");
+
+  const flowRunId = startedTask.flowRunId;
   expect(flowRunId).toBeDefined();
 
   // Wait for the flow to complete
   const completedFlow = await flows.emptyFlow
     .withAuthToken(token)
-    .untilFinished(flowRunId);
+    .untilFinished(flowRunId!);
   expect(completedFlow.status).toBe("COMPLETED");
 
   // Fetch the task again to verify it was auto-completed when flow finished
   const taskFromDb = await (useDatabase() as any)
     .selectFrom("keel.task")
     .selectAll()
-    .where("id", "=", taskId)
+    .where("id", "=", task.id)
     .executeTakeFirst();
 
   expect(taskFromDb.status).toBe("COMPLETED");
@@ -1259,7 +907,7 @@ test("tasks - flow completion auto-completes task", async () => {
   const statusEntries = await (useDatabase() as any)
     .selectFrom("keel.task_status")
     .selectAll()
-    .where("keel_task_id", "=", taskId)
+    .where("keel_task_id", "=", task.id)
     .orderBy("created_at", "asc")
     .execute();
 
@@ -1281,48 +929,34 @@ test("tasks - flow receives typed inputs from task fields", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
   // Create test data with various Keel types
-  const testDate = "2025-07-15";
-  const testTimestamp = "2025-07-15T14:30:00.000Z";
-
-  const resCreate = await createTask({
-    topic: "InputsTask",
-    body: {
-      data: {
-        textField: "hello world",
-        numberField: 42,
-        booleanField: true,
-        dateField: testDate,
-        timestampField: testTimestamp,
-        decimalField: 123.456,
-        enumField: "High",
-        optionalTextField: "optional value",
-      },
-    },
-    token: token,
+  const task = await tasks.inputsTask.withAuthToken(token).create({
+    textField: "hello world",
+    numberField: 42,
+    booleanField: true,
+    dateField: new Date("2025-07-15"),
+    timestampField: new Date("2025-07-15T14:30:00.000Z"),
+    decimalField: 123.456,
+    enumField: Priority.High,
+    optionalTextField: "optional value",
   });
-  expect(resCreate.status).toBe(200);
-  const taskId = resCreate.body.id;
 
-  // Assign the task
-  const resNext = await nextTask({ topic: "InputsTask", token: token });
-  expect(resNext.status).toBe(200);
-
-  // Start the task - this creates and runs the flow with the task field data as inputs
-  const resStart = await startTask({
-    topic: "InputsTask",
-    token: token,
-    id: taskId,
+  const identity = await models.identity.findOne({
+    email: "admin@keel.xyz",
+    issuer: "https://keel.so",
   });
-  expect(resStart.status).toBe(200);
-  expect(resStart.body.status).toBe("STARTED");
 
-  const flowRunId = resStart.body.flowRunId;
+  // Assign and start using SDK
+  const assignedTask = await task.assign({ identityId: identity!.id });
+  const startedTask = await assignedTask.start();
+  expect(startedTask.status).toBe("STARTED");
+
+  const flowRunId = startedTask.flowRunId;
   expect(flowRunId).toBeDefined();
 
   // Wait for the flow to complete
   const completedFlow = await flows.inputsTask
     .withAuthToken(token)
-    .untilFinished(flowRunId);
+    .untilFinished(flowRunId!);
 
   expect(completedFlow.status).toBe("COMPLETED");
 
@@ -1344,46 +978,809 @@ test("tasks - flow receives typed inputs from task fields", async () => {
 test("tasks - flow receives null for optional fields", async () => {
   const token = await getToken({ email: "admin@keel.xyz" });
 
-  const resCreate = await createTask({
-    topic: "InputsTask",
-    body: {
-      data: {
-        textField: "test",
-        numberField: 1,
-        booleanField: false,
-        dateField: "2025-01-01",
-        timestampField: "2025-01-01T00:00:00.000Z",
-        decimalField: 0.5,
-        enumField: "Low",
-        // optionalTextField is omitted
-      },
-    },
-    token: token,
+  const task = await tasks.inputsTask.withAuthToken(token).create({
+    textField: "test",
+    numberField: 1,
+    booleanField: false,
+    dateField: new Date("2025-01-01"),
+    timestampField: new Date("2025-01-01T00:00:00.000Z"),
+    decimalField: 0.5,
+    enumField: Priority.Low,
+    // optionalTextField is omitted
   });
-  expect(resCreate.status).toBe(200);
-  const taskId = resCreate.body.id;
 
-  const resNext = await nextTask({ topic: "InputsTask", token: token });
-  expect(resNext.status).toBe(200);
-
-  const resStart = await startTask({
-    topic: "InputsTask",
-    token: token,
-    id: taskId,
+  const identity = await models.identity.findOne({
+    email: "admin@keel.xyz",
+    issuer: "https://keel.so",
   });
-  expect(resStart.status).toBe(200);
 
-  const flowRunId = resStart.body.flowRunId;
+  // Assign and start using SDK
+  const assignedTask = await task.assign({ identityId: identity!.id });
+  const startedTask = await assignedTask.start();
+
+  const flowRunId = startedTask.flowRunId;
 
   const completedFlow = await flows.inputsTask
     .withAuthToken(token)
-    .untilFinished(flowRunId);
+    .untilFinished(flowRunId!);
 
   expect(completedFlow.status).toBe("COMPLETED");
   expect(completedFlow.data.optionalTextField).toBeNull();
 });
 
-async function getToken({ email }) {
+test("tasks SDK - create task with data", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  // Create a task using the SDK
+  // Use UTC dates to avoid timezone issues
+  const inputData = {
+    orderDate: new Date("2025-07-15"),
+    shipByDate: new Date("2025-07-30"),
+  };
+  const task = await tasks.emptyFlow.withAuthToken(token).create(inputData);
+
+  expect(task.id).toBeDefined();
+  expect(task.topic).toBe("EmptyFlow");
+  expect(task.status).toBe("NEW");
+  expect(task.deferredUntil).toBeUndefined();
+  expect(task.assignedTo).toBeUndefined();
+  expect(task.assignedAt).toBeUndefined();
+  expect(task.resolvedAt).toBeUndefined();
+  expect(task.createdAt).toBeInstanceOf(Date);
+  expect(task.updatedAt).toBeInstanceOf(Date);
+
+  // Verify the task was created in the database
+  const taskFromDb = await (useDatabase() as any)
+    .selectFrom("keel.task")
+    .selectAll()
+    .where("id", "=", task.id)
+    .executeTakeFirst();
+
+  expect(taskFromDb).toBeDefined();
+  expect(taskFromDb.name).toBe("EmptyFlow");
+  expect(taskFromDb.status).toBe("NEW");
+
+  // Verify the task data was created in the task-specific table
+  // Note: CamelCasePlugin converts column names to camelCase in results
+  const taskData = await (useDatabase() as any)
+    .selectFrom("empty_flow")
+    .selectAll()
+    .where("keelTaskId", "=", task.id)
+    .executeTakeFirst();
+
+  expect(taskData).toBeDefined();
+  // The database returns DATE type values - extract just the date part for comparison
+  // Note: The returned Date object may have timezone offset applied
+  const orderDateStr = taskData.orderDate.toISOString().slice(0, 10);
+  const shipByDateStr = taskData.shipByDate.toISOString().slice(0, 10);
+  // Just verify the dates are approximately correct (within 1 day of the input due to TZ)
+  expect(["2025-07-14", "2025-07-15"]).toContain(orderDateStr);
+  expect(["2025-07-29", "2025-07-30"]).toContain(shipByDateStr);
+});
+
+test("tasks SDK - create InputsTask with typed fields", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  const inputData = {
+    textField: "hello world",
+    numberField: 42,
+    booleanField: true,
+    dateField: new Date(2025, 6, 15),
+    timestampField: new Date("2025-07-15T14:30:00.000Z"),
+    decimalField: 123.456,
+    enumField: Priority.High,
+    optionalTextField: "optional value",
+  };
+  const task = await tasks.inputsTask.withAuthToken(token).create(inputData);
+
+  expect(task.id).toBeDefined();
+  expect(task.topic).toBe("InputsTask");
+  expect(task.status).toBe("NEW");
+
+  // Verify the task data was created with correct types
+  // Note: CamelCasePlugin converts column names to camelCase in results
+  const taskData = await (useDatabase() as any)
+    .selectFrom("inputs_task")
+    .selectAll()
+    .where("keelTaskId", "=", task.id)
+    .executeTakeFirst();
+
+  expect(taskData).toBeDefined();
+  expect(taskData.textField).toBe("hello world");
+  expect(taskData.numberField).toBe(42);
+  expect(taskData.booleanField).toBe(true);
+  expect(taskData.decimalField).toBe(123.456);
+  expect(taskData.enumField).toBe("High");
+  expect(taskData.optionalTextField).toBe("optional value");
+});
+
+test("tasks SDK - create task with deferredUntil option", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  const inputData = {
+    orderDate: new Date(2025, 6, 15),
+    shipByDate: new Date(2025, 6, 30),
+  };
+  const deferDate = new Date(2025, 11, 25);
+  const task = await tasks.emptyFlow.withAuthToken(token).create(inputData, {
+    deferredUntil: deferDate,
+  });
+
+  expect(task.id).toBeDefined();
+  expect(task.topic).toBe("EmptyFlow");
+  expect(task.status).toBe("DEFERRED");
+  expect(task.deferredUntil).toEqual(deferDate);
+
+  // Verify the task was created with DEFERRED status and deferred_until date
+  const taskFromDb = await (useDatabase() as any)
+    .selectFrom("keel.task")
+    .selectAll()
+    .where("id", "=", task.id)
+    .executeTakeFirst();
+
+  expect(taskFromDb.status).toBe("DEFERRED");
+  expect(new Date(taskFromDb.deferredUntil)).toEqual(deferDate);
+});
+
+test("tasks SDK - assign task", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  const task = await tasks.emptyFlow.withAuthToken(token).create({
+    orderDate: new Date("2025-07-15"),
+    shipByDate: new Date("2025-07-30"),
+  });
+
+  const identity = await models.identity.findOne({
+    email: "admin@keel.xyz",
+    issuer: "https://keel.so",
+  });
+
+  // Call assign on the task instance
+  const assignedTask = await task.assign({ identityId: identity!.id });
+
+  expect(assignedTask.id).toBe(task.id);
+  expect(assignedTask.status).toBe("ASSIGNED");
+  expect(assignedTask.assignedTo).toBe(identity!.id);
+  expect(assignedTask.assignedAt).toBeInstanceOf(Date);
+});
+
+test("tasks SDK - start task", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  const task = await tasks.emptyFlow.withAuthToken(token).create({
+    orderDate: new Date("2025-07-15"),
+    shipByDate: new Date("2025-07-30"),
+  });
+
+  const identity = await models.identity.findOne({
+    email: "admin@keel.xyz",
+    issuer: "https://keel.so",
+  });
+
+  // Must assign before starting - call on task instance
+  const assignedTask = await task.assign({ identityId: identity!.id });
+
+  // Call start on the assigned task instance
+  const startedTask = await assignedTask.start();
+
+  expect(startedTask.id).toBe(task.id);
+  expect(startedTask.status).toBe("STARTED");
+  expect(startedTask.flowRunId).toBeDefined();
+
+  // Wait for flow to complete
+  await flows.emptyFlow
+    .withAuthToken(token)
+    .untilFinished(startedTask.flowRunId!);
+});
+
+test("tasks SDK - complete task", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  const task = await tasks.emptyFlow.withAuthToken(token).create({
+    orderDate: new Date("2025-07-15"),
+    shipByDate: new Date("2025-07-30"),
+  });
+
+  // Call complete on the task instance
+  const completedTask = await task.complete();
+
+  expect(completedTask.id).toBe(task.id);
+  expect(completedTask.status).toBe("COMPLETED");
+  expect(completedTask.resolvedAt).toBeInstanceOf(Date);
+});
+
+test("tasks SDK - defer task", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  const task = await tasks.emptyFlow.withAuthToken(token).create({
+    orderDate: new Date("2025-07-15"),
+    shipByDate: new Date("2025-07-30"),
+  });
+
+  const deferDate = new Date(2025, 11, 25);
+  // Call defer on the task instance
+  const deferredTask = await task.defer({ deferUntil: deferDate });
+
+  expect(deferredTask.id).toBe(task.id);
+  expect(deferredTask.status).toBe("DEFERRED");
+  expect(deferredTask.deferredUntil).toEqual(deferDate);
+});
+
+test("tasks SDK - cancel task", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  const task = await tasks.emptyFlow.withAuthToken(token).create({
+    orderDate: new Date("2025-07-15"),
+    shipByDate: new Date("2025-07-30"),
+  });
+
+  // Call cancel on the task instance
+  const cancelledTask = await task.cancel();
+
+  expect(cancelledTask.id).toBe(task.id);
+  expect(cancelledTask.status).toBe("CANCELLED");
+  expect(cancelledTask.resolvedAt).toBeInstanceOf(Date);
+});
+
+test("tasks SDK - task_status table records set_by correctly", async () => {
+  const adminToken = await getToken({ email: "admin@keel.xyz" });
+  const otherToken = await getToken({ email: "other@keel.xyz" });
+
+  const adminIdentity = await models.identity.findOne({
+    email: "admin@keel.xyz",
+    issuer: "https://keel.so",
+  });
+  const otherIdentity = await models.identity.findOne({
+    email: "other@keel.xyz",
+    issuer: "https://keel.so",
+  });
+
+  // Create task as admin
+  const task = await tasks.emptyFlow.withAuthToken(adminToken).create({
+    orderDate: new Date("2025-07-15"),
+    shipByDate: new Date("2025-07-30"),
+  });
+
+  // Assign task as admin
+  await task.assign({ identityId: adminIdentity!.id });
+
+  // Complete task as admin
+  await task.complete();
+
+  // Check task_status entries
+  const statusEntries = await (useDatabase() as any)
+    .selectFrom("keel.task_status")
+    .selectAll()
+    .where("keel_task_id", "=", task.id)
+    .orderBy("created_at", "asc")
+    .execute();
+
+  expect(statusEntries).toHaveLength(3);
+
+  // NEW status - set_by is the creator (admin)
+  expect(statusEntries[0].status).toBe("NEW");
+  expect(statusEntries[0].setBy).toBe(adminIdentity!.id);
+
+  // ASSIGNED status - set_by is admin
+  expect(statusEntries[1].status).toBe("ASSIGNED");
+  expect(statusEntries[1].setBy).toBe(adminIdentity!.id);
+
+  // COMPLETED status - set_by is admin
+  expect(statusEntries[2].status).toBe("COMPLETED");
+  expect(statusEntries[2].setBy).toBe(adminIdentity!.id);
+});
+
+test("tasks SDK - assign with different identity reflects in task_status", async () => {
+  const adminToken = await getToken({ email: "admin@keel.xyz" });
+  const otherToken = await getToken({ email: "other@keel.xyz" });
+
+  const adminIdentity = await models.identity.findOne({
+    email: "admin@keel.xyz",
+    issuer: "https://keel.so",
+  });
+  const otherIdentity = await models.identity.findOne({
+    email: "other@keel.xyz",
+    issuer: "https://keel.so",
+  });
+
+  // Create task as admin
+  const task = await tasks.emptyFlow.withAuthToken(adminToken).create({
+    orderDate: new Date("2025-07-15"),
+    shipByDate: new Date("2025-07-30"),
+  });
+
+  // Switch to other identity and assign task
+  const assignedTask = await task.withAuthToken(otherToken).assign({
+    identityId: otherIdentity!.id,
+  });
+
+  expect(assignedTask.assignedTo).toBe(otherIdentity!.id);
+
+  // Check task_status entries
+  const statusEntries = await (useDatabase() as any)
+    .selectFrom("keel.task_status")
+    .selectAll()
+    .where("keel_task_id", "=", task.id)
+    .orderBy("created_at", "asc")
+    .execute();
+
+  expect(statusEntries).toHaveLength(2);
+
+  // NEW status - set_by is admin (creator)
+  expect(statusEntries[0].status).toBe("NEW");
+  expect(statusEntries[0].setBy).toBe(adminIdentity!.id);
+
+  // ASSIGNED status - set_by is other (who performed the assign)
+  expect(statusEntries[1].status).toBe("ASSIGNED");
+  expect(statusEntries[1].setBy).toBe(otherIdentity!.id);
+});
+
+test("tasks SDK - cancel with different identity reflects in task_status", async () => {
+  const adminToken = await getToken({ email: "admin@keel.xyz" });
+  const otherToken = await getToken({ email: "other@keel.xyz" });
+
+  const adminIdentity = await models.identity.findOne({
+    email: "admin@keel.xyz",
+    issuer: "https://keel.so",
+  });
+  const otherIdentity = await models.identity.findOne({
+    email: "other@keel.xyz",
+    issuer: "https://keel.so",
+  });
+
+  // Create task as admin
+  const task = await tasks.emptyFlow.withAuthToken(adminToken).create({
+    orderDate: new Date("2025-07-15"),
+    shipByDate: new Date("2025-07-30"),
+  });
+
+  // Switch to other identity and cancel task
+  const cancelledTask = await task.withAuthToken(otherToken).cancel();
+
+  expect(cancelledTask.status).toBe("CANCELLED");
+
+  // Check task_status entries
+  const statusEntries = await (useDatabase() as any)
+    .selectFrom("keel.task_status")
+    .selectAll()
+    .where("keel_task_id", "=", task.id)
+    .orderBy("created_at", "asc")
+    .execute();
+
+  expect(statusEntries).toHaveLength(2);
+
+  // NEW status - set_by is admin (creator)
+  expect(statusEntries[0].status).toBe("NEW");
+  expect(statusEntries[0].setBy).toBe(adminIdentity!.id);
+
+  // CANCELLED status - set_by is other (who performed the cancel)
+  expect(statusEntries[1].status).toBe("CANCELLED");
+  expect(statusEntries[1].setBy).toBe(otherIdentity!.id);
+});
+
+test("tasks SDK - complete with different identity reflects in task_status", async () => {
+  const adminToken = await getToken({ email: "admin@keel.xyz" });
+  const otherToken = await getToken({ email: "other@keel.xyz" });
+
+  const adminIdentity = await models.identity.findOne({
+    email: "admin@keel.xyz",
+    issuer: "https://keel.so",
+  });
+  const otherIdentity = await models.identity.findOne({
+    email: "other@keel.xyz",
+    issuer: "https://keel.so",
+  });
+
+  // Create task as admin
+  const task = await tasks.emptyFlow.withAuthToken(adminToken).create({
+    orderDate: new Date("2025-07-15"),
+    shipByDate: new Date("2025-07-30"),
+  });
+
+  // Switch to other identity and complete task
+  const completedTask = await task.withAuthToken(otherToken).complete();
+
+  expect(completedTask.status).toBe("COMPLETED");
+
+  // Check task_status entries
+  const statusEntries = await (useDatabase() as any)
+    .selectFrom("keel.task_status")
+    .selectAll()
+    .where("keel_task_id", "=", task.id)
+    .orderBy("created_at", "asc")
+    .execute();
+
+  expect(statusEntries).toHaveLength(2);
+
+  // NEW status - set_by is admin (creator)
+  expect(statusEntries[0].status).toBe("NEW");
+  expect(statusEntries[0].setBy).toBe(adminIdentity!.id);
+
+  // COMPLETED status - set_by is other (who performed the complete)
+  expect(statusEntries[1].status).toBe("COMPLETED");
+  expect(statusEntries[1].setBy).toBe(otherIdentity!.id);
+});
+
+test("tasks SDK - defer with different identity reflects in task_status", async () => {
+  const adminToken = await getToken({ email: "admin@keel.xyz" });
+  const otherToken = await getToken({ email: "other@keel.xyz" });
+
+  const adminIdentity = await models.identity.findOne({
+    email: "admin@keel.xyz",
+    issuer: "https://keel.so",
+  });
+  const otherIdentity = await models.identity.findOne({
+    email: "other@keel.xyz",
+    issuer: "https://keel.so",
+  });
+
+  // Create task as admin
+  const task = await tasks.emptyFlow.withAuthToken(adminToken).create({
+    orderDate: new Date("2025-07-15"),
+    shipByDate: new Date("2025-07-30"),
+  });
+
+  // Switch to other identity and defer task
+  const deferDate = new Date(2025, 11, 25);
+  const deferredTask = await task
+    .withAuthToken(otherToken)
+    .defer({ deferUntil: deferDate });
+
+  expect(deferredTask.status).toBe("DEFERRED");
+
+  // Check task_status entries
+  const statusEntries = await (useDatabase() as any)
+    .selectFrom("keel.task_status")
+    .selectAll()
+    .where("keel_task_id", "=", task.id)
+    .orderBy("created_at", "asc")
+    .execute();
+
+  expect(statusEntries).toHaveLength(2);
+
+  // NEW status - set_by is admin (creator)
+  expect(statusEntries[0].status).toBe("NEW");
+  expect(statusEntries[0].setBy).toBe(adminIdentity!.id);
+
+  // DEFERRED status - set_by is other (who performed the defer)
+  expect(statusEntries[1].status).toBe("DEFERRED");
+  expect(statusEntries[1].setBy).toBe(otherIdentity!.id);
+});
+
+test("tasks SDK - withIdentity on tasks module creates task as that identity", async () => {
+  // Get tokens to create identities
+  await getToken({ email: "admin@keel.xyz" });
+  await getToken({ email: "other@keel.xyz" });
+
+  const otherIdentity = await models.identity.findOne({
+    email: "other@keel.xyz",
+    issuer: "https://keel.so",
+  });
+
+  // Create task using withIdentity on the tasks module
+  const task = await tasks.emptyFlow.withIdentity(otherIdentity!).create({
+    orderDate: new Date("2025-07-15"),
+    shipByDate: new Date("2025-07-30"),
+  });
+
+  expect(task.id).toBeDefined();
+  expect(task.status).toBe("NEW");
+
+  // Check task_status to verify the identity was used
+  const statusEntries = await (useDatabase() as any)
+    .selectFrom("keel.task_status")
+    .selectAll()
+    .where("keel_task_id", "=", task.id)
+    .execute();
+
+  expect(statusEntries).toHaveLength(1);
+  expect(statusEntries[0].status).toBe("NEW");
+  expect(statusEntries[0].setBy).toBe(otherIdentity!.id);
+});
+
+test("tasks SDK - withAuthToken on tasks module creates task as that identity", async () => {
+  const adminToken = await getToken({ email: "admin@keel.xyz" });
+
+  const adminIdentity = await models.identity.findOne({
+    email: "admin@keel.xyz",
+    issuer: "https://keel.so",
+  });
+
+  // Create task using withAuthToken on the tasks module
+  const task = await tasks.emptyFlow.withAuthToken(adminToken).create({
+    orderDate: new Date("2025-07-15"),
+    shipByDate: new Date("2025-07-30"),
+  });
+
+  expect(task.id).toBeDefined();
+  expect(task.status).toBe("NEW");
+
+  // Check task_status to verify the identity was used
+  const statusEntries = await (useDatabase() as any)
+    .selectFrom("keel.task_status")
+    .selectAll()
+    .where("keel_task_id", "=", task.id)
+    .execute();
+
+  expect(statusEntries).toHaveLength(1);
+  expect(statusEntries[0].status).toBe("NEW");
+  expect(statusEntries[0].setBy).toBe(adminIdentity!.id);
+});
+
+test("tasks SDK - withIdentity on Task instance performs action as that identity", async () => {
+  const adminToken = await getToken({ email: "admin@keel.xyz" });
+  await getToken({ email: "other@keel.xyz" });
+
+  const adminIdentity = await models.identity.findOne({
+    email: "admin@keel.xyz",
+    issuer: "https://keel.so",
+  });
+  const otherIdentity = await models.identity.findOne({
+    email: "other@keel.xyz",
+    issuer: "https://keel.so",
+  });
+
+  // Create task as admin
+  const task = await tasks.emptyFlow.withAuthToken(adminToken).create({
+    orderDate: new Date("2025-07-15"),
+    shipByDate: new Date("2025-07-30"),
+  });
+
+  // Use withIdentity on the task instance to complete as other user
+  const completedTask = await task.withIdentity(otherIdentity!).complete();
+  expect(completedTask.status).toBe("COMPLETED");
+
+  // Check task_status entries
+  const statusEntries = await (useDatabase() as any)
+    .selectFrom("keel.task_status")
+    .selectAll()
+    .where("keel_task_id", "=", task.id)
+    .orderBy("created_at", "asc")
+    .execute();
+
+  expect(statusEntries).toHaveLength(2);
+
+  // NEW status - set_by is admin (creator)
+  expect(statusEntries[0].status).toBe("NEW");
+  expect(statusEntries[0].setBy).toBe(adminIdentity!.id);
+
+  // COMPLETED status - set_by is other (via withIdentity)
+  expect(statusEntries[1].status).toBe("COMPLETED");
+  expect(statusEntries[1].setBy).toBe(otherIdentity!.id);
+});
+
+test("tasks SDK - withAuthToken on Task instance performs action as that identity", async () => {
+  const adminToken = await getToken({ email: "admin@keel.xyz" });
+  const otherToken = await getToken({ email: "other@keel.xyz" });
+
+  const adminIdentity = await models.identity.findOne({
+    email: "admin@keel.xyz",
+    issuer: "https://keel.so",
+  });
+  const otherIdentity = await models.identity.findOne({
+    email: "other@keel.xyz",
+    issuer: "https://keel.so",
+  });
+
+  // Create task as admin
+  const task = await tasks.emptyFlow.withAuthToken(adminToken).create({
+    orderDate: new Date("2025-07-15"),
+    shipByDate: new Date("2025-07-30"),
+  });
+
+  // Use withAuthToken on the task instance to assign as other user
+  const assignedTask = await task
+    .withAuthToken(otherToken)
+    .assign({ identityId: otherIdentity!.id });
+  expect(assignedTask.status).toBe("ASSIGNED");
+  expect(assignedTask.assignedTo).toBe(otherIdentity!.id);
+
+  // Check task_status entries
+  const statusEntries = await (useDatabase() as any)
+    .selectFrom("keel.task_status")
+    .selectAll()
+    .where("keel_task_id", "=", task.id)
+    .orderBy("created_at", "asc")
+    .execute();
+
+  expect(statusEntries).toHaveLength(2);
+
+  // NEW status - set_by is admin (creator)
+  expect(statusEntries[0].status).toBe("NEW");
+  expect(statusEntries[0].setBy).toBe(adminIdentity!.id);
+
+  // ASSIGNED status - set_by is other (via withAuthToken)
+  expect(statusEntries[1].status).toBe("ASSIGNED");
+  expect(statusEntries[1].setBy).toBe(otherIdentity!.id);
+});
+
+test("tasks SDK - chaining withIdentity then action methods on Task instance", async () => {
+  const adminToken = await getToken({ email: "admin@keel.xyz" });
+  await getToken({ email: "other@keel.xyz" });
+
+  const adminIdentity = await models.identity.findOne({
+    email: "admin@keel.xyz",
+    issuer: "https://keel.so",
+  });
+  const otherIdentity = await models.identity.findOne({
+    email: "other@keel.xyz",
+    issuer: "https://keel.so",
+  });
+
+  // Create task as admin
+  const task = await tasks.emptyFlow.withAuthToken(adminToken).create({
+    orderDate: new Date("2025-07-15"),
+    shipByDate: new Date("2025-07-30"),
+  });
+
+  // Chain multiple operations with different identities
+  const assignedTask = await task
+    .withIdentity(otherIdentity!)
+    .assign({ identityId: otherIdentity!.id });
+
+  // Defer using admin identity
+  const deferDate = new Date(2025, 11, 25);
+  const deferredTask = await assignedTask
+    .withIdentity(adminIdentity!)
+    .defer({ deferUntil: deferDate });
+
+  expect(deferredTask.status).toBe("DEFERRED");
+
+  // Check task_status entries
+  const statusEntries = await (useDatabase() as any)
+    .selectFrom("keel.task_status")
+    .selectAll()
+    .where("keel_task_id", "=", task.id)
+    .orderBy("created_at", "asc")
+    .execute();
+
+  expect(statusEntries).toHaveLength(3);
+
+  // NEW status - set_by is admin (creator)
+  expect(statusEntries[0].status).toBe("NEW");
+  expect(statusEntries[0].setBy).toBe(adminIdentity!.id);
+
+  // ASSIGNED status - set_by is other
+  expect(statusEntries[1].status).toBe("ASSIGNED");
+  expect(statusEntries[1].setBy).toBe(otherIdentity!.id);
+
+  // DEFERRED status - set_by is admin
+  expect(statusEntries[2].status).toBe("DEFERRED");
+  expect(statusEntries[2].setBy).toBe(adminIdentity!.id);
+});
+
+test("tasks SDK - flow creates child tasks using tasks module", async () => {
+  const token = await getToken({ email: "admin@keel.xyz" });
+
+  const adminIdentity = await models.identity.findOne({
+    email: "admin@keel.xyz",
+    issuer: "https://keel.so",
+  });
+
+  // Create a parent task that will create child tasks in its flow
+  const parentTask = await tasks.parentTask.withAuthToken(token).create({
+    name: "Parent Task",
+    childCount: 3,
+  });
+
+  expect(parentTask.id).toBeDefined();
+  expect(parentTask.status).toBe("NEW");
+
+  // Assign and start the parent task
+  const assignedTask = await parentTask.assign({
+    identityId: adminIdentity!.id,
+  });
+  const startedTask = await assignedTask.start();
+
+  expect(startedTask.status).toBe("STARTED");
+  expect(startedTask.flowRunId).toBeDefined();
+
+  // Wait for the flow to complete
+  const completedFlow = await flows.parentTask
+    .withAuthToken(token)
+    .untilFinished(startedTask.flowRunId!);
+
+  expect(completedFlow.status).toBe("COMPLETED");
+  expect(completedFlow.data.parentName).toBe("Parent Task");
+  expect(completedFlow.data.childCount).toBe(3);
+  expect(completedFlow.data.childTaskIds).toHaveLength(3);
+
+  // Verify child tasks were created in the database
+  const childTasks = await (useDatabase() as any)
+    .selectFrom("keel.task")
+    .selectAll()
+    .where("name", "=", "ChildTask")
+    .orderBy("created_at", "asc")
+    .execute();
+
+  expect(childTasks).toHaveLength(3);
+
+  // All child tasks should be NEW status
+  for (const childTask of childTasks) {
+    expect(childTask.status).toBe("NEW");
+  }
+
+  // Verify the child task data
+  const childTaskData = await (useDatabase() as any)
+    .selectFrom("child_task")
+    .selectAll()
+    .orderBy("index", "asc")
+    .execute();
+
+  expect(childTaskData).toHaveLength(3);
+  expect(childTaskData[0].parentName).toBe("Parent Task");
+  expect(childTaskData[0].index).toBe(1);
+  expect(childTaskData[1].parentName).toBe("Parent Task");
+  expect(childTaskData[1].index).toBe(2);
+  expect(childTaskData[2].parentName).toBe("Parent Task");
+  expect(childTaskData[2].index).toBe(3);
+
+  // Verify task_status entries for child tasks have correct set_by
+  for (const childTask of childTasks) {
+    const statusEntries = await (useDatabase() as any)
+      .selectFrom("keel.task_status")
+      .selectAll()
+      .where("keel_task_id", "=", childTask.id)
+      .execute();
+
+    expect(statusEntries).toHaveLength(1);
+    expect(statusEntries[0].status).toBe("NEW");
+    // Child tasks should be created by the same identity that started the parent flow
+    expect(statusEntries[0].setBy).toBe(adminIdentity!.id);
+  }
+});
+
+test("tasks SDK - flow creates tasks with different identity using withIdentity", async () => {
+  const adminToken = await getToken({ email: "admin@keel.xyz" });
+  await getToken({ email: "other@keel.xyz" });
+
+  const adminIdentity = await models.identity.findOne({
+    email: "admin@keel.xyz",
+    issuer: "https://keel.so",
+  });
+
+  // Create parent task
+  const parentTask = await tasks.parentTask.withAuthToken(adminToken).create({
+    name: "Test Parent",
+    childCount: 2,
+  });
+
+  // Assign and start
+  const assignedTask = await parentTask.assign({
+    identityId: adminIdentity!.id,
+  });
+  const startedTask = await assignedTask.start();
+
+  // Wait for completion
+  const completedFlow = await flows.parentTask
+    .withAuthToken(adminToken)
+    .untilFinished(startedTask.flowRunId!);
+
+  expect(completedFlow.status).toBe("COMPLETED");
+
+  // The child tasks should have been created using ctx.identity (admin)
+  // which is passed via withIdentity in the flow
+  const childTasks = await (useDatabase() as any)
+    .selectFrom("keel.task")
+    .selectAll()
+    .where("name", "=", "ChildTask")
+    .execute();
+
+  expect(childTasks.length).toBeGreaterThanOrEqual(2);
+
+  // Verify the tasks were created with the correct identity
+  for (const childTask of childTasks) {
+    const statusEntries = await (useDatabase() as any)
+      .selectFrom("keel.task_status")
+      .selectAll()
+      .where("keel_task_id", "=", childTask.id)
+      .execute();
+
+    expect(statusEntries[0].setBy).toBe(adminIdentity!.id);
+  }
+});
+
+async function getToken({ email }: { email: string }) {
   const response = await fetch(
     process.env.KEEL_TESTING_AUTH_API_URL + "/token",
     {
@@ -1414,24 +1811,13 @@ async function getToken({ email }) {
   return token;
 }
 
-async function createTask({ topic, body, token }) {
-  const url = `${process.env.KEEL_TESTING_API_URL}/topics/json/${topic}/tasks`;
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: "Bearer " + token,
-    },
-    body: JSON.stringify(body),
-  });
-
-  return {
-    status: res.status,
-    body: await res.json(),
-  };
-}
-
-async function getTaskQueue({ topic, token }) {
+async function getTaskQueue({
+  topic,
+  token,
+}: {
+  topic: string;
+  token: string;
+}) {
   const url = `${process.env.KEEL_TESTING_API_URL}/topics/json/${topic}/tasks`;
 
   const res = await fetch(url, {
@@ -1448,7 +1834,7 @@ async function getTaskQueue({ topic, token }) {
   };
 }
 
-async function nextTask({ topic, token }) {
+async function nextTask({ topic, token }: { topic: string; token: string }) {
   const url = `${process.env.KEEL_TESTING_API_URL}/topics/json/${topic}/tasks/next`;
   const res = await fetch(url, {
     method: "POST",
@@ -1464,7 +1850,15 @@ async function nextTask({ topic, token }) {
   };
 }
 
-async function startTask({ topic, token, id }) {
+async function startTask({
+  topic,
+  token,
+  id,
+}: {
+  topic: string;
+  token: string;
+  id: string;
+}) {
   const url = `${process.env.KEEL_TESTING_API_URL}/topics/json/${topic}/tasks/${id}/start`;
   const res = await fetch(url, {
     method: "PUT",
@@ -1480,7 +1874,17 @@ async function startTask({ topic, token, id }) {
   };
 }
 
-async function assignTask({ topic, token, id, body }) {
+async function assignTask({
+  topic,
+  token,
+  id,
+  body,
+}: {
+  topic: string;
+  token: string;
+  id: string;
+  body: any;
+}) {
   const url = `${process.env.KEEL_TESTING_API_URL}/topics/json/${topic}/tasks/${id}/assign`;
   const res = await fetch(url, {
     method: "PUT",
@@ -1497,23 +1901,17 @@ async function assignTask({ topic, token, id, body }) {
   };
 }
 
-async function completeTask({ topic, token, id }) {
-  const url = `${process.env.KEEL_TESTING_API_URL}/topics/json/${topic}/tasks/${id}/complete`;
-  const res = await fetch(url, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: "Bearer " + token,
-    },
-  });
-
-  return {
-    status: res.status,
-    body: await res.json(),
-  };
-}
-
-async function deferTask({ topic, token, id, body }) {
+async function deferTask({
+  topic,
+  token,
+  id,
+  body,
+}: {
+  topic: string;
+  token: string;
+  id: string;
+  body: any;
+}) {
   const url = `${process.env.KEEL_TESTING_API_URL}/topics/json/${topic}/tasks/${id}/defer`;
   const res = await fetch(url, {
     method: "PUT",
@@ -1530,7 +1928,15 @@ async function deferTask({ topic, token, id, body }) {
   };
 }
 
-async function cancelTask({ topic, token, id }) {
+async function cancelTask({
+  topic,
+  token,
+  id,
+}: {
+  topic: string;
+  token: string;
+  id: string;
+}) {
   const url = `${process.env.KEEL_TESTING_API_URL}/topics/json/${topic}/tasks/${id}/cancel`;
   const res = await fetch(url, {
     method: "PUT",

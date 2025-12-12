@@ -364,4 +364,4 @@ async function create(conn, tableName, tableConfigs, values) {
   }
 }
 
-export { ModelAPI, DatabaseError };
+export { ModelAPI, DatabaseError, create };

@@ -993,6 +993,11 @@ func writeAPIDeclarations(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("}")
 	w.Writeln("export declare const models: ModelsAPI;")
 
+	// Tasks API types
+	if len(schema.GetTasks()) > 0 {
+		writeTasksAPIDeclarations(w, schema)
+	}
+
 	w.Writeln("export declare const permissions: runtime.Permissions;")
 	w.Writeln("export declare const errors: runtime.Errors;")
 
@@ -1043,6 +1048,92 @@ func writeAPIDeclarations(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("now(): Date;")
 	w.Dedent()
 	w.Writeln("}")
+}
+
+func writeTasksAPIDeclarations(w *codegen.Writer, schema *proto.Schema) {
+	// Write Task interface for each task (with action methods)
+	for _, task := range schema.GetTasks() {
+		w.Writef("export interface %sTask extends runtime.Task {\n", task.GetName())
+		w.Indent()
+
+		tsDocComment(w, func(w *codegen.Writer) {
+			w.Writeln("* Returns a new Task instance that will use the given identity for authentication.")
+		})
+		w.Writef("withIdentity(identity: Identity): %sTask;\n", task.GetName())
+
+		tsDocComment(w, func(w *codegen.Writer) {
+			w.Writeln("* Returns a new Task instance that will use the given auth token for authentication.")
+		})
+		w.Writef("withAuthToken(token: string): %sTask;\n", task.GetName())
+
+		tsDocComment(w, func(w *codegen.Writer) {
+			w.Writeln("* Assigns the task to an identity")
+		})
+		w.Writef("assign(options: { identityId: string }): Promise<%sTask>;\n", task.GetName())
+
+		tsDocComment(w, func(w *codegen.Writer) {
+			w.Writeln("* Starts the task, creating and running the associated flow")
+		})
+		w.Writef("start(): Promise<%sTask>;\n", task.GetName())
+
+		tsDocComment(w, func(w *codegen.Writer) {
+			w.Writeln("* Completes the task")
+		})
+		w.Writef("complete(): Promise<%sTask>;\n", task.GetName())
+
+		tsDocComment(w, func(w *codegen.Writer) {
+			w.Writeln("* Defers the task until the specified date")
+		})
+		w.Writef("defer(options: { deferUntil: Date }): Promise<%sTask>;\n", task.GetName())
+
+		tsDocComment(w, func(w *codegen.Writer) {
+			w.Writeln("* Cancels the task")
+		})
+		w.Writef("cancel(): Promise<%sTask>;\n", task.GetName())
+
+		w.Dedent()
+		w.Writeln("}")
+	}
+
+	// Write task API types
+	for _, task := range schema.GetTasks() {
+		w.Writef("export type %sTaskAPI = {\n", task.GetName())
+		w.Indent()
+
+		tsDocComment(w, func(w *codegen.Writer) {
+			w.Writeln("* Returns a new TaskAPI instance that will use the given identity for authentication.")
+		})
+		w.Writef("withIdentity(identity: Identity): %sTaskAPI;\n", task.GetName())
+
+		tsDocComment(w, func(w *codegen.Writer) {
+			w.Writeln("* Returns a new TaskAPI instance that will use the given auth token for authentication.")
+		})
+		w.Writef("withAuthToken(token: string): %sTaskAPI;\n", task.GetName())
+
+		tsDocComment(w, func(w *codegen.Writer) {
+			w.Writef("* Create a new %s task\n", task.GetName())
+		})
+		if task.GetInputMessageName() != "" {
+			w.Writef("create(data: %s, options?: runtime.TaskCreateOptions): Promise<%sTask>;\n", task.GetInputMessageName(), task.GetName())
+		} else {
+			w.Writef("create(options?: runtime.TaskCreateOptions): Promise<%sTask>;\n", task.GetName())
+		}
+
+		w.Dedent()
+		w.Writeln("}")
+	}
+
+	w.Writeln("export type TasksAPI = {")
+	w.Indent()
+	for _, task := range schema.GetTasks() {
+		w.Write(casing.ToLowerCamel(task.GetName()))
+		w.Write(": ")
+		w.Writef(`%sTaskAPI`, task.GetName())
+		w.Writeln(";")
+	}
+	w.Dedent()
+	w.Writeln("}")
+	w.Writeln("export declare const tasks: TasksAPI;")
 }
 
 func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
@@ -1187,6 +1278,25 @@ func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("return new runtime.Permissions();")
 	w.Dedent()
 	w.Writeln("};")
+
+	// Create tasks API if there are tasks
+	if len(schema.GetTasks()) > 0 {
+		w.Writeln("function createTasksAPI() {")
+		w.Indent()
+		w.Writeln("return {")
+		w.Indent()
+		for _, task := range schema.GetTasks() {
+			w.Write(casing.ToLowerCamel(task.GetName()))
+			w.Write(": ")
+			w.Writef(`new runtime.TaskAPI("%s")`, task.GetName())
+			w.Writeln(",")
+		}
+		w.Dedent()
+		w.Writeln("};")
+		w.Dedent()
+		w.Writeln("};")
+		w.Writeln("export const tasks = createTasksAPI();")
+	}
 
 	w.Writeln("export const models = createModelAPI();")
 	w.Writeln("export const permissions = createPermissionApi();")

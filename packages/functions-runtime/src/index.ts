@@ -1,4 +1,5 @@
 import { ModelAPI } from "./ModelAPI";
+import { TaskAPI } from "./TaskAPI";
 import { RequestHeaders } from "./RequestHeaders";
 import { handleRequest } from "./handleRequest";
 import { handleJob } from "./handleJob";
@@ -20,6 +21,7 @@ import { ErrorPresets } from "./errors";
 // Export JS files
 export {
   ModelAPI,
+  TaskAPI,
   handleRequest,
   handleJob,
   handleSubscriber,
@@ -272,3 +274,28 @@ export type DurationString =
   | `P${dateDuration}T${timeDuration}`
   | `P${dateDuration}`
   | `PT${timeDuration}`;
+
+export type TaskStatus =
+  | "NEW"
+  | "ASSIGNED"
+  | "STARTED"
+  | "COMPLETED"
+  | "CANCELLED"
+  | "DEFERRED";
+
+export type Task = {
+  id: string;
+  topic: string;
+  status: TaskStatus;
+  deferredUntil?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  assignedTo?: string;
+  assignedAt?: Date;
+  resolvedAt?: Date;
+  flowRunId?: string;
+};
+
+export type TaskCreateOptions = {
+  deferredUntil?: Date;
+};
