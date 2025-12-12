@@ -5,6 +5,7 @@ import (
 
 	gonanoid "github.com/matoous/go-nanoid/v2"
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/casing"
 	toolsproto "github.com/teamkeel/keel/tools/proto"
 )
 
@@ -95,19 +96,19 @@ func (ss SpaceConfigs) findUniqueID(item spaceItem) (string, error) {
 
 	switch tmp := item.(type) {
 	case *SpaceConfig:
-		id = "space-" + tmp.Name
+		id = "space-" + casing.ToKebab(tmp.Name)
 		exists = existsByID(ss, id)
 	case *SpaceAction:
-		id = "action-" + tmp.Link.ToolID
+		id = "action-" + casing.ToKebab(tmp.Link.ToolID)
 		exists = existsByID(ss.allActions(), id)
 	case *SpaceLink:
-		id = "link-" + tmp.Link.Label
+		id = "link-" + casing.ToKebab(tmp.Link.Label)
 		exists = existsByID(ss.allLinks(), id)
 	case *SpaceGroup:
-		id = "group-" + tmp.Name
+		id = "group-" + casing.ToKebab(tmp.Name)
 		exists = existsByID(ss.allGroups(), id)
 	case *SpaceMetric:
-		id = "metric-" + tmp.Label
+		id = "metric-" + casing.ToKebab(tmp.Label)
 		exists = existsByID(ss.allMetrics(), id)
 	default:
 		return "", fmt.Errorf("unknown space item type")
