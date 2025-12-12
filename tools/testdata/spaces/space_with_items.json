@@ -1,0 +1,44 @@
+[
+    {
+        "id": "space-test",
+        "name": "Test Space",
+        "icon": "test-icon",
+        "display_order": 1,
+        "actions": [
+            {
+                "id": "action-test-tool",
+                "link": {
+                    "tool_id": "test-tool",
+                    "title": "Test Action"
+                }
+            }
+        ],
+        "groups": [
+            {
+                "id": "group-test-group",
+                "name": "Test Group",
+                "description": "A test group",
+                "display_order": 1,
+                "actions": []
+            }
+        ],
+        "metrics": [
+            {
+                "id": "metric-test-metric",
+                "label": "Test Metric",
+                "tool_id": "test-tool",
+                "facet_location": "$.count",
+                "display_order": 1
+            }
+        ],
+        "links": [
+            {
+                "id": "link-test-link",
+                "link": {
+                    "label": "Test Link",
+                    "href": "https://example.com"
+                }
+            }
+        ]
+    }
+]

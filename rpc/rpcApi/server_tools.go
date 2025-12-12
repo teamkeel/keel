@@ -1,0 +1,335 @@
+package rpcApi
+
+import (
+	"context"
+
+	"github.com/teamkeel/keel/tools"
+
+	"github.com/teamkeel/keel/rpc/rpc"
+	"github.com/twitchtv/twirp"
+)
+
+// makeToolsService will create a tools service for this server's request (taking in the schema and config from context).
+func (s *Server) makeToolsService(ctx context.Context) (*tools.Service, error) {
+	schema, err := GetSchema(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	config, err := GetConfig(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	projectDir, err := GetProjectDir(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return tools.NewService(tools.WithFileStorage(projectDir), tools.WithConfig(config), tools.WithSchema(schema)), nil
+}
+func (s *Server) ListTools(ctx context.Context, input *rpc.ListToolsRequest) (*rpc.ListToolsResponse, error) {
+	toolsSvc, err := s.makeToolsService(ctx)
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+
+	tools, err := toolsSvc.GetTools(ctx)
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+	if tools == nil {
+		return nil, nil
+	}
+	return &rpc.ListToolsResponse{
+		Tools:       tools.ActionConfigs(),
+		ToolConfigs: tools.GetConfigs(),
+	}, nil
+}
+
+func (s *Server) ConfigureTool(ctx context.Context, req *rpc.ConfigureToolRequest) (*rpc.ConfigureToolResponse, error) {
+	toolsSvc, err := s.makeToolsService(ctx)
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+
+	// if we're using the new style of tool configs
+	if req.GetToolConfig() != nil {
+		updated, err := toolsSvc.ConfigureTool(ctx, req.GetToolConfig())
+		if err != nil {
+			return nil, twirp.NewError(twirp.Internal, err.Error())
+		}
+		return &rpc.ConfigureToolResponse{
+			ToolConfig: updated,
+		}, nil
+	}
+
+	// default to old way of configuring tools via ActionConfigs
+	updated, err := toolsSvc.ConfigureTool(ctx, req.GetConfiguredTool().ToTool())
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+
+	return &rpc.ConfigureToolResponse{
+		ToolConfig: updated,
+	}, nil
+}
+
+func (s *Server) ResetTools(ctx context.Context, req *rpc.ResetToolsRequest) (*rpc.ResetToolsResponse, error) {
+	toolsSvc, err := s.makeToolsService(ctx)
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+
+	tools, err := toolsSvc.ResetTools(ctx)
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+
+	return &rpc.ResetToolsResponse{
+		Tools:       tools.ActionConfigs(),
+		ToolConfigs: tools.GetConfigs(),
+	}, nil
+}
+
+func (s *Server) DuplicateTool(ctx context.Context, req *rpc.DuplicateToolRequest) (*rpc.DuplicateToolResponse, error) {
+	toolsSvc, err := s.makeToolsService(ctx)
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+
+	newTool, err := toolsSvc.DuplicateTool(ctx, req.GetToolId())
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+
+	return &rpc.DuplicateToolResponse{
+		ToolConfig: newTool,
+	}, nil
+}
+
+// ListFields will list all model & enum fields with their formatting configuration.
+func (s *Server) ListFields(ctx context.Context, req *rpc.ListFieldsRequest) (*rpc.ListFieldsResponse, error) {
+	toolsSvc, err := s.makeToolsService(ctx)
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+
+	fields, err := toolsSvc.GetFields(ctx)
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+	if fields == nil {
+		return nil, nil
+	}
+
+	return &rpc.ListFieldsResponse{
+		Fields: fields,
+	}, nil
+}
+
+// ConfigureFields will configure the formatting of all model & enum fields.
+func (s *Server) ConfigureFields(ctx context.Context, req *rpc.ConfigureFieldsRequest) (*rpc.ConfigureFieldsResponse, error) {
+	toolsSvc, err := s.makeToolsService(ctx)
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+
+	updated, err := toolsSvc.ConfigureFields(ctx, req.GetFields())
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+
+	return &rpc.ConfigureFieldsResponse{
+		Fields: updated,
+	}, nil
+}
+
+// List all the tool spaces defined in this repo.
+func (s *Server) ListToolSpaces(ctx context.Context, req *rpc.ListToolSpacesRequest) (*rpc.ListToolSpacesResponse, error) {
+	toolsSvc, err := s.makeToolsService(ctx)
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+
+	spaces, err := toolsSvc.GetSpaces(ctx)
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+	if spaces == nil {
+		return nil, nil
+	}
+
+	return &rpc.ListToolSpacesResponse{
+		Spaces: spaces,
+	}, nil
+}
+
+// Creates a new tool space. Returns the newly added space.
+func (s *Server) CreateToolSpace(ctx context.Context, req *rpc.CreateToolSpaceRequest) (*rpc.ToolSpaceResponse, error) {
+	toolsSvc, err := s.makeToolsService(ctx)
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+
+	cfg := tools.SpaceConfig{
+		Name:         req.GetName(),
+		Icon:         req.GetIcon(),
+		DisplayOrder: req.GetDisplayOrder(),
+	}
+
+	space, err := toolsSvc.AddSpace(ctx, &cfg)
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+	return &rpc.ToolSpaceResponse{
+		Space: space,
+	}, nil
+}
+
+// Updates a new tool space. Returns the newly updated space.
+func (s *Server) UpdateToolSpace(ctx context.Context, req *rpc.UpdateToolSpaceRequest) (*rpc.ToolSpaceResponse, error) {
+	toolsSvc, err := s.makeToolsService(ctx)
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+
+	updated := tools.SpaceConfig{
+		ID:           req.GetSpaceId(),
+		Name:         req.GetName(),
+		Icon:         req.GetIcon(),
+		DisplayOrder: req.GetDisplayOrder(),
+	}
+
+	space, err := toolsSvc.UpdateSpace(ctx, &updated)
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+	if space == nil {
+		return nil, twirp.NewError(twirp.NotFound, "item not found")
+	}
+
+	return &rpc.ToolSpaceResponse{
+		Space: space,
+	}, nil
+}
+
+// Removes a space from the project.
+func (s *Server) RemoveToolSpace(ctx context.Context, req *rpc.RemoveToolSpaceRequest) (*rpc.RemoveToolSpaceResponse, error) {
+	toolsSvc, err := s.makeToolsService(ctx)
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+
+	if err := toolsSvc.RemoveSpace(ctx, req.GetSpaceId()); err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+
+	return &rpc.RemoveToolSpaceResponse{
+		SpaceId: req.GetSpaceId(),
+	}, nil
+}
+
+// Adds a new space item (group, action, metric) to a given space. Returns the updated space.
+func (s *Server) AddToolSpaceItem(ctx context.Context, req *rpc.AddToolSpaceItemRequest) (*rpc.ToolSpaceResponse, error) {
+	toolsSvc, err := s.makeToolsService(ctx)
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+
+	if action := req.GetAction(); action != nil {
+		space, err := toolsSvc.AddSpaceAction(ctx, action)
+		if err != nil {
+			return nil, twirp.NewError(twirp.Internal, err.Error())
+		}
+
+		return &rpc.ToolSpaceResponse{
+			Space: space,
+		}, nil
+	}
+
+	if group := req.GetGroup(); group != nil {
+		space, err := toolsSvc.AddSpaceGroup(ctx, group)
+		if err != nil {
+			return nil, twirp.NewError(twirp.Internal, err.Error())
+		}
+
+		return &rpc.ToolSpaceResponse{
+			Space: space,
+		}, nil
+	}
+
+	if metric := req.GetMetric(); metric != nil {
+		space, err := toolsSvc.AddSpaceMetric(ctx, metric)
+		if err != nil {
+			return nil, twirp.NewError(twirp.Internal, err.Error())
+		}
+
+		return &rpc.ToolSpaceResponse{
+			Space: space,
+		}, nil
+	}
+
+	if link := req.GetLink(); link != nil {
+		space, err := toolsSvc.AddSpaceLink(ctx, link)
+		if err != nil {
+			return nil, twirp.NewError(twirp.Internal, err.Error())
+		}
+
+		return &rpc.ToolSpaceResponse{
+			Space: space,
+		}, nil
+	}
+
+	return &rpc.ToolSpaceResponse{}, nil
+}
+
+// Removes a space item from a given space. Returns the updated space.
+func (s *Server) RemoveToolSpaceItem(ctx context.Context, req *rpc.RemoveToolSpaceItemRequest) (*rpc.ToolSpaceResponse, error) {
+	toolsSvc, err := s.makeToolsService(ctx)
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+
+	space, err := toolsSvc.RemoveSpaceItem(ctx, req.GetSpaceId(), req.GetItemId())
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+
+	return &rpc.ToolSpaceResponse{
+		Space: space,
+	}, nil
+}
+
+// Updates a tool space item (group, action, metric). Returns the updated space.
+func (s *Server) UpdateToolSpaceItem(ctx context.Context, req *rpc.UpdateToolSpaceItemRequest) (*rpc.ToolSpaceResponse, error) {
+	toolsSvc, err := s.makeToolsService(ctx)
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+
+	var item any
+	switch {
+	case req.GetAction() != nil:
+		item = req.GetAction()
+	case req.GetMetric() != nil:
+		item = req.GetMetric()
+	case req.GetLink() != nil:
+		item = req.GetLink()
+	case req.GetGroup() != nil:
+		item = req.GetGroup()
+	}
+
+	space, err := toolsSvc.UpdateSpaceItem(ctx, item)
+	if err != nil {
+		return nil, twirp.NewError(twirp.Internal, err.Error())
+	}
+
+	if space == nil {
+		return nil, twirp.NewError(twirp.NotFound, "item not found")
+	}
+
+	return &rpc.ToolSpaceResponse{
+		Space: space,
+	}, nil
+}

@@ -60,6 +60,27 @@ type API interface {
 
 	// List configured printers
 	ListPrinters(context.Context, *ListPrintersRequest) (*ListPrintersResponse, error)
+
+	// List all the tool spaces defined in this repo.
+	ListToolSpaces(context.Context, *ListToolSpacesRequest) (*ListToolSpacesResponse, error)
+
+	// Creates a new tool space. Returns the newly added space.
+	CreateToolSpace(context.Context, *CreateToolSpaceRequest) (*ToolSpaceResponse, error)
+
+	// Removes a space from the project.
+	RemoveToolSpace(context.Context, *RemoveToolSpaceRequest) (*RemoveToolSpaceResponse, error)
+
+	// Updates a tool space. Returns the newly updated space.
+	UpdateToolSpace(context.Context, *UpdateToolSpaceRequest) (*ToolSpaceResponse, error)
+
+	// Adds a new space item (group, action, metric) to a given space. Returns the updated space.
+	AddToolSpaceItem(context.Context, *AddToolSpaceItemRequest) (*ToolSpaceResponse, error)
+
+	// Removes a space item from a given space. Returns the updated space.
+	RemoveToolSpaceItem(context.Context, *RemoveToolSpaceItemRequest) (*ToolSpaceResponse, error)
+
+	// Updates a tool space item (group, action, metric). Returns the updated space.
+	UpdateToolSpaceItem(context.Context, *UpdateToolSpaceItemRequest) (*ToolSpaceResponse, error)
 }
 
 // ===================
@@ -68,7 +89,7 @@ type API interface {
 
 type aPIProtobufClient struct {
 	client      HTTPClient
-	urls        [11]string
+	urls        [18]string
 	interceptor twirp.Interceptor
 	opts        twirp.ClientOptions
 }
@@ -96,7 +117,7 @@ func NewAPIProtobufClient(baseURL string, client HTTPClient, opts ...twirp.Clien
 	// Build method URLs: <baseURL>[<prefix>]/<package>.<Service>/<Method>
 	serviceURL := sanitizeBaseURL(baseURL)
 	serviceURL += baseServicePath(pathPrefix, "rpc", "API")
-	urls := [11]string{
+	urls := [18]string{
 		serviceURL + "GetActiveSchema",
 		serviceURL + "RunSQLQuery",
 		serviceURL + "GetTrace",
@@ -108,6 +129,13 @@ func NewAPIProtobufClient(baseURL string, client HTTPClient, opts ...twirp.Clien
 		serviceURL + "ListFields",
 		serviceURL + "ConfigureFields",
 		serviceURL + "ListPrinters",
+		serviceURL + "ListToolSpaces",
+		serviceURL + "CreateToolSpace",
+		serviceURL + "RemoveToolSpace",
+		serviceURL + "UpdateToolSpace",
+		serviceURL + "AddToolSpaceItem",
+		serviceURL + "RemoveToolSpaceItem",
+		serviceURL + "UpdateToolSpaceItem",
 	}
 
 	return &aPIProtobufClient{
@@ -624,13 +652,335 @@ func (c *aPIProtobufClient) callListPrinters(ctx context.Context, in *ListPrinte
 	return out, nil
 }
 
+func (c *aPIProtobufClient) ListToolSpaces(ctx context.Context, in *ListToolSpacesRequest) (*ListToolSpacesResponse, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "rpc")
+	ctx = ctxsetters.WithServiceName(ctx, "API")
+	ctx = ctxsetters.WithMethodName(ctx, "ListToolSpaces")
+	caller := c.callListToolSpaces
+	if c.interceptor != nil {
+		caller = func(ctx context.Context, req *ListToolSpacesRequest) (*ListToolSpacesResponse, error) {
+			resp, err := c.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*ListToolSpacesRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*ListToolSpacesRequest) when calling interceptor")
+					}
+					return c.callListToolSpaces(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*ListToolSpacesResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*ListToolSpacesResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+	return caller(ctx, in)
+}
+
+func (c *aPIProtobufClient) callListToolSpaces(ctx context.Context, in *ListToolSpacesRequest) (*ListToolSpacesResponse, error) {
+	out := new(ListToolSpacesResponse)
+	ctx, err := doProtobufRequest(ctx, c.client, c.opts.Hooks, c.urls[11], in, out)
+	if err != nil {
+		twerr, ok := err.(twirp.Error)
+		if !ok {
+			twerr = twirp.InternalErrorWith(err)
+		}
+		callClientError(ctx, c.opts.Hooks, twerr)
+		return nil, err
+	}
+
+	callClientResponseReceived(ctx, c.opts.Hooks)
+
+	return out, nil
+}
+
+func (c *aPIProtobufClient) CreateToolSpace(ctx context.Context, in *CreateToolSpaceRequest) (*ToolSpaceResponse, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "rpc")
+	ctx = ctxsetters.WithServiceName(ctx, "API")
+	ctx = ctxsetters.WithMethodName(ctx, "CreateToolSpace")
+	caller := c.callCreateToolSpace
+	if c.interceptor != nil {
+		caller = func(ctx context.Context, req *CreateToolSpaceRequest) (*ToolSpaceResponse, error) {
+			resp, err := c.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*CreateToolSpaceRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*CreateToolSpaceRequest) when calling interceptor")
+					}
+					return c.callCreateToolSpace(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*ToolSpaceResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*ToolSpaceResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+	return caller(ctx, in)
+}
+
+func (c *aPIProtobufClient) callCreateToolSpace(ctx context.Context, in *CreateToolSpaceRequest) (*ToolSpaceResponse, error) {
+	out := new(ToolSpaceResponse)
+	ctx, err := doProtobufRequest(ctx, c.client, c.opts.Hooks, c.urls[12], in, out)
+	if err != nil {
+		twerr, ok := err.(twirp.Error)
+		if !ok {
+			twerr = twirp.InternalErrorWith(err)
+		}
+		callClientError(ctx, c.opts.Hooks, twerr)
+		return nil, err
+	}
+
+	callClientResponseReceived(ctx, c.opts.Hooks)
+
+	return out, nil
+}
+
+func (c *aPIProtobufClient) RemoveToolSpace(ctx context.Context, in *RemoveToolSpaceRequest) (*RemoveToolSpaceResponse, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "rpc")
+	ctx = ctxsetters.WithServiceName(ctx, "API")
+	ctx = ctxsetters.WithMethodName(ctx, "RemoveToolSpace")
+	caller := c.callRemoveToolSpace
+	if c.interceptor != nil {
+		caller = func(ctx context.Context, req *RemoveToolSpaceRequest) (*RemoveToolSpaceResponse, error) {
+			resp, err := c.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*RemoveToolSpaceRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*RemoveToolSpaceRequest) when calling interceptor")
+					}
+					return c.callRemoveToolSpace(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*RemoveToolSpaceResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*RemoveToolSpaceResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+	return caller(ctx, in)
+}
+
+func (c *aPIProtobufClient) callRemoveToolSpace(ctx context.Context, in *RemoveToolSpaceRequest) (*RemoveToolSpaceResponse, error) {
+	out := new(RemoveToolSpaceResponse)
+	ctx, err := doProtobufRequest(ctx, c.client, c.opts.Hooks, c.urls[13], in, out)
+	if err != nil {
+		twerr, ok := err.(twirp.Error)
+		if !ok {
+			twerr = twirp.InternalErrorWith(err)
+		}
+		callClientError(ctx, c.opts.Hooks, twerr)
+		return nil, err
+	}
+
+	callClientResponseReceived(ctx, c.opts.Hooks)
+
+	return out, nil
+}
+
+func (c *aPIProtobufClient) UpdateToolSpace(ctx context.Context, in *UpdateToolSpaceRequest) (*ToolSpaceResponse, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "rpc")
+	ctx = ctxsetters.WithServiceName(ctx, "API")
+	ctx = ctxsetters.WithMethodName(ctx, "UpdateToolSpace")
+	caller := c.callUpdateToolSpace
+	if c.interceptor != nil {
+		caller = func(ctx context.Context, req *UpdateToolSpaceRequest) (*ToolSpaceResponse, error) {
+			resp, err := c.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*UpdateToolSpaceRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*UpdateToolSpaceRequest) when calling interceptor")
+					}
+					return c.callUpdateToolSpace(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*ToolSpaceResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*ToolSpaceResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+	return caller(ctx, in)
+}
+
+func (c *aPIProtobufClient) callUpdateToolSpace(ctx context.Context, in *UpdateToolSpaceRequest) (*ToolSpaceResponse, error) {
+	out := new(ToolSpaceResponse)
+	ctx, err := doProtobufRequest(ctx, c.client, c.opts.Hooks, c.urls[14], in, out)
+	if err != nil {
+		twerr, ok := err.(twirp.Error)
+		if !ok {
+			twerr = twirp.InternalErrorWith(err)
+		}
+		callClientError(ctx, c.opts.Hooks, twerr)
+		return nil, err
+	}
+
+	callClientResponseReceived(ctx, c.opts.Hooks)
+
+	return out, nil
+}
+
+func (c *aPIProtobufClient) AddToolSpaceItem(ctx context.Context, in *AddToolSpaceItemRequest) (*ToolSpaceResponse, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "rpc")
+	ctx = ctxsetters.WithServiceName(ctx, "API")
+	ctx = ctxsetters.WithMethodName(ctx, "AddToolSpaceItem")
+	caller := c.callAddToolSpaceItem
+	if c.interceptor != nil {
+		caller = func(ctx context.Context, req *AddToolSpaceItemRequest) (*ToolSpaceResponse, error) {
+			resp, err := c.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*AddToolSpaceItemRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*AddToolSpaceItemRequest) when calling interceptor")
+					}
+					return c.callAddToolSpaceItem(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*ToolSpaceResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*ToolSpaceResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+	return caller(ctx, in)
+}
+
+func (c *aPIProtobufClient) callAddToolSpaceItem(ctx context.Context, in *AddToolSpaceItemRequest) (*ToolSpaceResponse, error) {
+	out := new(ToolSpaceResponse)
+	ctx, err := doProtobufRequest(ctx, c.client, c.opts.Hooks, c.urls[15], in, out)
+	if err != nil {
+		twerr, ok := err.(twirp.Error)
+		if !ok {
+			twerr = twirp.InternalErrorWith(err)
+		}
+		callClientError(ctx, c.opts.Hooks, twerr)
+		return nil, err
+	}
+
+	callClientResponseReceived(ctx, c.opts.Hooks)
+
+	return out, nil
+}
+
+func (c *aPIProtobufClient) RemoveToolSpaceItem(ctx context.Context, in *RemoveToolSpaceItemRequest) (*ToolSpaceResponse, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "rpc")
+	ctx = ctxsetters.WithServiceName(ctx, "API")
+	ctx = ctxsetters.WithMethodName(ctx, "RemoveToolSpaceItem")
+	caller := c.callRemoveToolSpaceItem
+	if c.interceptor != nil {
+		caller = func(ctx context.Context, req *RemoveToolSpaceItemRequest) (*ToolSpaceResponse, error) {
+			resp, err := c.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*RemoveToolSpaceItemRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*RemoveToolSpaceItemRequest) when calling interceptor")
+					}
+					return c.callRemoveToolSpaceItem(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*ToolSpaceResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*ToolSpaceResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+	return caller(ctx, in)
+}
+
+func (c *aPIProtobufClient) callRemoveToolSpaceItem(ctx context.Context, in *RemoveToolSpaceItemRequest) (*ToolSpaceResponse, error) {
+	out := new(ToolSpaceResponse)
+	ctx, err := doProtobufRequest(ctx, c.client, c.opts.Hooks, c.urls[16], in, out)
+	if err != nil {
+		twerr, ok := err.(twirp.Error)
+		if !ok {
+			twerr = twirp.InternalErrorWith(err)
+		}
+		callClientError(ctx, c.opts.Hooks, twerr)
+		return nil, err
+	}
+
+	callClientResponseReceived(ctx, c.opts.Hooks)
+
+	return out, nil
+}
+
+func (c *aPIProtobufClient) UpdateToolSpaceItem(ctx context.Context, in *UpdateToolSpaceItemRequest) (*ToolSpaceResponse, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "rpc")
+	ctx = ctxsetters.WithServiceName(ctx, "API")
+	ctx = ctxsetters.WithMethodName(ctx, "UpdateToolSpaceItem")
+	caller := c.callUpdateToolSpaceItem
+	if c.interceptor != nil {
+		caller = func(ctx context.Context, req *UpdateToolSpaceItemRequest) (*ToolSpaceResponse, error) {
+			resp, err := c.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*UpdateToolSpaceItemRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*UpdateToolSpaceItemRequest) when calling interceptor")
+					}
+					return c.callUpdateToolSpaceItem(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*ToolSpaceResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*ToolSpaceResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+	return caller(ctx, in)
+}
+
+func (c *aPIProtobufClient) callUpdateToolSpaceItem(ctx context.Context, in *UpdateToolSpaceItemRequest) (*ToolSpaceResponse, error) {
+	out := new(ToolSpaceResponse)
+	ctx, err := doProtobufRequest(ctx, c.client, c.opts.Hooks, c.urls[17], in, out)
+	if err != nil {
+		twerr, ok := err.(twirp.Error)
+		if !ok {
+			twerr = twirp.InternalErrorWith(err)
+		}
+		callClientError(ctx, c.opts.Hooks, twerr)
+		return nil, err
+	}
+
+	callClientResponseReceived(ctx, c.opts.Hooks)
+
+	return out, nil
+}
+
 // ===============
 // API JSON Client
 // ===============
 
 type aPIJSONClient struct {
 	client      HTTPClient
-	urls        [11]string
+	urls        [18]string
 	interceptor twirp.Interceptor
 	opts        twirp.ClientOptions
 }
@@ -658,7 +1008,7 @@ func NewAPIJSONClient(baseURL string, client HTTPClient, opts ...twirp.ClientOpt
 	// Build method URLs: <baseURL>[<prefix>]/<package>.<Service>/<Method>
 	serviceURL := sanitizeBaseURL(baseURL)
 	serviceURL += baseServicePath(pathPrefix, "rpc", "API")
-	urls := [11]string{
+	urls := [18]string{
 		serviceURL + "GetActiveSchema",
 		serviceURL + "RunSQLQuery",
 		serviceURL + "GetTrace",
@@ -670,6 +1020,13 @@ func NewAPIJSONClient(baseURL string, client HTTPClient, opts ...twirp.ClientOpt
 		serviceURL + "ListFields",
 		serviceURL + "ConfigureFields",
 		serviceURL + "ListPrinters",
+		serviceURL + "ListToolSpaces",
+		serviceURL + "CreateToolSpace",
+		serviceURL + "RemoveToolSpace",
+		serviceURL + "UpdateToolSpace",
+		serviceURL + "AddToolSpaceItem",
+		serviceURL + "RemoveToolSpaceItem",
+		serviceURL + "UpdateToolSpaceItem",
 	}
 
 	return &aPIJSONClient{
@@ -1186,6 +1543,328 @@ func (c *aPIJSONClient) callListPrinters(ctx context.Context, in *ListPrintersRe
 	return out, nil
 }
 
+func (c *aPIJSONClient) ListToolSpaces(ctx context.Context, in *ListToolSpacesRequest) (*ListToolSpacesResponse, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "rpc")
+	ctx = ctxsetters.WithServiceName(ctx, "API")
+	ctx = ctxsetters.WithMethodName(ctx, "ListToolSpaces")
+	caller := c.callListToolSpaces
+	if c.interceptor != nil {
+		caller = func(ctx context.Context, req *ListToolSpacesRequest) (*ListToolSpacesResponse, error) {
+			resp, err := c.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*ListToolSpacesRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*ListToolSpacesRequest) when calling interceptor")
+					}
+					return c.callListToolSpaces(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*ListToolSpacesResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*ListToolSpacesResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+	return caller(ctx, in)
+}
+
+func (c *aPIJSONClient) callListToolSpaces(ctx context.Context, in *ListToolSpacesRequest) (*ListToolSpacesResponse, error) {
+	out := new(ListToolSpacesResponse)
+	ctx, err := doJSONRequest(ctx, c.client, c.opts.Hooks, c.urls[11], in, out)
+	if err != nil {
+		twerr, ok := err.(twirp.Error)
+		if !ok {
+			twerr = twirp.InternalErrorWith(err)
+		}
+		callClientError(ctx, c.opts.Hooks, twerr)
+		return nil, err
+	}
+
+	callClientResponseReceived(ctx, c.opts.Hooks)
+
+	return out, nil
+}
+
+func (c *aPIJSONClient) CreateToolSpace(ctx context.Context, in *CreateToolSpaceRequest) (*ToolSpaceResponse, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "rpc")
+	ctx = ctxsetters.WithServiceName(ctx, "API")
+	ctx = ctxsetters.WithMethodName(ctx, "CreateToolSpace")
+	caller := c.callCreateToolSpace
+	if c.interceptor != nil {
+		caller = func(ctx context.Context, req *CreateToolSpaceRequest) (*ToolSpaceResponse, error) {
+			resp, err := c.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*CreateToolSpaceRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*CreateToolSpaceRequest) when calling interceptor")
+					}
+					return c.callCreateToolSpace(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*ToolSpaceResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*ToolSpaceResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+	return caller(ctx, in)
+}
+
+func (c *aPIJSONClient) callCreateToolSpace(ctx context.Context, in *CreateToolSpaceRequest) (*ToolSpaceResponse, error) {
+	out := new(ToolSpaceResponse)
+	ctx, err := doJSONRequest(ctx, c.client, c.opts.Hooks, c.urls[12], in, out)
+	if err != nil {
+		twerr, ok := err.(twirp.Error)
+		if !ok {
+			twerr = twirp.InternalErrorWith(err)
+		}
+		callClientError(ctx, c.opts.Hooks, twerr)
+		return nil, err
+	}
+
+	callClientResponseReceived(ctx, c.opts.Hooks)
+
+	return out, nil
+}
+
+func (c *aPIJSONClient) RemoveToolSpace(ctx context.Context, in *RemoveToolSpaceRequest) (*RemoveToolSpaceResponse, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "rpc")
+	ctx = ctxsetters.WithServiceName(ctx, "API")
+	ctx = ctxsetters.WithMethodName(ctx, "RemoveToolSpace")
+	caller := c.callRemoveToolSpace
+	if c.interceptor != nil {
+		caller = func(ctx context.Context, req *RemoveToolSpaceRequest) (*RemoveToolSpaceResponse, error) {
+			resp, err := c.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*RemoveToolSpaceRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*RemoveToolSpaceRequest) when calling interceptor")
+					}
+					return c.callRemoveToolSpace(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*RemoveToolSpaceResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*RemoveToolSpaceResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+	return caller(ctx, in)
+}
+
+func (c *aPIJSONClient) callRemoveToolSpace(ctx context.Context, in *RemoveToolSpaceRequest) (*RemoveToolSpaceResponse, error) {
+	out := new(RemoveToolSpaceResponse)
+	ctx, err := doJSONRequest(ctx, c.client, c.opts.Hooks, c.urls[13], in, out)
+	if err != nil {
+		twerr, ok := err.(twirp.Error)
+		if !ok {
+			twerr = twirp.InternalErrorWith(err)
+		}
+		callClientError(ctx, c.opts.Hooks, twerr)
+		return nil, err
+	}
+
+	callClientResponseReceived(ctx, c.opts.Hooks)
+
+	return out, nil
+}
+
+func (c *aPIJSONClient) UpdateToolSpace(ctx context.Context, in *UpdateToolSpaceRequest) (*ToolSpaceResponse, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "rpc")
+	ctx = ctxsetters.WithServiceName(ctx, "API")
+	ctx = ctxsetters.WithMethodName(ctx, "UpdateToolSpace")
+	caller := c.callUpdateToolSpace
+	if c.interceptor != nil {
+		caller = func(ctx context.Context, req *UpdateToolSpaceRequest) (*ToolSpaceResponse, error) {
+			resp, err := c.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*UpdateToolSpaceRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*UpdateToolSpaceRequest) when calling interceptor")
+					}
+					return c.callUpdateToolSpace(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*ToolSpaceResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*ToolSpaceResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+	return caller(ctx, in)
+}
+
+func (c *aPIJSONClient) callUpdateToolSpace(ctx context.Context, in *UpdateToolSpaceRequest) (*ToolSpaceResponse, error) {
+	out := new(ToolSpaceResponse)
+	ctx, err := doJSONRequest(ctx, c.client, c.opts.Hooks, c.urls[14], in, out)
+	if err != nil {
+		twerr, ok := err.(twirp.Error)
+		if !ok {
+			twerr = twirp.InternalErrorWith(err)
+		}
+		callClientError(ctx, c.opts.Hooks, twerr)
+		return nil, err
+	}
+
+	callClientResponseReceived(ctx, c.opts.Hooks)
+
+	return out, nil
+}
+
+func (c *aPIJSONClient) AddToolSpaceItem(ctx context.Context, in *AddToolSpaceItemRequest) (*ToolSpaceResponse, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "rpc")
+	ctx = ctxsetters.WithServiceName(ctx, "API")
+	ctx = ctxsetters.WithMethodName(ctx, "AddToolSpaceItem")
+	caller := c.callAddToolSpaceItem
+	if c.interceptor != nil {
+		caller = func(ctx context.Context, req *AddToolSpaceItemRequest) (*ToolSpaceResponse, error) {
+			resp, err := c.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*AddToolSpaceItemRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*AddToolSpaceItemRequest) when calling interceptor")
+					}
+					return c.callAddToolSpaceItem(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*ToolSpaceResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*ToolSpaceResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+	return caller(ctx, in)
+}
+
+func (c *aPIJSONClient) callAddToolSpaceItem(ctx context.Context, in *AddToolSpaceItemRequest) (*ToolSpaceResponse, error) {
+	out := new(ToolSpaceResponse)
+	ctx, err := doJSONRequest(ctx, c.client, c.opts.Hooks, c.urls[15], in, out)
+	if err != nil {
+		twerr, ok := err.(twirp.Error)
+		if !ok {
+			twerr = twirp.InternalErrorWith(err)
+		}
+		callClientError(ctx, c.opts.Hooks, twerr)
+		return nil, err
+	}
+
+	callClientResponseReceived(ctx, c.opts.Hooks)
+
+	return out, nil
+}
+
+func (c *aPIJSONClient) RemoveToolSpaceItem(ctx context.Context, in *RemoveToolSpaceItemRequest) (*ToolSpaceResponse, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "rpc")
+	ctx = ctxsetters.WithServiceName(ctx, "API")
+	ctx = ctxsetters.WithMethodName(ctx, "RemoveToolSpaceItem")
+	caller := c.callRemoveToolSpaceItem
+	if c.interceptor != nil {
+		caller = func(ctx context.Context, req *RemoveToolSpaceItemRequest) (*ToolSpaceResponse, error) {
+			resp, err := c.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*RemoveToolSpaceItemRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*RemoveToolSpaceItemRequest) when calling interceptor")
+					}
+					return c.callRemoveToolSpaceItem(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*ToolSpaceResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*ToolSpaceResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+	return caller(ctx, in)
+}
+
+func (c *aPIJSONClient) callRemoveToolSpaceItem(ctx context.Context, in *RemoveToolSpaceItemRequest) (*ToolSpaceResponse, error) {
+	out := new(ToolSpaceResponse)
+	ctx, err := doJSONRequest(ctx, c.client, c.opts.Hooks, c.urls[16], in, out)
+	if err != nil {
+		twerr, ok := err.(twirp.Error)
+		if !ok {
+			twerr = twirp.InternalErrorWith(err)
+		}
+		callClientError(ctx, c.opts.Hooks, twerr)
+		return nil, err
+	}
+
+	callClientResponseReceived(ctx, c.opts.Hooks)
+
+	return out, nil
+}
+
+func (c *aPIJSONClient) UpdateToolSpaceItem(ctx context.Context, in *UpdateToolSpaceItemRequest) (*ToolSpaceResponse, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "rpc")
+	ctx = ctxsetters.WithServiceName(ctx, "API")
+	ctx = ctxsetters.WithMethodName(ctx, "UpdateToolSpaceItem")
+	caller := c.callUpdateToolSpaceItem
+	if c.interceptor != nil {
+		caller = func(ctx context.Context, req *UpdateToolSpaceItemRequest) (*ToolSpaceResponse, error) {
+			resp, err := c.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*UpdateToolSpaceItemRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*UpdateToolSpaceItemRequest) when calling interceptor")
+					}
+					return c.callUpdateToolSpaceItem(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*ToolSpaceResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*ToolSpaceResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+	return caller(ctx, in)
+}
+
+func (c *aPIJSONClient) callUpdateToolSpaceItem(ctx context.Context, in *UpdateToolSpaceItemRequest) (*ToolSpaceResponse, error) {
+	out := new(ToolSpaceResponse)
+	ctx, err := doJSONRequest(ctx, c.client, c.opts.Hooks, c.urls[17], in, out)
+	if err != nil {
+		twerr, ok := err.(twirp.Error)
+		if !ok {
+			twerr = twirp.InternalErrorWith(err)
+		}
+		callClientError(ctx, c.opts.Hooks, twerr)
+		return nil, err
+	}
+
+	callClientResponseReceived(ctx, c.opts.Hooks)
+
+	return out, nil
+}
+
 // ==================
 // API Server Handler
 // ==================
@@ -1315,6 +1994,27 @@ func (s *aPIServer) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 		return
 	case "ListPrinters":
 		s.serveListPrinters(ctx, resp, req)
+		return
+	case "ListToolSpaces":
+		s.serveListToolSpaces(ctx, resp, req)
+		return
+	case "CreateToolSpace":
+		s.serveCreateToolSpace(ctx, resp, req)
+		return
+	case "RemoveToolSpace":
+		s.serveRemoveToolSpace(ctx, resp, req)
+		return
+	case "UpdateToolSpace":
+		s.serveUpdateToolSpace(ctx, resp, req)
+		return
+	case "AddToolSpaceItem":
+		s.serveAddToolSpaceItem(ctx, resp, req)
+		return
+	case "RemoveToolSpaceItem":
+		s.serveRemoveToolSpaceItem(ctx, resp, req)
+		return
+	case "UpdateToolSpaceItem":
+		s.serveUpdateToolSpaceItem(ctx, resp, req)
 		return
 	default:
 		msg := fmt.Sprintf("no handler for path %q", req.URL.Path)
@@ -3303,6 +4003,1266 @@ func (s *aPIServer) serveListPrintersProtobuf(ctx context.Context, resp http.Res
 	callResponseSent(ctx, s.hooks)
 }
 
+func (s *aPIServer) serveListToolSpaces(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	header := req.Header.Get("Content-Type")
+	i := strings.Index(header, ";")
+	if i == -1 {
+		i = len(header)
+	}
+	switch strings.TrimSpace(strings.ToLower(header[:i])) {
+	case "application/json":
+		s.serveListToolSpacesJSON(ctx, resp, req)
+	case "application/protobuf":
+		s.serveListToolSpacesProtobuf(ctx, resp, req)
+	default:
+		msg := fmt.Sprintf("unexpected Content-Type: %q", req.Header.Get("Content-Type"))
+		twerr := badRouteError(msg, req.Method, req.URL.Path)
+		s.writeError(ctx, resp, twerr)
+	}
+}
+
+func (s *aPIServer) serveListToolSpacesJSON(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "ListToolSpaces")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	d := json.NewDecoder(req.Body)
+	rawReqBody := json.RawMessage{}
+	if err := d.Decode(&rawReqBody); err != nil {
+		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
+		return
+	}
+	reqContent := new(ListToolSpacesRequest)
+	unmarshaler := protojson.UnmarshalOptions{DiscardUnknown: true}
+	if err = unmarshaler.Unmarshal(rawReqBody, reqContent); err != nil {
+		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
+		return
+	}
+
+	handler := s.API.ListToolSpaces
+	if s.interceptor != nil {
+		handler = func(ctx context.Context, req *ListToolSpacesRequest) (*ListToolSpacesResponse, error) {
+			resp, err := s.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*ListToolSpacesRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*ListToolSpacesRequest) when calling interceptor")
+					}
+					return s.API.ListToolSpaces(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*ListToolSpacesResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*ListToolSpacesResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+
+	// Call service method
+	var respContent *ListToolSpacesResponse
+	func() {
+		defer ensurePanicResponses(ctx, resp, s.hooks)
+		respContent, err = handler(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *ListToolSpacesResponse and nil error while calling ListToolSpaces. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	marshaler := &protojson.MarshalOptions{UseProtoNames: !s.jsonCamelCase, EmitUnpopulated: !s.jsonSkipDefaults}
+	respBytes, err := marshaler.Marshal(respContent)
+	if err != nil {
+		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal json response"))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/json")
+	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
+	resp.WriteHeader(http.StatusOK)
+
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		ctx = callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
+func (s *aPIServer) serveListToolSpacesProtobuf(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "ListToolSpaces")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	buf, err := io.ReadAll(req.Body)
+	if err != nil {
+		s.handleRequestBodyError(ctx, resp, "failed to read request body", err)
+		return
+	}
+	reqContent := new(ListToolSpacesRequest)
+	if err = proto1.Unmarshal(buf, reqContent); err != nil {
+		s.writeError(ctx, resp, malformedRequestError("the protobuf request could not be decoded"))
+		return
+	}
+
+	handler := s.API.ListToolSpaces
+	if s.interceptor != nil {
+		handler = func(ctx context.Context, req *ListToolSpacesRequest) (*ListToolSpacesResponse, error) {
+			resp, err := s.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*ListToolSpacesRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*ListToolSpacesRequest) when calling interceptor")
+					}
+					return s.API.ListToolSpaces(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*ListToolSpacesResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*ListToolSpacesResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+
+	// Call service method
+	var respContent *ListToolSpacesResponse
+	func() {
+		defer ensurePanicResponses(ctx, resp, s.hooks)
+		respContent, err = handler(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *ListToolSpacesResponse and nil error while calling ListToolSpaces. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	respBytes, err := proto1.Marshal(respContent)
+	if err != nil {
+		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal proto response"))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/protobuf")
+	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
+	resp.WriteHeader(http.StatusOK)
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		ctx = callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
+func (s *aPIServer) serveCreateToolSpace(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	header := req.Header.Get("Content-Type")
+	i := strings.Index(header, ";")
+	if i == -1 {
+		i = len(header)
+	}
+	switch strings.TrimSpace(strings.ToLower(header[:i])) {
+	case "application/json":
+		s.serveCreateToolSpaceJSON(ctx, resp, req)
+	case "application/protobuf":
+		s.serveCreateToolSpaceProtobuf(ctx, resp, req)
+	default:
+		msg := fmt.Sprintf("unexpected Content-Type: %q", req.Header.Get("Content-Type"))
+		twerr := badRouteError(msg, req.Method, req.URL.Path)
+		s.writeError(ctx, resp, twerr)
+	}
+}
+
+func (s *aPIServer) serveCreateToolSpaceJSON(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "CreateToolSpace")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	d := json.NewDecoder(req.Body)
+	rawReqBody := json.RawMessage{}
+	if err := d.Decode(&rawReqBody); err != nil {
+		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
+		return
+	}
+	reqContent := new(CreateToolSpaceRequest)
+	unmarshaler := protojson.UnmarshalOptions{DiscardUnknown: true}
+	if err = unmarshaler.Unmarshal(rawReqBody, reqContent); err != nil {
+		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
+		return
+	}
+
+	handler := s.API.CreateToolSpace
+	if s.interceptor != nil {
+		handler = func(ctx context.Context, req *CreateToolSpaceRequest) (*ToolSpaceResponse, error) {
+			resp, err := s.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*CreateToolSpaceRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*CreateToolSpaceRequest) when calling interceptor")
+					}
+					return s.API.CreateToolSpace(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*ToolSpaceResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*ToolSpaceResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+
+	// Call service method
+	var respContent *ToolSpaceResponse
+	func() {
+		defer ensurePanicResponses(ctx, resp, s.hooks)
+		respContent, err = handler(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *ToolSpaceResponse and nil error while calling CreateToolSpace. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	marshaler := &protojson.MarshalOptions{UseProtoNames: !s.jsonCamelCase, EmitUnpopulated: !s.jsonSkipDefaults}
+	respBytes, err := marshaler.Marshal(respContent)
+	if err != nil {
+		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal json response"))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/json")
+	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
+	resp.WriteHeader(http.StatusOK)
+
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		ctx = callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
+func (s *aPIServer) serveCreateToolSpaceProtobuf(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "CreateToolSpace")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	buf, err := io.ReadAll(req.Body)
+	if err != nil {
+		s.handleRequestBodyError(ctx, resp, "failed to read request body", err)
+		return
+	}
+	reqContent := new(CreateToolSpaceRequest)
+	if err = proto1.Unmarshal(buf, reqContent); err != nil {
+		s.writeError(ctx, resp, malformedRequestError("the protobuf request could not be decoded"))
+		return
+	}
+
+	handler := s.API.CreateToolSpace
+	if s.interceptor != nil {
+		handler = func(ctx context.Context, req *CreateToolSpaceRequest) (*ToolSpaceResponse, error) {
+			resp, err := s.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*CreateToolSpaceRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*CreateToolSpaceRequest) when calling interceptor")
+					}
+					return s.API.CreateToolSpace(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*ToolSpaceResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*ToolSpaceResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+
+	// Call service method
+	var respContent *ToolSpaceResponse
+	func() {
+		defer ensurePanicResponses(ctx, resp, s.hooks)
+		respContent, err = handler(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *ToolSpaceResponse and nil error while calling CreateToolSpace. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	respBytes, err := proto1.Marshal(respContent)
+	if err != nil {
+		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal proto response"))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/protobuf")
+	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
+	resp.WriteHeader(http.StatusOK)
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		ctx = callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
+func (s *aPIServer) serveRemoveToolSpace(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	header := req.Header.Get("Content-Type")
+	i := strings.Index(header, ";")
+	if i == -1 {
+		i = len(header)
+	}
+	switch strings.TrimSpace(strings.ToLower(header[:i])) {
+	case "application/json":
+		s.serveRemoveToolSpaceJSON(ctx, resp, req)
+	case "application/protobuf":
+		s.serveRemoveToolSpaceProtobuf(ctx, resp, req)
+	default:
+		msg := fmt.Sprintf("unexpected Content-Type: %q", req.Header.Get("Content-Type"))
+		twerr := badRouteError(msg, req.Method, req.URL.Path)
+		s.writeError(ctx, resp, twerr)
+	}
+}
+
+func (s *aPIServer) serveRemoveToolSpaceJSON(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "RemoveToolSpace")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	d := json.NewDecoder(req.Body)
+	rawReqBody := json.RawMessage{}
+	if err := d.Decode(&rawReqBody); err != nil {
+		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
+		return
+	}
+	reqContent := new(RemoveToolSpaceRequest)
+	unmarshaler := protojson.UnmarshalOptions{DiscardUnknown: true}
+	if err = unmarshaler.Unmarshal(rawReqBody, reqContent); err != nil {
+		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
+		return
+	}
+
+	handler := s.API.RemoveToolSpace
+	if s.interceptor != nil {
+		handler = func(ctx context.Context, req *RemoveToolSpaceRequest) (*RemoveToolSpaceResponse, error) {
+			resp, err := s.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*RemoveToolSpaceRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*RemoveToolSpaceRequest) when calling interceptor")
+					}
+					return s.API.RemoveToolSpace(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*RemoveToolSpaceResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*RemoveToolSpaceResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+
+	// Call service method
+	var respContent *RemoveToolSpaceResponse
+	func() {
+		defer ensurePanicResponses(ctx, resp, s.hooks)
+		respContent, err = handler(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *RemoveToolSpaceResponse and nil error while calling RemoveToolSpace. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	marshaler := &protojson.MarshalOptions{UseProtoNames: !s.jsonCamelCase, EmitUnpopulated: !s.jsonSkipDefaults}
+	respBytes, err := marshaler.Marshal(respContent)
+	if err != nil {
+		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal json response"))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/json")
+	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
+	resp.WriteHeader(http.StatusOK)
+
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		ctx = callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
+func (s *aPIServer) serveRemoveToolSpaceProtobuf(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "RemoveToolSpace")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	buf, err := io.ReadAll(req.Body)
+	if err != nil {
+		s.handleRequestBodyError(ctx, resp, "failed to read request body", err)
+		return
+	}
+	reqContent := new(RemoveToolSpaceRequest)
+	if err = proto1.Unmarshal(buf, reqContent); err != nil {
+		s.writeError(ctx, resp, malformedRequestError("the protobuf request could not be decoded"))
+		return
+	}
+
+	handler := s.API.RemoveToolSpace
+	if s.interceptor != nil {
+		handler = func(ctx context.Context, req *RemoveToolSpaceRequest) (*RemoveToolSpaceResponse, error) {
+			resp, err := s.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*RemoveToolSpaceRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*RemoveToolSpaceRequest) when calling interceptor")
+					}
+					return s.API.RemoveToolSpace(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*RemoveToolSpaceResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*RemoveToolSpaceResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+
+	// Call service method
+	var respContent *RemoveToolSpaceResponse
+	func() {
+		defer ensurePanicResponses(ctx, resp, s.hooks)
+		respContent, err = handler(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *RemoveToolSpaceResponse and nil error while calling RemoveToolSpace. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	respBytes, err := proto1.Marshal(respContent)
+	if err != nil {
+		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal proto response"))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/protobuf")
+	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
+	resp.WriteHeader(http.StatusOK)
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		ctx = callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
+func (s *aPIServer) serveUpdateToolSpace(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	header := req.Header.Get("Content-Type")
+	i := strings.Index(header, ";")
+	if i == -1 {
+		i = len(header)
+	}
+	switch strings.TrimSpace(strings.ToLower(header[:i])) {
+	case "application/json":
+		s.serveUpdateToolSpaceJSON(ctx, resp, req)
+	case "application/protobuf":
+		s.serveUpdateToolSpaceProtobuf(ctx, resp, req)
+	default:
+		msg := fmt.Sprintf("unexpected Content-Type: %q", req.Header.Get("Content-Type"))
+		twerr := badRouteError(msg, req.Method, req.URL.Path)
+		s.writeError(ctx, resp, twerr)
+	}
+}
+
+func (s *aPIServer) serveUpdateToolSpaceJSON(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "UpdateToolSpace")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	d := json.NewDecoder(req.Body)
+	rawReqBody := json.RawMessage{}
+	if err := d.Decode(&rawReqBody); err != nil {
+		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
+		return
+	}
+	reqContent := new(UpdateToolSpaceRequest)
+	unmarshaler := protojson.UnmarshalOptions{DiscardUnknown: true}
+	if err = unmarshaler.Unmarshal(rawReqBody, reqContent); err != nil {
+		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
+		return
+	}
+
+	handler := s.API.UpdateToolSpace
+	if s.interceptor != nil {
+		handler = func(ctx context.Context, req *UpdateToolSpaceRequest) (*ToolSpaceResponse, error) {
+			resp, err := s.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*UpdateToolSpaceRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*UpdateToolSpaceRequest) when calling interceptor")
+					}
+					return s.API.UpdateToolSpace(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*ToolSpaceResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*ToolSpaceResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+
+	// Call service method
+	var respContent *ToolSpaceResponse
+	func() {
+		defer ensurePanicResponses(ctx, resp, s.hooks)
+		respContent, err = handler(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *ToolSpaceResponse and nil error while calling UpdateToolSpace. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	marshaler := &protojson.MarshalOptions{UseProtoNames: !s.jsonCamelCase, EmitUnpopulated: !s.jsonSkipDefaults}
+	respBytes, err := marshaler.Marshal(respContent)
+	if err != nil {
+		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal json response"))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/json")
+	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
+	resp.WriteHeader(http.StatusOK)
+
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		ctx = callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
+func (s *aPIServer) serveUpdateToolSpaceProtobuf(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "UpdateToolSpace")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	buf, err := io.ReadAll(req.Body)
+	if err != nil {
+		s.handleRequestBodyError(ctx, resp, "failed to read request body", err)
+		return
+	}
+	reqContent := new(UpdateToolSpaceRequest)
+	if err = proto1.Unmarshal(buf, reqContent); err != nil {
+		s.writeError(ctx, resp, malformedRequestError("the protobuf request could not be decoded"))
+		return
+	}
+
+	handler := s.API.UpdateToolSpace
+	if s.interceptor != nil {
+		handler = func(ctx context.Context, req *UpdateToolSpaceRequest) (*ToolSpaceResponse, error) {
+			resp, err := s.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*UpdateToolSpaceRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*UpdateToolSpaceRequest) when calling interceptor")
+					}
+					return s.API.UpdateToolSpace(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*ToolSpaceResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*ToolSpaceResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+
+	// Call service method
+	var respContent *ToolSpaceResponse
+	func() {
+		defer ensurePanicResponses(ctx, resp, s.hooks)
+		respContent, err = handler(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *ToolSpaceResponse and nil error while calling UpdateToolSpace. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	respBytes, err := proto1.Marshal(respContent)
+	if err != nil {
+		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal proto response"))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/protobuf")
+	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
+	resp.WriteHeader(http.StatusOK)
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		ctx = callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
+func (s *aPIServer) serveAddToolSpaceItem(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	header := req.Header.Get("Content-Type")
+	i := strings.Index(header, ";")
+	if i == -1 {
+		i = len(header)
+	}
+	switch strings.TrimSpace(strings.ToLower(header[:i])) {
+	case "application/json":
+		s.serveAddToolSpaceItemJSON(ctx, resp, req)
+	case "application/protobuf":
+		s.serveAddToolSpaceItemProtobuf(ctx, resp, req)
+	default:
+		msg := fmt.Sprintf("unexpected Content-Type: %q", req.Header.Get("Content-Type"))
+		twerr := badRouteError(msg, req.Method, req.URL.Path)
+		s.writeError(ctx, resp, twerr)
+	}
+}
+
+func (s *aPIServer) serveAddToolSpaceItemJSON(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "AddToolSpaceItem")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	d := json.NewDecoder(req.Body)
+	rawReqBody := json.RawMessage{}
+	if err := d.Decode(&rawReqBody); err != nil {
+		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
+		return
+	}
+	reqContent := new(AddToolSpaceItemRequest)
+	unmarshaler := protojson.UnmarshalOptions{DiscardUnknown: true}
+	if err = unmarshaler.Unmarshal(rawReqBody, reqContent); err != nil {
+		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
+		return
+	}
+
+	handler := s.API.AddToolSpaceItem
+	if s.interceptor != nil {
+		handler = func(ctx context.Context, req *AddToolSpaceItemRequest) (*ToolSpaceResponse, error) {
+			resp, err := s.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*AddToolSpaceItemRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*AddToolSpaceItemRequest) when calling interceptor")
+					}
+					return s.API.AddToolSpaceItem(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*ToolSpaceResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*ToolSpaceResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+
+	// Call service method
+	var respContent *ToolSpaceResponse
+	func() {
+		defer ensurePanicResponses(ctx, resp, s.hooks)
+		respContent, err = handler(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *ToolSpaceResponse and nil error while calling AddToolSpaceItem. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	marshaler := &protojson.MarshalOptions{UseProtoNames: !s.jsonCamelCase, EmitUnpopulated: !s.jsonSkipDefaults}
+	respBytes, err := marshaler.Marshal(respContent)
+	if err != nil {
+		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal json response"))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/json")
+	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
+	resp.WriteHeader(http.StatusOK)
+
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		ctx = callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
+func (s *aPIServer) serveAddToolSpaceItemProtobuf(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "AddToolSpaceItem")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	buf, err := io.ReadAll(req.Body)
+	if err != nil {
+		s.handleRequestBodyError(ctx, resp, "failed to read request body", err)
+		return
+	}
+	reqContent := new(AddToolSpaceItemRequest)
+	if err = proto1.Unmarshal(buf, reqContent); err != nil {
+		s.writeError(ctx, resp, malformedRequestError("the protobuf request could not be decoded"))
+		return
+	}
+
+	handler := s.API.AddToolSpaceItem
+	if s.interceptor != nil {
+		handler = func(ctx context.Context, req *AddToolSpaceItemRequest) (*ToolSpaceResponse, error) {
+			resp, err := s.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*AddToolSpaceItemRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*AddToolSpaceItemRequest) when calling interceptor")
+					}
+					return s.API.AddToolSpaceItem(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*ToolSpaceResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*ToolSpaceResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+
+	// Call service method
+	var respContent *ToolSpaceResponse
+	func() {
+		defer ensurePanicResponses(ctx, resp, s.hooks)
+		respContent, err = handler(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *ToolSpaceResponse and nil error while calling AddToolSpaceItem. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	respBytes, err := proto1.Marshal(respContent)
+	if err != nil {
+		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal proto response"))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/protobuf")
+	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
+	resp.WriteHeader(http.StatusOK)
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		ctx = callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
+func (s *aPIServer) serveRemoveToolSpaceItem(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	header := req.Header.Get("Content-Type")
+	i := strings.Index(header, ";")
+	if i == -1 {
+		i = len(header)
+	}
+	switch strings.TrimSpace(strings.ToLower(header[:i])) {
+	case "application/json":
+		s.serveRemoveToolSpaceItemJSON(ctx, resp, req)
+	case "application/protobuf":
+		s.serveRemoveToolSpaceItemProtobuf(ctx, resp, req)
+	default:
+		msg := fmt.Sprintf("unexpected Content-Type: %q", req.Header.Get("Content-Type"))
+		twerr := badRouteError(msg, req.Method, req.URL.Path)
+		s.writeError(ctx, resp, twerr)
+	}
+}
+
+func (s *aPIServer) serveRemoveToolSpaceItemJSON(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "RemoveToolSpaceItem")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	d := json.NewDecoder(req.Body)
+	rawReqBody := json.RawMessage{}
+	if err := d.Decode(&rawReqBody); err != nil {
+		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
+		return
+	}
+	reqContent := new(RemoveToolSpaceItemRequest)
+	unmarshaler := protojson.UnmarshalOptions{DiscardUnknown: true}
+	if err = unmarshaler.Unmarshal(rawReqBody, reqContent); err != nil {
+		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
+		return
+	}
+
+	handler := s.API.RemoveToolSpaceItem
+	if s.interceptor != nil {
+		handler = func(ctx context.Context, req *RemoveToolSpaceItemRequest) (*ToolSpaceResponse, error) {
+			resp, err := s.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*RemoveToolSpaceItemRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*RemoveToolSpaceItemRequest) when calling interceptor")
+					}
+					return s.API.RemoveToolSpaceItem(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*ToolSpaceResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*ToolSpaceResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+
+	// Call service method
+	var respContent *ToolSpaceResponse
+	func() {
+		defer ensurePanicResponses(ctx, resp, s.hooks)
+		respContent, err = handler(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *ToolSpaceResponse and nil error while calling RemoveToolSpaceItem. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	marshaler := &protojson.MarshalOptions{UseProtoNames: !s.jsonCamelCase, EmitUnpopulated: !s.jsonSkipDefaults}
+	respBytes, err := marshaler.Marshal(respContent)
+	if err != nil {
+		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal json response"))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/json")
+	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
+	resp.WriteHeader(http.StatusOK)
+
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		ctx = callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
+func (s *aPIServer) serveRemoveToolSpaceItemProtobuf(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "RemoveToolSpaceItem")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	buf, err := io.ReadAll(req.Body)
+	if err != nil {
+		s.handleRequestBodyError(ctx, resp, "failed to read request body", err)
+		return
+	}
+	reqContent := new(RemoveToolSpaceItemRequest)
+	if err = proto1.Unmarshal(buf, reqContent); err != nil {
+		s.writeError(ctx, resp, malformedRequestError("the protobuf request could not be decoded"))
+		return
+	}
+
+	handler := s.API.RemoveToolSpaceItem
+	if s.interceptor != nil {
+		handler = func(ctx context.Context, req *RemoveToolSpaceItemRequest) (*ToolSpaceResponse, error) {
+			resp, err := s.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*RemoveToolSpaceItemRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*RemoveToolSpaceItemRequest) when calling interceptor")
+					}
+					return s.API.RemoveToolSpaceItem(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*ToolSpaceResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*ToolSpaceResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+
+	// Call service method
+	var respContent *ToolSpaceResponse
+	func() {
+		defer ensurePanicResponses(ctx, resp, s.hooks)
+		respContent, err = handler(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *ToolSpaceResponse and nil error while calling RemoveToolSpaceItem. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	respBytes, err := proto1.Marshal(respContent)
+	if err != nil {
+		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal proto response"))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/protobuf")
+	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
+	resp.WriteHeader(http.StatusOK)
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		ctx = callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
+func (s *aPIServer) serveUpdateToolSpaceItem(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	header := req.Header.Get("Content-Type")
+	i := strings.Index(header, ";")
+	if i == -1 {
+		i = len(header)
+	}
+	switch strings.TrimSpace(strings.ToLower(header[:i])) {
+	case "application/json":
+		s.serveUpdateToolSpaceItemJSON(ctx, resp, req)
+	case "application/protobuf":
+		s.serveUpdateToolSpaceItemProtobuf(ctx, resp, req)
+	default:
+		msg := fmt.Sprintf("unexpected Content-Type: %q", req.Header.Get("Content-Type"))
+		twerr := badRouteError(msg, req.Method, req.URL.Path)
+		s.writeError(ctx, resp, twerr)
+	}
+}
+
+func (s *aPIServer) serveUpdateToolSpaceItemJSON(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "UpdateToolSpaceItem")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	d := json.NewDecoder(req.Body)
+	rawReqBody := json.RawMessage{}
+	if err := d.Decode(&rawReqBody); err != nil {
+		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
+		return
+	}
+	reqContent := new(UpdateToolSpaceItemRequest)
+	unmarshaler := protojson.UnmarshalOptions{DiscardUnknown: true}
+	if err = unmarshaler.Unmarshal(rawReqBody, reqContent); err != nil {
+		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
+		return
+	}
+
+	handler := s.API.UpdateToolSpaceItem
+	if s.interceptor != nil {
+		handler = func(ctx context.Context, req *UpdateToolSpaceItemRequest) (*ToolSpaceResponse, error) {
+			resp, err := s.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*UpdateToolSpaceItemRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*UpdateToolSpaceItemRequest) when calling interceptor")
+					}
+					return s.API.UpdateToolSpaceItem(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*ToolSpaceResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*ToolSpaceResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+
+	// Call service method
+	var respContent *ToolSpaceResponse
+	func() {
+		defer ensurePanicResponses(ctx, resp, s.hooks)
+		respContent, err = handler(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *ToolSpaceResponse and nil error while calling UpdateToolSpaceItem. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	marshaler := &protojson.MarshalOptions{UseProtoNames: !s.jsonCamelCase, EmitUnpopulated: !s.jsonSkipDefaults}
+	respBytes, err := marshaler.Marshal(respContent)
+	if err != nil {
+		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal json response"))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/json")
+	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
+	resp.WriteHeader(http.StatusOK)
+
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		ctx = callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
+func (s *aPIServer) serveUpdateToolSpaceItemProtobuf(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "UpdateToolSpaceItem")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	buf, err := io.ReadAll(req.Body)
+	if err != nil {
+		s.handleRequestBodyError(ctx, resp, "failed to read request body", err)
+		return
+	}
+	reqContent := new(UpdateToolSpaceItemRequest)
+	if err = proto1.Unmarshal(buf, reqContent); err != nil {
+		s.writeError(ctx, resp, malformedRequestError("the protobuf request could not be decoded"))
+		return
+	}
+
+	handler := s.API.UpdateToolSpaceItem
+	if s.interceptor != nil {
+		handler = func(ctx context.Context, req *UpdateToolSpaceItemRequest) (*ToolSpaceResponse, error) {
+			resp, err := s.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*UpdateToolSpaceItemRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*UpdateToolSpaceItemRequest) when calling interceptor")
+					}
+					return s.API.UpdateToolSpaceItem(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*ToolSpaceResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*ToolSpaceResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+
+	// Call service method
+	var respContent *ToolSpaceResponse
+	func() {
+		defer ensurePanicResponses(ctx, resp, s.hooks)
+		respContent, err = handler(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *ToolSpaceResponse and nil error while calling UpdateToolSpaceItem. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	respBytes, err := proto1.Marshal(respContent)
+	if err != nil {
+		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal proto response"))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/protobuf")
+	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
+	resp.WriteHeader(http.StatusOK)
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		ctx = callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
 func (s *aPIServer) ServiceDescriptor() ([]byte, int) {
 	return twirpFileDescriptor0, 0
 }
@@ -3884,79 +5844,104 @@ func callClientError(ctx context.Context, h *twirp.ClientHooks, err twirp.Error)
 }
 
 var twirpFileDescriptor0 = []byte{
-	// 1179 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xbc, 0x56, 0xdb, 0x72, 0xdb, 0x44,
-	0x18, 0xae, 0x92, 0xfa, 0xf4, 0xdb, 0x71, 0x92, 0x8d, 0x93, 0x38, 0x6e, 0x3b, 0x0d, 0xa2, 0x05,
-	0x03, 0x41, 0xa1, 0x66, 0x18, 0x68, 0xa6, 0x2d, 0x3d, 0x98, 0x04, 0x33, 0x69, 0x69, 0x95, 0x0e,
-	0xb7, 0x1e, 0x45, 0x5a, 0x07, 0x31, 0xb2, 0xa4, 0xee, 0xae, 0x5c, 0x72, 0xc7, 0x15, 0xc3, 0x33,
-	0xf0, 0x3a, 0xbc, 0x03, 0x8f, 0xc3, 0x30, 0xbb, 0xfb, 0x4b, 0xb2, 0x14, 0x13, 0x1a, 0x2e, 0xb8,
-	0x92, 0xf6, 0xfb, 0xcf, 0xc7, 0x5d, 0x68, 0xb0, 0xd8, 0xb5, 0x62, 0x16, 0x89, 0x88, 0x2c, 0xb3,
-	0xd8, 0xed, 0xb5, 0xb8, 0xfb, 0x23, 0x9d, 0x3a, 0x1a, 0xea, 0x35, 0x45, 0x14, 0x05, 0x1c, 0x0f,
-	0xfd, 0x28, 0xa6, 0xa1, 0xa0, 0x01, 0x9d, 0x52, 0xc1, 0xce, 0xf7, 0x15, 0xb8, 0x2f, 0x98, 0xe3,
-	0xd2, 0xfd, 0xd9, 0x3d, 0xfd, 0x83, 0x9c, 0xb7, 0xcf, 0xa2, 0xe8, 0x2c, 0xa0, 0x9a, 0xe5, 0x34,
-	0x99, 0xec, 0x0b, 0x7f, 0x4a, 0xb9, 0x70, 0xa6, 0xb1, 0x66, 0x30, 0xef, 0xc3, 0xda, 0x11, 0x15,
-	0x27, 0xca, 0x94, 0x4d, 0xdf, 0x24, 0x94, 0x0b, 0x72, 0x17, 0xda, 0x34, 0x9c, 0xf9, 0x2c, 0x0a,
-	0xa7, 0x34, 0x14, 0x63, 0xdf, 0xeb, 0x1a, 0xbb, 0x46, 0xbf, 0x61, 0xaf, 0xcc, 0xa1, 0x23, 0xcf,
-	0x3c, 0x80, 0xf5, 0x39, 0x51, 0x1e, 0x47, 0x21, 0xa7, 0xe4, 0x2e, 0x54, 0xb5, 0xdf, 0x4a, 0xa6,
-	0x39, 0x58, 0xd1, 0x76, 0x2c, 0x64, 0x43, 0xa2, 0xf9, 0xbb, 0x01, 0x2b, 0x27, 0xaf, 0x8e, 0x5f,
-	0x25, 0x94, 0x9d, 0x8f, 0xc2, 0x38, 0x11, 0xe4, 0x26, 0x34, 0x62, 0x16, 0xfd, 0x44, 0x5d, 0x31,
-	0x1a, 0xa2, 0xbd, 0x1c, 0x20, 0x77, 0xa0, 0x60, 0x7c, 0xd8, 0x5d, 0xba, 0xe8, 0xd1, 0x90, 0x74,
-	0xa0, 0xf2, 0x46, 0x6a, 0xec, 0x2e, 0x2b, 0xaa, 0x3e, 0x90, 0xf7, 0xa0, 0xf1, 0x96, 0xf9, 0x82,
-	0x3e, 0x8f, 0x3c, 0xda, 0xbd, 0xbe, 0x6b, 0xf4, 0xeb, 0xdf, 0x5e, 0xb3, 0x73, 0xe8, 0x37, 0xc3,
-	0x78, 0xda, 0x02, 0x18, 0x67, 0x80, 0xf9, 0x87, 0x01, 0x6b, 0xa9, 0x73, 0x59, 0x60, 0x9f, 0x40,
-	0x95, 0x0b, 0x47, 0x24, 0x5c, 0x39, 0xd7, 0x1e, 0x6c, 0x58, 0xb2, 0x5e, 0x29, 0xdb, 0x89, 0x22,
-	0xd9, 0xc8, 0x42, 0xf6, 0x60, 0x9d, 0xfe, 0x4c, 0xdd, 0x44, 0xf8, 0x51, 0x38, 0x4c, 0x98, 0x23,
-	0xbf, 0xca, 0xe5, 0x8a, 0x7d, 0x91, 0x40, 0x76, 0xa1, 0xc9, 0x28, 0x4f, 0x02, 0xc1, 0xbf, 0x3b,
-	0xf9, 0xfe, 0x05, 0x3a, 0x3f, 0x0f, 0xc9, 0xe4, 0x88, 0x48, 0x38, 0x81, 0x1d, 0xbd, 0xe5, 0x2a,
-	0x84, 0x8a, 0x9d, 0x03, 0x32, 0x6c, 0xca, 0x58, 0xc4, 0xba, 0x15, 0x1d, 0xb6, 0x3a, 0x98, 0x7b,
-	0xb0, 0x7a, 0x44, 0xc5, 0x6b, 0xd9, 0x0c, 0x69, 0x61, 0x77, 0xa0, 0xae, 0x9a, 0x23, 0x2f, 0x69,
-	0x4d, 0x9d, 0x47, 0x9e, 0x69, 0xab, 0x3e, 0x40, 0x6e, 0x0c, 0xf9, 0x11, 0x54, 0x14, 0x19, 0x4b,
-	0xd9, 0xb7, 0x0a, 0x6d, 0x87, 0x85, 0xd5, 0xdd, 0x36, 0xbb, 0x67, 0x29, 0x59, 0x3e, 0x74, 0x84,
-	0x63, 0x6b, 0x31, 0xf3, 0x2f, 0x03, 0xd6, 0x8f, 0x7d, 0xae, 0xb5, 0xf2, 0xab, 0x75, 0x17, 0x19,
-	0x40, 0xf5, 0x94, 0x4e, 0x22, 0x46, 0x55, 0xde, 0x9a, 0x83, 0x9e, 0xa5, 0x5b, 0xd9, 0x4a, 0x5b,
-	0xd9, 0x7a, 0x9d, 0xb6, 0xb2, 0x8d, 0x9c, 0xe4, 0x33, 0xa8, 0x38, 0x13, 0x41, 0x99, 0x4a, 0xe1,
-	0xe5, 0x22, 0x9a, 0x91, 0x58, 0x50, 0x9b, 0xf8, 0x81, 0xa0, 0x4c, 0xa6, 0x75, 0xb9, 0xdf, 0x1c,
-	0x74, 0x54, 0x59, 0x33, 0xaf, 0x0f, 0x15, 0xd1, 0x4e, 0x99, 0x64, 0xaa, 0x03, 0x7f, 0xea, 0x0b,
-	0x95, 0xea, 0x8a, 0xad, 0x0f, 0x64, 0x0b, 0xaa, 0xd1, 0x64, 0xc2, 0xa9, 0xe8, 0x56, 0x15, 0x8c,
-	0x27, 0xf3, 0x21, 0xac, 0x96, 0x34, 0x49, 0x05, 0x13, 0x9f, 0x06, 0x69, 0xd0, 0xfa, 0x20, 0xd1,
-	0x99, 0x13, 0x24, 0x14, 0xdb, 0x5a, 0x1f, 0xcc, 0x07, 0x40, 0xe6, 0xd3, 0x87, 0x55, 0xf9, 0x00,
-	0xaa, 0x2a, 0xbd, 0xb2, 0x11, 0xa5, 0xc7, 0x6d, 0xe5, 0xb1, 0x62, 0x1a, 0x09, 0x3a, 0xb5, 0x91,
-	0x6a, 0xfe, 0xb2, 0x0c, 0x8d, 0x0c, 0xbd, 0xa4, 0xf4, 0x0b, 0x0a, 0xb2, 0xb4, 0xa8, 0x20, 0xf7,
-	0x01, 0xb8, 0x70, 0x98, 0x18, 0xcb, 0x15, 0xf2, 0x0e, 0x19, 0x6e, 0x28, 0x6e, 0x79, 0x26, 0x5f,
-	0x40, 0x9d, 0x86, 0x9e, 0x16, 0xbc, 0xfe, 0xaf, 0x82, 0x35, 0x1a, 0x7a, 0x4a, 0xac, 0xd0, 0xd7,
-	0x75, 0xec, 0x6b, 0x72, 0x1b, 0x9a, 0x1e, 0x4e, 0xce, 0x78, 0xca, 0x55, 0xc6, 0x97, 0x6c, 0x48,
-	0xa1, 0xe7, 0x9c, 0xdc, 0x80, 0x06, 0x8b, 0x22, 0x31, 0x0e, 0x9d, 0x29, 0xed, 0xd6, 0x54, 0x28,
-	0x75, 0x09, 0xbc, 0x70, 0xa6, 0x94, 0xdc, 0x02, 0xc0, 0xad, 0x22, 0x03, 0xad, 0x17, 0xf7, 0x8c,
-	0x47, 0xde, 0x87, 0x15, 0x8f, 0xc6, 0x41, 0x74, 0x9e, 0xa6, 0xa2, 0xa1, 0x38, 0x5a, 0x39, 0x38,
-	0xf2, 0xc8, 0x87, 0xb0, 0xca, 0x92, 0x50, 0x46, 0x33, 0x9e, 0x51, 0xc6, 0xe5, 0x6c, 0x83, 0x62,
-	0x6b, 0x23, 0xfc, 0x83, 0x46, 0x4d, 0x02, 0x6b, 0xaa, 0x80, 0x72, 0x75, 0x63, 0xfb, 0x9b, 0x0c,
-	0x67, 0x42, 0x63, 0x58, 0xd3, 0x4f, 0xa1, 0xa2, 0xf6, 0x3b, 0x96, 0x74, 0xc3, 0xd2, 0xdb, 0xfe,
-	0x89, 0x2b, 0x43, 0x7a, 0x16, 0x85, 0x13, 0xff, 0xec, 0xe9, 0x52, 0xd7, 0xb0, 0x35, 0x17, 0xb1,
-	0xa0, 0x25, 0x7f, 0xc6, 0xae, 0xa2, 0xf0, 0xee, 0x92, 0x92, 0x6a, 0xa2, 0x94, 0x54, 0x6d, 0xab,
-	0xfb, 0x42, 0x4b, 0x72, 0x73, 0x03, 0xd6, 0x6d, 0xca, 0x69, 0xd1, 0x11, 0x0e, 0x64, 0x1e, 0xfc,
-	0x7f, 0x3c, 0xf9, 0xd5, 0x80, 0x8e, 0xfe, 0x4f, 0x18, 0x55, 0x64, 0xdc, 0x0a, 0x8f, 0x61, 0xd5,
-	0x4d, 0x71, 0x6f, 0x2c, 0x45, 0x70, 0xee, 0xff, 0xd1, 0x83, 0x76, 0xce, 0x2f, 0x15, 0x91, 0x3d,
-	0x68, 0xce, 0xb9, 0x82, 0x0d, 0x5a, 0xf0, 0x04, 0x72, 0x4f, 0xcc, 0x6f, 0x60, 0xb3, 0xe4, 0x07,
-	0x26, 0xa0, 0xa4, 0xc6, 0xb8, 0x5c, 0xcd, 0x3e, 0x74, 0x86, 0x49, 0x1c, 0xf8, 0xae, 0x23, 0x0a,
-	0xe1, 0x6c, 0x43, 0x4d, 0x69, 0xc9, 0x86, 0xa9, 0x2a, 0x8f, 0x23, 0x4f, 0xda, 0x2d, 0x09, 0xfc,
-	0x27, 0xbb, 0x1b, 0xba, 0x8b, 0x0e, 0xe5, 0xf6, 0xc8, 0x2a, 0x7a, 0xa0, 0xf7, 0x45, 0x0a, 0xa2,
-	0xe2, 0x3b, 0x50, 0x55, 0x4b, 0x26, 0x2d, 0x69, 0x0b, 0x75, 0x2a, 0x36, 0x1b, 0x69, 0xe6, 0x23,
-	0xd8, 0xca, 0xf2, 0x51, 0xd0, 0xfa, 0x8e, 0xf2, 0x5f, 0xc3, 0xf6, 0x05, 0xf9, 0x2b, 0x39, 0xf0,
-	0x00, 0x36, 0xa4, 0xf3, 0x2f, 0x99, 0x1f, 0xca, 0x4d, 0x7b, 0xc5, 0xb7, 0xc8, 0x63, 0xe8, 0x14,
-	0xa5, 0xd1, 0x76, 0x1f, 0xea, 0x31, 0x62, 0x99, 0x75, 0xb9, 0x2e, 0x91, 0xd1, 0xce, 0xa8, 0xe6,
-	0x2d, 0xa8, 0x21, 0x48, 0x08, 0x5c, 0x57, 0xbb, 0x43, 0x5b, 0x52, 0xff, 0x1f, 0x7f, 0x04, 0xed,
-	0xe2, 0x5d, 0x4f, 0x9a, 0x50, 0xe3, 0x89, 0xeb, 0x52, 0xce, 0xd7, 0xae, 0x11, 0x80, 0xea, 0xc4,
-	0xf1, 0x03, 0xea, 0xad, 0x19, 0x83, 0x3f, 0x2b, 0xb0, 0xfc, 0xe4, 0xe5, 0x48, 0xb6, 0xf4, 0x11,
-	0x15, 0xb2, 0x6f, 0x67, 0x54, 0x3f, 0x7f, 0xc8, 0xa6, 0x32, 0x5e, 0x7e, 0x70, 0xf5, 0xb6, 0xca,
-	0x30, 0x7a, 0xff, 0x15, 0x34, 0xed, 0x24, 0x4c, 0xed, 0x12, 0x52, 0x78, 0x72, 0xa8, 0x67, 0x53,
-	0x6f, 0xb3, 0x80, 0x65, 0x92, 0x5f, 0x42, 0x3d, 0xbd, 0xce, 0x49, 0x27, 0xd5, 0x3e, 0xff, 0x16,
-	0xe8, 0x6d, 0x96, 0x50, 0x14, 0x7c, 0x08, 0x90, 0xdf, 0x39, 0x64, 0xab, 0x78, 0x1b, 0xa6, 0x55,
-	0xe9, 0x6d, 0x5f, 0xc0, 0x51, 0xfc, 0x00, 0x1a, 0xd9, 0x76, 0xc3, 0x68, 0xcb, 0x1b, 0xb0, 0xb7,
-	0x55, 0x86, 0x73, 0xd3, 0xf9, 0x42, 0x42, 0xd3, 0x17, 0xd6, 0x16, 0x9a, 0x5e, 0xb0, 0xb9, 0x0e,
-	0x61, 0xa5, 0x30, 0xd1, 0x64, 0x47, 0x71, 0x2e, 0xda, 0x36, 0xbd, 0xde, 0x22, 0x52, 0xae, 0xa7,
-	0x30, 0xa1, 0xa8, 0x67, 0xd1, 0x98, 0xa3, 0x9e, 0xc5, 0x03, 0x8d, 0x99, 0xd4, 0xc3, 0x30, 0x97,
-	0xc9, 0xc2, 0x74, 0xcd, 0x65, 0xb2, 0x34, 0x35, 0xc7, 0xb0, 0x5a, 0x1a, 0x28, 0x72, 0xa3, 0xe8,
-	0x75, 0x51, 0xd1, 0xcd, 0xc5, 0x44, 0xd4, 0xf6, 0x0c, 0x5a, 0xf3, 0xf3, 0x41, 0xba, 0x99, 0xd9,
-	0xd2, 0xc0, 0xf5, 0x76, 0x16, 0x50, 0xb4, 0x92, 0xd3, 0xaa, 0xba, 0xac, 0x3f, 0xff, 0x3b, 0x00,
-	0x00, 0xff, 0xff, 0xd3, 0x4d, 0xb1, 0xf9, 0xaa, 0x0c, 0x00, 0x00,
+	// 1577 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xbc, 0x57, 0xcd, 0x72, 0xdb, 0x46,
+	0x12, 0x36, 0x28, 0x91, 0x22, 0x9b, 0x92, 0x28, 0x8d, 0x24, 0x8a, 0x82, 0xed, 0x95, 0x17, 0x6b,
+	0xef, 0x6a, 0x13, 0x87, 0x8a, 0xe9, 0x24, 0x8e, 0x5d, 0xb6, 0xe3, 0x1f, 0x45, 0x32, 0x53, 0xf2,
+	0x1f, 0xe4, 0xe4, 0x90, 0x0b, 0x0b, 0x06, 0x86, 0x0a, 0x62, 0x10, 0x80, 0x81, 0x01, 0x1d, 0xdd,
+	0x7c, 0x4a, 0xe5, 0x90, 0x27, 0xc8, 0x2b, 0xa4, 0x2a, 0x2f, 0x91, 0xa7, 0xc9, 0x4b, 0xa4, 0x52,
+	0x33, 0xd3, 0xf8, 0x25, 0xa8, 0x98, 0x2a, 0x57, 0x4e, 0xe4, 0x74, 0xf7, 0xd7, 0xd3, 0x7f, 0xe8,
+	0xee, 0x81, 0x46, 0xe0, 0x9b, 0x5d, 0x3f, 0xf0, 0x98, 0x47, 0xe6, 0x02, 0xdf, 0x54, 0x17, 0x43,
+	0xf3, 0x3b, 0x3a, 0x32, 0x24, 0x49, 0x6d, 0x32, 0xcf, 0x73, 0x42, 0x3c, 0xec, 0x78, 0x3e, 0x75,
+	0x19, 0x75, 0xe8, 0x88, 0xb2, 0xe0, 0x64, 0x57, 0x10, 0x77, 0x59, 0x60, 0x98, 0x74, 0x77, 0x7c,
+	0x4d, 0xfe, 0x41, 0xc9, 0xed, 0x63, 0xcf, 0x3b, 0x76, 0xa8, 0x14, 0x79, 0x19, 0x0d, 0x77, 0x99,
+	0x3d, 0xa2, 0x21, 0x33, 0x46, 0xbe, 0x14, 0xd0, 0x6e, 0xc2, 0xca, 0x01, 0x65, 0x47, 0xe2, 0x2a,
+	0x9d, 0xbe, 0x8e, 0x68, 0xc8, 0xc8, 0x15, 0x58, 0xa6, 0xee, 0xd8, 0x0e, 0x3c, 0x77, 0x44, 0x5d,
+	0x36, 0xb0, 0xad, 0x8e, 0x72, 0x49, 0xd9, 0x69, 0xe8, 0x4b, 0x19, 0x6a, 0xdf, 0xd2, 0x6e, 0xc1,
+	0x6a, 0x06, 0x1a, 0xfa, 0x9e, 0x1b, 0x52, 0x72, 0x05, 0x6a, 0xd2, 0x6e, 0x81, 0x69, 0xf6, 0x96,
+	0xe4, 0x3d, 0x5d, 0x14, 0x43, 0xa6, 0xf6, 0x8b, 0x02, 0x4b, 0x47, 0xcf, 0x0f, 0x9f, 0x47, 0x34,
+	0x38, 0xe9, 0xbb, 0x7e, 0xc4, 0xc8, 0x05, 0x68, 0xf8, 0x81, 0xf7, 0x3d, 0x35, 0x59, 0x7f, 0x0f,
+	0xef, 0x4b, 0x09, 0xe4, 0x32, 0xe4, 0x2e, 0xdf, 0xeb, 0x54, 0x26, 0x2d, 0xda, 0x23, 0xeb, 0x50,
+	0x7d, 0xcd, 0x35, 0x76, 0xe6, 0x04, 0x57, 0x1e, 0xc8, 0xbf, 0xa1, 0xf1, 0x26, 0xb0, 0x19, 0x7d,
+	0xec, 0x59, 0xb4, 0x33, 0x7f, 0x49, 0xd9, 0xa9, 0x3f, 0x3a, 0xa7, 0xa7, 0xa4, 0x9f, 0x14, 0xe5,
+	0xc1, 0x22, 0xc0, 0x20, 0x21, 0x68, 0xbf, 0x2b, 0xb0, 0x12, 0x1b, 0x97, 0x38, 0xf6, 0x21, 0xd4,
+	0x42, 0x66, 0xb0, 0x28, 0x14, 0xc6, 0x2d, 0xf7, 0xd6, 0xba, 0x3c, 0x5f, 0xb1, 0xd8, 0x91, 0x60,
+	0xe9, 0x28, 0x42, 0xae, 0xc2, 0x2a, 0xfd, 0x81, 0x9a, 0x11, 0xb3, 0x3d, 0x77, 0x2f, 0x0a, 0x0c,
+	0xfe, 0x2b, 0x4c, 0xae, 0xea, 0x93, 0x0c, 0x72, 0x09, 0x9a, 0x01, 0x0d, 0x23, 0x87, 0x85, 0x5f,
+	0x1d, 0x3d, 0x7d, 0x82, 0xc6, 0x67, 0x49, 0x3c, 0x38, 0xcc, 0x63, 0x86, 0xa3, 0x7b, 0x6f, 0x42,
+	0xe1, 0x42, 0x55, 0x4f, 0x09, 0xdc, 0x6d, 0x1a, 0x04, 0x5e, 0xd0, 0xa9, 0x4a, 0xb7, 0xc5, 0x41,
+	0xbb, 0x0a, 0xad, 0x03, 0xca, 0x5e, 0xf0, 0x62, 0x88, 0x13, 0xbb, 0x05, 0x75, 0x51, 0x1c, 0x69,
+	0x4a, 0x17, 0xc4, 0xb9, 0x6f, 0x69, 0xba, 0xa8, 0x03, 0x94, 0x46, 0x97, 0xef, 0x42, 0x55, 0xb0,
+	0x31, 0x95, 0x3b, 0xdd, 0x5c, 0xd9, 0x61, 0x62, 0x65, 0xb5, 0x8d, 0xaf, 0x75, 0x05, 0x36, 0xdc,
+	0x33, 0x98, 0xa1, 0x4b, 0x98, 0xf6, 0xa7, 0x02, 0xab, 0x87, 0x76, 0x28, 0xb5, 0x86, 0xb3, 0x55,
+	0x17, 0xe9, 0x41, 0xed, 0x25, 0x1d, 0x7a, 0x01, 0x15, 0x71, 0x6b, 0xf6, 0xd4, 0xae, 0x2c, 0xe5,
+	0x6e, 0x5c, 0xca, 0xdd, 0x17, 0x71, 0x29, 0xeb, 0x28, 0x49, 0x3e, 0x86, 0xaa, 0x31, 0x64, 0x34,
+	0x10, 0x21, 0x3c, 0x1d, 0x22, 0x05, 0x49, 0x17, 0x16, 0x86, 0xb6, 0xc3, 0x68, 0xc0, 0xc3, 0x3a,
+	0xb7, 0xd3, 0xec, 0xad, 0x8b, 0xb4, 0x26, 0x56, 0xef, 0x0b, 0xa6, 0x1e, 0x0b, 0xf1, 0x50, 0x3b,
+	0xf6, 0xc8, 0x66, 0x22, 0xd4, 0x55, 0x5d, 0x1e, 0x48, 0x1b, 0x6a, 0xde, 0x70, 0x18, 0x52, 0xd6,
+	0xa9, 0x09, 0x32, 0x9e, 0xb4, 0x3b, 0xd0, 0x2a, 0x68, 0xe2, 0x0a, 0x86, 0x36, 0x75, 0x62, 0xa7,
+	0xe5, 0x81, 0x53, 0xc7, 0x86, 0x13, 0x51, 0x2c, 0x6b, 0x79, 0xd0, 0x6e, 0x03, 0xc9, 0x86, 0x0f,
+	0xb3, 0xf2, 0x5f, 0xa8, 0x89, 0xf0, 0xf2, 0x42, 0xe4, 0x16, 0x2f, 0x0b, 0x8b, 0x85, 0x50, 0x9f,
+	0xd1, 0x91, 0x8e, 0x5c, 0xed, 0xed, 0x1c, 0x34, 0x12, 0xea, 0x29, 0xa9, 0x2f, 0x49, 0x48, 0xa5,
+	0x2c, 0x21, 0x37, 0x01, 0x42, 0x66, 0x04, 0x6c, 0xc0, 0x5b, 0xc8, 0x3b, 0x44, 0xb8, 0x21, 0xa4,
+	0xf9, 0x99, 0x7c, 0x0a, 0x75, 0xea, 0x5a, 0x12, 0x38, 0xff, 0xb7, 0xc0, 0x05, 0xea, 0x5a, 0x02,
+	0x96, 0xab, 0xeb, 0x3a, 0xd6, 0x35, 0xd9, 0x86, 0xa6, 0x85, 0x5f, 0xce, 0x60, 0x14, 0x8a, 0x88,
+	0x57, 0x74, 0x88, 0x49, 0x8f, 0x43, 0x72, 0x1e, 0x1a, 0x81, 0xe7, 0xb1, 0x81, 0x6b, 0x8c, 0x68,
+	0x67, 0x41, 0xb8, 0x52, 0xe7, 0x84, 0x27, 0xc6, 0x88, 0x92, 0x8b, 0x00, 0xd8, 0x55, 0xb8, 0xa3,
+	0xf5, 0x7c, 0x9f, 0xb1, 0xc8, 0x7f, 0x60, 0xc9, 0xa2, 0xbe, 0xe3, 0x9d, 0xc4, 0xa1, 0x68, 0x08,
+	0x89, 0xc5, 0x94, 0xd8, 0xb7, 0xc8, 0xff, 0xa0, 0x15, 0x44, 0x2e, 0xf7, 0x66, 0x30, 0xa6, 0x41,
+	0xc8, 0xbf, 0x6d, 0x10, 0x62, 0xcb, 0x48, 0xfe, 0x46, 0x52, 0x35, 0x02, 0x2b, 0x22, 0x81, 0xbc,
+	0x75, 0x63, 0xf9, 0x6b, 0x01, 0x7e, 0x13, 0x92, 0x86, 0x39, 0xfd, 0x08, 0xaa, 0xa2, 0xbf, 0x63,
+	0x4a, 0xd7, 0xba, 0xb2, 0xdb, 0xdf, 0x37, 0xb9, 0x4b, 0x0f, 0x3d, 0x77, 0x68, 0x1f, 0x3f, 0xa8,
+	0x74, 0x14, 0x5d, 0x4a, 0x91, 0x2e, 0x2c, 0xf2, 0x3f, 0x03, 0x53, 0x70, 0xc2, 0x4e, 0x45, 0xa0,
+	0x9a, 0x88, 0xe2, 0xaa, 0x75, 0x31, 0x2f, 0x24, 0x32, 0xd4, 0xd6, 0x60, 0x55, 0xa7, 0x21, 0xcd,
+	0x1b, 0x12, 0x02, 0xc9, 0x12, 0xff, 0x19, 0x4b, 0x7e, 0x54, 0x60, 0x5d, 0xfe, 0x8f, 0x02, 0x2a,
+	0xd8, 0xd8, 0x15, 0xee, 0x41, 0xcb, 0x8c, 0xe9, 0xd6, 0x80, 0x43, 0xf0, 0xbb, 0x9f, 0x6a, 0xc1,
+	0x72, 0x2a, 0xcf, 0x15, 0x91, 0xab, 0xd0, 0xcc, 0x98, 0x82, 0x05, 0x9a, 0xb3, 0x04, 0x52, 0x4b,
+	0xb4, 0x2f, 0x61, 0xa3, 0x60, 0x07, 0x06, 0xa0, 0xa0, 0x46, 0x39, 0x5d, 0xcd, 0x2e, 0xac, 0xef,
+	0x45, 0xbe, 0x63, 0x9b, 0x06, 0xcb, 0xb9, 0xb3, 0x09, 0x0b, 0x42, 0x4b, 0xf2, 0x31, 0xd5, 0xf8,
+	0xb1, 0x6f, 0xf1, 0x7b, 0x0b, 0x80, 0x33, 0xdd, 0xbb, 0x26, 0xab, 0x68, 0x9f, 0x77, 0x8f, 0x24,
+	0xa3, 0xb7, 0x64, 0xbf, 0x88, 0x89, 0xa8, 0xf8, 0x32, 0xd4, 0x44, 0x93, 0x89, 0x53, 0xba, 0x88,
+	0x3a, 0x85, 0x98, 0x8e, 0x3c, 0xed, 0x2e, 0xb4, 0x93, 0x78, 0xe4, 0xb4, 0xbe, 0x23, 0xfe, 0x0b,
+	0xd8, 0x9c, 0xc0, 0xcf, 0x64, 0xc0, 0x6d, 0x58, 0xe3, 0xc6, 0x3f, 0x0b, 0x6c, 0x97, 0x77, 0xda,
+	0x19, 0x77, 0x91, 0x7b, 0xb0, 0x9e, 0x47, 0xe3, 0xdd, 0x3b, 0x50, 0xf7, 0x91, 0x96, 0xdc, 0xce,
+	0xdb, 0x25, 0x0a, 0xea, 0x09, 0x57, 0xbb, 0x08, 0x0b, 0x48, 0x24, 0x04, 0xe6, 0x45, 0xef, 0x90,
+	0x37, 0x89, 0xff, 0xda, 0x5d, 0xd8, 0x88, 0x3f, 0xdb, 0x23, 0x7f, 0xf6, 0x71, 0xc6, 0xe3, 0x5b,
+	0xc4, 0xa7, 0xe1, 0x09, 0xfd, 0x4c, 0x3f, 0x8f, 0xc3, 0x23, 0xc4, 0x74, 0xe4, 0x69, 0x3f, 0x2b,
+	0xd0, 0x7e, 0x18, 0x50, 0xac, 0x1a, 0xc9, 0x9b, 0x6d, 0xa0, 0xc6, 0x5e, 0x55, 0x52, 0xaf, 0x38,
+	0xcd, 0x36, 0x3d, 0x17, 0x57, 0x0e, 0xf1, 0x5f, 0xb4, 0x40, 0x3b, 0xf4, 0x1d, 0xe3, 0x64, 0xe0,
+	0x05, 0x16, 0x0d, 0x70, 0xdf, 0x58, 0x44, 0xe2, 0x53, 0x4e, 0xd3, 0xde, 0x2a, 0xd0, 0xfe, 0xda,
+	0xb7, 0xca, 0xcc, 0xd9, 0x82, 0xba, 0xb0, 0x39, 0x33, 0x69, 0xc4, 0xf9, 0x7d, 0x9b, 0xf0, 0x2d,
+	0xb4, 0x75, 0x3a, 0xf2, 0xc6, 0x67, 0x0e, 0x48, 0xd6, 0xd0, 0x4a, 0xce, 0x50, 0xed, 0x13, 0xd8,
+	0x9c, 0xd0, 0x8d, 0xe9, 0x9a, 0xee, 0x9e, 0xf6, 0x6b, 0x05, 0x36, 0xef, 0x5b, 0x56, 0x82, 0x11,
+	0xe3, 0x78, 0x36, 0x9b, 0x6e, 0x42, 0xcd, 0x30, 0x93, 0x6d, 0xb1, 0xd9, 0xdb, 0xc6, 0x62, 0x90,
+	0xa9, 0x17, 0x5a, 0x65, 0x23, 0x7c, 0x66, 0x9c, 0x38, 0x9e, 0x61, 0x3d, 0x3a, 0xa7, 0x23, 0x80,
+	0x43, 0xf9, 0x5e, 0x66, 0x9b, 0xd8, 0xfa, 0x4a, 0xa0, 0x8f, 0x05, 0x3f, 0x03, 0x95, 0x00, 0xf2,
+	0x19, 0x54, 0x8f, 0x03, 0x2f, 0xf2, 0x71, 0x38, 0xff, 0x6b, 0x12, 0x79, 0xc0, 0xd9, 0x29, 0x50,
+	0x8a, 0x93, 0xeb, 0x30, 0xef, 0xd8, 0xee, 0x2b, 0x31, 0x9f, 0x9b, 0xbd, 0x8b, 0x93, 0xb0, 0x43,
+	0xdb, 0x7d, 0x95, 0xa2, 0x84, 0xf0, 0x83, 0x1a, 0xcc, 0xdb, 0x8c, 0x8e, 0xb4, 0x37, 0xa0, 0x16,
+	0x62, 0x7c, 0x86, 0x78, 0x4d, 0xcf, 0x21, 0x6f, 0xc1, 0xfc, 0x1e, 0xce, 0x91, 0xb5, 0x55, 0xe3,
+	0xc7, 0xbe, 0xa5, 0xfd, 0x56, 0x01, 0xb5, 0x50, 0xbb, 0xef, 0x31, 0x53, 0x52, 0xf3, 0x99, 0x32,
+	0x95, 0x81, 0xce, 0x98, 0xa9, 0x0c, 0x72, 0x96, 0x4c, 0x65, 0x60, 0xa7, 0x65, 0xea, 0x06, 0xac,
+	0x4e, 0x7e, 0x07, 0x1a, 0x54, 0x45, 0xa4, 0x71, 0x52, 0xe5, 0xbb, 0x96, 0x64, 0x7d, 0xf0, 0x7f,
+	0x58, 0xce, 0x3f, 0x90, 0x48, 0x13, 0x16, 0xc2, 0xc8, 0x34, 0x69, 0x18, 0xae, 0x9c, 0x23, 0x00,
+	0xb5, 0xa1, 0x61, 0x3b, 0xd4, 0x5a, 0x51, 0x7a, 0x7f, 0x34, 0x60, 0xee, 0xfe, 0xb3, 0x3e, 0xdf,
+	0x03, 0x0e, 0x28, 0xe3, 0x91, 0x1b, 0x53, 0xf9, 0x66, 0x24, 0x1b, 0xa2, 0x63, 0x17, 0x5f, 0xa9,
+	0x6a, 0xbb, 0x48, 0x46, 0xc3, 0x3e, 0x87, 0xa6, 0x1e, 0xb9, 0xf1, 0xbd, 0x84, 0xe4, 0xde, 0x69,
+	0xe2, 0xad, 0xa9, 0x6e, 0xe4, 0x68, 0x09, 0xf2, 0x06, 0xd4, 0xe3, 0x37, 0x10, 0x59, 0x8f, 0xb5,
+	0x67, 0x1f, 0x50, 0xea, 0x46, 0x81, 0x8a, 0xc0, 0x3b, 0x00, 0xe9, 0xa2, 0x4e, 0xda, 0xf9, 0x27,
+	0x44, 0x3c, 0x29, 0xd4, 0xcd, 0x09, 0x3a, 0xc2, 0x6f, 0x41, 0x23, 0x59, 0x09, 0xd1, 0xdb, 0xe2,
+	0xda, 0xa8, 0xb6, 0x8b, 0xe4, 0xf4, 0xea, 0x74, 0x8b, 0xc3, 0xab, 0x27, 0x76, 0x3d, 0xbc, 0xba,
+	0x64, 0xdd, 0xdb, 0x87, 0xa5, 0xdc, 0x1a, 0x44, 0xb6, 0x84, 0x64, 0xd9, 0x8a, 0xa6, 0xaa, 0x65,
+	0xac, 0x54, 0x4f, 0x6e, 0xad, 0x41, 0x3d, 0x65, 0xbb, 0x11, 0xea, 0x29, 0xdf, 0x82, 0x30, 0x92,
+	0x72, 0x83, 0xc8, 0x44, 0x32, 0xb7, 0x92, 0x64, 0x22, 0x59, 0x58, 0x35, 0x0e, 0xa1, 0x55, 0xd8,
+	0x42, 0xc8, 0xf9, 0xbc, 0xd5, 0x79, 0x45, 0x17, 0xca, 0x99, 0xa8, 0xed, 0x21, 0x2c, 0x66, 0x97,
+	0x0a, 0xd2, 0x49, 0xae, 0x2d, 0x6c, 0x29, 0xea, 0x56, 0x09, 0x07, 0x95, 0xf4, 0x61, 0x39, 0x3f,
+	0xf8, 0x89, 0x9a, 0x4b, 0x65, 0x6e, 0x9b, 0x50, 0xcf, 0x97, 0xf2, 0x92, 0x20, 0xb7, 0x0a, 0x2b,
+	0x40, 0xec, 0x5d, 0xe9, 0x62, 0x80, 0x35, 0x33, 0xf9, 0xe9, 0x1e, 0x42, 0xab, 0xd0, 0x79, 0x51,
+	0x4f, 0xf9, 0x3c, 0xc5, 0x28, 0x4d, 0x1b, 0x88, 0xfb, 0xd0, 0x2a, 0x74, 0x53, 0xd4, 0x56, 0xbe,
+	0x1f, 0x4c, 0xb5, 0xea, 0x11, 0xac, 0x14, 0x87, 0x27, 0x91, 0x37, 0x4f, 0x99, 0xa9, 0x53, 0x35,
+	0x3d, 0x81, 0xb5, 0x92, 0xc9, 0x42, 0xb6, 0xcb, 0xdc, 0x78, 0x47, 0x7d, 0x25, 0xf3, 0x02, 0xf5,
+	0x4d, 0x9f, 0x24, 0xd3, 0xf4, 0xbd, 0xac, 0x89, 0x47, 0xef, 0xf5, 0xbf, 0x02, 0x00, 0x00, 0xff,
+	0xff, 0x7a, 0xca, 0x95, 0xe1, 0xf2, 0x13, 0x00, 0x00,
 }

@@ -279,6 +279,10 @@ func (cfg *ActionToolConfig) applyOn(tool *toolsproto.ActionConfig) {
 	if cfg.EntityPlural != nil {
 		tool.EntityPlural = *cfg.EntityPlural
 	}
+	if cfg.ExternalLinks != nil {
+		tool.ExternalLinks = cfg.ExternalLinks.toProto()
+	}
+
 	cfg.Capabilities.applyOn(tool)
 
 	for path, inputCfg := range cfg.Inputs {
@@ -294,15 +298,7 @@ func (cfg *ActionToolConfig) applyOn(tool *toolsproto.ActionConfig) {
 	if cfg.Pagination != nil && cfg.Pagination.PageSize != nil && cfg.Pagination.PageSize.DefaultValue != nil {
 		tool.Pagination = cfg.Pagination.applyOn(tool.GetPagination())
 	}
-	for _, el := range cfg.ExternalLinks {
-		tool.ExternalLinks = append(tool.ExternalLinks, &toolsproto.ExternalLink{
-			Label:            makeStringTemplate(&el.Label),
-			Href:             makeStringTemplate(&el.Href),
-			Icon:             el.Icon,
-			DisplayOrder:     el.DisplayOrder,
-			VisibleCondition: el.VisibleCondition,
-		})
-	}
+
 	for _, s := range cfg.Sections {
 		tool.Sections = append(tool.Sections, &toolsproto.Section{
 			Name:             s.Name,
@@ -551,6 +547,27 @@ type ExternalLink struct {
 }
 
 type ExternalLinks []*ExternalLink
+
+func (els ExternalLinks) toProto() []*toolsproto.ExternalLink {
+	elinks := []*toolsproto.ExternalLink{}
+	for _, el := range els {
+		elinks = append(elinks, el.toProto())
+	}
+	return elinks
+}
+
+func (el *ExternalLink) toProto() *toolsproto.ExternalLink {
+	if el == nil {
+		return nil
+	}
+	return &toolsproto.ExternalLink{
+		Label:            makeStringTemplate(&el.Label),
+		Href:             makeStringTemplate(&el.Href),
+		Icon:             el.Icon,
+		DisplayOrder:     el.DisplayOrder,
+		VisibleCondition: el.VisibleCondition,
+	}
+}
 
 type Section struct {
 	Name             string  `json:"name,omitempty"`
@@ -946,12 +963,4 @@ func (cfg *ToolGroupLinkConfig) applyOn(link *toolsproto.ToolGroup_GroupActionLi
 
 type FilterConfig struct {
 	QuickSearchField *string `json:"quick_search_field,omitempty"`
-}
-
-func makeStringTemplate(tmpl *string) *toolsproto.StringTemplate {
-	if tmpl != nil {
-		return &toolsproto.StringTemplate{Template: *tmpl}
-	}
-
-	return nil
 }

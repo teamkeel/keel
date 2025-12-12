@@ -60,7 +60,14 @@ func (s *Service) loadFromFileStorage() (UserConfig, error) {
 			return UserConfig{}, err
 		}
 
-		if filepath.Base(fName) == FieldsFile {
+		if filepath.Base(fName) == SpacesFile {
+			// read spaces config
+			var sCfg SpaceConfigs
+			if err := json.Unmarshal(fileBytes, &sCfg); err != nil {
+				return UserConfig{}, err
+			}
+			userConfig.Spaces = sCfg
+		} else if filepath.Base(fName) == FieldsFile {
 			// read fields config
 			var fCfg FieldConfigs
 			if err := json.Unmarshal(fileBytes, &fCfg); err != nil {
@@ -102,6 +109,13 @@ func (s *Service) load() (UserConfig, error) {
 	// read fields config
 	if len(s.FieldsConfigStorage) > 0 {
 		if err := json.Unmarshal(s.FieldsConfigStorage, &userConfig.Fields); err != nil {
+			return UserConfig{}, err
+		}
+	}
+
+	// read spaces config
+	if len(s.SpacesConfigStorage) > 0 {
+		if err := json.Unmarshal(s.SpacesConfigStorage, &userConfig.Spaces); err != nil {
 			return UserConfig{}, err
 		}
 	}
@@ -173,6 +187,29 @@ func (s *Service) storeFields(cfgs FieldConfigs) error {
 	}
 
 	s.FieldsConfigStorage = dest.Bytes()
+
+	return nil
+}
+
+// storeSpaces will save the given user configuration for tool spaces.
+func (s *Service) storeSpaces(cfgs SpaceConfigs) error {
+	b, err := json.Marshal(cfgs)
+	if err != nil {
+		return err
+	}
+	var dest bytes.Buffer
+	if err := json.Indent(&dest, b, "", "  "); err != nil {
+		return fmt.Errorf("formatting fields config: %w", err)
+	}
+
+	if s.hasFileStorage() {
+		err = os.WriteFile(filepath.Join(s.storageFolder(), SpacesFile), dest.Bytes(), 0666)
+		if err != nil {
+			return err
+		}
+	}
+
+	s.SpacesConfigStorage = dest.Bytes()
 
 	return nil
 }

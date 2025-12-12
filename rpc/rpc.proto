@@ -96,6 +96,21 @@ service API {
 
 	// List configured printers
 	rpc ListPrinters(ListPrintersRequest) returns (ListPrintersResponse);
+
+	// List all the tool spaces defined in this repo.
+	rpc ListToolSpaces(ListToolSpacesRequest) returns (ListToolSpacesResponse);
+	// Creates a new tool space. Returns the newly added space.
+	rpc CreateToolSpace(CreateToolSpaceRequest) returns (ToolSpaceResponse);
+	// Removes a space from the project.
+	rpc RemoveToolSpace(RemoveToolSpaceRequest) returns (RemoveToolSpaceResponse);
+	// Updates a tool space. Returns the newly updated space.
+	rpc UpdateToolSpace(UpdateToolSpaceRequest) returns (ToolSpaceResponse);
+	// Adds a new space item (group, action, metric) to a given space. Returns the updated space. 
+	rpc AddToolSpaceItem(AddToolSpaceItemRequest) returns (ToolSpaceResponse);
+	// Removes a space item from a given space. Returns the updated space.
+	rpc RemoveToolSpaceItem(RemoveToolSpaceItemRequest) returns (ToolSpaceResponse);
+	// Updates a tool space item (group, action, metric). Returns the updated space.
+	rpc UpdateToolSpaceItem(UpdateToolSpaceItemRequest) returns (ToolSpaceResponse);
 }
 
 message ListToolsRequest {}
@@ -153,4 +168,67 @@ message ListPrintersResponse {
 
 message Printer {
 	string name = 1;
+}
+
+message ListToolSpacesRequest {
+	string environment_id = 1;
+}
+
+message ListToolSpacesResponse {
+	repeated tools.Space spaces = 1;
+}
+
+message CreateToolSpaceRequest {
+	string environment_id = 1;
+	string name = 2;
+	string icon = 3;
+	int32 display_order = 4;
+}
+
+message UpdateToolSpaceRequest {
+	string space_id = 1;
+	string name = 2;
+	string icon = 3;
+	int32 display_order = 4;
+}
+
+message RemoveToolSpaceRequest {
+	string environment_id = 1;
+	string space_id = 2;
+}
+
+message RemoveToolSpaceResponse {
+	// The id of the space that was removed
+	string space_id = 1;
+}
+
+message AddToolSpaceItemRequest {
+	string environment_id = 1;
+
+	oneof item {
+		tools.CreateSpaceActionPayload action = 2;
+		tools.CreateSpaceMetricPayload metric = 3;
+		tools.CreateSpaceGroupPayload group = 4;
+		tools.CreateSpaceLinkPayload link = 5;
+	}
+}
+
+message RemoveToolSpaceItemRequest {
+	string environment_id = 1;
+	string space_id = 2;
+	string item_id = 3;
+}
+
+message UpdateToolSpaceItemRequest {
+	string environment_id = 1;
+	oneof item {
+		tools.UpdateSpaceActionPayload action = 2;
+		tools.UpdateSpaceMetricPayload metric = 3;
+		tools.UpdateSpaceGroupPayload group = 4;
+		tools.UpdateSpaceLinkPayload link = 5;
+	}
+}
+
+message ToolSpaceResponse {
+	tools.Space space = 1;
 }

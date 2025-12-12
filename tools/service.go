@@ -19,6 +19,9 @@ const ToolsDir = "tools"
 // FieldsFile is the name of the file that holds the user fields configuration for model based config.
 const FieldsFile = "_fields.json"
 
+// SpacesFile is the name of the file that holds the spaces configurations.
+const SpacesFile = "_spaces.json"
+
 const (
 	// Alphabet for unique nanoids to be used for tool ids.
 	nanoidABC = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -32,6 +35,7 @@ type Service struct {
 	ProjectDir          *string
 	ToolsConfigStorage  map[string][]byte
 	FieldsConfigStorage []byte
+	SpacesConfigStorage []byte
 }
 
 type ServiceOpt func(s *Service)
@@ -79,6 +83,15 @@ func WithToolsConfig(store map[string][]byte) ServiceOpt {
 func WithFieldsConfig(store []byte) ServiceOpt {
 	return func(s *Service) {
 		s.FieldsConfigStorage = store
+		s.ProjectDir = nil
+	}
+}
+
+// WithSpacesConfig initialises the service with in-memory spaces storage and with the given user configuration. This
+// option will invalidate any filebased storage that may have been set with `WithFileStorage`.
+func WithSpacesConfig(store []byte) ServiceOpt {
+	return func(s *Service) {
+		s.SpacesConfigStorage = store
 		s.ProjectDir = nil
 	}
 }
@@ -338,4 +351,316 @@ func (s *Service) ConfigureFields(ctx context.Context, updated []*toolsproto.Fie
 
 	// retrieve newly configured fields
 	return s.GetFields(ctx)
+}
+
+// GetSpaces returns the configured tool spaces for this project.
+func (s *Service) GetSpaces(ctx context.Context) ([]*toolsproto.Space, error) {
+	// load existing user configuration
+	userConfig, err := s.load()
+	if err != nil {
+		return nil, fmt.Errorf("loading tool configs from file: %w", err)
+	}
+
+	return userConfig.Spaces.toProto(), nil
+}
+
+// AddSpace will add the given space config to the existing ones and store it.
+func (s *Service) AddSpace(ctx context.Context, space *SpaceConfig) (*toolsproto.Space, error) {
+	// load existing user configuration
+	userConfig, err := s.load()
+	if err != nil {
+		return nil, fmt.Errorf("loading space configs from file: %w", err)
+	}
+
+	// set a unique id
+	if err := space.setUniqueID(userConfig.Spaces); err != nil {
+		return nil, fmt.Errorf("creating a unique space id: %w", err)
+	}
+
+	userConfig.Spaces = append(userConfig.Spaces, space)
+
+	if err := s.storeSpaces(userConfig.Spaces); err != nil {
+		return nil, fmt.Errorf("storing space configs: %w", err)
+	}
+
+	return space.toProto(), nil
+}
+
+// UpdateSpace will update an existing space with the given data (note that containing space items are not subject to updates).
+func (s *Service) UpdateSpace(ctx context.Context, updated *SpaceConfig) (*toolsproto.Space, error) {
+	// load existing user configuration
+	userConfig, err := s.load()
+	if err != nil {
+		return nil, fmt.Errorf("loading space configs from file: %w", err)
+	}
+
+	space := userConfig.Spaces.findByID(updated.ID)
+	if space == nil {
+		return nil, nil
+	}
+
+	space.Icon = updated.Icon
+	space.Name = updated.Name
+	space.DisplayOrder = updated.DisplayOrder
+
+	if err := s.storeSpaces(userConfig.Spaces); err != nil {
+		return nil, fmt.Errorf("storing space configs: %w", err)
+	}
+
+	return space.toProto(), nil
+}
+
+// RemoveSpace will remove the given space config from the storage.
+func (s *Service) RemoveSpace(ctx context.Context, spaceID string) error {
+	// load existing user configuration
+	userConfig, err := s.load()
+	if err != nil {
+		return fmt.Errorf("loading space configs from file: %w", err)
+	}
+
+	remainingSpaces := SpaceConfigs{}
+
+	for _, sp := range userConfig.Spaces {
+		if sp.ID != spaceID {
+			remainingSpaces = append(remainingSpaces, sp)
+		}
+	}
+
+	return s.storeSpaces(remainingSpaces)
+}
+
+func (s *Service) RemoveSpaceItem(ctx context.Context, spaceID, itemID string) (*toolsproto.Space, error) {
+	// load existing user configuration
+	userConfig, err := s.load()
+	if err != nil {
+		return nil, fmt.Errorf("loading space configs from file: %w", err)
+	}
+
+	space := userConfig.Spaces.findByID(spaceID)
+	if space == nil {
+		return nil, fmt.Errorf("space not found")
+	}
+
+	space.removeItem(itemID)
+
+	if err := s.storeSpaces(userConfig.Spaces); err != nil {
+		return nil, fmt.Errorf("storing space configs: %w", err)
+	}
+
+	return space.toProto(), nil
+}
+
+// AddSpaceAction adds an action to the given space. If Group ID is not empty, the action will be added to the given group.
+func (s *Service) AddSpaceAction(ctx context.Context, payload *toolsproto.CreateSpaceActionPayload) (*toolsproto.Space, error) {
+	// load existing user configuration
+	userConfig, err := s.load()
+	if err != nil {
+		return nil, fmt.Errorf("loading space configs from file: %w", err)
+	}
+
+	space := userConfig.Spaces.findByID(payload.GetSpaceId())
+	if space == nil {
+		return nil, fmt.Errorf("space not found")
+	}
+
+	action := SpaceAction{
+		Link: extractLinkConfig(nil, payload.GetLink()),
+	}
+
+	if action.Link == nil {
+		return nil, fmt.Errorf("invalid link")
+	}
+
+	// set a unique ID
+	if err := action.setUniqueID(userConfig.Spaces); err != nil {
+		return nil, fmt.Errorf("generating unique id: %w", err)
+	}
+
+	if err := space.addAction(&action, payload.GetGroupId()); err != nil {
+		return nil, fmt.Errorf("adding an action: %w", err)
+	}
+
+	if err := s.storeSpaces(userConfig.Spaces); err != nil {
+		return nil, fmt.Errorf("storing space configs: %w", err)
+	}
+
+	return space.toProto(), nil
+}
+
+func (s *Service) AddSpaceGroup(ctx context.Context, payload *toolsproto.CreateSpaceGroupPayload) (*toolsproto.Space, error) {
+	// load existing user configuration
+	userConfig, err := s.load()
+	if err != nil {
+		return nil, fmt.Errorf("loading space configs from file: %w", err)
+	}
+
+	space := userConfig.Spaces.findByID(payload.GetSpaceId())
+	if space == nil {
+		return nil, fmt.Errorf("space not found")
+	}
+
+	group := SpaceGroup{
+		Name: func() string {
+			if payload.GetName() != nil {
+				return payload.GetName().GetTemplate()
+			}
+
+			return ""
+		}(),
+		Description: func() string {
+			if payload.GetDescription() != nil {
+				return payload.GetDescription().GetTemplate()
+			}
+
+			return ""
+		}(),
+		DisplayOrder: payload.GetDisplayOrder(),
+	}
+
+	// set a unique ID
+	if err := group.setUniqueID(userConfig.Spaces); err != nil {
+		return nil, fmt.Errorf("generating unique id: %w", err)
+	}
+
+	space.Groups = append(space.Groups, &group)
+
+	if err := s.storeSpaces(userConfig.Spaces); err != nil {
+		return nil, fmt.Errorf("storing space configs: %w", err)
+	}
+
+	return space.toProto(), nil
+}
+
+func (s *Service) AddSpaceMetric(ctx context.Context, payload *toolsproto.CreateSpaceMetricPayload) (*toolsproto.Space, error) {
+	// load existing user configuration
+	userConfig, err := s.load()
+	if err != nil {
+		return nil, fmt.Errorf("loading space configs from file: %w", err)
+	}
+
+	space := userConfig.Spaces.findByID(payload.GetSpaceId())
+	if space == nil {
+		return nil, fmt.Errorf("space not found")
+	}
+
+	metric := SpaceMetric{
+		Label: func() string {
+			if payload.GetLabel() != nil {
+				return payload.GetLabel().GetTemplate()
+			}
+
+			return ""
+		}(),
+		ToolID:        payload.GetToolId(),
+		DisplayOrder:  payload.GetDisplayOrder(),
+		FacetLocation: payload.GetFacetLocation().GetPath(),
+	}
+
+	// set a unique ID
+	if err := metric.setUniqueID(userConfig.Spaces); err != nil {
+		return nil, fmt.Errorf("generating unique id: %w", err)
+	}
+
+	space.Metrics = append(space.Metrics, &metric)
+
+	if err := s.storeSpaces(userConfig.Spaces); err != nil {
+		return nil, fmt.Errorf("storing space configs: %w", err)
+	}
+
+	return space.toProto(), nil
+}
+
+func (s *Service) AddSpaceLink(ctx context.Context, payload *toolsproto.CreateSpaceLinkPayload) (*toolsproto.Space, error) {
+	// load existing user configuration
+	userConfig, err := s.load()
+	if err != nil {
+		return nil, fmt.Errorf("loading space configs from file: %w", err)
+	}
+
+	space := userConfig.Spaces.findByID(payload.GetSpaceId())
+	if space == nil {
+		return nil, fmt.Errorf("space not found")
+	}
+
+	link := SpaceLink{
+		Link: extractExternalLink(payload.GetLink()),
+	}
+
+	// set a unique ID
+	if err := link.setUniqueID(userConfig.Spaces); err != nil {
+		return nil, fmt.Errorf("generating unique id: %w", err)
+	}
+
+	space.Links = append(space.Links, &link)
+
+	if err := s.storeSpaces(userConfig.Spaces); err != nil {
+		return nil, fmt.Errorf("storing space configs: %w", err)
+	}
+
+	return space.toProto(), nil
+}
+
+func (s *Service) UpdateSpaceItem(ctx context.Context, protoPayload any) (*toolsproto.Space, error) {
+	// load existing user configuration
+	userConfig, err := s.load()
+	if err != nil {
+		return nil, fmt.Errorf("loading space configs from file: %w", err)
+	}
+
+	spaceID := ""
+	for _, space := range userConfig.Spaces {
+		switch payload := protoPayload.(type) {
+		case *toolsproto.UpdateSpaceActionPayload:
+			if item := space.allActions().findByID(payload.GetId()); item != nil {
+				item.Link = extractLinkConfig(nil, payload.GetLink())
+				spaceID = space.ID
+			}
+		case *toolsproto.UpdateSpaceMetricPayload:
+			if item := space.Metrics.findByID(payload.GetId()); item != nil {
+				item.Label = func() string {
+					if payload.GetLabel() != nil {
+						return payload.GetLabel().GetTemplate()
+					}
+
+					return ""
+				}()
+				item.ToolID = payload.GetToolId()
+				item.DisplayOrder = payload.GetDisplayOrder()
+				item.FacetLocation = payload.GetFacetLocation().GetPath()
+				spaceID = space.ID
+			}
+		case *toolsproto.UpdateSpaceGroupPayload:
+			if item := space.Groups.findByID(payload.GetId()); item != nil {
+				item.Name = func() string {
+					if payload.GetName() != nil {
+						return payload.GetName().GetTemplate()
+					}
+
+					return ""
+				}()
+				item.Description = func() string {
+					if payload.GetDescription() != nil {
+						return payload.GetDescription().GetTemplate()
+					}
+
+					return ""
+				}()
+				item.DisplayOrder = payload.GetDisplayOrder()
+				spaceID = space.ID
+			}
+		case *toolsproto.UpdateSpaceLinkPayload:
+			if item := space.Links.findByID(payload.GetId()); item != nil {
+				item.Link = extractExternalLink(payload.GetLink())
+				spaceID = space.ID
+			}
+		}
+	}
+
+	space := userConfig.Spaces.findByID(spaceID)
+
+	if err := s.storeSpaces(userConfig.Spaces); err != nil {
+		return nil, fmt.Errorf("storing space configs: %w", err)
+	}
+
+	return space.toProto(), nil
 }
