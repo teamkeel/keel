@@ -428,6 +428,7 @@ func (s *Service) RemoveSpace(ctx context.Context, spaceID string) error {
 
 	return s.storeSpaces(remainingSpaces)
 }
+
 func (s *Service) RemoveSpaceItem(ctx context.Context, spaceID, itemID string) (*toolsproto.Space, error) {
 	// load existing user configuration
 	userConfig, err := s.load()

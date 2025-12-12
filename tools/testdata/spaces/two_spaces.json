@@ -1,0 +1,22 @@
+[
+    {
+        "id": "space-first",
+        "name": "First Space",
+        "icon": "first-icon",
+        "display_order": 1,
+        "actions": [],
+        "groups": [],
+        "metrics": [],
+        "links": []
+    },
+    {
+        "id": "space-second",
+        "name": "Second Space",
+        "icon": "second-icon",
+        "display_order": 2,
+        "actions": [],
+        "groups": [],
+        "metrics": [],
+        "links": []
+    }
+]
