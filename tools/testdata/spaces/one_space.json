@@ -1,0 +1,12 @@
+[
+    {
+        "id": "space-space",
+        "name": "Space",
+        "icon": "icon",
+        "display_order": 1,
+        "actions": [],
+        "groups": [],
+        "metrics": [],
+        "links": []
+    }
+]

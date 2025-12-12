@@ -87,6 +87,15 @@ func WithFieldsConfig(store []byte) ServiceOpt {
 	}
 }
 
+// WithSpacesConfig initialises the service with in-memory spaces storage and with the given user configuration. This
+// option will invalidate any filebased storage that may have been set with `WithFileStorage`.
+func WithSpacesConfig(store []byte) ServiceOpt {
+	return func(s *Service) {
+		s.SpacesConfigStorage = store
+		s.ProjectDir = nil
+	}
+}
+
 // generateTools will return a map of tool configurations generated for the given schema.
 func (s *Service) generateTools(ctx context.Context) ([]*toolsproto.Tool, error) {
 	if s.Schema == nil {
